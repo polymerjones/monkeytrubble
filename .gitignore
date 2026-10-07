@@ -1,0 +1,12 @@
+# This folder also holds large video/audio projects. Only the Monkey Trubble game is tracked.
+/*
+!/.gitignore
+!/matrix-match-prototype/
+!/MonkeyTrubbleIOS/
+!/matrix-match-source/
+!/match-sfx/
+
+# macOS and Xcode per-user files
+.DS_Store
+xcuserdata/
+*.xcuserstate
