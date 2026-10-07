@@ -104,7 +104,7 @@
       PATRIOT_3:{image:'patriot-3.jpg',name:'Parade Patriot',latin:'Pan libertatis',fact:'Never misses a parade, and never takes off the striped hat.',sounds:['callAgile'],clearExtras:WAR_CLEARS},
       JOKER:{image:'caulin-joker.jpg',name:'Joker Caulin',latin:'Wildcard',fact:'Matches any card in the cage. Save him for the card that has no partner nearby.',sounds:['jokerClear']},
       // Single card, one per level: tapping him fires MVP Vision instead of going to the cage.
-      KEVIN:{image:'kevin-kelly.jpg',name:'KEVIN KELLY',latin:'Limited Edition 2019 MVP',fact:'Tap him for MVP Vision: every hidden card flips up for 2 seconds.',sounds:['kevinClear'],power:'peek'}
+      KEVIN:{image:'kevin-kelly.jpg',name:'KEVIN KELLY',latin:'Limited Edition 2019 MVP',fact:'Tap him for MVP Vision: every hidden card flips up while he celebrates.',sounds:['kevinClear'],power:'peek'}
     };
     const MONKEY_SYMBOLS=Object.keys(CARD_DATA),DECK=MONKEY_SYMBOLS.filter(id=>id!==JOKER&&id!==KEVIN);
     const SHINE_GROUPS={
@@ -407,14 +407,16 @@
     function fireKevin(tile){
       const s=state,node=board.querySelector(`[data-id="${tile.id}"]`);tile.active=false;tile.temporaryReveal=false;
       if(node){const r=node.getBoundingClientRect(),copy=node.cloneNode(true);copy.removeAttribute('data-id');copy.classList.remove('board-tile');copy.style.left=`${r.left+r.width/2}px`;copy.style.top=`${r.top+r.height/2}px`;copy.style.zIndex='';$('#dragLayer').append(copy);copy.animate([{scale:1,opacity:1},{scale:1.35,opacity:1,offset:.4},{scale:1.7,opacity:0}],{duration:560,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'}).onfinish=()=>copy.remove();explode(node)}
-      featuredSymbol=KEVIN;duckMusic(4600);playSound('kevinClear',{volume:1});playSound('match',{volume:.25,rate:1.25});haptic('pairCleared');render();setMessage('MVP VISION // every card revealed');startPeek();
+      featuredSymbol=KEVIN;duckMusic(4600);playSound('kevinClear',{volume:1});playSound('match',{volume:.25,rate:1.25});haptic('pairCleared');render();setMessage('MVP VISION // every card revealed');startPeek(soundLengthMs('kevinClear',4368));
       setTimeout(()=>{if(s===state&&!s.over)finishIfCleared()},560)
     }
-    // MVP Vision: every face-down card flips up for 2 seconds; cards the player hasn't caged flip back down.
-    function startPeek(){
+    // How long a loaded sound runs, in ms (fallback until it's decoded).
+    function soundLengthMs(name,fallback){const seconds=soundBuffers[name]?.duration||fallbackAudio[name]?.duration;return Number.isFinite(seconds)&&seconds>0?seconds*1000:fallback}
+    // MVP Vision: every face-down card flips up for as long as Kevin's clip plays; cards the player hasn't caged flip back down.
+    function startPeek(holdMs=2000){
       const s=state,peeked=state.tiles.filter(t=>t.active&&!t.revealed),flipIn=(list,stagger)=>list.forEach((t,k)=>board.querySelector(`[data-id="${t.id}"]`)?.animate(flipFrames(FLIP_VARIANTS[k%FLIP_VARIANTS.length],true),{duration:FLIP_IN_MS,delay:k*stagger,easing:'cubic-bezier(.2,.72,.2,1)'}));
       if(!peeked.length)return;peeked.forEach(t=>{t.revealed=true;t.peeking=true});render();flipIn(peeked,14);
-      setTimeout(()=>{if(s!==state)return;const back=state.tiles.filter(t=>t.active&&t.peeking);state.tiles.forEach(t=>{if(t.peeking){t.peeking=false;if(t.active)t.revealed=false}});render();flipIn(back,8)},2000)
+      setTimeout(()=>{if(s!==state)return;const back=state.tiles.filter(t=>t.active&&t.peeking);state.tiles.forEach(t=>{if(t.peeking){t.peeking=false;if(t.active)t.revealed=false}});render();flipIn(back,8)},holdMs)
     }
     let activeCardFlights=0,peekDragging=false;
     function flyToTray(source,index){const target=tray.children[Math.min(index,3)];if(!target)return;const a=source.getBoundingClientRect(),b=target.getBoundingClientRect(),ghost=source.cloneNode(true),dx=b.left-a.left,dy=b.top-a.top,sx=b.width/a.width,sy=b.height/a.height;activeCardFlights++;document.body.classList.add('card-in-flight');ghost.style.cssText=`position:fixed;z-index:190;left:${a.left}px;top:${a.top}px;width:${a.width}px;height:${a.height}px;transform:none;transform-origin:top left;rotate:0deg;transition:transform .24s cubic-bezier(.2,.8,.2,1),opacity .24s ease;pointer-events:none;will-change:transform,opacity`;document.body.append(ghost);requestAnimationFrame(()=>{ghost.style.transform=`translate3d(${dx}px,${dy}px,0) scale(${sx},${sy})`;ghost.style.opacity='.2'});setTimeout(()=>{ghost.remove();activeCardFlights--;if(!activeCardFlights)document.body.classList.remove('card-in-flight')},260)}
