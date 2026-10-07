@@ -25,6 +25,6 @@ build_portrait "$RAW/caulin doll 2.png" caulin-plush
 build_portrait "$RAW/caulin bono.jpg" caulin-joker
 build_portrait "$RAW/monkey patriot 1.jpg" patriot-1
 build_portrait "$RAW/monkey patriot 3.jpg" patriot-3
-# Kevin Kelly master is already straightened to 2:3 (perspective-corrected from the Grok render).
-[ -f "$RAW/kevin kelly.png" ] && build "$RAW/kevin kelly.png" kevin-kelly
+# Kevin Kelly: flat 2:3 Grok render (1152x1728), so a plain resize.
+build "$RAW/kevin kelly.jpg" kevin-kelly
 echo "thumb: $(ls cards/thumb | wc -l | tr -d ' ')  hero: $(ls cards/hero | wc -l | tr -d ' ')"
