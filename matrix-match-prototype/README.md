@@ -16,6 +16,8 @@ Clearing a board shows the level-complete sequence: clear time, then **BEST TIME
 
 The board has four layers placed so the four bottom corners and the four top cards start open (8 tappable cards, about half of all cards face-up). A card is locked exactly while a higher card visually overlaps it; tapping a locked card shakes it and plays `card cant select.wav`. Pair clears run in the background, so play never pauses while the cage clears. Patriot cards add one of the `warmonkeyclear` clips to their call.
 
+**KEVIN KELLY — Limited Edition 2019 MVP** is a single card, one per level (boards hold 45 cards). Tapping him never uses a cage slot: he pops, plays `kevinkellyclear.mp3`, and fires MVP Vision, flipping every face-down card up for 2 seconds. The Caulin Plushie's clear plays `kaulinannounce2.mp3`.
+
 The game opens on a home screen with a big LEVEL button, a rotating featured card and the streak week. Drop `logo.png`, `bg.jpg` or `button.png` into `art/home/` to replace the built-in logo, background or button look.
 
 Testing parameters: `?play` skips the home screen, `?level=N` jumps to a level, `?reset` clears progress, `?today=YYYY-MM-DD` fakes the date for streak testing, and `?soundcheck` lists every card with its calls.

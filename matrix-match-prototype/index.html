@@ -81,7 +81,7 @@
   <div id="dragLayer" aria-hidden="true"></div>
   <nav class="variant-switcher" aria-label="Prototype variants"><button id="prevVariant" aria-label="Previous variant">←</button><span id="variantLabel"></span><button id="nextVariant" aria-label="Next variant">→</button></nav>
   <script>
-    const JOKER='JOKER',WAR_CLEARS=['warClear1','warClear2','warClear3'];
+    const JOKER='JOKER',KEVIN='KEVIN',WAR_CLEARS=['warClear1','warClear2','warClear3'];
     // One card per look-alike group (chimps keep two). Retired near-duplicates (2026-10-07): IMG_7573, 7576, 7581, 7582, 7583, 7585, 7597, 7599, 7600.
     // `sounds` lists the calls a card can play when its pair clears (keys of SOUND_FILES); `clearExtras` adds one random clip on top. `paleShine` gives grey/white-furred cards a screen-blend shine.
     const CARD_DATA={
@@ -99,18 +99,20 @@
       M7578:{image:'IMG_7578.jpg',name:'Bonobo',latin:'Pan paniscus',fact:'Bonobo communities are female-led and often ease tension through social bonding.',sounds:['callSmallApe']},
       M7590:{image:'IMG_7590.jpg',name:'Western Lowland Gorilla',latin:'Gorilla gorilla gorilla',fact:'A mature silverback can lead and protect a family group for many years.',sounds:['callGorilla1','callGorilla2']},
       M7595:{image:'IMG_7595.jpg',name:'Common Chimpanzee',latin:'Pan troglodytes',fact:'Chimpanzees communicate with gestures, facial expressions, calls and drumming on tree roots.',sounds:['callShout']},
-      CAULIN_PLUSH:{image:'caulin-plush.jpg',name:'Caulin Plushie',latin:'Caulinus plushus',fact:'Hand-stitched, fully huggable and the softest member of the troop.',sounds:['callBaby']},
+      CAULIN_PLUSH:{image:'caulin-plush.jpg',name:'Caulin Plushie',latin:'Caulinus plushus',fact:'Hand-stitched, fully huggable and the softest member of the troop.',sounds:['caulinClear']},
       PATRIOT_1:{image:'patriot-1.jpg',name:'Monkey Patriot',latin:'Pan libertatis',fact:'Reports for duty in a tricorn hat and refuses to be caged without a fight.',sounds:['callYell'],clearExtras:WAR_CLEARS},
       PATRIOT_3:{image:'patriot-3.jpg',name:'Parade Patriot',latin:'Pan libertatis',fact:'Never misses a parade, and never takes off the striped hat.',sounds:['callAgile'],clearExtras:WAR_CLEARS},
-      JOKER:{image:'caulin-joker.jpg',name:'Joker Caulin',latin:'Wildcard',fact:'Matches any card in the cage. Save him for the card that has no partner nearby.',sounds:['jokerClear']}
+      JOKER:{image:'caulin-joker.jpg',name:'Joker Caulin',latin:'Wildcard',fact:'Matches any card in the cage. Save him for the card that has no partner nearby.',sounds:['jokerClear']},
+      // Single card, one per level: tapping him fires MVP Vision instead of going to the cage.
+      KEVIN:{image:'kevin-kelly.jpg',name:'KEVIN KELLY',latin:'Limited Edition 2019 MVP',fact:'Tap him for MVP Vision: every hidden card flips up for 2 seconds.',sounds:['kevinClear'],power:'peek'}
     };
-    const MONKEY_SYMBOLS=Object.keys(CARD_DATA),DECK=MONKEY_SYMBOLS.filter(id=>id!==JOKER);
+    const MONKEY_SYMBOLS=Object.keys(CARD_DATA),DECK=MONKEY_SYMBOLS.filter(id=>id!==JOKER&&id!==KEVIN);
     const SHINE_GROUPS={
       light:['M7535','M7547','M7550','M7572','M7575','M7578','M7595'],
       fractal:['M7543','M7557','M7590','CAULIN_PLUSH'],
       strings:['M7560','M7564','M7569','PATRIOT_1'],
       blocks:['PATRIOT_3'],
-      sparkle:['M7554','JOKER']
+      sparkle:['M7554','JOKER','KEVIN']
     };
     const SHINE_BY_SYMBOL=Object.fromEntries(Object.entries(SHINE_GROUPS).flatMap(([shine,ids])=>ids.map(id=>[id,shine])));
     const shineFor=symbol=>SHINE_BY_SYMBOL[symbol]||'light';
@@ -131,7 +133,7 @@
       callAgile:'audio/video-calls/official-agile-gibbon.mp3',callHowler:'audio/video-calls/HOWLERYELL.wav',callSmallApe:'audio/video-calls/SMALLAPEYELL.wav',
       callGorilla1:'audio/video-calls/GORILLAYELL1.wav',callGorilla2:'audio/video-calls/GORILLAYELL2.wav',
       callLemur1:'audio/video-calls/lemur1.wav',callLemur2:'audio/video-calls/lemur2.wav',callLemur3:'audio/video-calls/lemur3.wav',
-      callScream:'audio/monkeyscream.mp3',callShout:'audio/monkey-shout.mp3',callYell:'audio/monkeyyell3.mp3',callBaby:'audio/babymonkey.mp3',callJoker:'audio/monkeyscream2.mp3',jokerClear:'audio/video-calls/jokersqueal.wav',
+      callScream:'audio/monkeyscream.mp3',callShout:'audio/monkey-shout.mp3',callYell:'audio/monkeyyell3.mp3',callBaby:'audio/babymonkey.mp3',callJoker:'audio/monkeyscream2.mp3',jokerClear:'audio/video-calls/jokersqueal.wav',kevinClear:'audio/video-calls/kevinkellyclear.mp3',caulinClear:'audio/video-calls/kaulinannounce2.mp3',
       cantSelect:'audio/video-calls/card%20cant%20select.wav',warClear1:'audio/video-calls/warmonkeyclear1.wav',warClear2:'audio/video-calls/warmonkeyclear2.wav',warClear3:'audio/video-calls/warmonkeyclear3.wav'
     };
     const soundBuffers={},fallbackAudio={};let soundEnabled=true,audioUnlocked=false,pendingLevelStart=true,audioContext=null,reverbInput,musicGain,featuredSymbol=null,musicDuckTimer;
@@ -174,11 +176,11 @@
     function playJokerPick(symbol){if(symbol===JOKER)playSound('callJoker',{volume:.75,delay:.08})}
     function shuffleArray(a){for(let i=a.length-1;i>0;i--){const j=rand(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
     // Four layers on a logical 0–100 grid. The upper layers sit over the middle so the corners of the bottom layer start open:
-    // 46 cards, with 8 tappable at the start (4 corners + the 4 top cards).
+    // 45 cards (Kevin is a single), with 8 tappable at the start (4 corners + the 4 top cards).
     function buildLayout(){
       const out=[];let n=0;
       const add=(layer,x,y)=>out.push({id:`tile-${n++}`,layer,x,y,blockers:[]});
-      for(let row=0;row<5;row++)for(let col=0;col<5;col++)add(0,18+col*16,14+row*17);
+      for(let row=0;row<5;row++)for(let col=0;col<5;col++)if(row!==2||col!==2)add(0,18+col*16,14+row*17);
       for(let row=0;row<4;row++)for(let col=0;col<2;col++)add(1,42+col*16,22.5+row*17);
       for(let row=0;row<3;row++)for(let col=0;col<3;col++)add(2,34+col*16,31+row*17);
       for(let row=0;row<2;row++)for(let col=0;col<2;col++)add(3,42+col*16,40+row*16);
@@ -188,9 +190,9 @@
     }
     // Seeded RNG so each level always deals the same board (Retry Level replays it exactly).
     function mulberry32(seed){return()=>{seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
-    const isMate=(a,b)=>a===b||a===JOKER||b===JOKER;
+    const isMate=(a,b)=>a!==KEVIN&&b!==KEVIN&&(a===b||a===JOKER||b===JOKER);
     const shuffleWith=(a,rng)=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-    // Deals units ([first, second] symbol pairs; a joker unit is [symbol, JOKER]) onto positions. A random legal removal order is drawn and the
+    // Deals units ([first, second] symbol pairs; a joker unit is [symbol, JOKER]; [KEVIN] is a single card) onto positions. A random legal removal order is drawn and the
     // pairs are laid along it so no more than two unmatched cards would ever wait in the cage, which keeps every board solvable.
     // The joker only ever closes the oldest open card, matching how it pairs in the cage.
     // With noFreePair, the cards that are free at the start never contain a matching pair.
@@ -203,11 +205,11 @@
         for(const [i,p] of order.entries()){
           // With noFreePair, a card that starts open may not take a symbol another open card already has, and never the joker.
           const guard=noFreePair&&freeIds.has(p.id),ok=sym=>!guard||(sym!==JOKER&&!freeSyms.has(sym));
-          const openable=pending.filter(u=>!open.some(o=>o[0]===u[0])&&ok(u[0])),closable=open.filter((u,k)=>ok(u[1])&&(u[1]!==JOKER||k===0));
-          const canOpen=openable.length&&open.length<2,canClose=closable.length>0;
+          const openable=pending.filter(u=>(u.length===1||open.length<2)&&!open.some(o=>o[0]===u[0])&&ok(u[0])),closable=open.filter((u,k)=>ok(u[1])&&(u[1]!==JOKER||k===0));
+          const canOpen=openable.length>0,canClose=closable.length>0;
           const wantOpen=pending.length&&(!open.length||i===1||(open.length<2&&rng()<.4));
           let sym;
-          if(canOpen&&(wantOpen||!canClose)){const unit=openable[0];pending.splice(pending.indexOf(unit),1);open.push(unit);sym=unit[0]}
+          if(canOpen&&(wantOpen||!canClose)){const unit=openable[0];pending.splice(pending.indexOf(unit),1);if(unit.length>1)open.push(unit);sym=unit[0]}
           else if(canClose){const unit=closable[Math.floor(rng()*closable.length)];open.splice(open.indexOf(unit),1);sym=unit[1]}
           else{failed=true;break}
           assignments.set(p.id,sym);if(guard)freeSyms.add(sym)
@@ -219,10 +221,10 @@
       }
       throw new Error('Could not build a solvable staggered board')
     }
-    // A level holds one joker unit plus pairs: every deck card once, then repeats from a second shuffled pass to fill the board.
-    function levelUnits(rng){const bag=[...shuffleWith([...DECK],rng),...shuffleWith([...DECK],rng)],units=[[bag[0],JOKER]];for(let i=1;units.length<TOTAL/2;i++)units.push([bag[i],bag[i]]);return units}
+    // A level holds Kevin, one joker unit, plus pairs: every deck card once, then repeats from a second shuffled pass to fill the board.
+    function levelUnits(rng){const bag=[...shuffleWith([...DECK],rng),...shuffleWith([...DECK],rng)],units=[[KEVIN],[bag[0],JOKER]],pairs=(TOTAL-3)/2;for(let i=1;units.length<2+pairs;i++)units.push([bag[i],bag[i]]);return units}
     function unitsFromSymbols(symbols){
-      const counts=new Map();for(const s of symbols)counts.set(s,(counts.get(s)||0)+1);let jokers=counts.get(JOKER)||0;counts.delete(JOKER);const units=[],odd=[];
+      const counts=new Map();for(const s of symbols)counts.set(s,(counts.get(s)||0)+1);let jokers=counts.get(JOKER)||0;counts.delete(JOKER);const units=[],odd=[];for(let k=0;k<(counts.get(KEVIN)||0);k++)units.push([KEVIN]);counts.delete(KEVIN);
       for(const[s,c]of counts){for(let k=0;k<Math.floor(c/2);k++)units.push([s,s]);if(c%2)odd.push(s)}
       while(odd.length){const s=odd.shift();if(jokers){units.push([s,JOKER]);jokers--}else units.push([s,odd.shift()??s])}
       return units
@@ -263,7 +265,7 @@
         const free=isFree(tile,activeIds),hasPhoto=tile.revealed&&Boolean(SYMBOL_IMAGES[tile.symbol]),renderKey=`${tile.symbol}|${tile.revealed}`;
         let node=board.querySelector(`[data-id="${tile.id}"]`);
         if(!node){node=document.createElement('button');node.dataset.id=tile.id;node.dataset.code=`L${tile.layer}`;node.style.left=`${tile.x}%`;node.style.rotate=`${((tile.x*7+tile.y*3)%5)-2}deg`;board.append(node)}
-        node.style.top=`${displayY(tile.y)}%`;node.style.zIndex=tile.layer*100+Math.round(tile.y)+(tile.revealed&&free?1000:0);node.className=`tile board-tile ${free?'free':'blocked'} ${tile.revealed?'revealed':'face-down'} ${hasPhoto?'has-photo':''} ${tile.temporaryReveal?'on-top':''} ${tile.revealed&&tile.symbol===JOKER?'joker-card':''}`;
+        node.style.top=`${displayY(tile.y)}%`;node.style.zIndex=tile.layer*100+Math.round(tile.y)+(tile.revealed&&free?1000:0);node.className=`tile board-tile ${free?'free':'blocked'} ${tile.revealed?'revealed':'face-down'} ${hasPhoto?'has-photo':''} ${tile.temporaryReveal?'on-top':''} ${tile.revealed&&(tile.symbol===JOKER||tile.symbol===KEVIN)?'joker-card':''}`;
         if(node.dataset.renderKey!==renderKey){node.getAnimations().forEach(animation=>animation.cancel());node.replaceChildren();if(tile.revealed)setSymbolContent(node,tile.symbol);node.dataset.renderKey=renderKey}
         node.setAttribute('aria-disabled',String(!free||state.locked));node.onclick=e=>handleTile(tile,e.currentTarget);
         if(free)enablePeekDrag(node);else{node.onpointerdown=null;node.onpointermove=null;node.onpointerup=null;node.onpointercancel=null}
@@ -285,7 +287,7 @@
         :[{transform:pose(0,0,1)},{offset:.45,transform:pose(42,1,1.045)},{offset:.78,transform:pose(72,.55,1.025)},{transform:pose(90,0,.98)}];
     }
     // A locked card shakes and plays the can't-select sound instead of doing nothing.
-    function rejectTap(node){const now=performance.now();if(now-(node.rejectedAt||0)<250)return;node.rejectedAt=now;node.animate([{translate:'0 0'},{translate:'-3px 0'},{translate:'3px 0'},{translate:'-2px 0'},{translate:'2px 0'},{translate:'0 0'}],{duration:220,easing:'ease-in-out'});playSound('cantSelect',{volume:.35});haptic('cardBlocked')}
+    function rejectTap(node){const now=performance.now();if(now-(node.rejectedAt||0)<250)return;node.rejectedAt=now;node.animate([{translate:'0 0'},{translate:'-3px 0'},{translate:'3px 0'},{translate:'-2px 0'},{translate:'2px 0'},{translate:'0 0'}],{duration:220,easing:'ease-in-out'});playSound('cantSelect',{volume:.26});haptic('cardBlocked')}
     function handleTile(tile,node){
       if(state.locked||!tile.active)return;
       if(!isFree(tile)){rejectTap(node);return}
@@ -302,6 +304,7 @@
         setTimeout(()=>{if(s!==state)return;if(previous&&!matchingFlip){previous.revealed=false;previous.temporaryReveal=false}tile.revealed=true;tile.temporaryReveal=true;tile.revealedAt=performance.now();render();const fresh=board.querySelector(`[data-id="${tile.id}"]`);fresh?.animate(flipFrames(flipVariant,true),{duration:FLIP_IN_MS,easing:'cubic-bezier(.2,.72,.2,1)'})},FLIP_OUT_MS-5);
         setTimeout(()=>{release();if(s!==state)return;render();if(!autoResolveRevealed(tile,previous))setMessage('')},FLIP_OUT_MS+FLIP_IN_MS+5);return
       }
+      if(tile.symbol===KEVIN){state.history.push(snapshot());fireKevin(tile);return}
       const flippedMate=state.tiles.find(t=>t.id!==tile.id&&t.active&&t.temporaryReveal&&isMate(t.symbol,tile.symbol)&&isFree(t));
       if(flippedMate){state.history.push(snapshot());if(autoResolveRevealed(tile,flippedMate))return}
       commitTile(tile,node,true)
@@ -314,6 +317,7 @@
     }
     function autoResolveRevealed(tile,previous){
       if(!tile.active||!tile.revealed||!isFree(tile))return false;
+      if(tile.symbol===KEVIN){fireKevin(tile);return true}
       if(state.tray.some(held=>!state.clearing.has(held.id)&&isMate(held.symbol,tile.symbol))){
         const node=board.querySelector(`[data-id="${tile.id}"]`),newIndex=state.tray.length;playSound('pickup',{volume:.12,rate:1.04});playJokerPick(tile.symbol);haptic('cardCaged');
         tile.active=false;tile.temporaryReveal=false;state.tray.push({id:tile.id,symbol:tile.symbol});flyToTray(node,newIndex);render();setMessage(`AUTO MATCH // ${cardName(tile.symbol)}`);scheduleClear(tile.symbol);return true
@@ -336,7 +340,7 @@
       node.onpointercancel=e=>{activePresses.delete(e.pointerId);drop()}
     }
     // A pair that is mid-clear is recorded as already cleared, so undo never brings it back into the cage.
-    function snapshot(){return{tiles:state.tiles.map(t=>({...t})),tray:state.tray.filter(t=>!state.clearing.has(t.id)).map(t=>({...t})),pairs:state.pairs+state.clearing.size/2,shuffles:state.shuffles}}
+    function snapshot(){return{tiles:state.tiles.map(t=>t.peeking?{...t,revealed:false,peeking:false}:{...t}),tray:state.tray.filter(t=>!state.clearing.has(t.id)).map(t=>({...t})),pairs:state.pairs+state.clearing.size/2,shuffles:state.shuffles}}
     // Undo spends one of the level's charges. From the cage-full screen it rewinds the overflowing move and resumes play.
     function undo(){
       const fromOverflow=state.over&&!state.won&&!state.busy;
@@ -354,7 +358,7 @@
     // The joker clears with any card. When that isn't the deck's odd card, two symbols are left without partners, so one card is
     // quietly repainted to restore pairs: a face-down board card if possible, then a face-up one, then a caged one.
     function rebalanceAfterJoker(){
-      const live=[...state.tiles.filter(t=>t.active),...state.tray.filter(t=>!state.clearing.has(t.id))].filter(t=>t.symbol!==JOKER),counts=new Map();
+      const live=[...state.tiles.filter(t=>t.active),...state.tray.filter(t=>!state.clearing.has(t.id))].filter(t=>t.symbol!==JOKER&&t.symbol!==KEVIN),counts=new Map();
       for(const t of live)counts.set(t.symbol,(counts.get(t.symbol)||0)+1);
       const odd=[...counts].filter(([,c])=>c%2).map(([symbol])=>symbol);if(odd.length<2)return;
       const [a,b]=odd,flip=t=>{t.symbol=t.symbol===a?b:a},onBoard=state.tiles.filter(t=>t.active&&(t.symbol===a||t.symbol===b));
@@ -398,6 +402,19 @@
       const release=hold(),s=state,nodes=[...board.querySelectorAll('.board-tile')],delays=new Map(nodes.map(n=>[n,rand(90)]));
       nodes.forEach(n=>n.animate([{scale:1,translate:'0 0'},{scale:1.04,translate:'-3px 0',offset:.3},{scale:1.08,translate:'3px 0',offset:.65},{scale:1.12,translate:'0 0'}],{duration:200,delay:delays.get(n),easing:'ease-out',fill:'forwards'}));
       setTimeout(()=>{if(s!==state){release();return}render();board.querySelectorAll('.board-tile').forEach(n=>{n.getAnimations().forEach(a=>a.cancel());n.animate([{scale:1.12},{scale:.94,offset:.6},{scale:1}],{duration:240,delay:rand(60),easing:'cubic-bezier(.2,.8,.2,1)'})});setTimeout(release,300)},300);
+    }
+    // Kevin Kelly: pops off the board (no cage slot), plays his call and fires MVP Vision.
+    function fireKevin(tile){
+      const s=state,node=board.querySelector(`[data-id="${tile.id}"]`);tile.active=false;tile.temporaryReveal=false;
+      if(node){const r=node.getBoundingClientRect(),copy=node.cloneNode(true);copy.removeAttribute('data-id');copy.classList.remove('board-tile');copy.style.left=`${r.left+r.width/2}px`;copy.style.top=`${r.top+r.height/2}px`;copy.style.zIndex='';$('#dragLayer').append(copy);copy.animate([{scale:1,opacity:1},{scale:1.35,opacity:1,offset:.4},{scale:1.7,opacity:0}],{duration:560,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'}).onfinish=()=>copy.remove();explode(node)}
+      featuredSymbol=KEVIN;duckMusic(4600);playSound('kevinClear',{volume:1});playSound('match',{volume:.25,rate:1.25});haptic('pairCleared');render();setMessage('MVP VISION // every card revealed');startPeek();
+      setTimeout(()=>{if(s===state&&!s.over)finishIfCleared()},560)
+    }
+    // MVP Vision: every face-down card flips up for 2 seconds; cards the player hasn't caged flip back down.
+    function startPeek(){
+      const s=state,peeked=state.tiles.filter(t=>t.active&&!t.revealed),flipIn=(list,stagger)=>list.forEach((t,k)=>board.querySelector(`[data-id="${t.id}"]`)?.animate(flipFrames(FLIP_VARIANTS[k%FLIP_VARIANTS.length],true),{duration:FLIP_IN_MS,delay:k*stagger,easing:'cubic-bezier(.2,.72,.2,1)'}));
+      if(!peeked.length)return;peeked.forEach(t=>{t.revealed=true;t.peeking=true});render();flipIn(peeked,14);
+      setTimeout(()=>{if(s!==state)return;const back=state.tiles.filter(t=>t.active&&t.peeking);state.tiles.forEach(t=>{if(t.peeking){t.peeking=false;if(t.active)t.revealed=false}});render();flipIn(back,8)},2000)
     }
     let activeCardFlights=0,peekDragging=false;
     function flyToTray(source,index){const target=tray.children[Math.min(index,3)];if(!target)return;const a=source.getBoundingClientRect(),b=target.getBoundingClientRect(),ghost=source.cloneNode(true),dx=b.left-a.left,dy=b.top-a.top,sx=b.width/a.width,sy=b.height/a.height;activeCardFlights++;document.body.classList.add('card-in-flight');ghost.style.cssText=`position:fixed;z-index:190;left:${a.left}px;top:${a.top}px;width:${a.width}px;height:${a.height}px;transform:none;transform-origin:top left;rotate:0deg;transition:transform .24s cubic-bezier(.2,.8,.2,1),opacity .24s ease;pointer-events:none;will-change:transform,opacity`;document.body.append(ghost);requestAnimationFrame(()=>{ghost.style.transform=`translate3d(${dx}px,${dy}px,0) scale(${sx},${sy})`;ghost.style.opacity='.2'});setTimeout(()=>{ghost.remove();activeCardFlights--;if(!activeCardFlights)document.body.classList.remove('card-in-flight')},260)}
