@@ -61,7 +61,7 @@
     .home-best{min-height:18px;color:#8fd6a2;font:700 .76rem system-ui,sans-serif;letter-spacing:.14em}.home-week{display:flex;gap:10px;padding:10px 16px;border:1px solid #1c6f38;border-radius:16px;background:#031008cc}.home-day{display:flex;flex-direction:column;align-items:center;gap:3px;color:#5c8f6a;font:800 .6rem system-ui,sans-serif}.home-day span{font-size:1.15rem;filter:grayscale(1);opacity:.32}.home-day.lit span{filter:none;opacity:1}.home-day.today{color:#fff}
     @media(prefers-reduced-motion:reduce){.home-play{animation:none}}
     .ios-app .topbar .logo{display:none}
-    .ios-app .logo{font-size:.6rem;letter-spacing:.1em;align-self:center}.ios-app .level-pill{font-size:.8rem;padding:4px 12px}.ios-app .top-stats{font-size:.72rem;gap:9px}.ios-app .featured-card{height:170px}.ios-app .featured-art{width:112px;height:166px}.ios-app .featured-copy{padding-top:30px}.ios-app .featured-name{font-size:1.18rem}.ios-app .featured-fact{-webkit-line-clamp:2}.ios-app .game-shell{padding-bottom:calc(178px + env(safe-area-inset-bottom))}
+    .ios-app .logo{font-size:.6rem;letter-spacing:.1em;align-self:center}.ios-app .level-pill{font-size:.8rem;padding:4px 12px}.ios-app .top-stats{font-size:.72rem;gap:9px}.ios-app .featured-card{height:170px}.ios-app .featured-art{width:112px;height:166px}.ios-app .featured-copy{padding-top:30px}.ios-app .featured-name{font-size:1.18rem}.ios-app .featured-fact{-webkit-line-clamp:2}/* Hero copy on a solid panel: the CURRENT CARD tag and the sound button sit on the card's top border, the status line is hidden, and the freed room goes to larger text. Card height is unchanged so the board keeps its size. */.ios-app .featured-card{overflow:visible}.ios-app .featured-copy{position:relative;align-self:stretch;overflow:visible;max-height:none;padding:13px 10px 8px;border-radius:10px;background:#1a1d1c;box-shadow:inset 0 0 0 1px #ffffff14}.ios-app .featured-kicker{position:absolute;top:-19px;left:8px;padding:3px 7px;font-size:.74rem;box-shadow:0 2px 0 #001d09}.ios-app .featured-name{margin:0 0 3px;font-size:1.5rem;line-height:.98}.ios-app .featured-latin{min-height:0;font-size:.95rem}.ios-app .featured-fact{margin-top:5px;font-size:.9rem;line-height:1.24;color:#a9d8b5;-webkit-line-clamp:3}.ios-app .message{display:none}.ios-app .actions{top:-14px;right:10px}.ios-app .game-shell{padding-bottom:calc(178px + env(safe-area-inset-bottom))}
   </style>
 </head>
 <body>
@@ -274,7 +274,7 @@
         if(!node){node=document.createElement('button');node.dataset.id=tile.id;node.dataset.code=`L${tile.layer}`;node.style.left=`${tile.x}%`;node.style.rotate=`${((tile.x*7+tile.y*3)%5)-2}deg`;board.append(node)}
         node.style.top=`${displayY(tile.y)}%`;node.style.zIndex=tile.layer*100+Math.round(tile.y)+(tile.revealed&&free?1000:0);node.className=`tile board-tile ${free?'free':'blocked'} ${tile.revealed?'revealed':'face-down'} ${hasPhoto?'has-photo':''} ${tile.temporaryReveal?'on-top':''} ${tile.revealed&&(tile.symbol===JOKER||tile.symbol===KEVIN)?'joker-card':''}`;
         if(node.dataset.renderKey!==renderKey){node.getAnimations().forEach(animation=>animation.cancel());node.replaceChildren();if(tile.revealed)setSymbolContent(node,tile.symbol);node.dataset.renderKey=renderKey}
-        node.setAttribute('aria-disabled',String(!free||state.locked));node.onclick=e=>handleTile(tile,e.currentTarget);
+        node.setAttribute('aria-disabled',String(!free||state.locked));node.onclick=e=>{if(performance.now()-(Number(node.dataset.tapAt)||0)<700)return;handleTile(tile,e.currentTarget)};
         if(free)enablePeekDrag(node);else{node.onpointerdown=null;node.onpointermove=null;node.onpointerup=null;node.onpointercancel=null}
       });
       if(tray.children.length!==4){tray.replaceChildren();for(let i=0;i<4;i++){const slot=document.createElement('div');slot.innerHTML=`<span></span><small class="slot-num">0${i+1}</small>`;tray.append(slot)}}
@@ -298,7 +298,6 @@
     function handleTile(tile,node){
       if(state.locked||!tile.active)return;
       if(!isFree(tile)){rejectTap(node);return}
-      if(node.dataset.dragged==='true'){delete node.dataset.dragged;return}
       if(tile.revealed&&tile.revealedAt&&performance.now()-tile.revealedAt<260)return;
       startClock();featuredSymbol=tile.symbol;renderFeatured();
       if(!tile.revealed){
@@ -335,16 +334,18 @@
       cagePair(mate,tile,`AUTO MATCH // ${cardName(tile.symbol)}`);return true
     }
     const activePresses=new Map();
+    // Free cards act on pointerup rather than click: iOS drops the click on a light or slightly rolling tap, which made cards feel sticky.
+    // The click that may still follow is ignored for a moment (tapAt), and a peek drag never counts as a tap.
     function enablePeekDrag(node){
-      let startX=0,startY=0,dragging=false,ghost=null;
+      let startX=0,startY=0,dragging=false,pressed=false,ghost=null;
       const offset=(target,dx,dy)=>{target.style.setProperty('--drag-x',`${dx}px`);target.style.setProperty('--drag-y',`${dy}px`)};
       // A dragged card is lifted into a fixed top layer so it stays above the hero, the cage and every other card instead of being clipped by the board.
       const lift=()=>{const r=node.getBoundingClientRect();ghost=node.cloneNode(true);ghost.removeAttribute('data-id');ghost.classList.remove('board-tile','touch-glow');ghost.classList.add('dragging','drag-ghost');ghost.style.left=`${r.left+r.width/2}px`;ghost.style.top=`${r.top+r.height/2}px`;ghost.style.zIndex='';$('#dragLayer').append(ghost);node.classList.add('lifted')};
       const drop=()=>{peekDragging=false;dragging=false;if(!ghost)return;const g=ghost;ghost=null;g.classList.remove('dragging');offset(g,0,0);setTimeout(()=>{node.style.transition='none';node.classList.remove('lifted');void node.offsetWidth;g.remove();requestAnimationFrame(()=>{node.style.transition=''})},170)};
-      node.onpointerdown=e=>{if(state.locked)return;startClock();const tile=state.tiles.find(t=>t.id===node.dataset.id);if(tile?.revealed){const mate=[...activePresses.values()].find(t=>t!==tile&&isMate(t.symbol,tile.symbol)&&t.active&&t.revealed&&isFree(t));if(mate){activePresses.clear();state.history.push(snapshot());cagePair(mate,tile,`PAIR CAGED // ${cardName(tile.symbol)}`);return}activePresses.set(e.pointerId,tile)}startX=e.clientX;startY=e.clientY;dragging=false;node.classList.remove('touch-glow');void node.offsetWidth;node.classList.add('touch-glow');setTimeout(()=>node.classList.remove('touch-glow'),560);node.setPointerCapture(e.pointerId)};
-      node.onpointermove=e=>{if(!node.hasPointerCapture(e.pointerId))return;const dx=e.clientX-startX,dy=e.clientY-startY;if(!dragging&&Math.hypot(dx,dy)>6){dragging=true;peekDragging=true;lift()}if(dragging&&ghost)offset(ghost,dx,dy)};
-      node.onpointerup=e=>{activePresses.delete(e.pointerId);if(node.hasPointerCapture(e.pointerId))node.releasePointerCapture(e.pointerId);if(dragging){node.dataset.dragged='true';setMessage('Peek only — the card underneath stays barricaded until this card is played.')}drop()};
-      node.onpointercancel=e=>{activePresses.delete(e.pointerId);drop()}
+      node.onpointerdown=e=>{if(state.locked)return;startClock();const tile=state.tiles.find(t=>t.id===node.dataset.id);if(tile?.revealed){const mate=[...activePresses.values()].find(t=>t!==tile&&isMate(t.symbol,tile.symbol)&&t.active&&t.revealed&&isFree(t));if(mate){activePresses.clear();state.history.push(snapshot());cagePair(mate,tile,`PAIR CAGED // ${cardName(tile.symbol)}`);return}activePresses.set(e.pointerId,tile)}startX=e.clientX;startY=e.clientY;dragging=false;pressed=true;node.classList.remove('touch-glow');void node.offsetWidth;node.classList.add('touch-glow');setTimeout(()=>node.classList.remove('touch-glow'),560);node.setPointerCapture(e.pointerId)};
+      node.onpointermove=e=>{if(!node.hasPointerCapture(e.pointerId))return;const dx=e.clientX-startX,dy=e.clientY-startY;if(!dragging&&Math.hypot(dx,dy)>14){dragging=true;peekDragging=true;lift()}if(dragging&&ghost)offset(ghost,dx,dy)};
+      node.onpointerup=e=>{activePresses.delete(e.pointerId);if(node.hasPointerCapture(e.pointerId))node.releasePointerCapture(e.pointerId);const wasDrag=dragging,wasPressed=pressed;pressed=false;node.dataset.tapAt=performance.now();if(wasDrag)setMessage('Peek only — the card underneath stays barricaded until this card is played.');drop();if(wasPressed&&!wasDrag){const tile=state.tiles.find(t=>t.id===node.dataset.id);if(tile)handleTile(tile,node)}};
+      node.onpointercancel=e=>{activePresses.delete(e.pointerId);pressed=false;drop()}
     }
     // A pair that is mid-clear is recorded as already cleared, so undo never brings it back into the cage.
     function snapshot(){return{tiles:state.tiles.map(t=>t.peeking?{...t,revealed:false,peeking:false}:{...t}),tray:state.tray.filter(t=>!state.clearing.has(t.id)).map(t=>({...t})),pairs:state.pairs+state.clearing.size/2,shuffles:state.shuffles}}
