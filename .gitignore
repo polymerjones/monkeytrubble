@@ -5,8 +5,14 @@
 !/MonkeyTrubbleIOS/
 !/matrix-match-source/
 !/match-sfx/
+!/.claude/
+/.claude/*
+!/.claude/skills/
 
 # macOS and Xcode per-user files
 .DS_Store
 xcuserdata/
 *.xcuserstate
+
+# Xcode build output
+MonkeyTrubbleIOS/build/
