@@ -102,7 +102,7 @@
       CAULIN_PLUSH:{image:'caulin-plush.jpg',name:'Caulin Plushie',latin:'Caulinus plushus',fact:'Hand-stitched, fully huggable and the softest member of the troop.',sounds:['callBaby']},
       PATRIOT_1:{image:'patriot-1.jpg',name:'Monkey Patriot',latin:'Pan libertatis',fact:'Reports for duty in a tricorn hat and refuses to be caged without a fight.',sounds:['callYell'],clearExtras:WAR_CLEARS},
       PATRIOT_3:{image:'patriot-3.jpg',name:'Parade Patriot',latin:'Pan libertatis',fact:'Never misses a parade, and never takes off the striped hat.',sounds:['callAgile'],clearExtras:WAR_CLEARS},
-      JOKER:{image:'caulin-joker.jpg',name:'Joker Caulin',latin:'Wildcard',fact:'Matches any card in the cage. Save him for the card that has no partner nearby.',sounds:['callJoker']}
+      JOKER:{image:'caulin-joker.jpg',name:'Joker Caulin',latin:'Wildcard',fact:'Matches any card in the cage. Save him for the card that has no partner nearby.',sounds:['jokerClear']}
     };
     const MONKEY_SYMBOLS=Object.keys(CARD_DATA),DECK=MONKEY_SYMBOLS.filter(id=>id!==JOKER);
     const SHINE_GROUPS={
@@ -131,7 +131,7 @@
       callAgile:'audio/video-calls/official-agile-gibbon.mp3',callHowler:'audio/video-calls/HOWLERYELL.wav',callSmallApe:'audio/video-calls/SMALLAPEYELL.wav',
       callGorilla1:'audio/video-calls/GORILLAYELL1.wav',callGorilla2:'audio/video-calls/GORILLAYELL2.wav',
       callLemur1:'audio/video-calls/lemur1.wav',callLemur2:'audio/video-calls/lemur2.wav',callLemur3:'audio/video-calls/lemur3.wav',
-      callScream:'audio/monkeyscream.mp3',callShout:'audio/monkey-shout.mp3',callYell:'audio/monkeyyell3.mp3',callBaby:'audio/babymonkey.mp3',callJoker:'audio/monkeyscream2.mp3',
+      callScream:'audio/monkeyscream.mp3',callShout:'audio/monkey-shout.mp3',callYell:'audio/monkeyyell3.mp3',callBaby:'audio/babymonkey.mp3',callJoker:'audio/monkeyscream2.mp3',jokerClear:'audio/video-calls/jokersqueal.wav',
       cantSelect:'audio/video-calls/card%20cant%20select.wav',warClear1:'audio/video-calls/warmonkeyclear1.wav',warClear2:'audio/video-calls/warmonkeyclear2.wav',warClear3:'audio/video-calls/warmonkeyclear3.wav'
     };
     const soundBuffers={},fallbackAudio={};let soundEnabled=true,audioUnlocked=false,pendingLevelStart=true,audioContext=null,reverbInput,musicGain,featuredSymbol=null,musicDuckTimer;
@@ -346,7 +346,7 @@
     }
     function playMatchFx(symbol){
       const symbols=[].concat(symbol),main=symbols.find(s=>s!==JOKER)||JOKER,choices=CARD_DATA[main]?.sounds||[],monkeySound=choices[rand(choices.length)],rate=1+Math.min(state.pairs,8)*.012;
-      duckMusic();playSound('match',{volume:.27,rate});if(monkeySound)playSound(monkeySound,{volume:1,rate,echo:true});if(main!==JOKER&&symbols.includes(JOKER))playSound('callJoker',{volume:.7,delay:.35});const extras=CARD_DATA[main]?.clearExtras;if(extras)playSound(extras[rand(extras.length)],{volume:.85,delay:.15});haptic('pairCleared');
+      duckMusic();playSound('match',{volume:.27,rate});if(monkeySound)playSound(monkeySound,{volume:1,rate,echo:true});if(main!==JOKER&&symbols.includes(JOKER))playSound('jokerClear',{volume:.7,delay:.35});const extras=CARD_DATA[main]?.clearExtras;if(extras)playSound(extras[rand(extras.length)],{volume:.85,delay:.15});haptic('pairCleared');
     }
     function finishIfCleared(){if(!state.tiles.some(t=>t.active)&&!state.tray.length&&!state.clearing.size)finish(true);else setMessage('Monkey caged. Proceed')}
     // The pair for a symbol: two of the same card first, otherwise the card and the joker (a joker pairs with the oldest other card).
