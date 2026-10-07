@@ -310,7 +310,7 @@
       if(recordHistory)state.history.push(snapshot());playSound('pickup',{volume:.11,rate:.92+Math.random()*.1});playJokerPick(tile.symbol);haptic('cardCaged');tile.active=false;state.tray.push({id:tile.id,symbol:tile.symbol});flyToTray(node,state.tray.length-1);render();
       if(findTrayPair(tile.symbol)){setMessage(`PAIR ACQUIRED // ${cardName(tile.symbol)}`);scheduleClear(tile.symbol)}
       else if(waitingInCage()>=4){const s=state;s.over=true;s.locked=true;setTimeout(()=>{if(s===state)finish(false)},260)}
-      else setMessage(`CAGED // ${waitingInCage()} of 4`)
+      else{setMessage(`CAGED // ${waitingInCage()} of 4`);if(isStuck()){const s=state;s.over=true;s.locked=true;setTimeout(()=>{if(s===state)finish(false,'stuck')},260)}}
     }
     function autoResolveRevealed(tile,previous){
       if(!tile.active||!tile.revealed||!isFree(tile))return false;
@@ -348,7 +348,20 @@
       const symbols=[].concat(symbol),main=symbols.find(s=>s!==JOKER)||JOKER,choices=CARD_DATA[main]?.sounds||[],monkeySound=choices[rand(choices.length)],rate=1+Math.min(state.pairs,8)*.012;
       duckMusic();playSound('match',{volume:.27,rate});if(monkeySound)playSound(monkeySound,{volume:1,rate,echo:true});if(main!==JOKER&&symbols.includes(JOKER))playSound('jokerClear',{volume:.7,delay:.35});const extras=CARD_DATA[main]?.clearExtras;if(extras)playSound(extras[rand(extras.length)],{volume:.85,delay:.15});haptic('pairCleared');
     }
-    function finishIfCleared(){if(!state.tiles.some(t=>t.active)&&!state.tray.length&&!state.clearing.size)finish(true);else setMessage('Monkey caged. Proceed')}
+    function finishIfCleared(){if(state.clearing.size)return;if(!state.tiles.some(t=>t.active)&&!state.tray.length)finish(true);else if(isStuck())finish(false,'stuck');else setMessage('Monkey caged. Proceed')}
+    // Safety net: the board is empty and nothing left in the cage can pair.
+    const isStuck=()=>!state.tiles.some(t=>t.active)&&!state.clearing.size&&state.tray.length>0&&!state.tray.some(a=>state.tray.some(b=>a!==b&&isMate(a.symbol,b.symbol)));
+    // The joker clears with any card. When that isn't the deck's odd card, two symbols are left without partners, so one card is
+    // quietly repainted to restore pairs: a face-down board card if possible, then a face-up one, then a caged one.
+    function rebalanceAfterJoker(){
+      const live=[...state.tiles.filter(t=>t.active),...state.tray.filter(t=>!state.clearing.has(t.id))].filter(t=>t.symbol!==JOKER),counts=new Map();
+      for(const t of live)counts.set(t.symbol,(counts.get(t.symbol)||0)+1);
+      const odd=[...counts].filter(([,c])=>c%2).map(([symbol])=>symbol);if(odd.length<2)return;
+      const [a,b]=odd,flip=t=>{t.symbol=t.symbol===a?b:a},onBoard=state.tiles.filter(t=>t.active&&(t.symbol===a||t.symbol===b));
+      const pick=onBoard.find(t=>!t.revealed)||onBoard.find(t=>!t.temporaryReveal)||onBoard[0];
+      if(pick){flip(pick);return}
+      const held=state.tray.find(t=>!state.clearing.has(t.id)&&(t.symbol===a||t.symbol===b));if(held){flip(held);scheduleClear(held.symbol)}
+    }
     // The pair for a symbol: two of the same card first, otherwise the card and the joker (a joker pairs with the oldest other card).
     // Cards already on their way out (state.clearing) never count toward a new pair or toward a full cage.
     const waitingInCage=()=>state.tray.filter(t=>!state.clearing.has(t.id)).length;
@@ -363,7 +376,7 @@
       const s=state,slots=[...tray.children],pair=state.tray.map((t,i)=>({t,i})).filter(x=>pairIds.includes(x.t.id));pairIds.forEach(id=>s.clearing.delete(id));if(pair.length<2){render();return}
       playMatchFx(pair.map(x=>x.t.symbol));
       for(const {i} of pair){const slot=slots[i];if(!slot)continue;const r=slot.getBoundingClientRect(),copy=slot.cloneNode(true);copy.removeAttribute('data-tile-id');copy.style.cssText=`position:fixed;left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;margin:0;pointer-events:none`;copy.classList.add('matching');$('#dragLayer').append(copy);setTimeout(()=>copy.remove(),500);explode(slot)}
-      state.tray=state.tray.filter(t=>!pairIds.includes(t.id));state.pairs++;render();setTimeout(()=>{if(s===state&&!s.over)finishIfCleared()},470)
+      state.tray=state.tray.filter(t=>!pairIds.includes(t.id));state.pairs++;if(pair.some(x=>x.t.symbol===JOKER))rebalanceAfterJoker();render();setTimeout(()=>{if(s===state&&!s.over)finishIfCleared()},470)
     }
     // Sends a matching pair from the board into the cage together, where it clears (two-finger tap or an auto match).
     // A matched pair never counts as an overflow, so with three cards held both fly into the last slot.
@@ -389,9 +402,9 @@
     let activeCardFlights=0,peekDragging=false;
     function flyToTray(source,index){const target=tray.children[Math.min(index,3)];if(!target)return;const a=source.getBoundingClientRect(),b=target.getBoundingClientRect(),ghost=source.cloneNode(true),dx=b.left-a.left,dy=b.top-a.top,sx=b.width/a.width,sy=b.height/a.height;activeCardFlights++;document.body.classList.add('card-in-flight');ghost.style.cssText=`position:fixed;z-index:190;left:${a.left}px;top:${a.top}px;width:${a.width}px;height:${a.height}px;transform:none;transform-origin:top left;rotate:0deg;transition:transform .24s cubic-bezier(.2,.8,.2,1),opacity .24s ease;pointer-events:none;will-change:transform,opacity`;document.body.append(ghost);requestAnimationFrame(()=>{ghost.style.transform=`translate3d(${dx}px,${dy}px,0) scale(${sx},${sy})`;ghost.style.opacity='.2'});setTimeout(()=>{ghost.remove();activeCardFlights--;if(!activeCardFlights)document.body.classList.remove('card-in-flight')},260)}
     function explode(node){if(!node)return;const r=node.getBoundingClientRect();for(let i=0;i<24;i++){const p=document.createElement('i');p.className='particle';p.style.left=`${r.left+r.width/2}px`;p.style.top=`${r.top+r.height/2}px`;document.body.append(p);const x=(Math.random()-.5)*150,y=(Math.random()-.6)*150,rot=rand(360);p.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${x}px,${y}px) rotate(${rot}deg) scale(.2)`,opacity:0}],{duration:380+rand(300),easing:'cubic-bezier(.15,.7,.25,1)'}).onfinish=()=>p.remove()}}
-    function finish(won){
+    function finish(won,reason='overflow'){
       state.over=true;state.locked=true;pauseClock();
-      if(!won){playSound('control',{volume:.5,rate:.58});haptic('cageOverflow');$('#resultTitle').textContent='CAGE FULL';$('#resultTitle').style.color='var(--danger)';$('#resultText').textContent='Four unmatched cards filled the Holding Cage.';const canUndo=state.undosLeft>0&&state.history.length>0;$('#overlayUndo').hidden=!canUndo;$('#overlayUndo').textContent=`Undo last move (${state.undosLeft})`;$('#overlay').classList.add('show');return}
+      if(!won){playSound('control',{volume:.5,rate:.58});haptic('cageOverflow');const stuck=reason==='stuck';$('#resultTitle').textContent=stuck?'NO MOVES':'CAGE FULL';$('#resultTitle').style.color='var(--danger)';$('#resultText').textContent=stuck?'The cards left in the cage can’t be matched.':'Four unmatched cards filled the Holding Cage.';const canUndo=state.undosLeft>0&&state.history.length>0;$('#overlayUndo').hidden=!canUndo;$('#overlayUndo').textContent=`Undo last move (${state.undosLeft})`;$('#overlay').classList.add('show');return}
       state.won=true;playSound('win',{volume:.72});showLevelComplete(recordLevelClear())
     }
     // A record needs an earlier time to beat, by at least a displayed second: the first clear of a level is shown as "BEST TIME SET", later faster clears as "NEW RECORD!".
