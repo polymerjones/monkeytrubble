@@ -14,11 +14,11 @@ crisp edges, dramatic rim lighting. No text, no letters, no watermark, no logos.
 ```
 
 ## 1. App icon prompts (square, 1:1)
-**Rules for every icon:** square canvas filled edge to edge (iOS rounds the corners itself, so no rounded tile and no drop shadow outside it), one bold shape readable at thumbnail size, no text.
+**Rules:** never write "app icon" in the prompt (it makes Grok draw a tilted icon mockup). Set Grok to square and add the ICON-SAFE ENDING from Round 2 below.
 
 **1A: Paw over the pile (closest to your description)**
 ```
-App icon, square, edge-to-edge. A thick, chunky 3D-extruded monkey paw silhouette
+Square image, flat and full-bleed, filling the whole frame edge to edge. A thick, chunky 3D-extruded monkey paw silhouette
 (ape palm facing the viewer, four fingers and a thumb, rounded knuckle pads),
 made of glossy glowing green acrylic with a neon-green rim light, floating front
 and center. Behind it, a small pyramid of trading cards stacked like mahjong
@@ -31,7 +31,7 @@ the frame.
 
 **1B: Paw slam**
 ```
-App icon, square, edge-to-edge. A 3D-extruded monkey paw silhouette slamming
+Square image, flat and full-bleed, filling the whole frame edge to edge. A 3D-extruded monkey paw silhouette slamming
 down onto a spread of monkey trading cards laid out like a mahjong board; two
 matching gorilla cards glow and lift off the table at the impact point with a
 burst of green sparks. Glossy green extruded paw, holographic foil card edges,
@@ -40,7 +40,7 @@ dark console table.
 
 **1C: Minimal holo card**
 ```
-App icon, square, edge-to-edge. A single holographic trading card seen straight
+Square image, flat and full-bleed, filling the whole frame edge to edge. A single holographic trading card seen straight
 on, with a monkey paw silhouette cut out of its center and glowing green light
 pouring through the cutout. Behind the card, faint outlines of more cards
 stacked like mahjong tiles. Minimal, bold, iconic, reads clearly at small size.
@@ -48,7 +48,7 @@ stacked like mahjong tiles. Minimal, bold, iconic, reads clearly at small size.
 
 **1D: Paw emblem (cleanest at small sizes)**
 ```
-App icon, square, edge-to-edge. A bold 3D-extruded monkey paw emblem in glowing
+Square image, flat and full-bleed, filling the whole frame edge to edge. A bold 3D-extruded monkey paw emblem in glowing
 green on a dark background, with a thin ring of tiny monkey trading cards
 orbiting behind it like a halo, arranged like mahjong tiles. Simple,
 high-contrast, symmetrical.
@@ -97,3 +97,47 @@ The **wordmark** "MONKEY//TRUBBLE" is better typeset than generated (image model
 - Generate 4+ variations per prompt. Re-roll with small edits: "more cards visible", "paw larger", "less clutter", "warmer amber accents".
 - Pick the aspect ratio in Grok's settings (1:1 for icons, tallest portrait for the home screen) rather than relying on the prompt text.
 - Save favorites to a permanent folder (not a screenshot temp folder), ideally `matrix-match-source/brand/`, and send me the paths.
+
+---
+
+## ROUND 2 — based on the 3 "like this style" picks (start here)
+What those picks share: matte painted dark-green surfaces, real tactile objects shot like a photo, rows of monkey/ape portrait cards, a real ape hand, and an all-green tinted mood. No neon glow.
+
+**R2-A: Hand through the card wall (for the icon)**
+```
+Square photograph that fills the entire frame edge to edge. A real chimpanzee
+hand reaches straight toward the camera through a wall of monkey and ape
+portrait trading cards arranged in a tight grid. The whole scene is tinted in
+one deep forest green, like a green duotone photograph. Matte painted green
+surfaces, soft overhead light, cinematic, tactile, realistic. The hand is
+large and centered.
+```
++ add the ICON-SAFE ENDING below.
+
+**ICON-SAFE ENDING (paste after any prompt you want to use as the app icon)**
+```
+Flat full-bleed square image, viewed perfectly straight on. The artwork itself
+fills the whole canvas to every edge. Not a mockup: no rounded square tile, no
+icon shape, no border, no frame, no drop shadow, no perspective tilt, no
+background around it, no phone or device. Simple, bold, few elements. No text.
+```
+Never use the words "app icon" or "icon" in the prompt itself, since that's what
+makes Grok draw a tilted icon tile. iOS adds the rounded corners on its own.
+
+**R2-B: Cabinet with the cards (home screen, tall portrait)**
+```
+Tall portrait photo. A matte dark-green painted cabinet; on top, rows of monkey
+and ape portrait trading cards stand in neat lines like mahjong tiles. A real
+gorilla hand bursts out through the cabinet door below. Moody, realistic,
+slightly vintage, deep green palette with small warm highlights. Keep the top
+and bottom of the image dark and simple. No text.
+```
+
+**R2-C: The green card table (home screen or icon)**
+```
+Photo looking down at a matte green card table. Monkey and ape portrait trading
+cards are laid out in a staggered mahjong-style pile, some face-down with plain
+dark-green backs. A real ape hand rests on the pile, picking up one card.
+One-color deep green tint, soft dramatic light, realistic and tactile. No text.
+```
+Tip: to use any of these as the app icon, set Grok to square and add the ICON-SAFE ENDING.

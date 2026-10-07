@@ -54,9 +54,9 @@
     .game-shell{padding-bottom:174px}
     .top-left{display:flex;align-items:center;gap:10px}.home-btn{flex:none;width:34px;height:34px;padding:0;border:1px solid #27894a;border-radius:50%;background:#06160b;color:var(--green);font:700 1.1rem system-ui,sans-serif;cursor:pointer}.link-btn{display:block;margin:14px auto 0;padding:4px 10px;border:0;background:none;color:#8fd6a2;font:800 .76rem system-ui,sans-serif;letter-spacing:.22em;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
     .home{position:fixed;inset:0;z-index:900;display:flex;flex-direction:column;align-items:center;gap:14px;padding:calc(14px + env(safe-area-inset-top)) 20px calc(22px + env(safe-area-inset-bottom));overflow:hidden;background:radial-gradient(circle at 50% 36%,#0c3019 0,#020905 55%,#000 88%);transition:opacity .32s ease,transform .32s ease}.home.hidden{opacity:0;transform:scale(1.08);visibility:hidden;pointer-events:none;transition:opacity .32s ease,transform .32s ease,visibility 0s .32s}
-    .home-bg{position:absolute;inset:0;z-index:-1;background-size:cover;background-position:center}.home-top{width:100%;display:flex;justify-content:space-between;align-items:center}.home-icon{width:42px;height:42px;padding:0;border:1px solid #27894a;border-radius:50%;background:#06160bcc;color:var(--green);font:600 1.15rem system-ui,sans-serif;cursor:pointer}.home-streak{display:flex;align-items:center;gap:7px;padding:6px 13px;border:1px solid #27894a;border-radius:999px;background:#06160bcc;color:#fff;font:900 1rem system-ui,sans-serif}.home-streak small{color:var(--amber);font:800 .56rem/1.2 system-ui,sans-serif;letter-spacing:.16em}
-    .home-logo{margin-top:4px;text-align:center;font-weight:900;font-size:clamp(1.5rem,8vw,2.5rem);letter-spacing:.14em;text-shadow:0 0 18px #32ff6d}.home-logo span{color:var(--bright)}.home-logo img{display:block;max-width:82vw;max-height:16vh;object-fit:contain}
-    .home-card{flex:1;min-height:0;width:100%;display:grid;place-items:center}.featured-art.home-art{width:auto;height:min(100%,62vw*1.5);max-height:360px;aspect-ratio:2/3;margin:0;border-width:3px;border-radius:16px;font-size:3rem;transform:perspective(700px) rotateY(var(--card-ry)) rotateX(var(--card-rx)) rotate(-2deg);box-shadow:6px 8px 0 #001d09,0 0 40px #57ff8655;transition:opacity .3s ease}.featured-art.home-art.swapping{opacity:0}
+    .home-bg{position:absolute;inset:0;z-index:-1;background-size:cover;background-position:center}.home-bg-tag{position:absolute;left:10px;bottom:calc(8px + env(safe-area-inset-bottom));padding:3px 7px;border-radius:6px;background:#000a;color:#9dffb5;font:800 .62rem system-ui,sans-serif;letter-spacing:.12em;pointer-events:none}.home-top{width:100%;display:flex;justify-content:space-between;align-items:center}.home-icon{width:42px;height:42px;padding:0;border:1px solid #27894a;border-radius:50%;background:#06160bcc;color:var(--green);font:600 1.15rem system-ui,sans-serif;cursor:pointer}.home-streak{display:flex;align-items:center;gap:7px;padding:6px 13px;border:1px solid #27894a;border-radius:999px;background:#06160bcc;color:#fff;font:900 1rem system-ui,sans-serif}.home-streak small{color:var(--amber);font:800 .56rem/1.2 system-ui,sans-serif;letter-spacing:.16em}
+    .home-logo{margin-top:4px;text-align:center;font-weight:900;font-size:clamp(1.5rem,8vw,2.5rem);letter-spacing:.14em;text-shadow:0 0 18px #32ff6d}.home-logo span{color:var(--bright)}.home-logo img{display:block;width:min(74vw,340px);max-height:16vh;object-fit:contain;filter:drop-shadow(0 3px 8px #000d)}
+    /* 3D ticker: a strip of cards, tipped back, scrolls left forever (no rotateZ on the strip: it is thousands of px wide, so its ends would swing off screen); each card has its own angle and depth and slowly turns. */.home-card{flex:1;min-height:0;width:calc(100% + 40px);margin:50px -20px 0;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;perspective:900px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent)}.ticker-plane{width:100%;transform:rotateX(12deg);transform-style:preserve-3d}.ticker-track{display:flex;width:max-content;padding:26px 0;transform-style:preserve-3d;animation:tickerScroll var(--ticker-dur,80s) linear infinite}.ticker-card{flex:none;width:clamp(62px,18vw,88px);aspect-ratio:2/3;margin-right:14px;overflow:hidden;border:1.5px solid #baffca;border-radius:8px;background:#06160b;box-shadow:0 8px 16px #000c,0 0 12px #57ff8640;transform:rotateY(var(--ry)) rotateZ(var(--rz)) translateZ(var(--tz)) translateY(var(--ty));animation:tickerTurn var(--turn) ease-in-out var(--delay) infinite alternate;backface-visibility:hidden}.ticker-card .symbol-image{display:block;width:100%;height:100%;object-fit:cover}@keyframes tickerScroll{to{transform:translateX(-50%)}}@keyframes tickerTurn{to{transform:rotateY(calc(var(--ry) * -1)) rotateZ(calc(var(--rz) * -.5)) translateZ(var(--tz)) translateY(calc(var(--ty) * -1))}}.home.hidden .ticker-track,.home.hidden .ticker-card{animation-play-state:paused}
     .home-play{width:min(320px,86vw);padding:14px 0 16px;display:flex;flex-direction:column;align-items:center;gap:3px;border:2px solid #baffca;border-radius:22px;background:linear-gradient(180deg,#6dff9a,#1c9a45 70%,#137a35) center/cover;color:#002a0e;box-shadow:0 6px 0 #0a4a20,0 0 40px #57ff8666;cursor:pointer;animation:playPulse 2.2s ease-in-out infinite;-webkit-tap-highlight-color:transparent}.home-play small{font:900 .7rem system-ui,sans-serif;letter-spacing:.32em;opacity:.75}.home-play span{font:950 2.05rem/1 system-ui,sans-serif;letter-spacing:.08em}.home-play:active{translate:0 4px;box-shadow:0 2px 0 #0a4a20}@keyframes playPulse{0%,100%{scale:1}50%{scale:1.035}}
     .home-best{min-height:18px;color:#8fd6a2;font:700 .76rem system-ui,sans-serif;letter-spacing:.14em}.home-week{display:flex;gap:10px;padding:10px 16px;border:1px solid #1c6f38;border-radius:16px;background:#031008cc}.home-day{display:flex;flex-direction:column;align-items:center;gap:3px;color:#5c8f6a;font:800 .6rem system-ui,sans-serif}.home-day span{font-size:1.15rem;filter:grayscale(1);opacity:.32}.home-day.lit span{filter:none;opacity:1}.home-day.today{color:#fff}
     @media(prefers-reduced-motion:reduce){.home-play{animation:none}}
@@ -77,7 +77,7 @@
   <aside class="tray-panel"><div class="boosters"><button class="booster" id="undo" aria-label="Undo"><span class="booster-icon">↶</span>UNDO<b class="badge" id="undoCount">2</b></button><button class="booster" id="shuffle" aria-label="Shuffle"><span class="booster-icon">⟳</span>SHUFFLE<b class="badge" id="shuffleCount">1</b></button></div><div class="tray-label"><span>HOLDING CAGE</span><span class="build-id" aria-hidden="true">261006.2000</span><span id="bufferStatus">0 / 4</span></div><div class="tray" id="tray"></div></aside>
   <div class="overlay" id="overlay"><div class="dialog"><h2 id="resultTitle">CAGE FULL</h2><p id="resultText"></p><button class="action primary" id="retryLevel">RETRY LEVEL</button><button class="action" id="overlayUndo" hidden>Undo last move</button><button class="link-btn" id="failHome">Home</button></div></div>
   <div class="overlay" id="winOverlay"><div class="dialog win-dialog"><div class="win-level win-step" id="winLevel">LEVEL 1</div><div class="win-complete win-step" id="winComplete">COMPLETE</div><div class="win-time win-step" id="winTimeBox"><small>TIME</small><b id="winTime">0:00</b></div><div class="win-badge win-step" id="winBadge"></div><div class="win-streak win-step" id="winStreak" hidden><span class="flame">🔥</span><b id="winStreakCount">1</b><small id="winStreakLabel">DAY<br>STREAK</small></div><div class="win-next win-step" id="winNext">LEVEL <span class="win-roll"><span id="winRoll"><span id="winFrom">1</span><span id="winTo">2</span></span></span></div><button class="action primary win-step" id="nextLevel">NEXT LEVEL</button><button class="link-btn win-step" id="winHome">Home</button></div></div>
-  <section class="home" id="home" aria-label="Home"><div class="home-bg" id="homeBg"></div><header class="home-top"><button class="home-icon" id="homeSound" title="Sound" aria-label="Sound">♪</button><div class="home-streak"><span>🔥</span><b id="homeStreak">0</b><small>DAY<br>STREAK</small></div></header><div class="home-logo" id="homeLogo">MONKEY<span>//TRUBBLE</span></div><div class="home-card"><div class="featured-art home-art" id="homeArt"></div></div><button class="home-play" id="homePlay"><small>PLAY</small><span>LEVEL <b id="homeLevel">1</b></span></button><div class="home-best" id="homeBest"></div><div class="home-week" id="homeWeek"></div></section>
+  <section class="home" id="home" aria-label="Home"><div class="home-bg" id="homeBg"></div><div class="home-bg-tag" id="homeBgTag"></div><header class="home-top"><button class="home-icon" id="homeSound" title="Sound" aria-label="Sound">♪</button><div class="home-streak"><span>🔥</span><b id="homeStreak">0</b><small>DAY<br>STREAK</small></div></header><div class="home-logo" id="homeLogo">MONKEY<span>//TRUBBLE</span></div><div class="home-card" aria-hidden="true"><div class="ticker-plane"><div class="ticker-track" id="homeTicker"></div></div></div><button class="home-play" id="homePlay"><small>PLAY</small><span>LEVEL <b id="homeLevel">1</b></span></button><div class="home-best" id="homeBest"></div><div class="home-week" id="homeWeek"></div></section>
   <div id="dragLayer" aria-hidden="true"></div>
   <nav class="variant-switcher" aria-label="Prototype variants"><button id="prevVariant" aria-label="Previous variant">←</button><span id="variantLabel"></span><button id="nextVariant" aria-label="Next variant">→</button></nav>
   <script>
@@ -125,6 +125,8 @@
     const BASE_LAYOUT=buildLayout(),TOTAL=BASE_LAYOUT.length;
     const variants={A:'Layered terminal',B:'Operator console',C:'Glyph shrine',D:'Micro slats'};
     const UNDOS_PER_LEVEL=2,SHUFFLES_PER_LEVEL=1;
+    // Difficulty ramp: the share of cards dealt face up starts high and drops 5% a level to a floor of 35%.
+    const faceUpShare=level=>Math.max(.35,.85-(level-1)*.05);
     let state={level:1,tiles:[],tray:[],pairs:0,shuffles:0,undosLeft:UNDOS_PER_LEVEL,shufflesLeft:SHUFFLES_PER_LEVEL,locked:false,history:[],clearing:new Set(),clock:{elapsed:0,startedAt:null}};
     const SOUND_FILES={
       pickup:'audio/blippage.wav',match:'audio/success.wav',control:'audio/complete.mp3',win:'audio/level-complete.mp3',levelStart:'audio/japanesevoice.mp3',
@@ -196,18 +198,20 @@
     // pairs are laid along it so no more than two unmatched cards would ever wait in the cage, which keeps every board solvable.
     // The joker only ever closes the oldest open card, matching how it pairs in the cage.
     // With noFreePair, the cards that are free at the start never contain a matching pair.
-    function dealUnits(pos,units,rng,{noFreePair=false}={}){
+    // freePair names two starting-free positions that are dealt as a matching pair anyway (the bonus "boom boom" match).
+    function dealUnits(pos,units,rng,{noFreePair=false,freePair=null}={}){
       const ids=new Set(pos.map(p=>p.id)),freeIn=remaining=>pos.filter(p=>remaining.has(p.id)&&!p.blockers.some(id=>remaining.has(id))),initialFree=freeIn(ids),freeIds=new Set(initialFree.map(p=>p.id));
       for(let attempt=0;attempt<400;attempt++){
         const remaining=new Set(ids),order=[];
+        if(freePair)for(const id of freePair){order.push(pos.find(p=>p.id===id));remaining.delete(id)}
         while(remaining.size){const free=freeIn(remaining),pick=free[Math.floor(rng()*free.length)];order.push(pick);remaining.delete(pick.id)}
         const pending=shuffleWith(units.map(u=>[...u]),rng),open=[],assignments=new Map(),freeSyms=new Set();let failed=false;
         for(const [i,p] of order.entries()){
           // With noFreePair, a card that starts open may not take a symbol another open card already has, and never the joker.
-          const guard=noFreePair&&freeIds.has(p.id),ok=sym=>!guard||(sym!==JOKER&&!freeSyms.has(sym));
-          const openable=pending.filter(u=>(u.length===1||open.length<2)&&!open.some(o=>o[0]===u[0])&&ok(u[0])),closable=open.filter((u,k)=>ok(u[1])&&(u[1]!==JOKER||k===0));
+          const guard=noFreePair&&freeIds.has(p.id)&&!(freePair&&i===1),ok=sym=>!guard||(sym!==JOKER&&!freeSyms.has(sym));
+          const openable=pending.filter(u=>(u.length===1||open.length<2)&&!open.some(o=>o[0]===u[0])&&ok(u[0])&&!(freePair&&i===0&&(u.length<2||u[1]===JOKER))),closable=open.filter((u,k)=>ok(u[1])&&(u[1]!==JOKER||k===0));
           const canOpen=openable.length>0,canClose=closable.length>0;
-          const wantOpen=pending.length&&(!open.length||i===1||(open.length<2&&rng()<.4));
+          const wantOpen=pending.length&&!(freePair&&i===1)&&(!open.length||(!freePair&&i===1)||(open.length<2&&rng()<.4));
           let sym;
           if(canOpen&&(wantOpen||!canClose)){const unit=openable[0];pending.splice(pending.indexOf(unit),1);if(unit.length>1)open.push(unit);sym=unit[0]}
           else if(canClose){const unit=closable[Math.floor(rng()*closable.length)];open.splice(open.indexOf(unit),1);sym=unit[1]}
@@ -215,8 +219,8 @@
           assignments.set(p.id,sym);if(guard)freeSyms.add(sym)
         }
         if(failed)continue;
-        const free=initialFree.map(p=>assignments.get(p.id));
-        if(noFreePair&&free.some((a,i)=>free.some((b,j)=>j>i&&isMate(a,b))))continue;
+        const free=initialFree.map(p=>assignments.get(p.id)),bonus=(i,j)=>freePair&&freePair.includes(initialFree[i].id)&&freePair.includes(initialFree[j].id);
+        if(noFreePair&&free.some((a,i)=>free.some((b,j)=>j>i&&isMate(a,b)&&!bonus(i,j))))continue;
         return assignments
       }
       throw new Error('Could not build a solvable staggered board')
@@ -229,7 +233,10 @@
       while(odd.length){const s=odd.shift();if(jokers){units.push([s,JOKER]);jokers--}else units.push([s,odd.shift()??s])}
       return units
     }
-    function buildLevelBoard(level){const rng=mulberry32(level*9973),pos=BASE_LAYOUT.map(p=>({...p,blockers:[...p.blockers]})),assignments=dealUnits(pos,levelUnits(rng),rng,{noFreePair:true});return pos.map(p=>({...p,symbol:assignments.get(p.id),active:true,revealed:rng()<.5,temporaryReveal:false}))}
+    // About half the levels open with a bonus: two side-by-side top cards, face up and matching. It uses its own seeded RNG, so levels without one deal exactly as before.
+    const BONUS_PAIR_CHANCE=.5;
+    function bonusPairFor(level){const rng=mulberry32(level*7919+17);if(rng()>=BONUS_PAIR_CHANCE)return null;const top=BASE_LAYOUT.filter(p=>p.layer===3),pairs=[];for(const a of top)for(const b of top)if(a.id<b.id&&(a.x===b.x)!==(a.y===b.y))pairs.push([a.id,b.id]);return pairs[Math.floor(rng()*pairs.length)]}
+    function buildLevelBoard(level){const rng=mulberry32(level*9973),pos=BASE_LAYOUT.map(p=>({...p,blockers:[...p.blockers]})),freePair=bonusPairFor(level),assignments=dealUnits(pos,levelUnits(rng),rng,{noFreePair:true,freePair});return pos.map(p=>({...p,symbol:assignments.get(p.id),active:true,revealed:rng()<faceUpShare(level)||!!freePair?.includes(p.id),temporaryReveal:false}))}
     // Progress persists through the iOS app's native store (injected as window.__monkeySave) or localStorage in a browser.
     const SAVE_KEY='monkeyTrubble.save.v1',params=new URLSearchParams(location.search);
     function loadProgress(){let saved=window.__monkeySave;if(saved==null)try{saved=localStorage.getItem(SAVE_KEY)}catch{}if(typeof saved==='string')try{saved=JSON.parse(saved)}catch{saved=null}const base={version:1,level:1,bestTimes:{},streak:{count:0,lastDate:null}};return saved?.version===1?{...base,...saved,streak:{...base.streak,...saved.streak}}:base}
@@ -457,7 +464,7 @@
     function setVariant(key){if(!variants[key])key='A';document.body.classList.remove('variant-a','variant-b','variant-c');document.body.classList.add(`variant-${key.toLowerCase()}`);$('#variantLabel').textContent=`${key} — ${variants[key]}`;const url=new URL(location.href);url.searchParams.set('variant',key);history.replaceState({},'',url)}
     function cycleVariant(dir){const keys=Object.keys(variants),current=new URLSearchParams(location.search).get('variant')||'A',i=keys.indexOf(current);setVariant(keys[(i+dir+keys.length)%keys.length])}
     function setupFeaturedGloss(){
-      const art=$('#featuredArt'),arts=[art,$('#homeArt')],card=art.closest('.featured-card'),clamp=(n,min,max)=>Math.max(min,Math.min(max,n)),REST={x:80,o:.45,ry:0,rx:0},keys=['x','o','ry','rx'];let cur={...REST},target={...REST},frame=0,lastTilt=-Infinity,pointerInside=false;
+      const art=$('#featuredArt'),arts=[art],card=art.closest('.featured-card'),clamp=(n,min,max)=>Math.max(min,Math.min(max,n)),REST={x:80,o:.45,ry:0,rx:0},keys=['x','o','ry','rx'];let cur={...REST},target={...REST},frame=0,lastTilt=-Infinity,pointerInside=false;
       function step(){frame=0;let settled=true;for(const k of keys){const d=target[k]-cur[k];if(Math.abs(d)>(k==='o'?.002:.03)){cur[k]+=d*.18;settled=false}else cur[k]=target[k]}if(!settled)frame=requestAnimationFrame(step);for(const el of arts){el.style.setProperty('--glare-shift',`${(cur.x-50).toFixed(2)}%`);el.style.setProperty('--glare-opacity',cur.o.toFixed(3));el.style.setProperty('--card-ry',`${cur.ry.toFixed(2)}deg`);el.style.setProperty('--card-rx',`${cur.rx.toFixed(2)}deg`)}}
       function update(next){target=next;if(!frame)frame=requestAnimationFrame(step)}
       // Turn t (side to side) and lean p (toward/away), each in [-1,1]. At rest the wipe sits faintly at the card's right edge; tilting
@@ -491,35 +498,39 @@
         const shade=ctx.createLinearGradient(0,0,0,height);shade.addColorStop(0,'rgba(0,8,3,.38)');shade.addColorStop(.55,'rgba(0,5,2,.12)');shade.addColorStop(1,'rgba(0,2,1,.72)');ctx.fillStyle=shade;ctx.fillRect(0,0,width,height);pointer.energy*=.955}
       new ResizeObserver(resize).observe(wrap);wrap.addEventListener('pointermove',move,{passive:true});wrap.addEventListener('pointerdown',e=>{move(e);pointer.energy=1.35},{passive:true});resize();frame=requestAnimationFrame(draw);addEventListener('pagehide',()=>cancelAnimationFrame(frame),{once:true})
     }
-    // Home screen: big LEVEL button, rotating featured card with the tilt shine, streak week. Art in art/home/ replaces the built-in look when present.
-    let homeTimer=0,homeDeck=[];
-    function setHomeCard(symbol){const art=$('#homeArt');art.replaceChildren();art.classList.add('has-gloss');art.dataset.shine=shineFor(symbol);if(CARD_DATA[symbol].paleShine)art.dataset.glare='screen';else delete art.dataset.glare;setSymbolContent(art,symbol,'hero');const foil=document.createElement('i');foil.className='foil';foil.append(Object.assign(document.createElement('i'),{className:'foil-tex'}));art.append(foil)}
-    function nextHomeCard(){if(!homeDeck.length)homeDeck=shuffleArray([...MONKEY_SYMBOLS]);const art=$('#homeArt'),symbol=homeDeck.pop();art.classList.add('swapping');setTimeout(()=>{setHomeCard(symbol);art.classList.remove('swapping')},300)}
+    // Home screen: big LEVEL button, 3D card ticker, streak week. Art in art/home/ replaces the built-in look when present.
+    // Each card keeps one random pose for both copies in the strip, so the loop point is seamless.
+    function buildHomeTicker(){const track=$('#homeTicker');if(track.childElementCount)return;const syms=shuffleArray([...MONKEY_SYMBOLS]),r=(lo,hi)=>lo+Math.random()*(hi-lo),poses=syms.map(()=>`--ry:${r(-30,30).toFixed(1)}deg;--rz:${r(-8,8).toFixed(1)}deg;--tz:${r(-40,24).toFixed(0)}px;--ty:${r(-9,9).toFixed(0)}px;--turn:${r(4,8).toFixed(1)}s;--delay:-${r(0,8).toFixed(1)}s`);
+      for(let pass=0;pass<2;pass++)syms.forEach((symbol,i)=>{const card=document.createElement('div');card.className='ticker-card';card.style.cssText=poses[i];setSymbolContent(card,symbol,'hero');track.append(card)});
+      track.style.setProperty('--ticker-dur',`${syms.length*3.4}s`)}
     function renderHome(){
       const level=progress.level,best=progress.bestTimes[level];$('#homeLevel').textContent=level;$('#homeBest').textContent=best!=null?`BEST ${formatTime(best)}`:level===1?'TAP TO START':'NEW LEVEL';
       const {count,lastDate}=progress.streak,live=lastDate===localDate()||lastDate===localDate(-1);$('#homeStreak').textContent=live?count:0;
       const week=$('#homeWeek');week.replaceChildren();
       for(let k=-6;k<=0;k++){const date=localDate(k),d=new Date(`${date}T12:00`),back=lastDate?Math.round((new Date(`${lastDate}T12:00`)-d)/864e5):-1,lit=live&&back>=0&&back<count,day=document.createElement('div');day.className=`home-day${lit?' lit':''}${k===0?' today':''}`;day.innerHTML=`<span>🔥</span>${'SMTWTFS'[d.getDay()]}`;week.append(day)}
     }
-    function showHome(){if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}$('#overlay').classList.remove('show');$('#winOverlay').classList.remove('show');renderHome();$('#home').classList.remove('hidden');clearInterval(homeTimer);homeTimer=setInterval(nextHomeCard,3800)}
+    function showHome(){if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}$('#overlay').classList.remove('show');$('#winOverlay').classList.remove('show');renderHome();pickHomeBg();$('#home').classList.remove('hidden');buildHomeTicker()}
     function playFromHome(){
-      clearInterval(homeTimer);$('#home').classList.add('hidden');unlockAudio();
+      $('#home').classList.add('hidden');unlockAudio();
       // Resume the level in progress; anything finished or behind the saved level starts fresh.
       const resumable=state.tiles.length&&state.level===progress.level&&!state.over&&state.history.length;
       if(resumable){if(state.clock.resume){state.clock.resume=false;startClock()}playSound('control',{volume:.35})}
       else startLevel(progress.level)
     }
+    // Background trial: each home visit shows a random candidate (never the same twice in a row), tagged in the corner so the favorite can be named.
+    const HOME_BGS=['A','B','E','3','4'];let homeBgKey=null;
+    function pickHomeBg(){const pool=HOME_BGS.filter(k=>k!==homeBgKey),key=pool[Math.floor(Math.random()*pool.length)];homeBgKey=key;$('#homeBg').style.backgroundImage=`url('art/home/bg-${key}.jpg')`;$('#homeBgTag').textContent=`BG ${key}`}
     function loadHomeArt(){
       const probe=(src,apply)=>{const img=new Image();img.onload=()=>apply(img);img.src=src};
       probe('art/home/logo.png',img=>{img.alt='Monkey Trubble';$('#homeLogo').replaceChildren(img)});
-      probe('art/home/bg.jpg',()=>{$('#homeBg').style.backgroundImage="url('art/home/bg.jpg')"});
+      pickHomeBg();
       probe('art/home/button.png',()=>{$('#homePlay').style.backgroundImage="url('art/home/button.png')"});
     }
     $('#homeBtn').onclick=showHome;$('#winHome').onclick=showHome;$('#failHome').onclick=()=>{startLevel(state.level,{silent:true});pendingLevelStart=false;showHome()};$('#homePlay').onclick=playFromHome;$('#homeSound').onclick=()=>{$('#sound').click();$('#homeSound').textContent=soundEnabled?'♪':'♩'};
     $('#shuffle').onclick=reshuffle;$('#undo').onclick=undo;$('#overlayUndo').onclick=undo;$('#retryLevel').onclick=()=>startLevel(state.level,{retry:true});$('#nextLevel').onclick=()=>startLevel(state.level+1);$('#sound').onclick=()=>{soundEnabled=!soundEnabled;$('#sound').textContent=soundEnabled?'♪':'♩';$('#sound').title=soundEnabled?'Sound on':'Sound off';$('#sound').setAttribute('aria-label',$('#sound').title);$('#sound').classList.toggle('active',soundEnabled);if(soundEnabled){if(audioUnlocked)music.play().catch(()=>{});playSound('control',{volume:.4})}else music.pause()};$('#prevVariant').onclick=()=>cycleVariant(-1);$('#nextVariant').onclick=()=>cycleVariant(1);
     addEventListener('pointerdown',unlockAudio,{once:true,capture:true});
     addEventListener('keydown',e=>{if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName)||document.activeElement.isContentEditable)return;if(e.key==='ArrowLeft')cycleVariant(-1);if(e.key==='ArrowRight')cycleVariant(1)});
-    async function bootstrap(){new ResizeObserver(()=>{if(updateSpread()&&state.tiles.length)render()}).observe(board);setupFeaturedGloss();setupMicroSlats();setVariant(isIOSApp?'D':new URLSearchParams(location.search).get('variant')||'A');loadHomeArt();setHomeCard(DECK[rand(DECK.length)]);await preloadAssets();startLevel(progress.level,{silent:true});pendingLevelStart=false;if(params.has('play'))playFromHome();else showHome();setInterval(()=>{if(!document.hidden)renderClock()},250);if(params.has('soundcheck'))showSoundcheck();if(isIOSApp)unlockAudio()}
+    async function bootstrap(){new ResizeObserver(()=>{if(updateSpread()&&state.tiles.length)render()}).observe(board);setupFeaturedGloss();setupMicroSlats();setVariant(isIOSApp?'D':new URLSearchParams(location.search).get('variant')||'A');loadHomeArt();buildHomeTicker();await preloadAssets();startLevel(progress.level,{silent:true});pendingLevelStart=false;if(params.has('play'))playFromHome();else showHome();setInterval(()=>{if(!document.hidden)renderClock()},250);if(params.has('soundcheck'))showSoundcheck();if(isIOSApp)unlockAudio()}
     bootstrap();
   </script>
 </body>
