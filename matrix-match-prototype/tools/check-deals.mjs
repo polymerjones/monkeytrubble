@@ -7,8 +7,10 @@ const script=html.slice(html.lastIndexOf('<script>')+8,html.lastIndexOf('</scrip
 const fn=name=>{const start=script.indexOf(`function ${name}(`);if(start<0)throw new Error(`missing ${name}`);let depth=0;for(let i=script.indexOf('){',start)+1;i<script.length;i++){if(script[i]==='{')depth++;else if(script[i]==='}'&&!--depth)return script.slice(start,i+1)}};
 const line=prefix=>{const m=script.match(new RegExp(`^\\s*(${prefix}.*)$`,'m'));if(!m)throw new Error(`missing ${prefix}`);return m[1]};
 const deck=[...script.matchAll(/^\s+(\w+):\{image:/gm)].map(m=>m[1]).filter(id=>id!=='JOKER'&&id!=='KEVIN');
-const game=new Function(`
-  const JOKER='JOKER',KEVIN='KEVIN',DECK=${JSON.stringify(deck)};
+// groups: the card groups as [unlockLevel, cards] (default: today's deck as one group).
+const makeGame=(groups=[[1,deck]])=>new Function(`
+  const JOKER='JOKER',KEVIN='KEVIN',DECK=${JSON.stringify(groups.flatMap(g=>g[1]))},GROUPS=${JSON.stringify(groups)};
+  const groupDecks=level=>GROUPS.filter(([at,cards])=>at<=level&&cards.length).map(([,cards])=>cards);
   ${line('const KEVIN_WINDOW=')}
   ${line('const isMate=')}
   ${line('const shuffleWith=')}
@@ -17,9 +19,10 @@ const game=new Function(`
   ${['buildLayout','mulberry32','dealUnits','levelUnits','unitsFromSymbols','bonusPairFor'].map(fn).join('\n')}
   const BASE_LAYOUT=buildLayout(),TOTAL=BASE_LAYOUT.length;
   // Same deal as buildLevelBoard, plus the removal order it was built along.
-  function levelBoard(level,easy=false){const rng=mulberry32(level*9973),pos=BASE_LAYOUT.map(p=>({...p,blockers:[...p.blockers]})),trace=[],assignments=dealUnits(pos,levelUnits(rng),rng,{noFreePair:true,freePair:bonusPairFor(level,easy),trace});return{tiles:pos.map(p=>({...p,symbol:assignments.get(p.id)})),order:trace}}
+  function levelBoard(level,easy=false){const rng=mulberry32(level*9973),pos=BASE_LAYOUT.map(p=>({...p,blockers:[...p.blockers]})),trace=[],assignments=dealUnits(pos,levelUnits(rng,level),rng,{noFreePair:true,freePair:bonusPairFor(level,easy),trace});return{tiles:pos.map(p=>({...p,symbol:assignments.get(p.id)})),order:trace}}
   return {dealUnits,unitsFromSymbols,levelBoard,mulberry32,KEVIN_WINDOW};
 `)();
+const game=makeGame();
 const {JOKER,KEVIN}={JOKER:'JOKER',KEVIN:'KEVIN'};
 const mates=(a,b)=>a!==KEVIN&&b!==KEVIN&&(a===b||a===JOKER||b===JOKER);
 
@@ -71,6 +74,17 @@ for(let run=0;run<levels*2;run++){
   const shuffleErr=replay(board,trace,cage);if(shuffleErr){problems++;console.log(`${easy?'easy ':''}level ${level}: after shuffle with cage [${cage}] (${board.length} cards left): ${shuffleErr}`)}
 }
 depths.sort((a,b)=>a-b);
+// Card groups: a fake Group 2 (10 cards, unlocks at level 10) must leave levels 1-9 exactly as they are without it, keep every
+// later board solvable, and split each level's 22 symbols (21 pairs + the joker's partner) evenly between the groups.
+{const fake=Array.from({length:10},(_,i)=>`G2_${i}`),mixed=makeGame([[1,deck],[10,fake]]);
+  for(let level=1;level<=Math.min(levels,300);level++){
+    const {tiles,order}=mixed.levelBoard(level),syms=tiles.map(t=>t.symbol).filter(s=>s!==KEVIN&&s!==JOKER);
+    if(level<10){if(JSON.stringify(syms)!==JSON.stringify(game.levelBoard(level).tiles.map(t=>t.symbol).filter(s=>s!==KEVIN&&s!==JOKER))){problems++;console.log(`groups: level ${level} changed before Group 2 unlocks`)}continue}
+    const err=replay(tiles,order);if(err){problems++;console.log(`groups: level ${level}: ${err}`)}
+    // 22 symbols (21 pairs + the joker's partner) split 11/11: 22 cards each, give or take the joker's partner.
+    const g2=syms.filter(s=>s.startsWith('G2_')).length;
+    if(syms.some(s=>!s)||g2<21||g2>22){problems++;console.log(`groups: level ${level} has ${g2} Group 2 cards of ${syms.length}`)}
+  }}
 kevinSpots.sort((a,b)=>a-b);console.log(`Kevin dealt before the 60% mark (window fallback): ${kevinSpots.filter(x=>x<game.KEVIN_WINDOW[0]-.03).length} level(s)`);const pct=x=>`${Math.round(x*100)}%`;
 console.log(`${levels} levels: ${problems} problem(s). Kevin's place in the removal order: ${pct(kevinSpots[0])}–${pct(kevinSpots.at(-1))} (median ${pct(kevinSpots[kevinSpots.length>>1])}). Cards stacked over Kevin: min ${depths[0]}, median ${depths[depths.length>>1]}, max ${depths.at(-1)}`);
 process.exit(problems?1:0);
