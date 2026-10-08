@@ -104,7 +104,7 @@
     .boosters{gap:10px}.booster{flex:1;min-width:0;max-width:136px;padding:0 10px;gap:6px;letter-spacing:.08em}
     .owl-eyes{display:block;width:30px;height:18px}.owl-eyes .lids{transform-origin:50% 58%;animation:owlBlink 5s infinite}@keyframes owlBlink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
     .tile.hinted,.slot.hinted{box-shadow:0 0 0 3px #ffb31a,0 0 24px 6px #ffb31acc;animation:hintPulse .8s ease-in-out infinite alternate}@keyframes hintPulse{to{box-shadow:0 0 0 3px #ffe08a,0 0 34px 10px #ffb31aee}}
-    .hint-eyes{position:fixed;z-index:3500;width:66px;height:39px;translate:-50% -50%;pointer-events:none;filter:drop-shadow(0 0 10px #ffb31a) drop-shadow(0 2px 2px #000)}.hint-eyes .owl-eyes{width:100%;height:100%}.hint-eyes .lids{animation:none}
+    .hint-eyes{position:fixed;z-index:3500;width:66px;height:39px;translate:-50% -50%;pointer-events:none;filter:drop-shadow(0 0 10px #ffb31a) drop-shadow(0 2px 2px #000)}.hint-eyes .owl-eyes{width:100%;height:100%}.hint-eyes small{position:absolute;left:50%;top:100%;translate:-50% 4px;padding:3px 9px;border:2px solid #2b1a06;border-radius:99px;background:#ffb31a;color:#2b1a06;font:900 .66rem system-ui,sans-serif;letter-spacing:.1em;white-space:nowrap;box-shadow:0 3px 8px #000c}.tile.hinted.blocked{opacity:1;outline:3px dashed #ffb31a;outline-offset:2px}.hint-eyes .lids{animation:none}
     .badge.pop{animation:badgePop .5s cubic-bezier(.2,.8,.2,1)}@keyframes badgePop{0%{transform:scale(1)}40%{transform:scale(1.7)}100%{transform:scale(1)}}
     /* Volume sliders: chunky track that fills with the accent, big pressable knob (theme tokens, so Jungle gets banana knobs). */
     .vol-row{display:grid;grid-template-columns:54px 1fr 44px;align-items:center;gap:10px;margin-top:6px;color:var(--text-dim);font:900 .7rem system-ui,sans-serif;letter-spacing:.14em}.vol-row b{text-align:right;color:#fff;font-variant-numeric:tabular-nums}
@@ -686,15 +686,24 @@
     // first move with that card's partner: a cage slot, or the next card in the line when it's free now. Face-down cards it points
     // at are revealed. Never a dead end; if no safe line exists the hint isn't spent.
     function findHint(){
-      const active=state.tiles.filter(t=>t.active),cage0=state.tray.filter(t=>!state.clearing.has(t.id)).map(t=>t.symbol);
-      const step=cageStep;let path=solveLine(active,cage0);
+      const active=state.tiles.filter(t=>t.active),held=state.tray.filter(t=>!state.clearing.has(t.id)),cage0=held.map(t=>t.symbol);
+      let path=solveLine(active,cage0);
       // If the search runs out of time, fall back to an obvious match: a card that pairs with the cage, else two free twins.
-      if(path===undefined){const free=active.filter(t=>isFree(t)),pairCage=free.find(t=>t.symbol!==KEVIN&&step(cage0,t.symbol).length<cage0.length),twin=free.find(t=>t.symbol!==KEVIN&&t.symbol!==JOKER&&free.some(o=>o!==t&&o.symbol===t.symbol));
+      if(path===undefined){const free=active.filter(t=>isFree(t)),pairCage=free.find(t=>t.symbol!==KEVIN&&cageStep(cage0,t.symbol).length<cage0.length),twin=free.find(t=>t.symbol!==KEVIN&&t.symbol!==JOKER&&free.some(o=>o!==t&&o.symbol===t.symbol));
         path=pairCage?[pairCage]:twin&&cage0.length<3?[twin,free.find(o=>o!==twin&&o.symbol===twin.symbol)]:null}
       if(!path?.length)return null;
-      const [first,second]=path,activeIds=new Set(active.map(t=>t.id));
-      if(step(cage0,first.symbol).length<cage0.length&&first.symbol!==KEVIN){const held=state.tray.filter(t=>!state.clearing.has(t.id));let k=first.symbol===JOKER?0:held.findIndex(t=>t.symbol===first.symbol);if(k<0)k=held.findIndex(t=>t.symbol===JOKER);return{tiles:[first],slot:state.tray.indexOf(held[k])}}
-      if(second&&isMate(first.symbol,second.symbol)&&isFree(second,activeIds))return{tiles:[first,second],slot:null};
+      if(path[0].symbol===KEVIN)return{tiles:[path[0]],slot:null,kevin:true};
+      // Walk the line with the cage rules to find the first card's partner: a caged card, or the board card that later pairs with it
+      // (which may still be buried - it's shown anyway, so the hint always names a whole match).
+      const first=path[0],cage=held.map(t=>({sym:t.symbol,slot:state.tray.indexOf(t)}));
+      for(const tile of path){
+        if(tile.symbol===KEVIN)continue;
+        let k=tile.symbol===JOKER?(cage.length?0:-1):cage.findIndex(c=>c.sym===tile.symbol);if(k<0&&tile.symbol!==JOKER)k=cage.findIndex(c=>c.sym===JOKER);
+        if(k<0){cage.push({sym:tile.symbol,tile});continue}
+        const [mate]=cage.splice(k,1);
+        if(tile===first)return{tiles:[first],slot:mate.slot};
+        if(mate.tile===first)return{tiles:[first,tile],slot:null,buried:!isFree(tile)};
+      }
       return{tiles:[first],slot:null}
     }
     function useHint(){
@@ -702,9 +711,11 @@
       const hint=findHint();if(!hint){setMessage('No safe match from here — try Undo or Shuffle.');rejectTap($('#hint'));return}
       state.hintsLeft--;state.hintsUsed++;startClock();hint.tiles.forEach(t=>{t.revealed=true});state.hintIds=new Set(hint.tiles.map(t=>t.id));state.hintSlot=hint.slot;render();
       const targets=[...hint.tiles.map(t=>board.querySelector(`[data-id="${t.id}"]`)),hint.slot!=null?tray.children[hint.slot]:null].filter(Boolean);
-      for(const node of targets){const r=node.getBoundingClientRect(),eyes=document.createElement('div');eyes.className='hint-eyes';eyes.innerHTML=$('#hint .owl-eyes').outerHTML;eyes.style.left=`${r.left+r.width/2}px`;eyes.style.top=`${r.top+Math.min(r.height*.3,40)}px`;document.body.append(eyes);
-        eyes.animate([{transform:'scaleY(0)',opacity:0},{transform:'scaleY(1.15)',opacity:1,offset:.08},{transform:'scaleY(1)',opacity:1,offset:.14},{transform:'scaleY(.1)',opacity:1,offset:.5},{transform:'scaleY(1)',opacity:1,offset:.56},{transform:'scaleY(1)',opacity:1,offset:.85},{transform:'scaleY(1)',opacity:0}],{duration:2600,easing:'ease-out'}).onfinish=()=>eyes.remove()}
-      const kevin=hint.tiles[0].symbol===KEVIN;setMessage(kevin?'OWL EYES // use Kevin now':hint.slot!=null?`OWL EYES // this one pairs with the cage`:hint.tiles.length>1?'OWL EYES // match these two':'OWL EYES // take this card next');
+      for(const node of targets){const r=node.getBoundingClientRect(),eyes=document.createElement('div');eyes.className='hint-eyes';eyes.innerHTML=$('#hint .owl-eyes').outerHTML+(node.classList.contains('blocked')?'<small>UNDER HERE</small>':'');eyes.style.left=`${r.left+r.width/2}px`;eyes.style.top=`${r.top+(node.classList.contains('blocked')?r.height*.5:Math.min(r.height*.3,40))}px`;document.body.append(eyes);
+        // Only the eyes blink; the overlay (and its UNDER HERE tag) just fades in and out.
+        eyes.querySelector('svg').animate([{transform:'scaleY(0)'},{transform:'scaleY(1.15)',offset:.08},{transform:'scaleY(1)',offset:.14},{transform:'scaleY(1)',offset:.46},{transform:'scaleY(.1)',offset:.5},{transform:'scaleY(1)',offset:.56},{transform:'scaleY(1)'}],{duration:2600,easing:'ease-out'});
+        eyes.animate([{opacity:0},{opacity:1,offset:.08},{opacity:1,offset:.85},{opacity:0}],{duration:2600}).onfinish=()=>eyes.remove()}
+      setMessage(hint.kevin?'OWL EYES // use Kevin now':hint.slot!=null?'OWL EYES // this one pairs with the cage':hint.buried?'OWL EYES // these two match — take the free one, then dig out its partner':'OWL EYES // match these two');
       playSound('pickup',{volume:.3,rate:.68});haptic('cardFlip');clearTimeout(hintTimer);hintTimer=setTimeout(()=>clearHint(true),3400)
     }
     function clearHint(redraw){clearTimeout(hintTimer);if(!state.hintIds&&state.hintSlot==null)return;state.hintIds=null;state.hintSlot=null;if(redraw)render()}
