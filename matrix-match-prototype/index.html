@@ -354,10 +354,10 @@
     window.__resumeMonkeyAudio=resumeMonkeyAudio;document.addEventListener('visibilitychange',()=>{if(document.hidden){music.pause();if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}}else{resumeMonkeyAudio();if(state.clock.resume){state.clock.resume=false;startClock()}}});
     function setMusicLevel(level,smoothing){if(musicGain)musicGain.gain.setTargetAtTime(level,audioContext.currentTime,smoothing);else music.volume=level}
     // Music dip: fast attack, held for about the length of the sound that caused it, then a short release so the music is back as the sound ends.
-    const DUCK_ATTACK_S=.04,DUCK_RELEASE_S=.12;
+    const DUCK_ATTACK_S=.02,DUCK_RELEASE_S=.06;
     function duckMusic(duration=1500){clearTimeout(musicDuckTimer);setMusicLevel(musicLevel()*MUSIC_DUCK,DUCK_ATTACK_S);musicDuckTimer=setTimeout(()=>setMusicLevel(musicLevel(),DUCK_RELEASE_S),duration)}
-    // Hold time for a sound: release starts at 85% of its length (at the playback rate), plus any start delay.
-    const duckFor=(name,{rate=1,delay=0}={})=>Math.max(400,soundLengthMs(name,1500)/rate*.85+delay*1000);
+    // Hold time for a sound: release starts at 80% of its length (at the playback rate), plus any start delay.
+    const duckFor=(name,{rate=1,delay=0}={})=>Math.max(300,soundLengthMs(name,1500)/rate*.8+delay*1000);
         // echo: how many 1-second repeats follow (true = 1), each quieter and a touch lower. praise: the voiceover effect (see playPraise).
     function playSound(name,{volume=1,rate=1,echo=0,delay=0,praise=false}={}){
       if(!soundEnabled||!userSfxGain)return;const trim=Math.pow(10,(MIX_DB[name]??(name.startsWith('praise:')?MIX_DB.praise:0))/20),level=Math.max(0,volume*trim*userSfxGain*(name==='pickup'?CARD_SELECT_GAIN:1)),buffer=soundBuffers[name],echoes=echo===true?1:echo||0;
