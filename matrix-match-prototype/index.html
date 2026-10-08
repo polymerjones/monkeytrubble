@@ -209,15 +209,17 @@
     const MUSIC_VOLUME=Math.pow(10,-19/20),MUSIC_CLEAR_DUCK_VOLUME=Math.pow(10,-42/20),CARD_SELECT_GAIN=.5;
     // Music: the home screen loops its own track; in a level the Music Mode playlist (Settings) shuffles, never the same track twice in a row.
     // trim (dB) evens out loudness: every track is matched to polyjong-mus1 (-15.8 LUFS).
+    // The home track doubles as a calm level track.
+    const HOME_TRACK={src:'audio/music/home.mp3'};
     const MUSIC={
-      home:[{src:'audio/music/home.mp3'}],
-      relaxed:[{src:'audio/polyjong-mus1.mp3'},{src:'audio/music/calm-2.mp3',trim:-.6},{src:'audio/music/calm-3.mp3',trim:-.3},{src:'audio/music/calm-4.mp3',trim:-.6}],
+      home:[HOME_TRACK],
+      relaxed:[HOME_TRACK,{src:'audio/polyjong-mus1.mp3'},{src:'audio/music/calm-2.mp3',trim:-.6},{src:'audio/music/calm-3.mp3',trim:-.3},{src:'audio/music/calm-4.mp3',trim:-.6}],
       competitive:[{src:'audio/music/competitive-1.mp3',trim:-.6},{src:'audio/music/competitive-2.mp3',trim:-1.8},{src:'audio/music/competitive-3.mp3',trim:-1.2}]
     },MUSIC_FADE_S=1.5;
     const musicEls=new Map(),trackOf=new Map(),trackGains=new Map(),trackVolume=el=>Math.pow(10,(trackOf.get(el).trim||0)/20);let musicBus=null,musicList='home';
     function musicEl(track){
       let el=musicEls.get(track);if(el)return el;
-      el=new Audio(track.src);el.preload='auto';el.loop=Object.values(MUSIC).some(list=>list.length===1&&list[0]===track);
+      el=new Audio(track.src);el.preload='auto';
       el.onended=()=>{if(el===music)playMusic(musicList,true)};musicEls.set(track,el);trackOf.set(el,track);routeTrack(el);return el
     }
     let music=musicEl(MUSIC.home[0]);music.load();
@@ -250,9 +252,9 @@
     // Switches to a playlist ('home', 'relaxed', 'competitive'). It keeps the current track if it already belongs to that list,
     // unless advance asks for the next one (a track ended).
     function playMusic(list,advance=false){
-      musicList=list;const tracks=MUSIC[list],current=trackOf.get(music);if(!advance&&tracks.includes(current))return;
+      musicList=list;const tracks=MUSIC[list],current=trackOf.get(music);music.loop=tracks.length===1;if(!advance&&tracks.includes(current))return;
       const pool=tracks.length>1?tracks.filter(t=>t!==current):tracks,next=musicEl(pool[rand(pool.length)]);if(next===music)return;
-      const prev=music;music=next;next.currentTime=0;const gPrev=trackGains.get(prev),gNext=trackGains.get(next);
+      const prev=music;music=next;next.loop=tracks.length===1;next.currentTime=0;const gPrev=trackGains.get(prev),gNext=trackGains.get(next);
       if(gPrev&&gNext){const t=audioContext.currentTime;gNext.gain.cancelScheduledValues(t);gNext.gain.setValueAtTime(0,t);gNext.gain.linearRampToValueAtTime(trackVolume(next),t+MUSIC_FADE_S);gPrev.gain.cancelScheduledValues(t);gPrev.gain.setValueAtTime(gPrev.gain.value,t);gPrev.gain.linearRampToValueAtTime(0,t+MUSIC_FADE_S);setTimeout(()=>{if(prev!==music)prev.pause()},MUSIC_FADE_S*1000+100)}
       else{next.volume=prev.volume;prev.pause()}
       if(soundEnabled&&audioUnlocked&&!document.hidden)music.play().catch(()=>{})
@@ -699,7 +701,7 @@
     const BYLINES=['A GAME BY POLYMER JONES','DEVELOPED BY POLYMER JONES'];
     function showHome(){playMusic('home');$('#homeByline').textContent=BYLINES[rand(BYLINES.length)];if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}$('#overlay').classList.remove('show');$('#winOverlay').classList.remove('show');renderHome();pickHomeBg();$('#home').classList.remove('hidden');buildHomeTicker()}
     function playFromHome(){
-      $('#home').classList.add('hidden');homeStingPending=false;unlockAudio();playMusic(progress.settings.music);
+      $('#home').classList.add('hidden');homeStingPending=false;unlockAudio();playMusic(progress.settings.music,musicList==='home');
       // Resume the level in progress; anything finished or behind the saved level starts fresh.
       const resumable=state.tiles.length&&state.level===progress.level&&!state.over&&state.history.length;
       if(resumable){if(state.clock.resume){state.clock.resume=false;startClock()}playSound('control',{volume:.35})}
