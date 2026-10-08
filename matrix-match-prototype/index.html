@@ -194,6 +194,7 @@
     }
     // Seeded RNG so each level always deals the same board (Retry Level replays it exactly).
     function mulberry32(seed){return()=>{seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+    const KEVIN_WINDOW=[.6,.9];
     const isMate=(a,b)=>a!==KEVIN&&b!==KEVIN&&(a===b||a===JOKER||b===JOKER);
     const shuffleWith=(a,rng)=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
     // Deals units ([first, second] symbol pairs; a joker unit is [symbol, JOKER]; [KEVIN] is a single card) onto positions. A random legal removal order is drawn and the
@@ -201,21 +202,29 @@
     // The joker only ever closes the oldest open card, matching how it pairs in the cage.
     // With noFreePair, the cards that are free at the start never contain a matching pair.
     // freePair names two starting-free positions that are dealt as a matching pair anyway (the bonus "boom boom" match).
-    function dealUnits(pos,units,rng,{noFreePair=false,freePair=null}={}){
+    // trace (tests) receives the removal order the deal was built along.
+    // caged lists the symbols already waiting in the cage (a shuffle): their units start open, so the deal stays solvable around them.
+    // Kevin is never dealt onto a starting-free card, and lands at a random point in the back half of the removal order (KEVIN_WINDOW),
+    // so he tends to surface late, when MVP Vision helps most. If that can't be dealt, the last attempts drop the window (never the free-card rule).
+    function dealUnits(pos,units,rng,{noFreePair=false,freePair=null,caged=[],trace=null}={}){
       const ids=new Set(pos.map(p=>p.id)),freeIn=remaining=>pos.filter(p=>remaining.has(p.id)&&!p.blockers.some(id=>remaining.has(id))),initialFree=freeIn(ids),freeIds=new Set(initialFree.map(p=>p.id));
+      const allFree=freeIds.size===pos.length,kevinAt=Math.floor(pos.length*(KEVIN_WINDOW[0]+rng()*(KEVIN_WINDOW[1]-KEVIN_WINDOW[0])));
       for(let attempt=0;attempt<400;attempt++){
         const remaining=new Set(ids),order=[];
         if(freePair)for(const id of freePair){order.push(pos.find(p=>p.id===id));remaining.delete(id)}
         while(remaining.size){const free=freeIn(remaining),pick=free[Math.floor(rng()*free.length)];order.push(pick);remaining.delete(pick.id)}
-        const pending=shuffleWith(units.map(u=>[...u]),rng),open=[],assignments=new Map(),freeSyms=new Set();let failed=false;
+        const pending=shuffleWith(units.map(u=>[...u]),rng),open=[],assignments=new Map(),freeSyms=new Set(),strictKevin=attempt<300;let failed=false;
+        for(const sym of caged){const k=pending.findIndex(u=>u.includes(sym));if(k<0)continue;const [u]=pending.splice(k,1);open.push(u[0]===sym?u:[sym,u[0]])}
         for(const [i,p] of order.entries()){
           // With noFreePair, a card that starts open may not take a symbol another open card already has, and never the joker.
           const guard=noFreePair&&freeIds.has(p.id)&&!(freePair&&i===1),ok=sym=>!guard||(sym!==JOKER&&!freeSyms.has(sym));
-          const openable=pending.filter(u=>(u.length===1||open.length<2)&&!open.some(o=>o[0]===u[0])&&ok(u[0])&&!(freePair&&i===0&&(u.length<2||u[1]===JOKER))),closable=open.filter((u,k)=>ok(u[1])&&(u[1]!==JOKER||k===0));
+          const kevinUnit=strictKevin&&i>=kevinAt&&(allFree||!freeIds.has(p.id))?pending.find(u=>u[0]===KEVIN):null;
+          const openable=pending.filter(u=>(u[0]!==KEVIN||!strictKevin&&(allFree||!freeIds.has(p.id)))&&(u.length===1||open.length<2)&&!open.some(o=>o[0]===u[0])&&ok(u[0])&&!(freePair&&i===0&&(u.length<2||u[1]===JOKER))),closable=open.filter((u,k)=>ok(u[1])&&(u[1]!==JOKER||k===0));
           const canOpen=openable.length>0,canClose=closable.length>0;
           const wantOpen=pending.length&&!(freePair&&i===1)&&(!open.length||(!freePair&&i===1)||(open.length<2&&rng()<.4));
           let sym;
-          if(canOpen&&(wantOpen||!canClose)){const unit=openable[0];pending.splice(pending.indexOf(unit),1);if(unit.length>1)open.push(unit);sym=unit[0]}
+          if(kevinUnit){pending.splice(pending.indexOf(kevinUnit),1);sym=KEVIN}
+          else if(canOpen&&(wantOpen||!canClose)){const unit=openable[0];pending.splice(pending.indexOf(unit),1);if(unit.length>1)open.push(unit);sym=unit[0]}
           else if(canClose){const unit=closable[Math.floor(rng()*closable.length)];open.splice(open.indexOf(unit),1);sym=unit[1]}
           else{failed=true;break}
           assignments.set(p.id,sym);if(guard)freeSyms.add(sym)
@@ -223,6 +232,7 @@
         if(failed)continue;
         const free=initialFree.map(p=>assignments.get(p.id)),bonus=(i,j)=>freePair&&freePair.includes(initialFree[i].id)&&freePair.includes(initialFree[j].id);
         if(noFreePair&&free.some((a,i)=>free.some((b,j)=>j>i&&isMate(a,b)&&!bonus(i,j))))continue;
+        if(trace)trace.push(...order.map(p=>p.id));
         return assignments
       }
       throw new Error('Could not build a solvable staggered board')
@@ -325,7 +335,8 @@
     }
     function autoResolveRevealed(tile,previous){
       if(!tile.active||!tile.revealed||!isFree(tile))return false;
-      if(tile.symbol===KEVIN){fireKevin(tile);return true}
+      // Flipping Kevin up only shows him; MVP Vision needs a deliberate tap on the revealed card.
+      if(tile.symbol===KEVIN){setMessage('Kevin’s ready — tap him for MVP Vision');return true}
       if(state.tray.some(held=>!state.clearing.has(held.id)&&isMate(held.symbol,tile.symbol))){
         const node=board.querySelector(`[data-id="${tile.id}"]`),newIndex=state.tray.length;playSound('pickup',{volume:.12,rate:1.04});playJokerPick(tile.symbol);haptic('cardCaged');
         tile.active=false;tile.temporaryReveal=false;state.tray.push({id:tile.id,symbol:tile.symbol});flyToTray(node,newIndex);render();setMessage(`AUTO MATCH // ${cardName(tile.symbol)}`);scheduleClear(tile.symbol);return true
@@ -403,8 +414,8 @@
     }
     function reshuffle(){
       if(state.locked||state.shufflesLeft<=0||state.clearing.size)return;state.history.push(snapshot());startClock();
-      for(const held of state.tray){const original=state.tiles.find(t=>t.id===held.id);original.active=true}
-      state.tray=[];const active=state.tiles.filter(t=>t.active),assignments=dealUnits(active.map(({id,x,y,layer,blockers})=>({id,x,y,layer,blockers})),unitsFromSymbols(active.map(t=>t.symbol)),Math.random);
+      // Only the board is re-dealt: cards in the cage stay put, in order, and the deal is built around them.
+      const active=state.tiles.filter(t=>t.active),caged=state.tray.map(t=>t.symbol),assignments=dealUnits(active.map(({id,x,y,layer,blockers})=>({id,x,y,layer,blockers})),unitsFromSymbols([...active.map(t=>t.symbol),...caged]),Math.random,{caged});
       active.forEach(t=>{t.symbol=assignments.get(t.id);t.temporaryReveal=false});state.shuffles++;state.shufflesLeft--;setMessage('Cards reshuffled into a new solvable sequence.');playSound('control',{volume:.52,rate:.9});shuffleFx();setBooster('shuffle',state.shufflesLeft,true)
     }
     // Shuffle: every card shakes and swells, the faces swap at the peak, then the cards settle back down.
