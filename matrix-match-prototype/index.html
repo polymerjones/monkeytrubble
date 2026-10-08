@@ -70,8 +70,8 @@
     /* "Good Eye!" combo stamp: floats over the board without taking taps. */
     .good-eye{position:fixed;left:50%;top:46%;z-index:4000;translate:-50% -50%;pointer-events:none;opacity:0;width:max-content;max-width:92vw;box-sizing:border-box;padding:0 4px;text-align:center;line-height:1.05;color:#fff4c9;font:900 clamp(2.3rem,12vw,3.6rem) system-ui,sans-serif;letter-spacing:.06em;-webkit-text-stroke:2px #6b4300;text-shadow:0 4px 0 #8a5a00,0 0 24px var(--amber),0 0 48px var(--warm-glow)}
     #settings{z-index:5000}
-    /* Settings backdrop: home art BG B, grayscale and faint, fading out toward the top so the controls stay readable. */
-    .settings-dialog{isolation:isolate}.settings-art{position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;background:url('art/home/bg-B.jpg') center 72%/cover no-repeat;filter:grayscale(1) contrast(1.1);opacity:.2;-webkit-mask-image:linear-gradient(transparent 8%,#000 60%);mask-image:linear-gradient(transparent 8%,#000 60%)}
+    /* Settings backdrop: home art BG B, grayscale and faint, fading out toward the top so the controls stay readable. Oversized for the parallax (see settingsParallax). */
+    .settings-dialog{isolation:isolate}.settings-art{position:absolute;inset:-40px -40px auto;height:calc(100% + 80px);z-index:-1;will-change:transform;border-radius:inherit;pointer-events:none;background:url('art/home/bg-B.jpg') center 72%/cover no-repeat;filter:grayscale(1) contrast(1.1);opacity:.2;-webkit-mask-image:linear-gradient(transparent 8%,#000 60%);mask-image:linear-gradient(transparent 8%,#000 60%)}
     /* Player profile: name entry, tier badges, home chip and the win screen's points + tier bar. */
     /* Leaderboard screen: sits over home, rows tinted by tier, your own row pinned at the bottom. */
     .leaders{position:fixed;inset:0;z-index:950;display:flex;flex-direction:column;gap:12px;padding:calc(14px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));background:radial-gradient(circle at 50% 20%,var(--bg-mid) 0,var(--bg-deep) 55%,#000 88%);transition:opacity .28s ease,transform .28s ease}.leaders.hidden{opacity:0;transform:translateY(18px);visibility:hidden;pointer-events:none;transition:opacity .28s ease,transform .28s ease,visibility 0s .28s}
@@ -952,7 +952,7 @@
       // sweeps it across the card (mostly toward the left) and brightens it only while the phone is moving.
       const pose=(t,p)=>{t=clamp(t,-1,1);p=clamp(p,-1,1);const u=clamp(t+p*.45,-1,1);return{x:clamp(REST.x+(u<0?u*68:u*14),8,96),o:REST.o+Math.abs(u)*.4,ry:t*14,rx:-p*6}};
       // Tilt arrives in radians away from a slowly drifting neutral pose, so it responds however the phone is held and never sticks at an extreme.
-      const fromTilt=(turn,lean)=>{lastTilt=performance.now();update(pose(Math.tanh(turn/.3),Math.tanh(lean/.3)))};
+      const fromTilt=(turn,lean)=>{window.__settingsTilt?.(turn,lean);lastTilt=performance.now();update(pose(Math.tanh(turn/.3),Math.tanh(lean/.3)))};
       window.__setMonkeyTilt=fromTilt;
       if(!isIOSApp){
         card.addEventListener('pointermove',e=>{pointerInside=true;const r=art.getBoundingClientRect();const t=clamp(((e.clientX-r.left)/r.width-.5)*2,-1,1);update({x:clamp(50+t*42,8,96),o:.38,ry:t*14,rx:0})},{passive:true});
@@ -1087,7 +1087,15 @@
       input.onchange=()=>{saveProgress();haptic('cardCaged');if(key==='sfx')playSound('callScream',{volume:.6})}}
     applyVolumes();
     // Settings: opening it pauses the level clock like Home does; each switch saves at once.
-    function openSettings(){if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}renderSettings();$('#settings').classList.add('show');playSound('pickup',{volume:.12,rate:.9})}
+    // Settings backdrop parallax: the art scrolls at 40% of the list's speed and drifts against the phone's tilt (eased, ±18px).
+    const settingsParallax=(()=>{const dlg=$('.settings-dialog'),art=$('.settings-art'),reduce=matchMedia('(prefers-reduced-motion: reduce)');let tx=0,ty=0,cx=0,cy=0,raf=0;
+      const tick=()=>{raf=0;cx+=(tx-cx)*.12;cy+=(ty-cy)*.12;art.style.transform=`translate3d(${cx.toFixed(1)}px,${(dlg.scrollTop*.6+cy).toFixed(1)}px,0)`;if(Math.abs(tx-cx)>.1||Math.abs(ty-cy)>.1)raf=requestAnimationFrame(tick)};
+      const kick=()=>{if(!raf)raf=requestAnimationFrame(tick)};
+      dlg.addEventListener('scroll',kick,{passive:true});
+      window.__settingsTilt=(turn,lean)=>{if(reduce.matches||!$('#settings').classList.contains('show'))return;tx=-Math.tanh(turn/.3)*18;ty=-Math.tanh(lean/.3)*18;kick()};
+      // The art must outlast the slower scroll: its height covers the panel plus the 40% of the scroll it falls behind.
+      return{fit(){art.style.height=`${dlg.clientHeight+Math.max(0,dlg.scrollHeight-dlg.clientHeight)*.4+80}px`;kick()}}})();
+    function openSettings(){if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}renderSettings();$('#settings').classList.add('show');settingsParallax.fit();playSound('pickup',{volume:.12,rate:.9})}
     function closeSettings(){$('#settings').classList.remove('show');if(state.clock.resume&&$('#home').classList.contains('hidden')){state.clock.resume=false;startClock()}}
     function renderSettings(){renderProfile();renderThemeChips();renderVolumes();
       const values={music:progress.settings.music,difficulty:progress.settings.difficulty,sound:soundEnabled?'on':'off'};
