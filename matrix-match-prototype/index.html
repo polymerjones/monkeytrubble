@@ -65,6 +65,8 @@
     /* Settings: monkey-paw gear (48px touch target around the visible button) and chunky two-position switches with a sliding knob. */
     .gear-btn{position:relative;flex:none;display:grid;place-items:center;width:36px;height:36px;padding:0;border:1px solid #27894a;border-radius:50%;background:#06160b;color:var(--green);cursor:pointer;-webkit-tap-highlight-color:transparent}.gear-btn::after{content:'';position:absolute;inset:-6px}.gear-btn svg{width:28px;height:28px;transition:transform .45s cubic-bezier(.2,.8,.2,1)}.gear-btn:active svg,.gear-btn.spin svg{transform:rotate(90deg)}
     .home-gear{width:46px;height:46px;background:#06160bcc}.home-gear svg{width:36px;height:36px}
+    /* "Good Eye!" combo stamp: floats over the board without taking taps. */
+    .good-eye{position:fixed;left:50%;top:46%;z-index:4000;translate:-50% -50%;pointer-events:none;opacity:0;white-space:nowrap;color:#fff4c9;font:900 clamp(2.3rem,12vw,3.6rem) system-ui,sans-serif;letter-spacing:.06em;-webkit-text-stroke:2px #6b4300;text-shadow:0 4px 0 #8a5a00,0 0 24px #ffcf57,0 0 48px #ffcf5788}
     #settings{z-index:5000}.settings-dialog{text-align:left;padding:26px 22px 22px}.settings-dialog h2{text-align:center;color:var(--green)}
     .set-row{margin-top:18px}.set-label{margin:0 0 8px;color:#8fd6a2;font:900 .72rem system-ui,sans-serif;letter-spacing:.24em}
     .dip{position:relative;display:grid;grid-template-columns:1fr 1fr;padding:5px;border:2px solid #1d6b39;border-radius:14px;background:linear-gradient(180deg,#010804,#04140a);box-shadow:inset 0 3px 8px #000c,0 1px 0 #2a8d4f55}
@@ -90,6 +92,7 @@
 <div class="overlay" id="settings"><div class="dialog settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settingsTitle"><h2 id="settingsTitle">SETTINGS</h2><div class="set-row"><div class="set-label" id="musicLabel">MUSIC</div><div class="dip" data-setting="music" role="radiogroup" aria-labelledby="musicLabel"><button role="radio" data-value="relaxed">RELAXED</button><button role="radio" data-value="competitive">COMPETITIVE</button></div><small class="set-hint" id="musicHint"></small></div><div class="set-row"><div class="set-label" id="difficultyLabel">DIFFICULTY</div><div class="dip" data-setting="difficulty" role="radiogroup" aria-labelledby="difficultyLabel"><button role="radio" data-value="easy">EASY</button><button role="radio" data-value="normal">NORMAL</button></div><small class="set-hint" id="difficultyHint"></small></div><div class="set-row"><div class="set-label" id="soundLabel">SOUND</div><div class="dip" data-setting="sound" role="radiogroup" aria-labelledby="soundLabel"><button role="radio" data-value="on">ON</button><button role="radio" data-value="off">OFF</button></div><small class="set-hint" id="soundHint"></small></div><button class="action primary" id="settingsDone">DONE</button></div></div>
   <section class="home" id="home" aria-label="Home"><div class="home-bg" id="homeBg"></div><div class="home-bg-tag" id="homeBgTag"></div><header class="home-top"><button class="home-icon" id="homeSound" title="Sound" aria-label="Sound">♪</button><div class="home-top-right"><div class="home-streak"><span>🔥</span><b id="homeStreak">0</b><small>DAY<br>STREAK</small></div><button class="gear-btn home-gear" id="homeGear" title="Settings" aria-label="Settings"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width="4" stroke-dasharray="4.6 5.61"/><circle cx="16" cy="16" r="10.8" fill="none" stroke="currentColor" stroke-width="2.4"/><g fill="currentColor"><ellipse cx="16" cy="19.2" rx="3.7" ry="3.1"/><circle cx="11.5" cy="15.3" r="1.55"/><circle cx="14.2" cy="12.4" r="1.6"/><circle cx="17.8" cy="12.4" r="1.6"/><circle cx="20.5" cy="15.3" r="1.55"/></g></svg></button></div></header><div class="home-logo" id="homeLogo">MONKEY<span>//TRUBBLE</span></div><div class="home-card" aria-hidden="true"><div class="ticker-plane"><div class="ticker-track" id="homeTicker"></div></div></div><button class="home-play" id="homePlay"><small>PLAY</small><span>LEVEL <b id="homeLevel">1</b></span></button><div class="home-best" id="homeBest"></div><div class="home-week" id="homeWeek"></div></section>
   <div id="dragLayer" aria-hidden="true"></div>
+  <div class="good-eye" id="goodEye" role="status">GOOD EYE!</div>
   <nav class="variant-switcher" aria-label="Prototype variants"><button id="prevVariant" aria-label="Previous variant">←</button><span id="variantLabel"></span><button id="nextVariant" aria-label="Next variant">→</button></nav>
   <script>
     const JOKER='JOKER',KEVIN='KEVIN',WAR_CLEARS=['warClear1','warClear2','warClear3'];
@@ -141,7 +144,11 @@
     // Easy (Settings) ramps gently instead: 90% minus 2.5% a level, floor 60%. It also gets the bonus pair every level and a third undo.
     const faceUpShare=(level,easy=false)=>easy?Math.max(.6,.9-(level-1)*.025):Math.max(.35,.85-(level-1)*.05);
     let state={level:1,tiles:[],tray:[],pairs:0,shuffles:0,undosLeft:UNDOS_PER_LEVEL,shufflesLeft:SHUFFLES_PER_LEVEL,locked:false,history:[],clearing:new Set(),clock:{elapsed:0,startedAt:null}};
-    const SOUND_FILES={
+    // "Good Eye!" combo: GOOD_EYE_COUNT clears the player makes within GOOD_EYE_WINDOW_MS, at most once per GOOD_EYE_COOLDOWN_MS.
+    // The opening bonus pair doesn't count. Set GOOD_EYE_CLIP to the voiceover's path once it's added; until then only the stamp shows.
+    const GOOD_EYE_COUNT=3,GOOD_EYE_WINDOW_MS=12000,GOOD_EYE_COOLDOWN_MS=60000,GOOD_EYE_CLIP=null;
+    let goodEyeClears=[],goodEyeAt=-Infinity,goodEyeBusy=false;
+    const SOUND_FILES={...(GOOD_EYE_CLIP?{goodEye:GOOD_EYE_CLIP}:{}),
       pickup:'audio/blippage.wav',match:'audio/success.wav',control:'audio/complete.mp3',win:'audio/level-complete.mp3',levelStart:'audio/japanesevoice.mp3',
       callHamadryas:'audio/video-calls/official-hamadryas.mp3',callGuereza:'audio/video-calls/official-guereza.mp3',callBarbary:'audio/video-calls/official-barbary-macaque.mp3',
       callDeBrazza:'audio/video-calls/official-debrazza-monkey.mp3',callMandrill:'audio/video-calls/official-mandrill.mp3',callCapuchin:'audio/video-calls/official-capuchin-monkey.mp3',
@@ -284,7 +291,7 @@
     // About half the levels open with a bonus: two side-by-side top cards, face up and matching. It uses its own seeded RNG, so levels without one deal exactly as before.
     const BONUS_PAIR_CHANCE=.5;
     function bonusPairFor(level,always=false){const rng=mulberry32(level*7919+17);if(rng()>=BONUS_PAIR_CHANCE&&!always)return null;const top=BASE_LAYOUT.filter(p=>p.layer===3),pairs=[];for(const a of top)for(const b of top)if(a.id<b.id&&(a.x===b.x)!==(a.y===b.y))pairs.push([a.id,b.id]);return pairs[Math.floor(rng()*pairs.length)]}
-    function buildLevelBoard(level,easy=false){const rng=mulberry32(level*9973),pos=BASE_LAYOUT.map(p=>({...p,blockers:[...p.blockers]})),freePair=bonusPairFor(level,easy),assignments=dealUnits(pos,levelUnits(rng),rng,{noFreePair:true,freePair});return pos.map(p=>({...p,symbol:assignments.get(p.id),active:true,revealed:rng()<faceUpShare(level,easy)||!!freePair?.includes(p.id),temporaryReveal:false}))}
+    function buildLevelBoard(level,easy=false){const rng=mulberry32(level*9973),pos=BASE_LAYOUT.map(p=>({...p,blockers:[...p.blockers]})),freePair=bonusPairFor(level,easy),assignments=dealUnits(pos,levelUnits(rng),rng,{noFreePair:true,freePair});return pos.map(p=>({...p,symbol:assignments.get(p.id),active:true,bonus:!!freePair?.includes(p.id),revealed:rng()<faceUpShare(level,easy)||!!freePair?.includes(p.id),temporaryReveal:false}))}
     // Progress persists through the iOS app's native store (injected as window.__monkeySave) or localStorage in a browser.
     const SAVE_KEY='monkeyTrubble.save.v1',params=new URLSearchParams(location.search);
     function loadProgress(){let saved=window.__monkeySave;if(saved==null)try{saved=localStorage.getItem(SAVE_KEY)}catch{}if(typeof saved==='string')try{saved=JSON.parse(saved)}catch{saved=null}const base=freshProgress();return saved?.version===1?{...base,...saved,streak:{...base.streak,...saved.streak},settings:{...base.settings,...saved.settings}}:base}
@@ -304,7 +311,7 @@
     function renderClock(){$('#clock').textContent=formatTime(clockMs())}
     function renderStreak(){const {count,lastDate}=progress.streak,live=lastDate===localDate()||lastDate===localDate(-1);$('#streakCount').textContent=live?count:0;$('#streakPill').classList.toggle('cold',lastDate!==localDate())}
     function startLevel(level,{silent=false,retry=false}={}){
-      featuredSymbol=null;$('#dragLayer').replaceChildren();
+      featuredSymbol=null;$('#dragLayer').replaceChildren();goodEyeClears=[];
       // Difficulty is read here, so a change in Settings applies from the next level start or retry, never mid-board.
       const easy=progress.settings.difficulty==='easy';
       state={level,easy,tiles:buildLevelBoard(level,easy),tray:[],pairs:0,shuffles:0,undosLeft:easy?UNDOS_PER_LEVEL_EASY:UNDOS_PER_LEVEL,shufflesLeft:SHUFFLES_PER_LEVEL,locked:false,busy:0,over:false,won:false,history:[],clearing:new Set(),clock:{elapsed:0,startedAt:null}};
@@ -420,6 +427,21 @@
       const symbols=[].concat(symbol),main=symbols.find(s=>s!==JOKER)||JOKER,choices=CARD_DATA[main]?.sounds||[],monkeySound=choices[rand(choices.length)],rate=1+Math.min(state.pairs,8)*.012;
       duckMusic();playSound('match',{volume:.27,rate});if(monkeySound)playSound(monkeySound,{volume:1,rate,echo:true});if(main!==JOKER&&symbols.includes(JOKER))playSound('jokerClear',{volume:.7,delay:.35});const extras=CARD_DATA[main]?.clearExtras;if(extras)playSound(extras[rand(extras.length)],{volume:.85,delay:.15});haptic('pairCleared');
     }
+    function noteGoodEye(pairIds){
+      if(pairIds.some(id=>state.tiles.find(t=>t.id===id)?.bonus))return;
+      const now=performance.now();goodEyeClears=goodEyeClears.filter(t=>now-t<=GOOD_EYE_WINDOW_MS);goodEyeClears.push(now);
+      if(goodEyeClears.length<GOOD_EYE_COUNT||goodEyeBusy||now-goodEyeAt<GOOD_EYE_COOLDOWN_MS)return;
+      goodEyeClears=[];goodEyeAt=now;showGoodEye()
+    }
+    // Never overlaps or queues: while it runs, goodEyeBusy blocks another one.
+    function showGoodEye(){
+      const el=$('#goodEye'),voiced=soundEnabled&&!!(soundBuffers.goodEye||fallbackAudio.goodEye),holdMs=voiced?Math.max(1400,soundLengthMs('goodEye',1400)):1400;goodEyeBusy=true;
+      if(voiced){duckMusic(holdMs+300);playSound('goodEye',{volume:1,delay:.25})}
+      const r=$('#board').getBoundingClientRect();el.style.top=`${r.top+r.height*.42}px`;
+      el.getAnimations().forEach(a=>a.cancel());
+      el.animate([{opacity:0,scale:1.9,rotate:'-6deg'},{opacity:1,scale:.94,rotate:'-3deg',offset:.18},{opacity:1,scale:1,rotate:'-4deg',offset:.26},{opacity:1,scale:1.04,rotate:'-4deg',offset:.8},{opacity:0,scale:1.15,rotate:'-4deg'}],{duration:holdMs,easing:'cubic-bezier(.2,.8,.2,1)'}).onfinish=()=>{goodEyeBusy=false};
+      setTimeout(()=>{explode(el);haptic('pairCleared')},holdMs*.18)
+    }
     function finishIfCleared(){if(state.clearing.size)return;if(!state.tiles.some(t=>t.active)&&!state.tray.length)finish(true);else if(isStuck())finish(false,'stuck');else setMessage('Monkey caged. Proceed')}
     // Safety net: the board is empty and nothing left in the cage can pair.
     const isStuck=()=>!state.tiles.some(t=>t.active)&&!state.clearing.size&&state.tray.length>0&&!state.tray.some(a=>state.tray.some(b=>a!==b&&isMate(a.symbol,b.symbol)));
@@ -448,7 +470,7 @@
       const s=state,slots=[...tray.children],pair=state.tray.map((t,i)=>({t,i})).filter(x=>pairIds.includes(x.t.id));pairIds.forEach(id=>s.clearing.delete(id));if(pair.length<2){render();return}
       playMatchFx(pair.map(x=>x.t.symbol));
       for(const {i} of pair){const slot=slots[i];if(!slot)continue;const r=slot.getBoundingClientRect(),copy=slot.cloneNode(true);copy.removeAttribute('data-tile-id');copy.style.cssText=`position:fixed;left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;margin:0;pointer-events:none`;copy.classList.add('matching');$('#dragLayer').append(copy);setTimeout(()=>copy.remove(),500);explode(slot)}
-      state.tray=state.tray.filter(t=>!pairIds.includes(t.id));state.pairs++;if(pair.some(x=>x.t.symbol===JOKER))rebalanceAfterJoker();render();setTimeout(()=>{if(s===state&&!s.over)finishIfCleared()},470)
+      state.tray=state.tray.filter(t=>!pairIds.includes(t.id));state.pairs++;noteGoodEye(pairIds);if(pair.some(x=>x.t.symbol===JOKER))rebalanceAfterJoker();render();setTimeout(()=>{if(s===state&&!s.over)finishIfCleared()},470)
     }
     // Sends a matching pair from the board into the cage together, where it clears (two-finger tap or an auto match).
     // A matched pair never counts as an overflow, so with three cards held both fly into the last slot.
