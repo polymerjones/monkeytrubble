@@ -45,3 +45,11 @@ Use the floating switcher or the left/right arrow keys to compare them. Once a d
 ## Verdict
 
 Pending playtest.
+
+## Online leaderboard (Supabase)
+
+1. In the Supabase dashboard, open **SQL Editor → New query**, paste `supabase/leaderboard.sql` and run it.
+2. In **Project Settings → API**, copy the Project URL and the `anon` public key into `config.js`.
+3. Rebuild the app. Until `config.js` has both values the leaderboard shows "not connected yet"; scores keep saving on the phone and post on the next launch after it's connected.
+
+Players have no login: each install gets a random id and a private secret (stored in the save), and only the SQL functions can write scores.
