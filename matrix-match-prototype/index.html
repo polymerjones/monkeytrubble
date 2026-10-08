@@ -190,6 +190,18 @@
     html[data-theme="jungle"] .leaders-tabs{border-color:#6d401c;background:#0d2614}html[data-theme="jungle"] .leaders-tabs [aria-selected="true"]{background:linear-gradient(180deg,#ffe680,#f6c22e 55%,#dc9c16);color:#2b1a06}
     html[data-theme="jungle"] .lb-row{border-color:#6d401c;background:linear-gradient(90deg,color-mix(in srgb,var(--tier) 22%,#143a1d),#143a1d 65%)}
     html[data-theme="jungle"] .overlay{background:#06120acc}
+    /* Card states, one language in every theme: only playable cards wear the accent border (--playable); covered cards get a plain
+       dark edge (also when face down, or a special card); the flipped card waiting for its match is white; Kevin and the Joker carry a
+       star badge instead of a border colour. Owl Eyes and blocker outlines are glows/outlines on top of this. */
+    :root{--playable:#57ff86}html[data-theme="jungle"]{--playable:#ffb31a}
+    .tile.board-tile{border-width:2px}
+    .tile.board-tile.free,html[data-theme="jungle"] .tile.board-tile.free{border-color:var(--playable)}
+    .tile.board-tile.blocked,html[data-theme="jungle"] .tile.board-tile.blocked{border-color:#0c1a10}
+    html[data-theme="jungle"] .tile.board-tile.blocked{border-color:#1a1206}
+    .tile.board-tile.blocked.joker-card{box-shadow:none}
+    .tile.board-tile.on-top{border-color:#fff}
+    .special-star{position:absolute;z-index:4;top:4px;left:4px;width:20px;height:20px;display:grid;place-items:center;border-radius:50%;background:var(--amber);color:#2b1a06;font:900 .72rem/1 system-ui,sans-serif;box-shadow:0 1px 3px #000c;pointer-events:none}
+    .tile.blocked .special-star{filter:brightness(.5)}
   </style>
 </head>
 <body>
@@ -554,7 +566,7 @@
         let node=board.querySelector(`[data-id="${tile.id}"]`);
         if(!node){node=document.createElement('button');node.dataset.id=tile.id;node.dataset.code=`L${tile.layer}`;node.style.left=`${tile.x}%`;node.style.rotate=`${((tile.x*7+tile.y*3)%5)-2}deg`;board.append(node)}
         node.style.top=`${displayY(tile.y)}%`;node.style.zIndex=tile.layer*100+Math.round(tile.y)+(tile.revealed&&free?1000:0);node.className=`tile board-tile ${free?'free':'blocked'} ${tile.revealed?'revealed':'face-down'} ${hasPhoto?'has-photo':''} ${tile.temporaryReveal?'on-top':''} ${tile.revealed&&(tile.symbol===JOKER||tile.symbol===KEVIN)?'joker-card':''} ${state.hintIds?.has(tile.id)?'hinted':''}`;
-        if(node.dataset.renderKey!==renderKey){node.getAnimations().forEach(animation=>animation.cancel());node.replaceChildren();if(tile.revealed)setSymbolContent(node,tile.symbol);node.dataset.renderKey=renderKey}
+        if(node.dataset.renderKey!==renderKey){node.getAnimations().forEach(animation=>animation.cancel());node.replaceChildren();if(tile.revealed){setSymbolContent(node,tile.symbol);if(tile.symbol===KEVIN||tile.symbol===JOKER)node.append(Object.assign(document.createElement('i'),{className:'special-star',textContent:'★'}))}node.dataset.renderKey=renderKey}
         node.setAttribute('aria-disabled',String(!free||state.locked));node.onclick=e=>{if(performance.now()-(Number(node.dataset.tapAt)||0)<700)return;handleTile(tile,e.currentTarget)};
         if(free)enablePeekDrag(node);else{node.onpointerdown=null;node.onpointermove=null;node.onpointerup=null;node.onpointercancel=null}
       });
