@@ -121,7 +121,7 @@
   <script>
     const JOKER='JOKER',KEVIN='KEVIN',WAR_CLEARS=['warClear1','warClear2','warClear3'];
     // One card per look-alike group (chimps keep two). Retired near-duplicates (2026-10-07): IMG_7573, 7576, 7581, 7582, 7583, 7585, 7597, 7599, 7600.
-    // `facts` are rotated on the hero card (pickFact). `sounds` lists the calls a card can play when its pair clears (keys of SOUND_FILES); `clearExtras` adds one random clip on top. `paleShine` gives grey/white-furred cards a screen-blend shine.
+    // `facts` are rotated on the hero card (pickFact). `sounds` lists the calls a card can play when its pair clears (keys of SOUND_FILES); `clearExtras` adds one random clip on top. `echoes` sets how many times the clear call echoes (default 1). `paleShine` gives grey/white-furred cards a screen-blend shine.
     const CARD_DATA={
       M7535:{image:'IMG_7535.jpg',name:'Olive Baboon',latin:'Papio anubis',facts:['Olive baboons live in large, complex troops and use more than thirty distinct vocalizations.','Troops can top 100 members, and every baboon knows exactly where it ranks.','A baboon yawn is not boredom: flashing those long canines is a warning.','Olive baboons spread across more of Africa than almost any other primate.'],sounds:['callHamadryas']},
       M7543:{image:'IMG_7543.jpg',name:'Golden Snub-nosed Monkey',latin:'Rhinopithecus roxellana',facts:['Its tiny upturned nose helps reduce frostbite risk in the cold mountain forests of central China.','It lives higher and colder than almost any other monkey, sometimes in snow.','In winter it gets by on lichen, bark and pine needles.','Its golden coat can grow several inches long, like a built-in parka.'],sounds:['callGuereza']},
@@ -137,7 +137,7 @@
       M7578:{image:'IMG_7578.jpg',name:'Bonobo',latin:'Pan paniscus',facts:['Bonobo communities are female-led and often ease tension through social bonding.','Bonobos live in only one country: the Democratic Republic of the Congo.','Bonobos often walk upright, more than most other apes.','A bonobo named Kanzi learned to talk with hundreds of picture symbols.'],sounds:['callSmallApe']},
       M7590:{image:'IMG_7590.jpg',name:'Western Lowland Gorilla',latin:'Gorilla gorilla gorilla',facts:['A mature silverback can lead and protect a family group for many years.','Gorillas build fresh nests on the ground or in trees every night.','A big silverback can eat around 18 kg of plants a day.','Chest-beating can be heard a kilometre away and tells rivals how big the drummer is.'],sounds:['callGorilla1','callGorilla2']},
       M7595:{image:'IMG_7595.jpg',name:'Common Chimpanzee',latin:'Pan troglodytes',facts:['Chimpanzees communicate with gestures, facial expressions, calls and drumming on tree roots.','Chimps use dozens of gestures to ask for food, grooming or play.','Young chimps learn from their mothers for about the first ten years.','Chimps fish for termites with stripped twigs, one of the first animal tool uses ever recorded.'],sounds:['callShout']},
-      CAULIN_PLUSH:{image:'caulin-plush.jpg',name:'Caulin Plushie',latin:'Caulinus plushus',facts:['Hand-stitched, fully huggable and the softest member of the troop.','Survived three washing machines and one very long road trip.','Has never once won a staring contest. No eyelids.','Officially rated 10/10 for nap support.'],sounds:['caulinClear']},
+      CAULIN_PLUSH:{echoes:2,image:'caulin-plush.jpg',name:'Caulin Plushie',latin:'Caulinus plushus',facts:['Hand-stitched, fully huggable and the softest member of the troop.','Survived three washing machines and one very long road trip.','Has never once won a staring contest. No eyelids.','Officially rated 10/10 for nap support.'],sounds:['caulinClear']},
       PATRIOT_1:{image:'patriot-1.jpg',name:'Monkey Patriot',latin:'Pan libertatis',facts:['Reports for duty in a tricorn hat and refuses to be caged without a fight.','Declared independence from bedtime in 1776 and never looked back.','Rides at midnight shouting “The bananas are coming!”','Signs every document in very large letters.'],sounds:['callYell'],clearExtras:WAR_CLEARS},
       PATRIOT_3:{image:'patriot-3.jpg',name:'Parade Patriot',latin:'Pan libertatis',facts:['Never misses a parade, and never takes off the striped hat.','Knows every word of every marching song, and a few extra.','Sets off fireworks in July and again any other day he can.','The hat is part of the uniform. Do not touch the hat.'],sounds:['callAgile'],clearExtras:WAR_CLEARS},
       BIRTHDAY_BOY:{image:'birthday-boy.jpg',name:'Birthday Boy Monkey',latin:'Pan cakeus',facts:['One year older, zero years wiser. Wishes for more bananas every single time.','Blows out the candles, then eats the frosting off the top first.','Has asked for a cake shaped like a banana for six years running.','Claims every day of the week is his half birthday.'],sounds:['callChimp','callScream']},
@@ -239,10 +239,21 @@
     window.__resumeMonkeyAudio=resumeMonkeyAudio;document.addEventListener('visibilitychange',()=>{if(document.hidden){music.pause();if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}}else{resumeMonkeyAudio();if(state.clock.resume){state.clock.resume=false;startClock()}}});
     function setMusicLevel(level,smoothing){if(musicGain)musicGain.gain.setTargetAtTime(level,audioContext.currentTime,smoothing);else music.volume=level}
     function duckMusic(duration=2400){clearTimeout(musicDuckTimer);setMusicLevel(MUSIC_CLEAR_DUCK_VOLUME,.06);musicDuckTimer=setTimeout(()=>setMusicLevel(MUSIC_VOLUME,.4),duration)}
-    function playSound(name,{volume=1,rate=1,echo=false,delay=0}={}){
-      if(!soundEnabled)return;const level=Math.max(0,Math.min(1,volume*(name==='pickup'?CARD_SELECT_GAIN:1))),buffer=soundBuffers[name];
-      if(buffer&&audioContext){const source=audioContext.createBufferSource(),gain=audioContext.createGain();source.buffer=buffer;source.playbackRate.value=rate;gain.gain.value=level;source.connect(gain).connect(reverbInput);source.onended=()=>gain.disconnect();source.start(audioContext.currentTime+delay);if(echo)playSound(name,{volume:volume*.42,rate:.97*rate,delay:delay+1});return}
-      const a=fallbackAudio[name];if(!a)return;a.pause();a.currentTime=0;a.volume=level;a.playbackRate=rate;a.play()?.catch(()=>{});if(echo)setTimeout(()=>playSound(name,{volume:volume*.42,rate:.97*rate}),1000)
+        // echo: how many 1-second repeats follow (true = 1), each quieter and a touch lower. praise: the voiceover effect (see playPraise).
+    function playSound(name,{volume=1,rate=1,echo=0,delay=0,praise=false}={}){
+      if(!soundEnabled)return;const level=Math.max(0,Math.min(1,volume*(name==='pickup'?CARD_SELECT_GAIN:1))),buffer=soundBuffers[name],echoes=echo===true?1:echo||0;
+      if(buffer&&audioContext){if(praise){playPraise(buffer,level,rate,delay);return}const source=audioContext.createBufferSource(),gain=audioContext.createGain();source.buffer=buffer;source.playbackRate.value=rate;gain.gain.value=level;source.connect(gain).connect(reverbInput);source.onended=()=>gain.disconnect();source.start(audioContext.currentTime+delay);if(echoes)playSound(name,{volume:volume*.42,rate:.97*rate,delay:delay+1,echo:echoes-1});return}
+      const a=fallbackAudio[name];if(!a)return;a.pause();a.currentTime=0;a.volume=level;a.playbackRate=rate;a.play()?.catch(()=>{});if(echoes)setTimeout(()=>playSound(name,{volume:volume*.42,rate:.97*rate,echo:echoes-1}),1000)
+    }
+    // Praise voiceovers ("Good Eye!"): a doubler (a second copy 22ms late, slightly detuned, the two panned apart) into a
+    // feedback echo (240ms, darkening as it repeats), on top of the usual room reverb.
+    function playPraise(buffer,level,rate,delay){
+      const t=audioContext.currentTime+delay,out=audioContext.createGain(),send=audioContext.createGain(),echo=audioContext.createDelay(1),feedback=audioContext.createGain(),tone=audioContext.createBiquadFilter(),nodes=[out,send,echo,feedback,tone];
+      out.gain.value=level;send.gain.value=.5;echo.delayTime.value=.24;feedback.gain.value=.38;tone.type='lowpass';tone.frequency.value=3200;
+      out.connect(reverbInput);out.connect(send).connect(echo).connect(tone).connect(feedback).connect(echo);tone.connect(reverbInput);
+      const voice=(r,pan,offset,gain)=>{const source=audioContext.createBufferSource(),g=audioContext.createGain(),p=audioContext.createStereoPanner?.();source.buffer=buffer;source.playbackRate.value=r;g.gain.value=gain;source.connect(g);if(p){p.pan.value=pan;g.connect(p).connect(out);nodes.push(p)}else g.connect(out);nodes.push(g);source.start(t+offset)};
+      voice(rate,-.3,0,.8);voice(rate*1.008,.3,.022,.62);
+      setTimeout(()=>nodes.forEach(n=>n.disconnect()),(delay+buffer.duration/rate+3)*1000)
     }
     function playJokerPick(symbol){if(symbol===JOKER)playSound('callJoker',{volume:.75,delay:.08})}
     function shuffleArray(a){for(let i=a.length-1;i>0;i--){const j=rand(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
@@ -449,7 +460,7 @@
     }
     function playMatchFx(symbol){
       const symbols=[].concat(symbol),main=symbols.find(s=>s!==JOKER)||JOKER,choices=CARD_DATA[main]?.sounds||[],monkeySound=choices[rand(choices.length)],rate=1+Math.min(state.pairs,8)*.012;
-      duckMusic();playSound('match',{volume:.27,rate});if(monkeySound)playSound(monkeySound,{volume:1,rate,echo:true});if(main!==JOKER&&symbols.includes(JOKER))playSound('jokerClear',{volume:.7,delay:.35});const extras=CARD_DATA[main]?.clearExtras;if(extras)playSound(extras[rand(extras.length)],{volume:.85,delay:.15});haptic('pairCleared');
+      duckMusic();playSound('match',{volume:.27,rate});if(monkeySound)playSound(monkeySound,{volume:1,rate,echo:CARD_DATA[main]?.echoes??1});if(main!==JOKER&&symbols.includes(JOKER))playSound('jokerClear',{volume:.7,delay:.35});const extras=CARD_DATA[main]?.clearExtras;if(extras)playSound(extras[rand(extras.length)],{volume:.85,delay:.15});haptic('pairCleared');
     }
     function noteGoodEye(pairIds){
       if(pairIds.some(id=>state.tiles.find(t=>t.id===id)?.bonus))return;
@@ -460,7 +471,7 @@
     // Never overlaps or queues: while it runs, goodEyeBusy blocks another one.
     function showGoodEye(){
       const el=$('#goodEye'),voiced=soundEnabled&&!!(soundBuffers.goodEye||fallbackAudio.goodEye),holdMs=voiced?Math.max(1400,soundLengthMs('goodEye',1400)):1400;goodEyeBusy=true;
-      if(voiced){duckMusic(holdMs+300);playSound('goodEye',{volume:1,delay:.25})}
+      if(voiced){duckMusic(holdMs+300);playSound('goodEye',{volume:1,delay:.25,praise:true})}
       const r=$('#board').getBoundingClientRect();el.style.top=`${r.top+r.height*.42}px`;
       el.getAnimations().forEach(a=>a.cancel());
       el.animate([{opacity:0,scale:1.9,rotate:'-6deg'},{opacity:1,scale:.94,rotate:'-3deg',offset:.18},{opacity:1,scale:1,rotate:'-4deg',offset:.26},{opacity:1,scale:1.04,rotate:'-4deg',offset:.8},{opacity:0,scale:1.15,rotate:'-4deg'}],{duration:holdMs,easing:'cubic-bezier(.2,.8,.2,1)'}).onfinish=()=>{goodEyeBusy=false};
