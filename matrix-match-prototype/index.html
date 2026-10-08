@@ -157,8 +157,8 @@
     // trim (dB) evens out loudness: every track is matched to polyjong-mus1 (-15.8 LUFS).
     const MUSIC={
       home:[{src:'audio/music/home.mp3'}],
-      relaxed:[{src:'audio/polyjong-mus1.mp3'},{src:'audio/music/calm-2.mp3',trim:-.6},{src:'audio/music/calm-3.mp3',trim:-.3}],
-      competitive:[{src:'audio/music/competitive-1.mp3',trim:-.6},{src:'audio/music/competitive-2.mp3',trim:-1.8}]
+      relaxed:[{src:'audio/polyjong-mus1.mp3'},{src:'audio/music/calm-2.mp3',trim:-.6},{src:'audio/music/calm-3.mp3',trim:-.3},{src:'audio/music/calm-4.mp3',trim:-.6}],
+      competitive:[{src:'audio/music/competitive-1.mp3',trim:-.6},{src:'audio/music/competitive-2.mp3',trim:-1.8},{src:'audio/music/competitive-3.mp3',trim:-1.2}]
     },MUSIC_FADE_S=1.5;
     const musicEls=new Map(),trackOf=new Map(),trackGains=new Map(),trackVolume=el=>Math.pow(10,(trackOf.get(el).trim||0)/20);let musicBus=null,musicList='home';
     function musicEl(track){
