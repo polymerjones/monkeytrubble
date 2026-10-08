@@ -192,6 +192,9 @@ struct GameWebView: UIViewRepresentable {
                 case "cardFlip":
                     self.lightImpact.impactOccurred(intensity: 0.55)
                     self.lightImpact.prepare()
+                case "cardSettle":
+                    self.lightImpact.impactOccurred(intensity: 0.3)
+                    self.lightImpact.prepare()
                 case "cardCaged":
                     self.mediumImpact.impactOccurred(intensity: 0.72)
                     self.mediumImpact.prepare()
