@@ -200,6 +200,8 @@
     html[data-theme="jungle"] .tile.board-tile.blocked{border-color:#1a1206}
     .tile.board-tile.blocked.joker-card{box-shadow:none}
     .tile.board-tile.on-top{border-color:#fff}
+    /* Stacked cards show their thickness: each layer above the floor casts a hard edge down-right, like a mahjong tile stack. */
+    .tile.board-tile[data-code="L1"]{box-shadow:3px 3px 0 #000a,0 8px 14px #000c}.tile.board-tile[data-code="L2"]{box-shadow:3px 3px 0 #000a,6px 6px 0 #0008,0 10px 16px #000c}.tile.board-tile[data-code="L3"]{box-shadow:3px 3px 0 #000a,6px 6px 0 #0008,9px 9px 0 #0006,0 12px 18px #000c}
     .special-star{position:absolute;z-index:4;top:4px;left:4px;width:20px;height:20px;display:grid;place-items:center;border-radius:50%;background:var(--amber);color:#2b1a06;font:900 .72rem/1 system-ui,sans-serif;box-shadow:0 1px 3px #000c;pointer-events:none}
     .tile.blocked .special-star{filter:brightness(.5)}
   </style>
@@ -273,10 +275,18 @@
     const decodedImages=new Map();
     const PHOTO_POSITIONS=Object.fromEntries(MONKEY_SYMBOLS.map(id=>[id,'50% 42%']));
     const CHARACTER_NAMES=Object.fromEntries(Object.entries(CARD_DATA).map(([id,card])=>[id,card.name]));
-    // How far each layer is pushed out from the centre (1 = the original tight pile); upper layers fan out more so the cards on top
-    // are spread across the board instead of stacked in the middle.
-    const LAYOUT_SPREAD=[1.15,1.4,1.35,1.6];
-    const BASE_LAYOUT=buildLayout(),TOTAL=BASE_LAYOUT.length;
+    // Board shapes on a half-card grid: [layer, col, row] puts a card over half-cells col..col+1, row..row+1, so an upper card sits exactly
+    // on one card, across two, or across four. Every shape has an odd count (Kevin + a joker unit + pairs). Listed most open first.
+    const LAYOUTS=[
+      {id:'towers',name:'TWIN TOWERS',cells:[[0,0,0],[0,0,2],[0,0,4],[0,0,6],[0,0,8],[0,0,10],[0,2,0],[0,2,2],[0,2,4],[0,2,6],[0,2,8],[0,2,10],[0,4,0],[0,4,2],[0,4,4],[0,4,6],[0,4,8],[0,4,10],[0,6,0],[0,6,2],[0,6,4],[0,6,6],[0,6,8],[0,6,10],[0,8,0],[0,8,2],[0,8,4],[0,8,6],[0,8,8],[0,8,10],[1,0,2],[1,0,4],[1,0,6],[1,0,8],[1,4,1],[1,4,5],[1,8,2],[1,8,4],[1,8,6],[1,8,8],[2,0,4],[2,0,6],[2,4,5],[2,8,4],[2,8,6]]},
+      {id:'bridge',name:'BRIDGE',cells:[[0,0,0],[0,0,2],[0,0,4],[0,0,6],[0,0,8],[0,0,10],[0,2,0],[0,2,2],[0,2,4],[0,2,6],[0,2,8],[0,2,10],[0,4,0],[0,4,2],[0,4,4],[0,4,6],[0,4,8],[0,4,10],[0,6,0],[0,6,2],[0,6,4],[0,6,6],[0,6,8],[0,6,10],[0,8,0],[0,8,2],[0,8,4],[0,8,6],[0,8,8],[0,8,10],[1,1,0],[1,1,10],[1,3,0],[1,3,10],[1,4,5],[1,5,0],[1,5,10],[1,7,0],[1,7,10],[2,2,0],[2,2,10],[2,4,5],[2,6,0],[2,6,10],[3,4,5]]},
+      {id:'pyramid',name:'PYRAMID',cells:[[0,0,0],[0,0,2],[0,0,4],[0,0,6],[0,0,8],[0,0,10],[0,2,0],[0,2,2],[0,2,4],[0,2,6],[0,2,8],[0,2,10],[0,4,0],[0,4,2],[0,4,4],[0,4,6],[0,4,8],[0,4,10],[0,6,0],[0,6,2],[0,6,4],[0,6,6],[0,6,8],[0,6,10],[0,8,0],[0,8,2],[0,8,4],[0,8,6],[0,8,8],[0,8,10],[1,0,4],[1,0,6],[1,3,3],[1,3,5],[1,3,7],[1,4,1],[1,4,9],[1,5,3],[1,5,5],[1,5,7],[1,8,4],[1,8,6],[2,4,2],[2,4,4],[2,4,6]]},
+      {id:'diamond',name:'DIAMOND',cells:[[0,0,0],[0,0,2],[0,0,4],[0,0,6],[0,0,8],[0,0,10],[0,2,0],[0,2,2],[0,2,4],[0,2,6],[0,2,8],[0,2,10],[0,4,0],[0,4,2],[0,4,4],[0,4,6],[0,4,8],[0,4,10],[0,6,0],[0,6,2],[0,6,4],[0,6,6],[0,6,8],[0,6,10],[0,8,0],[0,8,2],[0,8,4],[0,8,6],[0,8,8],[0,8,10],[1,2,5],[1,3,3],[1,3,7],[1,4,1],[1,4,5],[1,4,9],[1,4,10],[1,5,3],[1,5,7],[1,6,5],[2,3,5],[2,4,3],[2,4,7],[2,5,5],[3,4,5]]},
+      {id:'arcade',name:'ARCADE',cells:[[0,0,0],[0,0,2],[0,0,4],[0,0,6],[0,0,8],[0,2,0],[0,2,2],[0,2,4],[0,2,6],[0,2,8],[0,4,0],[0,4,2],[0,4,4],[0,4,6],[0,4,8],[0,6,0],[0,6,2],[0,6,4],[0,6,6],[0,6,8],[0,8,0],[0,8,2],[0,8,4],[0,8,6],[0,8,8],[0,10,0],[0,10,2],[0,10,4],[0,10,6],[0,10,8],[1,1,0],[1,1,8],[1,4,4],[1,5,0],[1,5,8],[1,6,4],[1,9,0],[1,9,8],[2,1,0],[2,1,8],[2,5,0],[2,5,8],[2,9,0],[2,9,8],[3,5,4]]}
+    ];
+    // Levels 1-2 use the most open shape; after that a seeded pick, so Retry gives the same board.
+    const layoutFor=level=>level<=2?LAYOUTS[0]:LAYOUTS[Math.floor(mulberry32(level*131+7)()*LAYOUTS.length)];
+    const TOTAL=LAYOUTS[0].cells.length;
     const variants={A:'Layered terminal',B:'Operator console',C:'Glyph shrine',D:'Micro slats'};
     const UNDOS_PER_LEVEL=2,UNDOS_PER_LEVEL_EASY=3,SHUFFLES_PER_LEVEL=1;
     // Owl Eyes hints: 1 per level, +1 for every Good Eye combo, holding at most HINTS_MAX. Each one used costs 5% like an undo.
@@ -415,17 +425,11 @@
     function shuffleArray(a){for(let i=a.length-1;i>0;i--){const j=rand(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
     // Four layers on a logical 0–100 grid. The upper layers sit over the middle so the corners of the bottom layer start open:
     // 45 cards (Kevin is a single), with 8 tappable at the start (4 corners + the 4 top cards).
-    function buildLayout(){
-      const out=[];let n=0;
-      const add=(layer,x,y)=>out.push({id:`tile-${n++}`,layer,x,y,blockers:[]});
-      for(let row=0;row<5;row++)for(let col=0;col<5;col++)if(row!==2||col!==2)add(0,18+col*16,14+row*17);
-      for(let row=0;row<4;row++)for(let col=0;col<2;col++)add(1,42+col*16,22.5+row*17);
-      for(let row=0;row<3;row++)for(let col=0;col<3;col++)add(2,34+col*16,31+row*17);
-      for(let row=0;row<2;row++)for(let col=0;col<2;col++)add(3,42+col*16,40+row*16);
-      // Spread the whole layout out from the centre so cards overlap less and fill the board (blocking below uses these positions).
-      for(const tile of out){const k=LAYOUT_SPREAD[tile.layer];tile.x=+(50+(tile.x-50)*k).toFixed(2);tile.y=+(48+(tile.y-48)*k).toFixed(2)}
-      // A card is locked exactly while a higher card visually overlaps it (thresholds match the card size on an iPhone).
-      for(const tile of out)tile.blockers=out.filter(other=>other.layer>tile.layer&&Math.abs(other.x-tile.x)<22&&Math.abs(other.y-tile.y)<16).map(other=>other.id);
+    // Card positions for a shape. x/y are in tenths of a card (for spacing maths); a card is covered exactly while a higher-layer card
+    // overlaps it on the grid.
+    function buildLayout(cells){
+      const out=cells.map(([layer,c,r],n)=>({id:`tile-${n}`,layer,c,r,x:c*10,y:r*10,blockers:[]}));
+      for(const tile of out)tile.blockers=out.filter(o=>o.layer>tile.layer&&Math.abs(o.c-tile.c)<2&&Math.abs(o.r-tile.r)<2).map(o=>o.id);
       return out
     }
     // Cage rule for one card: it pairs with the same card in the cage, else with a caged joker; a joker pairs with the oldest card;
@@ -433,7 +437,7 @@
     function cageStep(cage,sym){if(sym===KEVIN)return cage;let k=sym===JOKER?(cage.length?0:-1):cage.indexOf(sym);if(k<0&&sym!==JOKER)k=cage.indexOf(JOKER);return k>=0?cage.filter((_,i)=>i!==k):[...cage,sym]}
     // Finds a removal order that clears the given cards from this cage state without overflowing, or null (none) / undefined (gave up).
     // Depth-first with dead-state memo; tries matches first, then cards whose partner is free or least buried.
-    function solveLine(tiles,cage,budget=60000){
+    function solveLine(tiles,cage,budget=150000){
       const dead=new Set(),byId=new Map(tiles.map(t=>[t.id,t]));let nodes=0;
       const freeIn=left=>tiles.filter(t=>left.has(t.id)&&!t.blockers.some(b=>left.has(b)));
       const buried=(id,left,seen=new Set())=>{for(const b of byId.get(id).blockers)if(left.has(b)&&!seen.has(b)){seen.add(b);buried(b,left,seen)}return seen.size};
@@ -446,7 +450,10 @@
         // Same for one of two free twins while the cage has room: the twin pairs with it straight after, so nothing is lost.
         // Only for cards with an even number of copies left: an odd one out is the joker's partner, and its timing matters.
         const copies=new Map();for(const id of left){const sym=byId.get(id).symbol;copies.set(sym,(copies.get(sym)||0)+1)}for(const sym of cage)copies.set(sym,(copies.get(sym)||0)+1);const even=sym=>sym!==JOKER&&copies.get(sym)%2===0;
-        const sure=moves.find(m=>m.t.symbol===KEVIN||(m.next.length<cage.length&&even(m.t.symbol)&&cage.includes(m.t.symbol)))||(cage.length<=2&&!cage.includes(JOKER)&&moves.find(m=>even(m.t.symbol)&&moves.some(o=>o!==m&&o.t.symbol===m.t.symbol)));if(sure)moves=[sure];
+        // While the joker is still in play it pairs with the oldest caged card, so any change to the cage's order can matter: only Kevin
+        // (who never touches the cage) is a sure move then. Once the joker is gone, a card's caged twin and free twins are sure too.
+        const jokerLeft=cage.includes(JOKER)||[...left].some(id=>byId.get(id).symbol===JOKER);
+        const sure=moves.find(m=>m.t.symbol===KEVIN)||(!jokerLeft&&(moves.find(m=>m.next.length<cage.length&&even(m.t.symbol)&&cage.includes(m.t.symbol))||(cage.length<=2&&moves.find(m=>even(m.t.symbol)&&moves.some(o=>o!==m&&o.t.symbol===m.t.symbol)))));if(sure)moves=[sure];
         for(const m of moves){const l=new Set(left);l.delete(m.t.id);const r=go(l,m.next,[...path,m.t]);if(r||r===undefined)return r}
         dead.add(key);return null
       };
@@ -461,27 +468,30 @@
     // pairs are laid along it so no more than two unmatched cards would ever wait in the cage, which keeps every board solvable.
     // The joker only ever closes the oldest open card, matching how it pairs in the cage.
     // With noFreePair, the cards that are free at the start never contain a matching pair.
-    // freePair names two starting-free positions that are dealt as a matching pair anyway (the bonus "boom boom" match).
+    // freePairs lists pairs of starting-free positions that are dealt as matching pairs, first in the removal order (the open matches
+    // a level starts with).
     // trace (tests) receives the removal order the deal was built along.
     // caged lists the symbols already waiting in the cage (a shuffle): their units start open, so the deal stays solvable around them.
     // Kevin is never dealt onto a starting-free card, and lands at a random point in the back half of the removal order (KEVIN_WINDOW),
     // so he tends to surface late, when MVP Vision helps most. If that can't be dealt, the last attempts drop the window (never the free-card rule).
-    function dealUnits(pos,units,rng,{noFreePair=false,freePair=null,caged=[],trace=null}={}){
+    function dealUnits(pos,units,rng,{noFreePair=false,freePairs=[],caged=[],trace=null}={}){
+      const fp=freePairs.flat(),k2=fp.length;
       const ids=new Set(pos.map(p=>p.id)),freeIn=remaining=>pos.filter(p=>remaining.has(p.id)&&!p.blockers.some(id=>remaining.has(id))),initialFree=freeIn(ids),freeIds=new Set(initialFree.map(p=>p.id));
       const allFree=freeIds.size===pos.length,kevinAt=Math.floor(pos.length*(KEVIN_WINDOW[0]+rng()*(KEVIN_WINDOW[1]-KEVIN_WINDOW[0])));
       for(let attempt=0;attempt<400;attempt++){
         const remaining=new Set(ids),order=[];
-        if(freePair)for(const id of freePair){order.push(pos.find(p=>p.id===id));remaining.delete(id)}
+        for(const id of fp){order.push(pos.find(p=>p.id===id));remaining.delete(id)}
         while(remaining.size){const free=freeIn(remaining),pick=free[Math.floor(rng()*free.length)];order.push(pick);remaining.delete(pick.id)}
         const pending=shuffleWith(units.map(u=>[...u]),rng),open=[],assignments=new Map(),freeSyms=new Set(),strictKevin=attempt<300;let failed=false;
         for(const sym of caged){const k=pending.findIndex(u=>u.includes(sym));if(k<0)continue;const [u]=pending.splice(k,1);open.push(u[0]===sym?u:[sym,u[0]])}
         for(const [i,p] of order.entries()){
           // With noFreePair, a card that starts open may not take a symbol another open card already has, and never the joker.
-          const guard=noFreePair&&freeIds.has(p.id)&&!(freePair&&i===1),ok=sym=>!guard||(sym!==JOKER&&!freeSyms.has(sym));
+          const fpOpen=i<k2&&i%2===0,fpClose=i<k2&&i%2===1;
+          const guard=noFreePair&&freeIds.has(p.id)&&!fpClose,ok=sym=>!guard||(sym!==JOKER&&!freeSyms.has(sym));
           const kevinUnit=strictKevin&&i>=kevinAt&&(allFree||!freeIds.has(p.id))?pending.find(u=>u[0]===KEVIN):null;
-          const openable=pending.filter(u=>(u[0]!==KEVIN||!strictKevin&&(allFree||!freeIds.has(p.id)))&&(u.length===1||open.length<2)&&!open.some(o=>o[0]===u[0])&&ok(u[0])&&!(freePair&&i===0&&(u.length<2||u[1]===JOKER))),closable=open.filter((u,k)=>ok(u[1])&&(u[1]!==JOKER||k===0));
+          const openable=pending.filter(u=>(u[0]!==KEVIN||!strictKevin&&(allFree||!freeIds.has(p.id)))&&(u.length===1||open.length<2)&&!open.some(o=>o[0]===u[0])&&ok(u[0])&&!(fpOpen&&(u.length<2||u[1]===JOKER))),closable=open.filter((u,k)=>ok(u[1])&&(u[1]!==JOKER||k===0));
           const canOpen=openable.length>0,canClose=closable.length>0;
-          const wantOpen=pending.length&&!(freePair&&i===1)&&(!open.length||(!freePair&&i===1)||(open.length<2&&rng()<.4));
+          const wantOpen=pending.length&&!fpClose&&(fpOpen||!open.length||(!k2&&i===1)||(open.length<2&&rng()<.4));
           let sym;
           if(kevinUnit){pending.splice(pending.indexOf(kevinUnit),1);sym=KEVIN}
           else if(canOpen&&(wantOpen||!canClose)){const unit=openable[0];pending.splice(pending.indexOf(unit),1);if(unit.length>1)open.push(unit);sym=unit[0]}
@@ -490,7 +500,7 @@
           assignments.set(p.id,sym);if(guard)freeSyms.add(sym)
         }
         if(failed)continue;
-        const free=initialFree.map(p=>assignments.get(p.id)),bonus=(i,j)=>freePair&&freePair.includes(initialFree[i].id)&&freePair.includes(initialFree[j].id);
+        const free=initialFree.map(p=>assignments.get(p.id)),bonus=(i,j)=>freePairs.some(pair=>pair.includes(initialFree[i].id)&&pair.includes(initialFree[j].id));
         if(noFreePair&&free.some((a,i)=>free.some((b,j)=>j>i&&isMate(a,b)&&!bonus(i,j))))continue;
         if(trace)trace.push(...order.map(p=>p.id));
         return assignments
@@ -500,8 +510,8 @@
     // A level holds Kevin, one joker unit, plus pairs: every deck card once, then repeats from a second shuffled pass to fill the board.
     // With more than one card group unlocked, the pairs are split evenly between the groups (leftover pairs go to random groups),
     // each group dealt from its own shuffled cards, repeating only once all of them are used.
-    function levelUnits(rng,level=1){
-      const decks=groupDecks(level),pairs=(TOTAL-3)/2;let bag;
+    function levelUnits(rng,level=1,total=TOTAL){
+      const decks=groupDecks(level),pairs=(total-3)/2;let bag;
       if(decks.length<=1){const deck=decks[0]||DECK;bag=[...shuffleWith([...deck],rng),...shuffleWith([...deck],rng)]}
       // pairs + 1 symbols: the regular pairs plus the joker's partner.
       else{const need=pairs+1,share=decks.map(()=>Math.floor(need/decks.length)),order=shuffleWith(decks.map((_,i)=>i),rng);for(let k=0;k<need%decks.length;k++)share[order[k]]++;
@@ -515,8 +525,9 @@
       return units
     }
     // About half the levels open with a bonus: two side-by-side top cards, face up and matching. It uses its own seeded RNG, so levels without one deal exactly as before.
-    const BONUS_PAIR_CHANCE=.5;
-    function bonusPairFor(level,always=false){const rng=mulberry32(level*7919+17);if(rng()>=BONUS_PAIR_CHANCE&&!always)return null;const top=BASE_LAYOUT.filter(p=>p.layer===3),pairs=[];for(const a of top)for(const b of top)if(a.id<b.id&&(a.x===b.x)!==(a.y===b.y))pairs.push([a.id,b.id]);return pairs[Math.floor(rng()*pairs.length)]}
+    // Open matches at the start: START_PAIRS pairs of starting-playable cards, chosen at random (seeded) and always dealt face up.
+    const START_PAIRS={easy:3,normal:2};
+    function startPairsFor(pos,count,rng){const free=shuffleWith(pos.filter(p=>!p.blockers.length),rng),out=[];for(let i=0;i+1<free.length&&out.length<count;i+=2)out.push([free[i].id,free[i+1].id]);return out}
     // Face-down cards are spread out: cards are visited in a seeded random order and taken only if they keep a minimum distance from
     // those already taken (layers count as distance too); the distance shrinks until there are enough. So neither face-down nor
     // face-up cards clump, with no bias toward edges or corners. The bonus pair always starts face up.
@@ -525,7 +536,11 @@
       for(let r=40;r>=0;r-=2){const chosen=[];for(const p of pool)if(chosen.length<want&&chosen.every(c=>dist(p,c)>=r))chosen.push(p);if(chosen.length>=want)return new Set(chosen.map(p=>p.id))}
       return new Set(pool.slice(0,want).map(p=>p.id))
     }
-    function buildLevelBoard(level,easy=false){const rng=mulberry32(level*9973),pos=BASE_LAYOUT.map(p=>({...p,blockers:[...p.blockers]})),freePair=bonusPairFor(level,easy),assignments=dealUnits(pos,levelUnits(rng,level),rng,{noFreePair:true,freePair}),faceDown=pickFaceDown(pos,Math.round(pos.length*(1-faceUpShare(level,easy))),rng,new Set(freePair||[]));return pos.map(p=>({...p,symbol:assignments.get(p.id),active:true,bonus:!!freePair?.includes(p.id),revealed:!faceDown.has(p.id),temporaryReveal:false}))}
+    function buildLevelBoard(level,easy=false){
+      const rng=mulberry32(level*9973),pos=buildLayout(layoutFor(level).cells),freePairs=startPairsFor(pos,START_PAIRS[easy?'easy':'normal'],rng),open=new Set(freePairs.flat());
+      const assignments=dealUnits(pos,levelUnits(rng,level,pos.length),rng,{freePairs}),faceDown=pickFaceDown(pos,Math.round(pos.length*(1-faceUpShare(level,easy))),rng,open);
+      return pos.map(p=>({...p,symbol:assignments.get(p.id),active:true,bonus:open.has(p.id),revealed:!faceDown.has(p.id),temporaryReveal:false}))
+    }
     // Progress persists through the iOS app's native store (injected as window.__monkeySave) or localStorage in a browser.
     const SAVE_KEY='monkeyTrubble.save.v1',params=new URLSearchParams(location.search);
     function loadProgress(){let saved=window.__monkeySave;if(saved==null)try{saved=localStorage.getItem(SAVE_KEY)}catch{}if(typeof saved==='string')try{saved=JSON.parse(saved)}catch{saved=null}const base=freshProgress();return saved?.version===1?{...base,...saved,streak:{...base.streak,...saved.streak},settings:{...base.settings,...saved.settings},stats:{...base.stats,...saved.stats}}:base}
@@ -555,17 +570,23 @@
     // Each pending animation holds the board; it unlocks only when every hold is released (and never after game over or a new game).
     function hold(){const s=state;s.busy++;s.locked=true;let done=false;return()=>{if(done)return;done=true;s.busy--;s.locked=s.busy>0||s.over}}
     // Rows are laid out on a 14–82 logical grid; spread them as far apart as the board's height allows (blocking still uses logical y).
-    let ySpread=1;const displayY=y=>50+(y-48)*ySpread,LAYOUT_Y_RANGE=Math.max(...BASE_LAYOUT.map(p=>p.y))-Math.min(...BASE_LAYOUT.map(p=>p.y));
-    function updateSpread(){const h=board.clientHeight,tileH=board.querySelector('.tile')?.offsetHeight||119;if(!h)return false;const next=Math.max(.85,Math.min(1.3,100*(1-tileH/h)/LAYOUT_Y_RANGE));if(Math.abs(next-ySpread)<.005)return false;ySpread=next;return true}
+    // Fits the shape to the board: card size from the shape's extent (5:7 cards), positions straight off the grid, each layer nudged
+    // up-left a little for a stacked look. Cards are drawn slightly smaller than their grid cell so neighbours have a hairline gap.
+    const CARD_RATIO=1.4,LAYER_NUDGE=7,CARD_FILL=.95;
+    function boardMetrics(){
+      let c0=Infinity,c1=-Infinity,r0=Infinity,r1=-Infinity,top=0;for(const t of state.tiles){c0=Math.min(c0,t.c);c1=Math.max(c1,t.c);r0=Math.min(r0,t.r);r1=Math.max(r1,t.r);top=Math.max(top,t.layer)}
+      const W=board.clientWidth,H=board.clientHeight,pad=6,depth=top*LAYER_NUDGE,cols=(c1-c0)/2+1,rows=(r1-r0)/2+1,w=Math.min((W-pad*2-depth)/cols,(H-pad*2-depth)/(rows*CARD_RATIO)),h=w*CARD_RATIO;
+      return {w,h,x:t=>W/2+((t.c-(c0+c1)/2)/2)*w-t.layer*LAYER_NUDGE+depth/2,y:t=>H/2+((t.r-(r0+r1)/2)/2)*h-t.layer*LAYER_NUDGE+depth/2}
+    }
     function isFree(tile,activeIds){return !tile.blockers.some(id=>activeIds?activeIds.has(id):state.tiles.some(t=>t.id===id&&t.active))}
     function render(){
-      updateSpread();const activeTiles=state.tiles.filter(t=>t.active).sort((a,b)=>a.layer-b.layer),activeIds=new Set(activeTiles.map(t=>t.id));
+      const m=state.tiles.length?boardMetrics():null;if(m){board.style.setProperty('--tile-w',`${m.w*CARD_FILL}px`);board.style.setProperty('--tile-h',`${m.h*CARD_FILL}px`)}const activeTiles=state.tiles.filter(t=>t.active).sort((a,b)=>a.layer-b.layer),activeIds=new Set(activeTiles.map(t=>t.id));
       board.querySelectorAll('.board-tile').forEach(node=>{if(!activeIds.has(node.dataset.id))node.remove()});
       activeTiles.forEach(tile=>{
         const free=isFree(tile,activeIds),hasPhoto=tile.revealed&&Boolean(SYMBOL_IMAGES[tile.symbol]),renderKey=`${tile.symbol}|${tile.revealed}`;
         let node=board.querySelector(`[data-id="${tile.id}"]`);
-        if(!node){node=document.createElement('button');node.dataset.id=tile.id;node.dataset.code=`L${tile.layer}`;node.style.left=`${tile.x}%`;node.style.rotate=`${((tile.x*7+tile.y*3)%5)-2}deg`;board.append(node)}
-        node.style.top=`${displayY(tile.y)}%`;node.style.zIndex=tile.layer*100+Math.round(tile.y)+(tile.revealed&&free?1000:0);node.className=`tile board-tile ${free?'free':'blocked'} ${tile.revealed?'revealed':'face-down'} ${hasPhoto?'has-photo':''} ${tile.temporaryReveal?'on-top':''} ${tile.revealed&&(tile.symbol===JOKER||tile.symbol===KEVIN)?'joker-card':''} ${state.hintIds?.has(tile.id)?'hinted':''}`;
+        if(!node){node=document.createElement('button');node.dataset.id=tile.id;node.dataset.code=`L${tile.layer}`;board.append(node)}
+        node.style.left=`${m.x(tile)}px`;node.style.top=`${m.y(tile)}px`;node.style.zIndex=tile.layer*100+tile.r+(tile.revealed&&free?1000:0);node.className=`tile board-tile ${free?'free':'blocked'} ${tile.revealed?'revealed':'face-down'} ${hasPhoto?'has-photo':''} ${tile.temporaryReveal?'on-top':''} ${tile.revealed&&(tile.symbol===JOKER||tile.symbol===KEVIN)?'joker-card':''} ${state.hintIds?.has(tile.id)?'hinted':''}`;
         if(node.dataset.renderKey!==renderKey){node.getAnimations().forEach(animation=>animation.cancel());node.replaceChildren();if(tile.revealed){setSymbolContent(node,tile.symbol);if(tile.symbol===KEVIN||tile.symbol===JOKER)node.append(Object.assign(document.createElement('i'),{className:'special-star',textContent:'★'}))}node.dataset.renderKey=renderKey}
         node.setAttribute('aria-disabled',String(!free||state.locked));node.onclick=e=>{if(performance.now()-(Number(node.dataset.tapAt)||0)<700)return;handleTile(tile,e.currentTarget)};
         if(free)enablePeekDrag(node);else{node.onpointerdown=null;node.onpointermove=null;node.onpointerup=null;node.onpointercancel=null}
@@ -1050,7 +1071,7 @@
     $('#gearBtn').onclick=openSettings;$('#homeGear').onclick=openSettings;$('#settingsDone').onclick=closeSettings;$('#settings').onclick=e=>{if(e.target===e.currentTarget)closeSettings()};
     addEventListener('pointerdown',unlockAudio,{once:true,capture:true});
     addEventListener('keydown',e=>{if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName)||document.activeElement.isContentEditable)return;if(e.key==='ArrowLeft')cycleVariant(-1);if(e.key==='ArrowRight')cycleVariant(1)});
-    async function bootstrap(){new ResizeObserver(()=>{if(updateSpread()&&state.tiles.length)render()}).observe(board);setupFeaturedGloss();setupMicroSlats();setVariant(isIOSApp?'D':new URLSearchParams(location.search).get('variant')||'A');loadHomeArt();buildHomeTicker();await preloadAssets();startLevel(progress.level,{silent:true});pendingLevelStart=false;if(params.has('play'))playFromHome();else showHome();if(!progress.player)openNameDialog();flushSync();playHomeSting();setInterval(()=>{if(!document.hidden)renderClock()},250);if(params.has('soundcheck'))showSoundcheck();if(isIOSApp)unlockAudio()}
+    async function bootstrap(){new ResizeObserver(()=>{if(state.tiles.length)render()}).observe(board);setupFeaturedGloss();setupMicroSlats();setVariant(isIOSApp?'D':new URLSearchParams(location.search).get('variant')||'A');loadHomeArt();buildHomeTicker();await preloadAssets();startLevel(progress.level,{silent:true});pendingLevelStart=false;if(params.has('play'))playFromHome();else showHome();if(!progress.player)openNameDialog();flushSync();playHomeSting();setInterval(()=>{if(!document.hidden)renderClock()},250);if(params.has('soundcheck'))showSoundcheck();if(isIOSApp)unlockAudio()}
     bootstrap();
   </script>
 </body>
