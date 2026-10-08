@@ -646,6 +646,8 @@
       const mate=previous?.active&&isMate(previous.symbol,tile.symbol)&&isFree(previous)?previous:null;
       if(!mate)return false;
       if(!mate.revealed){mate.revealed=true;render()}
+      // Normal: a fresh pair needs two open cage slots. Otherwise both cards just stay face up and the cage rattles.
+      if(!pairFits()){mate.temporaryReveal=false;tile.temporaryReveal=false;render();cageRattle();return true}
       cagePair(mate,tile,`AUTO MATCH // ${cardName(tile.symbol)}`);return true
     }
     const activePresses=new Map();
@@ -657,7 +659,7 @@
       // A dragged card is lifted into a fixed top layer so it stays above the hero, the cage and every other card instead of being clipped by the board.
       const lift=()=>{markWouldFree(node.dataset.id,true);const r=node.getBoundingClientRect();ghost=node.cloneNode(true);ghost.removeAttribute('data-id');ghost.classList.remove('board-tile','touch-glow');ghost.classList.add('dragging','drag-ghost');ghost.style.left=`${r.left+r.width/2}px`;ghost.style.top=`${r.top+r.height/2}px`;ghost.style.zIndex='';$('#dragLayer').append(ghost);node.classList.add('lifted')};
       const drop=()=>{peekDragging=false;dragging=false;markWouldFree(node.dataset.id,false);if(!ghost)return;const g=ghost;ghost=null;g.classList.remove('dragging');offset(g,0,0);setTimeout(()=>{node.style.transition='none';node.classList.remove('lifted');void node.offsetWidth;g.remove();requestAnimationFrame(()=>{node.style.transition=''})},170)};
-      node.onpointerdown=e=>{if(state.locked)return;startClock();const tile=state.tiles.find(t=>t.id===node.dataset.id);if(tile?.revealed){const mate=[...activePresses.values()].find(t=>t!==tile&&isMate(t.symbol,tile.symbol)&&t.active&&t.revealed&&isFree(t));if(mate){activePresses.clear();state.history.push(snapshot());cagePair(mate,tile,`PAIR CAGED // ${cardName(tile.symbol)}`);return}activePresses.set(e.pointerId,tile)}startX=e.clientX;startY=e.clientY;dragging=false;pressed=true;node.classList.remove('touch-glow');void node.offsetWidth;node.classList.add('touch-glow');setTimeout(()=>node.classList.remove('touch-glow'),560);node.setPointerCapture(e.pointerId)};
+      node.onpointerdown=e=>{if(state.locked)return;startClock();const tile=state.tiles.find(t=>t.id===node.dataset.id);if(tile?.revealed){const mate=[...activePresses.values()].find(t=>t!==tile&&isMate(t.symbol,tile.symbol)&&t.active&&t.revealed&&isFree(t));if(mate){activePresses.clear();if(!pairFits()){cageRattle();return}state.history.push(snapshot());cagePair(mate,tile,`PAIR CAGED // ${cardName(tile.symbol)}`);return}activePresses.set(e.pointerId,tile)}startX=e.clientX;startY=e.clientY;dragging=false;pressed=true;node.classList.remove('touch-glow');void node.offsetWidth;node.classList.add('touch-glow');setTimeout(()=>node.classList.remove('touch-glow'),560);node.setPointerCapture(e.pointerId)};
       node.onpointermove=e=>{if(!node.hasPointerCapture(e.pointerId))return;const dx=e.clientX-startX,dy=e.clientY-startY;if(!dragging&&Math.hypot(dx,dy)>14){dragging=true;peekDragging=true;lift()}if(dragging&&ghost)offset(ghost,dx,dy)};
       node.onpointerup=e=>{activePresses.delete(e.pointerId);if(node.hasPointerCapture(e.pointerId))node.releasePointerCapture(e.pointerId);const wasDrag=dragging,wasPressed=pressed;pressed=false;node.dataset.tapAt=performance.now();if(wasDrag)setMessage('Peek only — the card underneath stays barricaded until this card is played.');drop();if(wasPressed&&!wasDrag){const tile=state.tiles.find(t=>t.id===node.dataset.id);if(tile)handleTile(tile,node)}};
       node.onpointercancel=e=>{activePresses.delete(e.pointerId);pressed=false;drop()}
@@ -728,6 +730,14 @@
     }
     // Sends a matching pair from the board into the cage together, where it clears (two-finger tap or an auto match).
     // A matched pair never counts as an overflow, so with three cards held both fly into the last slot.
+    // Cage capacity for a fresh pair taken together: Normal needs two open slots (it's two monkeys going in); Easy lets a pair squeeze
+    // into the last slot. Matching a card already caged never needs a new slot, so it isn't checked here.
+    const pairFits=()=>state.easy||waitingInCage()<=2;
+    function cageRattle(){
+      const bar=$('.tray-panel');bar.animate([{translate:'-50% 0'},{translate:'calc(-50% - 7px) 0'},{translate:'calc(-50% + 6px) 0'},{translate:'calc(-50% - 4px) 0'},{translate:'calc(-50% + 2px) 0'},{translate:'-50% 0'}],{duration:340,easing:'ease-out'});
+      $('#tray').animate([{filter:'none'},{filter:'drop-shadow(0 0 8px #ff5a4f)'},{filter:'none'}],{duration:500});
+      playSound('control',{volume:.5,rate:.5});haptic('cageOverflow');setMessage('The cage needs two open spaces for a new pair.')
+    }
     function cagePair(a,b,message){
       const nodes=[a,b].map(t=>board.querySelector(`[data-id="${t.id}"]`)),start=state.tray.length;
       playSound('pickup',{volume:.12,rate:1.04});haptic('cardCaged');
