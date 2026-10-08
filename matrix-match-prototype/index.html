@@ -278,7 +278,12 @@
       cantSelect:'audio/video-calls/card%20cant%20select.wav',warClear1:'audio/video-calls/warmonkeyclear1.wav',warClear2:'audio/video-calls/warmonkeyclear2.wav',warClear3:'audio/video-calls/warmonkeyclear3.wav'
     };
     const soundBuffers={},fallbackAudio={};let soundEnabled=true,audioUnlocked=false,pendingLevelStart=true,audioContext=null,reverbInput,musicGain,featuredSymbol=null,musicDuckTimer;
-    const MUSIC_VOLUME=Math.pow(10,-19/20),MUSIC_CLEAR_DUCK_VOLUME=Math.pow(10,-42/20),CARD_SELECT_GAIN=.5;
+    // Mix: music sits about 15 dB under the monkey calls and dips 14 dB (not out) while a call plays.
+    const MUSIC_VOLUME=Math.pow(10,-10/20),MUSIC_CLEAR_DUCK_VOLUME=MUSIC_VOLUME*Math.pow(10,-14/20),CARD_SELECT_GAIN=.5;
+    // Per-sound trims in dB, from measured loudness, so each category plays at one level (at the volumes the calls already use):
+    // monkey calls about -10.5 LUFS (loudest), praise lines -12, voices -13/-14, stings -15, the pair chime -20, UI blips last.
+    // 'praise' covers every praise:* take. A master limiter (setupAudioGraph) keeps the louder mix from clipping.
+    const MIX_DB={callHamadryas:0,callGuereza:3,callBarbary:0.8,callDeBrazza:0.2,callMandrill:0.9,callCapuchin:1.6,callAgile:-2.3,callHowler:4,callSmallApe:1,callGorilla1:-0.4,callGorilla2:3.7,callLemur1:-0.1,callLemur2:-0.2,callLemur3:0.5,callChimp:-3.9,callScream:0.8,callShout:6.9,callYell:-0.2,callBaby:6.1,caulinClear:4.5,kevinClear:1.6,jokerClear:8.4,warClear1:-3.2,warClear2:7.1,warClear3:2,callJoker:-0.7,praise:1.3,levelStart:2.6,homeSting:0.9,win:2.9,gameOverA:1.4,gameOverB:1.4,comboSting:2.7,praiseSting:2.7,praiseOrEnd:2.1,match:2.3,pickup:4,cantSelect:4.9};
     // Music: the home screen loops its own track; in a level the Music Mode playlist (Settings) shuffles, never the same track twice in a row.
     // trim (dB) evens out loudness: every track is matched to polyjong-mus1 (-15.8 LUFS).
     // The home track doubles as a calm level track.
@@ -316,8 +321,10 @@
       const dry=audioContext.createGain(),wet=audioContext.createGain(),convolver=audioContext.createConvolver(),musicFilter=audioContext.createBiquadFilter();reverbInput=audioContext.createGain();musicGain=audioContext.createGain();
       dry.gain.value=.82;wet.gain.value=.22;const length=Math.floor(audioContext.sampleRate*.8),impulse=audioContext.createBuffer(2,length,audioContext.sampleRate);
       for(let channel=0;channel<2;channel++){const data=impulse.getChannelData(channel);for(let i=0;i<length;i++)data[i]=(Math.random()*2-1)*Math.pow(1-i/length,2.8)}
-      convolver.buffer=impulse;reverbInput.connect(dry).connect(audioContext.destination);reverbInput.connect(convolver).connect(wet).connect(audioContext.destination);
-      musicFilter.type='lowpass';musicFilter.frequency.value=5200;musicFilter.Q.value=.55;musicGain.gain.value=MUSIC_VOLUME;musicFilter.connect(musicGain).connect(audioContext.destination);musicBus=musicFilter;routeTrack(music);
+      // Master limiter: everything ends here, so loud calls on top of the music never clip.
+      const master=audioContext.createDynamicsCompressor();master.threshold.value=-2;master.knee.value=0;master.ratio.value=20;master.attack.value=.003;master.release.value=.15;master.connect(audioContext.destination);
+      convolver.buffer=impulse;reverbInput.connect(dry).connect(master);reverbInput.connect(convolver).connect(wet).connect(master);
+      musicFilter.type='lowpass';musicFilter.frequency.value=5200;musicFilter.Q.value=.55;musicGain.gain.value=MUSIC_VOLUME;musicFilter.connect(musicGain).connect(master);musicBus=musicFilter;routeTrack(music);
     }
     // Every music track gets its own gain (carrying its trim) into the shared filter/volume bus, so switching tracks can crossfade.
     function routeTrack(el){if(!musicBus||trackGains.has(el))return;const g=audioContext.createGain();g.gain.value=trackVolume(el);audioContext.createMediaElementSource(el).connect(g).connect(musicBus);trackGains.set(el,g)}
@@ -341,9 +348,9 @@
     function duckMusic(duration=2400){clearTimeout(musicDuckTimer);setMusicLevel(MUSIC_CLEAR_DUCK_VOLUME,.06);musicDuckTimer=setTimeout(()=>setMusicLevel(MUSIC_VOLUME,.4),duration)}
         // echo: how many 1-second repeats follow (true = 1), each quieter and a touch lower. praise: the voiceover effect (see playPraise).
     function playSound(name,{volume=1,rate=1,echo=0,delay=0,praise=false}={}){
-      if(!soundEnabled)return;const level=Math.max(0,Math.min(1,volume*(name==='pickup'?CARD_SELECT_GAIN:1))),buffer=soundBuffers[name],echoes=echo===true?1:echo||0;
+      if(!soundEnabled)return;const trim=Math.pow(10,(MIX_DB[name]??(name.startsWith('praise:')?MIX_DB.praise:0))/20),level=Math.max(0,volume*trim*(name==='pickup'?CARD_SELECT_GAIN:1)),buffer=soundBuffers[name],echoes=echo===true?1:echo||0;
       if(buffer&&audioContext){if(praise){playPraise(buffer,level,rate,delay);return}const source=audioContext.createBufferSource(),gain=audioContext.createGain();source.buffer=buffer;source.playbackRate.value=rate;gain.gain.value=level;source.connect(gain).connect(reverbInput);source.onended=()=>gain.disconnect();source.start(audioContext.currentTime+delay);if(echoes)playSound(name,{volume:volume*.42,rate:.97*rate,delay:delay+1,echo:echoes-1});return}
-      const a=fallbackAudio[name];if(!a)return;a.pause();a.currentTime=0;a.volume=level;a.playbackRate=rate;a.play()?.catch(()=>{});if(echoes)setTimeout(()=>playSound(name,{volume:volume*.42,rate:.97*rate,echo:echoes-1}),1000)
+      const a=fallbackAudio[name];if(!a)return;a.pause();a.currentTime=0;a.volume=Math.min(1,level);a.playbackRate=rate;a.play()?.catch(()=>{});if(echoes)setTimeout(()=>playSound(name,{volume:volume*.42,rate:.97*rate,echo:echoes-1}),1000)
     }
     // Praise voiceovers ("Good Eye!"): a doubler (a second copy 22ms late, slightly detuned, the two panned apart) into a
     // feedback echo (240ms, darkening as it repeats), on top of the usual room reverb.
