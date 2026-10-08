@@ -152,11 +152,21 @@
       cantSelect:'audio/video-calls/card%20cant%20select.wav',warClear1:'audio/video-calls/warmonkeyclear1.wav',warClear2:'audio/video-calls/warmonkeyclear2.wav',warClear3:'audio/video-calls/warmonkeyclear3.wav'
     };
     const soundBuffers={},fallbackAudio={};let soundEnabled=true,audioUnlocked=false,pendingLevelStart=true,audioContext=null,reverbInput,musicGain,featuredSymbol=null,musicDuckTimer;
-    const MUSIC_VOLUME=Math.pow(10,-22/20),MUSIC_CLEAR_DUCK_VOLUME=Math.pow(10,-42/20),CARD_SELECT_GAIN=.5;
-    // Music Mode tracks (Settings). Competitive stays disabled until its file is added here.
-    const MUSIC_TRACKS={relaxed:'audio/polyjong-mus1.mp3',competitive:null},MUSIC_FADE_S=1.5;
-    let music=new Audio(MUSIC_TRACKS.relaxed);music.preload='auto';music.loop=true;music.load();
-    const musicTracks={relaxed:music},trackGains=new Map();let musicBus=null;
+    const MUSIC_VOLUME=Math.pow(10,-19/20),MUSIC_CLEAR_DUCK_VOLUME=Math.pow(10,-42/20),CARD_SELECT_GAIN=.5;
+    // Music: the home screen loops its own track; in a level the Music Mode playlist (Settings) shuffles, never the same track twice in a row.
+    // trim (dB) evens out loudness: every track is matched to polyjong-mus1 (-15.8 LUFS).
+    const MUSIC={
+      home:[{src:'audio/music/home.mp3'}],
+      relaxed:[{src:'audio/polyjong-mus1.mp3'},{src:'audio/music/calm-2.mp3',trim:-.6},{src:'audio/music/calm-3.mp3',trim:-.3}],
+      competitive:[{src:'audio/music/competitive-1.mp3',trim:-.6},{src:'audio/music/competitive-2.mp3',trim:-1.8}]
+    },MUSIC_FADE_S=1.5;
+    const musicEls=new Map(),trackOf=new Map(),trackGains=new Map(),trackVolume=el=>Math.pow(10,(trackOf.get(el).trim||0)/20);let musicBus=null,musicList='home';
+    function musicEl(track){
+      let el=musicEls.get(track);if(el)return el;
+      el=new Audio(track.src);el.preload='auto';el.loop=Object.values(MUSIC).some(list=>list.length===1&&list[0]===track);
+      el.onended=()=>{if(el===music)playMusic(musicList,true)};musicEls.set(track,el);trackOf.set(el,track);routeTrack(el);return el
+    }
+    let music=musicEl(MUSIC.home[0]);music.load();
     const $=s=>document.querySelector(s), board=$('#board'), tray=$('#tray');
     const isIOSApp=!!window.webkit?.messageHandlers?.haptics;if(isIOSApp)document.body.classList.add('ios-app');
     const rand=n=>Math.floor(Math.random()*n);
@@ -181,13 +191,15 @@
       convolver.buffer=impulse;reverbInput.connect(dry).connect(audioContext.destination);reverbInput.connect(convolver).connect(wet).connect(audioContext.destination);
       musicFilter.type='lowpass';musicFilter.frequency.value=5200;musicFilter.Q.value=.55;musicGain.gain.value=MUSIC_VOLUME;musicFilter.connect(musicGain).connect(audioContext.destination);musicBus=musicFilter;routeTrack(music);
     }
-    // Every music track gets its own gain into the shared filter/volume bus, so switching modes can crossfade.
-    function routeTrack(el){if(!musicBus||trackGains.has(el))return;const g=audioContext.createGain();audioContext.createMediaElementSource(el).connect(g).connect(musicBus);trackGains.set(el,g)}
-    function setMusicMode(mode){
-      const src=MUSIC_TRACKS[mode];if(!src)return;
-      const next=musicTracks[mode]??=Object.assign(new Audio(src),{preload:'auto',loop:true});if(next===music)return;
-      const prev=music;music=next;routeTrack(next);const gPrev=trackGains.get(prev),gNext=trackGains.get(next);
-      if(gPrev&&gNext){const t=audioContext.currentTime;gNext.gain.cancelScheduledValues(t);gNext.gain.setValueAtTime(0,t);gNext.gain.linearRampToValueAtTime(1,t+MUSIC_FADE_S);gPrev.gain.cancelScheduledValues(t);gPrev.gain.setValueAtTime(gPrev.gain.value,t);gPrev.gain.linearRampToValueAtTime(0,t+MUSIC_FADE_S);setTimeout(()=>{if(prev!==music)prev.pause()},MUSIC_FADE_S*1000+100)}
+    // Every music track gets its own gain (carrying its trim) into the shared filter/volume bus, so switching tracks can crossfade.
+    function routeTrack(el){if(!musicBus||trackGains.has(el))return;const g=audioContext.createGain();g.gain.value=trackVolume(el);audioContext.createMediaElementSource(el).connect(g).connect(musicBus);trackGains.set(el,g)}
+    // Switches to a playlist ('home', 'relaxed', 'competitive'). It keeps the current track if it already belongs to that list,
+    // unless advance asks for the next one (a track ended).
+    function playMusic(list,advance=false){
+      musicList=list;const tracks=MUSIC[list],current=trackOf.get(music);if(!advance&&tracks.includes(current))return;
+      const pool=tracks.length>1?tracks.filter(t=>t!==current):tracks,next=musicEl(pool[rand(pool.length)]);if(next===music)return;
+      const prev=music;music=next;next.currentTime=0;const gPrev=trackGains.get(prev),gNext=trackGains.get(next);
+      if(gPrev&&gNext){const t=audioContext.currentTime;gNext.gain.cancelScheduledValues(t);gNext.gain.setValueAtTime(0,t);gNext.gain.linearRampToValueAtTime(trackVolume(next),t+MUSIC_FADE_S);gPrev.gain.cancelScheduledValues(t);gPrev.gain.setValueAtTime(gPrev.gain.value,t);gPrev.gain.linearRampToValueAtTime(0,t+MUSIC_FADE_S);setTimeout(()=>{if(prev!==music)prev.pause()},MUSIC_FADE_S*1000+100)}
       else{next.volume=prev.volume;prev.pause()}
       if(soundEnabled&&audioUnlocked&&!document.hidden)music.play().catch(()=>{})
     }
@@ -558,9 +570,9 @@
       const week=$('#homeWeek');week.replaceChildren();
       for(let k=-6;k<=0;k++){const date=localDate(k),d=new Date(`${date}T12:00`),back=lastDate?Math.round((new Date(`${lastDate}T12:00`)-d)/864e5):-1,lit=live&&back>=0&&back<count,day=document.createElement('div');day.className=`home-day${lit?' lit':''}${k===0?' today':''}`;day.innerHTML=`<span>🔥</span>${'SMTWTFS'[d.getDay()]}`;week.append(day)}
     }
-    function showHome(){if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}$('#overlay').classList.remove('show');$('#winOverlay').classList.remove('show');renderHome();pickHomeBg();$('#home').classList.remove('hidden');buildHomeTicker()}
+    function showHome(){playMusic('home');if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}$('#overlay').classList.remove('show');$('#winOverlay').classList.remove('show');renderHome();pickHomeBg();$('#home').classList.remove('hidden');buildHomeTicker()}
     function playFromHome(){
-      $('#home').classList.add('hidden');unlockAudio();
+      $('#home').classList.add('hidden');unlockAudio();playMusic(progress.settings.music);
       // Resume the level in progress; anything finished or behind the saved level starts fresh.
       const resumable=state.tiles.length&&state.level===progress.level&&!state.over&&state.history.length;
       if(resumable){if(state.clock.resume){state.clock.resume=false;startClock()}playSound('control',{volume:.35})}
@@ -582,21 +594,21 @@
     function closeSettings(){$('#settings').classList.remove('show');if(state.clock.resume&&$('#home').classList.contains('hidden')){state.clock.resume=false;startClock()}}
     function renderSettings(){
       const values={music:progress.settings.music,difficulty:progress.settings.difficulty,sound:soundEnabled?'on':'off'};
-      for(const dip of document.querySelectorAll('.dip')){const buttons=[...dip.children],value=values[dip.dataset.setting];dip.dataset.on=buttons.findIndex(b=>b.dataset.value===value);buttons.forEach(b=>{b.setAttribute('aria-checked',String(b.dataset.value===value));b.disabled=dip.dataset.setting==='music'&&!MUSIC_TRACKS[b.dataset.value]})}
-      $('#musicHint').textContent=MUSIC_TRACKS.competitive?(values.music==='relaxed'?'Laid-back jungle grooves.':'Faster beats for chasing records.'):'Competitive track coming soon.';
+      for(const dip of document.querySelectorAll('.dip')){const buttons=[...dip.children],value=values[dip.dataset.setting];dip.dataset.on=buttons.findIndex(b=>b.dataset.value===value);buttons.forEach(b=>{b.setAttribute('aria-checked',String(b.dataset.value===value));b.disabled=dip.dataset.setting==='music'&&!MUSIC[b.dataset.value]?.length})}
+      $('#musicHint').textContent=values.music==='relaxed'?'Calm jungle grooves.':'Faster beats for chasing records.';
       $('#difficultyHint').textContent=(values.difficulty==='easy'?'More cards face up, a bonus pair every level and 3 undos. Easy clears aren’t ranked.':'The standard challenge.')+(values.difficulty!==(state.easy?'easy':'normal')&&state.tiles.length?' Starts next level.':'');
       $('#soundHint').textContent='';
     }
     document.querySelectorAll('.dip').forEach(dip=>dip.onclick=e=>{
       const value=e.target.closest('button')?.dataset.value,key=dip.dataset.setting;if(!value)return;
       if(key==='sound'){if((value==='on')!==soundEnabled){$('#sound').click();$('#homeSound').textContent=soundEnabled?'♪':'♩'}}
-      else{if(progress.settings[key]===value)return;progress.settings[key]=value;saveProgress();if(key==='music')setMusicMode(value);if(key==='difficulty')renderHome()}
+      else{if(progress.settings[key]===value)return;progress.settings[key]=value;saveProgress();if(key==='music'&&$('#home').classList.contains('hidden'))playMusic(value);if(key==='difficulty')renderHome()}
       playSound('pickup',{volume:.16,rate:value==='on'||value==='competitive'||value==='normal'?1.2:.95});haptic('cardCaged');renderSettings()
     });
     $('#gearBtn').onclick=openSettings;$('#homeGear').onclick=openSettings;$('#settingsDone').onclick=closeSettings;$('#settings').onclick=e=>{if(e.target===e.currentTarget)closeSettings()};
     addEventListener('pointerdown',unlockAudio,{once:true,capture:true});
     addEventListener('keydown',e=>{if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName)||document.activeElement.isContentEditable)return;if(e.key==='ArrowLeft')cycleVariant(-1);if(e.key==='ArrowRight')cycleVariant(1)});
-    async function bootstrap(){setMusicMode(progress.settings.music);new ResizeObserver(()=>{if(updateSpread()&&state.tiles.length)render()}).observe(board);setupFeaturedGloss();setupMicroSlats();setVariant(isIOSApp?'D':new URLSearchParams(location.search).get('variant')||'A');loadHomeArt();buildHomeTicker();await preloadAssets();startLevel(progress.level,{silent:true});pendingLevelStart=false;if(params.has('play'))playFromHome();else showHome();setInterval(()=>{if(!document.hidden)renderClock()},250);if(params.has('soundcheck'))showSoundcheck();if(isIOSApp)unlockAudio()}
+    async function bootstrap(){new ResizeObserver(()=>{if(updateSpread()&&state.tiles.length)render()}).observe(board);setupFeaturedGloss();setupMicroSlats();setVariant(isIOSApp?'D':new URLSearchParams(location.search).get('variant')||'A');loadHomeArt();buildHomeTicker();await preloadAssets();startLevel(progress.level,{silent:true});pendingLevelStart=false;if(params.has('play'))playFromHome();else showHome();setInterval(()=>{if(!document.hidden)renderClock()},250);if(params.has('soundcheck'))showSoundcheck();if(isIOSApp)unlockAudio()}
     bootstrap();
   </script>
 </body>
