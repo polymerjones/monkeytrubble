@@ -102,6 +102,8 @@
       CAULIN_PLUSH:{image:'caulin-plush.jpg',name:'Caulin Plushie',latin:'Caulinus plushus',fact:'Hand-stitched, fully huggable and the softest member of the troop.',sounds:['caulinClear']},
       PATRIOT_1:{image:'patriot-1.jpg',name:'Monkey Patriot',latin:'Pan libertatis',fact:'Reports for duty in a tricorn hat and refuses to be caged without a fight.',sounds:['callYell'],clearExtras:WAR_CLEARS},
       PATRIOT_3:{image:'patriot-3.jpg',name:'Parade Patriot',latin:'Pan libertatis',fact:'Never misses a parade, and never takes off the striped hat.',sounds:['callAgile'],clearExtras:WAR_CLEARS},
+      BIRTHDAY_BOY:{image:'birthday-boy.jpg',name:'Birthday Boy Monkey',latin:'Pan cakeus',fact:'One year older, zero years wiser. Wishes for more bananas every single time.',sounds:['callChimp','callScream']},
+      FIRST_DAY:{image:'first-day-school.jpg',name:'1st Day of School Monkey',latin:'Pan pupillus',fact:'New backpack, fresh kicks and a tail that will not fit under the desk. Already sent to the principal.',sounds:['callChimp','callShout']},
       JOKER:{image:'caulin-joker.jpg',name:'Joker Caulin',latin:'Wildcard',fact:'Matches any card in the cage. Save him for the card that has no partner nearby.',sounds:['jokerClear']},
       // Single card, one per level: tapping him fires MVP Vision instead of going to the cage.
       KEVIN:{image:'kevin-kelly.jpg',name:'KEVIN KELLY',latin:'Limited Edition 2019 MVP',fact:'Tap him for MVP Vision: every hidden card flips up while he celebrates.',sounds:['kevinClear'],power:'peek'}
@@ -111,8 +113,8 @@
       light:['M7535','M7547','M7550','M7572','M7575','M7578','M7595'],
       fractal:['M7543','M7557','M7590','CAULIN_PLUSH'],
       strings:['M7560','M7564','M7569','PATRIOT_1'],
-      blocks:['PATRIOT_3'],
-      sparkle:['M7554','JOKER','KEVIN']
+      blocks:['PATRIOT_3','FIRST_DAY'],
+      sparkle:['M7554','BIRTHDAY_BOY','JOKER','KEVIN']
     };
     const SHINE_BY_SYMBOL=Object.fromEntries(Object.entries(SHINE_GROUPS).flatMap(([shine,ids])=>ids.map(id=>[id,shine])));
     const shineFor=symbol=>SHINE_BY_SYMBOL[symbol]||'light';
@@ -135,7 +137,7 @@
       callAgile:'audio/video-calls/official-agile-gibbon.mp3',callHowler:'audio/video-calls/HOWLERYELL.wav',callSmallApe:'audio/video-calls/SMALLAPEYELL.wav',
       callGorilla1:'audio/video-calls/GORILLAYELL1.wav',callGorilla2:'audio/video-calls/GORILLAYELL2.wav',
       callLemur1:'audio/video-calls/lemur1.wav',callLemur2:'audio/video-calls/lemur2.wav',callLemur3:'audio/video-calls/lemur3.wav',
-      callScream:'audio/monkeyscream.mp3',callShout:'audio/monkey-shout.mp3',callYell:'audio/monkeyyell3.mp3',callBaby:'audio/babymonkey.mp3',callJoker:'audio/monkeyscream2.mp3',jokerClear:'audio/video-calls/jokersqueal.wav',kevinClear:'audio/video-calls/kevinkellyclear.mp3',caulinClear:'audio/video-calls/kaulinannounce2.mp3',
+      callChimp:'audio/video-calls/chimpanzee.mp3',callScream:'audio/monkeyscream.mp3',callShout:'audio/monkey-shout.mp3',callYell:'audio/monkeyyell3.mp3',callBaby:'audio/babymonkey.mp3',callJoker:'audio/monkeyscream2.mp3',jokerClear:'audio/video-calls/jokersqueal.wav',kevinClear:'audio/video-calls/kevinkellyclear.mp3',caulinClear:'audio/video-calls/kaulinannounce2.mp3',
       cantSelect:'audio/video-calls/card%20cant%20select.wav',warClear1:'audio/video-calls/warmonkeyclear1.wav',warClear2:'audio/video-calls/warmonkeyclear2.wav',warClear3:'audio/video-calls/warmonkeyclear3.wav'
     };
     const soundBuffers={},fallbackAudio={};let soundEnabled=true,audioUnlocked=false,pendingLevelStart=true,audioContext=null,reverbInput,musicGain,featuredSymbol=null,musicDuckTimer;

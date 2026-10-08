@@ -18,6 +18,11 @@ build_portrait() {
   sips -s format jpeg -c "$h" "$w" "$1" --out "$TMP/$2.jpg" >/dev/null
   build "$TMP/$2.jpg" "$2"
 }
+# Crops an h x w (2:3) window at offset y,x out of a source before resizing, to frame a subject that sits small in the shot.
+build_crop() {
+  sips -s format jpeg -c "$3" "$4" --cropOffset "$5" "$6" "$1" --out "$TMP/$2.jpg" >/dev/null
+  build "$TMP/$2.jpg" "$2"
+}
 for src in "$RAW"/IMG_*.JPG; do
   build "$src" "$(basename "$src" .JPG)"
 done
@@ -27,4 +32,7 @@ build_portrait "$RAW/monkey patriot 1.jpg" patriot-1
 build_portrait "$RAW/monkey patriot 3.jpg" patriot-3
 # Kevin Kelly: flat 2:3 Grok render (1152x1728), so a plain resize.
 build "$RAW/kevin kelly.jpg" kevin-kelly
+# Grok renders (1152x1728) cropped in on the kid: cake kept in, full body + tail kept in.
+build_crop "$RAW/birthday boy monkey.jpg" birthday-boy 1080 720 390 215
+build_crop "$RAW/1st day of school monkey.jpg" first-day-school 990 660 420 250
 echo "thumb: $(ls cards/thumb | wc -l | tr -d ' ')  hero: $(ls cards/hero | wc -l | tr -d ' ')"
