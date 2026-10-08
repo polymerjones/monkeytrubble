@@ -247,6 +247,9 @@
     const decodedImages=new Map();
     const PHOTO_POSITIONS=Object.fromEntries(MONKEY_SYMBOLS.map(id=>[id,'50% 42%']));
     const CHARACTER_NAMES=Object.fromEntries(Object.entries(CARD_DATA).map(([id,card])=>[id,card.name]));
+    // How far each layer is pushed out from the centre (1 = the original tight pile); upper layers fan out more so the cards on top
+    // are spread across the board instead of stacked in the middle.
+    const LAYOUT_SPREAD=[1.15,1.4,1.35,1.6];
     const BASE_LAYOUT=buildLayout(),TOTAL=BASE_LAYOUT.length;
     const variants={A:'Layered terminal',B:'Operator console',C:'Glyph shrine',D:'Micro slats'};
     const UNDOS_PER_LEVEL=2,UNDOS_PER_LEVEL_EASY=3,SHUFFLES_PER_LEVEL=1;
@@ -393,6 +396,8 @@
       for(let row=0;row<4;row++)for(let col=0;col<2;col++)add(1,42+col*16,22.5+row*17);
       for(let row=0;row<3;row++)for(let col=0;col<3;col++)add(2,34+col*16,31+row*17);
       for(let row=0;row<2;row++)for(let col=0;col<2;col++)add(3,42+col*16,40+row*16);
+      // Spread the whole layout out from the centre so cards overlap less and fill the board (blocking below uses these positions).
+      for(const tile of out){const k=LAYOUT_SPREAD[tile.layer];tile.x=+(50+(tile.x-50)*k).toFixed(2);tile.y=+(48+(tile.y-48)*k).toFixed(2)}
       // A card is locked exactly while a higher card visually overlaps it (thresholds match the card size on an iPhone).
       for(const tile of out)tile.blockers=out.filter(other=>other.layer>tile.layer&&Math.abs(other.x-tile.x)<22&&Math.abs(other.y-tile.y)<16).map(other=>other.id);
       return out
@@ -486,7 +491,15 @@
     // About half the levels open with a bonus: two side-by-side top cards, face up and matching. It uses its own seeded RNG, so levels without one deal exactly as before.
     const BONUS_PAIR_CHANCE=.5;
     function bonusPairFor(level,always=false){const rng=mulberry32(level*7919+17);if(rng()>=BONUS_PAIR_CHANCE&&!always)return null;const top=BASE_LAYOUT.filter(p=>p.layer===3),pairs=[];for(const a of top)for(const b of top)if(a.id<b.id&&(a.x===b.x)!==(a.y===b.y))pairs.push([a.id,b.id]);return pairs[Math.floor(rng()*pairs.length)]}
-    function buildLevelBoard(level,easy=false){const rng=mulberry32(level*9973),pos=BASE_LAYOUT.map(p=>({...p,blockers:[...p.blockers]})),freePair=bonusPairFor(level,easy),assignments=dealUnits(pos,levelUnits(rng,level),rng,{noFreePair:true,freePair});return pos.map(p=>({...p,symbol:assignments.get(p.id),active:true,bonus:!!freePair?.includes(p.id),revealed:rng()<faceUpShare(level,easy)||!!freePair?.includes(p.id),temporaryReveal:false}))}
+    // Face-down cards are spread out: cards are visited in a seeded random order and taken only if they keep a minimum distance from
+    // those already taken (layers count as distance too); the distance shrinks until there are enough. So neither face-down nor
+    // face-up cards clump, with no bias toward edges or corners. The bonus pair always starts face up.
+    function pickFaceDown(pos,count,rng,keep){
+      const pool=shuffleWith(pos.filter(p=>!keep.has(p.id)),rng),want=Math.min(count,pool.length),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y)+12*Math.abs(a.layer-b.layer);
+      for(let r=40;r>=0;r-=2){const chosen=[];for(const p of pool)if(chosen.length<want&&chosen.every(c=>dist(p,c)>=r))chosen.push(p);if(chosen.length>=want)return new Set(chosen.map(p=>p.id))}
+      return new Set(pool.slice(0,want).map(p=>p.id))
+    }
+    function buildLevelBoard(level,easy=false){const rng=mulberry32(level*9973),pos=BASE_LAYOUT.map(p=>({...p,blockers:[...p.blockers]})),freePair=bonusPairFor(level,easy),assignments=dealUnits(pos,levelUnits(rng,level),rng,{noFreePair:true,freePair}),faceDown=pickFaceDown(pos,Math.round(pos.length*(1-faceUpShare(level,easy))),rng,new Set(freePair||[]));return pos.map(p=>({...p,symbol:assignments.get(p.id),active:true,bonus:!!freePair?.includes(p.id),revealed:!faceDown.has(p.id),temporaryReveal:false}))}
     // Progress persists through the iOS app's native store (injected as window.__monkeySave) or localStorage in a browser.
     const SAVE_KEY='monkeyTrubble.save.v1',params=new URLSearchParams(location.search);
     function loadProgress(){let saved=window.__monkeySave;if(saved==null)try{saved=localStorage.getItem(SAVE_KEY)}catch{}if(typeof saved==='string')try{saved=JSON.parse(saved)}catch{saved=null}const base=freshProgress();return saved?.version===1?{...base,...saved,streak:{...base.streak,...saved.streak},settings:{...base.settings,...saved.settings},stats:{...base.stats,...saved.stats}}:base}
@@ -516,8 +529,8 @@
     // Each pending animation holds the board; it unlocks only when every hold is released (and never after game over or a new game).
     function hold(){const s=state;s.busy++;s.locked=true;let done=false;return()=>{if(done)return;done=true;s.busy--;s.locked=s.busy>0||s.over}}
     // Rows are laid out on a 14–82 logical grid; spread them as far apart as the board's height allows (blocking still uses logical y).
-    let ySpread=1;const displayY=y=>50+(y-48)*ySpread;
-    function updateSpread(){const h=board.clientHeight,tileH=board.querySelector('.tile')?.offsetHeight||119;if(!h)return false;const next=Math.max(.85,Math.min(1.3,100*(1-tileH/h)/68));if(Math.abs(next-ySpread)<.005)return false;ySpread=next;return true}
+    let ySpread=1;const displayY=y=>50+(y-48)*ySpread,LAYOUT_Y_RANGE=Math.max(...BASE_LAYOUT.map(p=>p.y))-Math.min(...BASE_LAYOUT.map(p=>p.y));
+    function updateSpread(){const h=board.clientHeight,tileH=board.querySelector('.tile')?.offsetHeight||119;if(!h)return false;const next=Math.max(.85,Math.min(1.3,100*(1-tileH/h)/LAYOUT_Y_RANGE));if(Math.abs(next-ySpread)<.005)return false;ySpread=next;return true}
     function isFree(tile,activeIds){return !tile.blockers.some(id=>activeIds?activeIds.has(id):state.tiles.some(t=>t.id===id&&t.active))}
     function render(){
       updateSpread();const activeTiles=state.tiles.filter(t=>t.active).sort((a,b)=>a.layer-b.layer),activeIds=new Set(activeTiles.map(t=>t.id));

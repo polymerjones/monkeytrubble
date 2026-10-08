@@ -12,6 +12,7 @@ const makeGame=(groups=[[1,deck]])=>new Function(`
   const JOKER='JOKER',KEVIN='KEVIN',DECK=${JSON.stringify(groups.flatMap(g=>g[1]))},GROUPS=${JSON.stringify(groups)};
   const groupDecks=level=>GROUPS.filter(([at,cards])=>at<=level&&cards.length).map(([,cards])=>cards);
   ${line('const KEVIN_WINDOW=')}
+  ${line('const LAYOUT_SPREAD=')}
   ${line('const isMate=')}
   ${line('const shuffleWith=')}
   ${line('const BONUS_PAIR_CHANCE=')}
