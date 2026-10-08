@@ -686,7 +686,8 @@
     // Online leaderboard (Supabase; keys in config.js, schema in supabase/leaderboard.sql). Clears and name changes mark the profile
     // for sync; a failed sync stays pending and retries on the next launch, when the network returns, or when the board opens.
     const LB=window.MONKEY_LEADERBOARD||{},lbReady=!!(LB.url&&LB.anonKey);let lbSyncing=null;
-    async function lbCall(fn,body){const res=await fetch(`${LB.url.replace(/\/$/,'')}/rest/v1/rpc/${fn}`,{method:'POST',headers:{apikey:LB.anonKey,Authorization:`Bearer ${LB.anonKey}`,'Content-Type':'application/json'},body:JSON.stringify(body)});if(!res.ok)throw new Error(`${fn} ${res.status}: ${await res.text()}`);return res.json()}
+    // New-style publishable keys (sb_publishable_...) go in apikey only; a legacy anon JWT is also sent as the bearer token.
+    async function lbCall(fn,body){const res=await fetch(`${LB.url.replace(/\/$/,'')}/rest/v1/rpc/${fn}`,{method:'POST',headers:{apikey:LB.anonKey,...(LB.anonKey.startsWith('eyJ')?{Authorization:`Bearer ${LB.anonKey}`}:{}),'Content-Type':'application/json'},body:JSON.stringify(body)});if(!res.ok)throw new Error(`${fn} ${res.status}: ${await res.text()}`);return res.json()}
     function syncProfile(){progress.pendingSync=true;saveProgress();return flushSync()}
     function flushSync(){
       if(!lbReady||!progress.player||!progress.pendingSync)return Promise.resolve();if(lbSyncing)return lbSyncing;const p=progress.player;
