@@ -704,8 +704,10 @@
       $('#home').classList.add('hidden');homeStingPending=false;unlockAudio();playMusic(progress.settings.music,musicList==='home');
       // Resume the level in progress; anything finished or behind the saved level starts fresh.
       const resumable=state.tiles.length&&state.level===progress.level&&!state.over&&state.history.length;
-      if(resumable){if(state.clock.resume){state.clock.resume=false;startClock()}playSound('control',{volume:.35})}
-      else startLevel(progress.level)
+      if(resumable){if(state.clock.resume){state.clock.resume=false;startClock()}}
+      else{startLevel(progress.level,{silent:true});pendingLevelStart=false}
+      // Pressing PLAY announces "MONKEY TRUBBLE!" (in place of the level-start voice), with the praise doubler + echo.
+      const take=`praise:monkey-trubble-${'ab'[rand(2)]}`;duckMusic(soundLengthMs(take,1700)+900);playSound(take,{volume:1,delay:.1,praise:true})
     }
     // Background trial: each home visit shows a random candidate (never the same twice in a row), tagged in the corner so the favorite can be named.
     const HOME_BGS=['A','B','E','3','4'];let homeBgKey=null;
