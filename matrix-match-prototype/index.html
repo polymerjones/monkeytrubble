@@ -71,7 +71,7 @@
     .good-eye{position:fixed;left:50%;top:46%;z-index:4000;translate:-50% -50%;pointer-events:none;opacity:0;width:max-content;max-width:92vw;box-sizing:border-box;padding:0 4px;text-align:center;line-height:1.05;color:#fff4c9;font:900 clamp(2.3rem,12vw,3.6rem) system-ui,sans-serif;letter-spacing:.06em;-webkit-text-stroke:2px #6b4300;text-shadow:0 4px 0 #8a5a00,0 0 24px var(--amber),0 0 48px var(--warm-glow)}
     #settings{z-index:5000}
     /* Settings backdrop: home art BG B, grayscale and faint, fading out toward the top so the controls stay readable. Oversized for the parallax (see settingsParallax). */
-    .settings-dialog{isolation:isolate}.settings-art{position:absolute;inset:-40px -40px auto;height:calc(100% + 80px);z-index:-1;will-change:transform;border-radius:inherit;pointer-events:none;background:url('art/home/bg-B.jpg') center 72%/cover no-repeat;filter:grayscale(1) contrast(1.1);opacity:.2;-webkit-mask-image:linear-gradient(transparent 8%,#000 60%);mask-image:linear-gradient(transparent 8%,#000 60%)}
+    .settings-dialog{isolation:isolate;overscroll-behavior:none}.settings-art{position:absolute;inset:-40px -40px auto;height:calc(100% + 80px);z-index:-1;will-change:transform;border-radius:inherit;pointer-events:none;background:url('art/home/bg-B.jpg') center 72%/cover no-repeat;filter:grayscale(1) contrast(1.1);opacity:.2;-webkit-mask-image:linear-gradient(transparent 8%,#000 60%);mask-image:linear-gradient(transparent 8%,#000 60%)}
     /* Player profile: name entry, tier badges, home chip and the win screen's points + tier bar. */
     /* Leaderboard screen: sits over home, rows tinted by tier, your own row pinned at the bottom. */
     .leaders{position:fixed;inset:0;z-index:950;display:flex;flex-direction:column;gap:12px;padding:calc(14px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));background:radial-gradient(circle at 50% 20%,var(--bg-mid) 0,var(--bg-deep) 55%,#000 88%);transition:opacity .28s ease,transform .28s ease}.leaders.hidden{opacity:0;transform:translateY(18px);visibility:hidden;pointer-events:none;transition:opacity .28s ease,transform .28s ease,visibility 0s .28s}
@@ -1087,12 +1087,19 @@
       input.onchange=()=>{saveProgress();haptic('cardCaged');if(key==='sfx')playSound('callScream',{volume:.6})}}
     applyVolumes();
     // Settings: opening it pauses the level clock like Home does; each switch saves at once.
-    // Settings backdrop parallax: the art scrolls at 40% of the list's speed and drifts against the phone's tilt (eased, ±18px).
-    const settingsParallax=(()=>{const dlg=$('.settings-dialog'),art=$('.settings-art'),reduce=matchMedia('(prefers-reduced-motion: reduce)');let tx=0,ty=0,cx=0,cy=0,raf=0;
-      const tick=()=>{raf=0;cx+=(tx-cx)*.12;cy+=(ty-cy)*.12;art.style.transform=`translate3d(${cx.toFixed(1)}px,${(dlg.scrollTop*.6+cy).toFixed(1)}px,0)`;if(Math.abs(tx-cx)>.1||Math.abs(ty-cy)>.1)raf=requestAnimationFrame(tick)};
+    // Settings backdrop parallax. The panel itself never rubber-bands (overscroll-behavior). Dragging up/down moves only the art: if
+    // the list can scroll it scrolls normally and the art follows at 40% speed; past the ends (or when it all fits) the drag slides
+    // the art up to ±40px, springing back on release. Tilting the phone drifts it against the tilt (±18px). All eased.
+    const settingsParallax=(()=>{const dlg=$('.settings-dialog'),art=$('.settings-art'),reduce=matchMedia('(prefers-reduced-motion: reduce)');let tiltX=0,tiltY=0,drag=0,cx=0,cy=0,raf=0,startY=null,startX=0,base=0,vertical=null;
+      const tick=()=>{raf=0;const tx=tiltX,ty=tiltY+drag;cx+=(tx-cx)*.12;cy+=(ty-cy)*.14;art.style.transform=`translate3d(${cx.toFixed(1)}px,${(dlg.scrollTop*.6+cy).toFixed(1)}px,0)`;if(Math.abs(tx-cx)>.1||Math.abs(ty-cy)>.1)raf=requestAnimationFrame(tick)};
       const kick=()=>{if(!raf)raf=requestAnimationFrame(tick)};
       dlg.addEventListener('scroll',kick,{passive:true});
-      window.__settingsTilt=(turn,lean)=>{if(reduce.matches||!$('#settings').classList.contains('show'))return;tx=-Math.tanh(turn/.3)*18;ty=-Math.tanh(lean/.3)*18;kick()};
+      dlg.addEventListener('touchstart',e=>{if(e.target.closest('input[type=range]')){startY=null;return}startY=e.touches[0].clientY;startX=e.touches[0].clientX;base=dlg.scrollTop;vertical=null},{passive:true});
+      dlg.addEventListener('touchmove',e=>{if(startY==null)return;const t=e.touches[0],dy=t.clientY-startY;if(vertical==null&&Math.hypot(dy,t.clientX-startX)>6)vertical=Math.abs(dy)>Math.abs(t.clientX-startX);if(!vertical)return;
+        const max=dlg.scrollHeight-dlg.clientHeight,over=max<=1?dy:dy>0&&dlg.scrollTop<=0?dy-Math.max(0,base):dy<0&&dlg.scrollTop>=max-1?dy+Math.max(0,max-base):0;
+        if(over&&(max<=1||(dy>0?dlg.scrollTop<=0:dlg.scrollTop>=max-1))){e.preventDefault();drag=reduce.matches?0:40*Math.tanh(over/180);kick()}},{passive:false});
+      const release=()=>{startY=null;if(drag){drag=0;kick()}};dlg.addEventListener('touchend',release);dlg.addEventListener('touchcancel',release);
+      window.__settingsTilt=(turn,lean)=>{if(reduce.matches||!$('#settings').classList.contains('show'))return;tiltX=-Math.tanh(turn/.3)*18;tiltY=-Math.tanh(lean/.3)*18;kick()};
       // The art must outlast the slower scroll: its height covers the panel plus the 40% of the scroll it falls behind.
       return{fit(){art.style.height=`${dlg.clientHeight+Math.max(0,dlg.scrollHeight-dlg.clientHeight)*.4+80}px`;kick()}}})();
     function openSettings(){if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}renderSettings();$('#settings').classList.add('show');settingsParallax.fit();playSound('pickup',{volume:.12,rate:.9})}
