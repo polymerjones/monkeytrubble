@@ -16,11 +16,11 @@ const makeGame=(groups=[[1,deck]])=>new Function(`
   ${line('const shuffleWith=')}
   ${line('const BONUS_PAIR_CHANCE=')}
   ${line('const faceUpShare=')}
-  ${['buildLayout','mulberry32','dealUnits','levelUnits','unitsFromSymbols','bonusPairFor'].map(fn).join('\n')}
+  ${['buildLayout','mulberry32','dealUnits','levelUnits','unitsFromSymbols','bonusPairFor','cageStep','solveLine'].map(fn).join('\n')}
   const BASE_LAYOUT=buildLayout(),TOTAL=BASE_LAYOUT.length;
   // Same deal as buildLevelBoard, plus the removal order it was built along.
   function levelBoard(level,easy=false){const rng=mulberry32(level*9973),pos=BASE_LAYOUT.map(p=>({...p,blockers:[...p.blockers]})),trace=[],assignments=dealUnits(pos,levelUnits(rng,level),rng,{noFreePair:true,freePair:bonusPairFor(level,easy),trace});return{tiles:pos.map(p=>({...p,symbol:assignments.get(p.id)})),order:trace}}
-  return {dealUnits,unitsFromSymbols,levelBoard,mulberry32,KEVIN_WINDOW};
+  return {dealUnits,unitsFromSymbols,levelBoard,mulberry32,KEVIN_WINDOW,solveLine};
 `)();
 const game=makeGame();
 const {JOKER,KEVIN}={JOKER:'JOKER',KEVIN:'KEVIN'};
@@ -85,6 +85,19 @@ depths.sort((a,b)=>a-b);
     const g2=syms.filter(s=>s.startsWith('G2_')).length;
     if(syms.some(s=>!s)||g2<21||g2>22){problems++;console.log(`groups: level ${level} has ${g2} Group 2 cards of ${syms.length}`)}
   }}
+// Owl Eyes hints: the solver must find a clearing line from every level's start and from a random mid-level position.
+{let found=0,gaveUp=0,slowest=0;
+  for(let level=1;level<=Math.min(levels,200);level++){
+    const {tiles}=game.levelBoard(level),rng=game.mulberry32(level*57),left=new Map(tiles.map(t=>[t.id,t]));let cage=[];
+    for(const stage of ['start','mid']){
+      if(stage==='mid'){const sol=game.solveLine([...left.values()],cage);if(!sol)break;for(const t of sol.slice(0,8+Math.floor(rng()*14))){left.delete(t.id);let k=t.symbol===KEVIN?null:t.symbol===JOKER?(cage.length?0:-1):cage.indexOf(t.symbol);if(k===-1&&t.symbol!==JOKER)k=cage.indexOf(JOKER);if(k===null)continue;cage=k>=0?cage.filter((_,i)=>i!==k):[...cage,t.symbol]}}
+      const board=[...left.values()],t0=performance.now(),path=game.solveLine(board,cage);slowest=Math.max(slowest,performance.now()-t0);
+      if(path===undefined){gaveUp++;console.log(`hint: level ${level} (${stage}) search gave up`);continue}
+      if(!path){problems++;console.log(`hint: level ${level} (${stage}) found no line`);continue}
+      const err=replay(board,path.map(t=>t.id),cage);if(err){problems++;console.log(`hint: level ${level} (${stage}) line fails: ${err}`)}else found++
+    }
+  }
+  console.log(`Owl Eyes: ${found} lines found, ${gaveUp} gave up, slowest ${Math.round(slowest)}ms`)}
 kevinSpots.sort((a,b)=>a-b);console.log(`Kevin dealt before the 60% mark (window fallback): ${kevinSpots.filter(x=>x<game.KEVIN_WINDOW[0]-.03).length} level(s)`);const pct=x=>`${Math.round(x*100)}%`;
 console.log(`${levels} levels: ${problems} problem(s). Kevin's place in the removal order: ${pct(kevinSpots[0])}–${pct(kevinSpots.at(-1))} (median ${pct(kevinSpots[kevinSpots.length>>1])}). Cards stacked over Kevin: min ${depths[0]}, median ${depths[depths.length>>1]}, max ${depths.at(-1)}`);
 process.exit(problems?1:0);

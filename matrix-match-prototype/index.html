@@ -100,6 +100,12 @@
     .dip button{position:relative;z-index:1;min-height:46px;padding:0 6px;border:0;background:none;color:var(--text-mute);font:900 .8rem system-ui,sans-serif;letter-spacing:.14em;cursor:pointer;transition:color .2s;-webkit-tap-highlight-color:transparent}.dip button[aria-checked="true"]{color:var(--accent-ink2)}.dip button:disabled{opacity:.4;cursor:not-allowed}
     .set-hint{display:block;min-height:1em;margin-top:7px;color:#6fa983;font:600 .72rem system-ui,sans-serif;letter-spacing:.03em}
     #settingsDone{display:block;width:100%;margin:22px 0 0}
+    /* Three boosters share the bar. Owl Eyes: the icon blinks now and then; hinted cards and cage slots glow with eye-shine. */
+    .boosters{gap:10px}.booster{flex:1;min-width:0;max-width:136px;padding:0 10px;gap:6px;letter-spacing:.08em}
+    .owl-eyes{display:block;width:30px;height:18px}.owl-eyes .lids{transform-origin:50% 58%;animation:owlBlink 5s infinite}@keyframes owlBlink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+    .tile.hinted,.slot.hinted{box-shadow:0 0 0 3px #ffb31a,0 0 24px 6px #ffb31acc;animation:hintPulse .8s ease-in-out infinite alternate}@keyframes hintPulse{to{box-shadow:0 0 0 3px #ffe08a,0 0 34px 10px #ffb31aee}}
+    .hint-eyes{position:fixed;z-index:3500;width:66px;height:39px;translate:-50% -50%;pointer-events:none;filter:drop-shadow(0 0 10px #ffb31a) drop-shadow(0 2px 2px #000)}.hint-eyes .owl-eyes{width:100%;height:100%}.hint-eyes .lids{animation:none}
+    .badge.pop{animation:badgePop .5s cubic-bezier(.2,.8,.2,1)}@keyframes badgePop{0%{transform:scale(1)}40%{transform:scale(1.7)}100%{transform:scale(1)}}
     /* Volume sliders: chunky track that fills with the accent, big pressable knob (theme tokens, so Jungle gets banana knobs). */
     .vol-row{display:grid;grid-template-columns:54px 1fr 44px;align-items:center;gap:10px;margin-top:6px;color:var(--text-dim);font:900 .7rem system-ui,sans-serif;letter-spacing:.14em}.vol-row b{text-align:right;color:#fff;font-variant-numeric:tabular-nums}
     .vol{--fill:100%;-webkit-appearance:none;appearance:none;width:100%;height:40px;margin:0;background:none;touch-action:none;cursor:pointer}
@@ -182,7 +188,7 @@
       <section class="board-wrap" aria-label="Layered tile board"><canvas id="microSlats" aria-hidden="true"></canvas><div id="board"></div></section>
     </main>
   </div>
-  <aside class="tray-panel"><div class="boosters"><button class="booster" id="undo" aria-label="Undo"><span class="booster-icon">↶</span>UNDO<b class="badge" id="undoCount">2</b></button><button class="booster" id="shuffle" aria-label="Shuffle"><span class="booster-icon">⟳</span>SHUFFLE<b class="badge" id="shuffleCount">1</b></button></div><div class="tray-label"><span>HOLDING CAGE</span><span class="build-id" aria-hidden="true">261006.2000</span><span id="bufferStatus">0 / 4</span></div><div class="tray" id="tray"></div></aside>
+  <aside class="tray-panel"><div class="boosters"><button class="booster" id="undo" aria-label="Undo"><span class="booster-icon">↶</span>UNDO<b class="badge" id="undoCount">2</b></button><button class="booster" id="shuffle" aria-label="Shuffle"><span class="booster-icon">⟳</span>SHUFFLE<b class="badge" id="shuffleCount">1</b></button><button class="booster" id="hint" aria-label="Owl Eyes hint"><span class="booster-icon"><svg class="owl-eyes" viewBox="0 0 44 26" aria-hidden="true"><path d="M3 7Q11 0 19 6M25 6Q33 0 41 7" fill="none" stroke="#fff6dc" stroke-width="2.4" stroke-linecap="round"/><g class="lids"><circle cx="11" cy="15" r="9.6" fill="#2b1a06"/><circle cx="33" cy="15" r="9.6" fill="#2b1a06"/><circle cx="11" cy="15" r="7.6" fill="#ffb31a"/><circle cx="33" cy="15" r="7.6" fill="#ffb31a"/><circle cx="11" cy="15" r="3.9" fill="#120a02"/><circle cx="33" cy="15" r="3.9" fill="#120a02"/><circle cx="9" cy="12.6" r="1.6" fill="#fff"/><circle cx="31" cy="12.6" r="1.6" fill="#fff"/></g></svg></span>EYES<b class="badge" id="hintCount">1</b></button></div><div class="tray-label"><span>HOLDING CAGE</span><span class="build-id" aria-hidden="true">261006.2000</span><span id="bufferStatus">0 / 4</span></div><div class="tray" id="tray"></div></aside>
   <div class="overlay" id="overlay"><div class="dialog"><h2 id="resultTitle">CAGE FULL</h2><p id="resultText"></p><button class="action primary" id="retryLevel">RETRY LEVEL</button><button class="action" id="overlayUndo" hidden>Undo last move</button><button class="link-btn" id="failHome">Home</button></div></div>
   <div class="overlay" id="winOverlay"><div class="dialog win-dialog"><div class="win-level win-step" id="winLevel">LEVEL 1</div><div class="win-complete win-step" id="winComplete">COMPLETE</div><div class="win-time win-step" id="winTimeBox"><small>TIME</small><b id="winTime">0:00</b></div><div class="win-badge win-step" id="winBadge"></div><div class="win-streak win-step" id="winStreak" hidden><span class="flame">🔥</span><b id="winStreakCount">1</b><small id="winStreakLabel">DAY<br>STREAK</small></div><div class="win-score win-step" id="winScore"><div class="win-gain"><span><b id="winPoints">+0</b><small id="winPointsLabel">POINTS</small></span><span><b id="winXp">+0</b><small>XP</small></span></div><div class="win-tier" id="winTier"><span id="winTierBadge"></span><div class="tier-track"><div class="tier-bar"><i id="winTierFill"></i></div><small id="winTierText"></small></div></div><div class="win-unlock" id="winUnlock" hidden><small>NEW CARDS UNLOCKED</small><b id="winUnlockName"></b></div><div class="win-rank" id="winRank" hidden><b id="winRankText"></b><button class="link-btn" id="winLeaders">SEE LEADERBOARD</button></div></div><div class="win-next win-step" id="winNext">LEVEL <span class="win-roll"><span id="winRoll"><span id="winFrom">1</span><span id="winTo">2</span></span></span></div><button class="action primary win-step" id="nextLevel">NEXT LEVEL</button><button class="link-btn win-step" id="winHome">Home</button></div></div>
 <div class="overlay" id="settings"><div class="dialog settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settingsTitle"><h2 id="settingsTitle">SETTINGS</h2><div class="set-row"><div class="set-label">PLAYER</div><button class="name-chip" id="settingsName"><span id="settingsTierBadge"></span><b id="settingsNameText">—</b><small>EDIT ✎</small></button></div><div class="set-row"><div class="set-label" id="themeLabel">THEME</div><div class="theme-chips" id="themeChips" role="radiogroup" aria-labelledby="themeLabel"></div></div><div class="set-row"><div class="set-label" id="musicLabel">MUSIC</div><div class="dip" data-setting="music" role="radiogroup" aria-labelledby="musicLabel"><button role="radio" data-value="relaxed">RELAXED</button><button role="radio" data-value="competitive">COMPETITIVE</button></div><small class="set-hint" id="musicHint"></small></div><div class="set-row"><div class="set-label" id="difficultyLabel">DIFFICULTY</div><div class="dip" data-setting="difficulty" role="radiogroup" aria-labelledby="difficultyLabel"><button role="radio" data-value="easy">EASY</button><button role="radio" data-value="normal">NORMAL</button></div><small class="set-hint" id="difficultyHint"></small></div><div class="set-row"><div class="set-label" id="soundLabel">SOUND</div><div class="dip" data-setting="sound" role="radiogroup" aria-labelledby="soundLabel"><button role="radio" data-value="on">ON</button><button role="radio" data-value="off">OFF</button></div><small class="set-hint" id="soundHint"></small></div><div class="set-row"><div class="set-label">VOLUME</div><label class="vol-row"><span>MUSIC</span><input type="range" class="vol" id="musicVol" min="0" max="100" step="5" aria-label="Music volume"><b id="musicVolText"></b></label><label class="vol-row"><span>SFX</span><input type="range" class="vol" id="sfxVol" min="0" max="100" step="5" aria-label="Sound effects volume"><b id="sfxVolText"></b></label></div><button class="action primary" id="settingsDone">DONE</button></div></div>
@@ -244,9 +250,11 @@
     const BASE_LAYOUT=buildLayout(),TOTAL=BASE_LAYOUT.length;
     const variants={A:'Layered terminal',B:'Operator console',C:'Glyph shrine',D:'Micro slats'};
     const UNDOS_PER_LEVEL=2,UNDOS_PER_LEVEL_EASY=3,SHUFFLES_PER_LEVEL=1;
-    // Difficulty ramp: the share of cards dealt face up starts high and drops 5% a level to a floor of 35%.
-    // Easy (Settings) ramps gently instead: 90% minus 2.5% a level, floor 60%. It also gets the bonus pair every level and a third undo.
-    const faceUpShare=(level,easy=false)=>easy?Math.max(.6,.9-(level-1)*.025):Math.max(.35,.85-(level-1)*.05);
+    // Owl Eyes hints: 1 per level, +1 for every Good Eye combo, holding at most HINTS_MAX. Each one used costs 5% like an undo.
+    const HINTS_PER_LEVEL=1,HINTS_MAX=3;let hintTimer;
+    // Difficulty ramp: the share of cards dealt face up starts at 95% and drops 2.5% a level to a floor of 65%.
+    // Easy (Settings) ramps gently instead: 98% minus 2% a level, floor 80%. It also gets the bonus pair every level and a third undo.
+    const faceUpShare=(level,easy=false)=>easy?Math.max(.8,.98-(level-1)*.02):Math.max(.65,.95-(level-1)*.025);
     let state={level:1,tiles:[],tray:[],pairs:0,shuffles:0,undosLeft:UNDOS_PER_LEVEL,shufflesLeft:SHUFFLES_PER_LEVEL,locked:false,history:[],clearing:new Set(),clock:{elapsed:0,startedAt:null}};
     // "Good Eye!" combo: GOOD_EYE_COUNT clears the player makes within GOOD_EYE_WINDOW_MS, at most once per GOOD_EYE_COOLDOWN_MS.
     // The opening bonus pair doesn't count. Each combo plays a random praise line (never the same line twice running) with its text stamped.
@@ -389,6 +397,30 @@
       for(const tile of out)tile.blockers=out.filter(other=>other.layer>tile.layer&&Math.abs(other.x-tile.x)<22&&Math.abs(other.y-tile.y)<16).map(other=>other.id);
       return out
     }
+    // Cage rule for one card: it pairs with the same card in the cage, else with a caged joker; a joker pairs with the oldest card;
+    // Kevin never enters the cage. Returns the new cage.
+    function cageStep(cage,sym){if(sym===KEVIN)return cage;let k=sym===JOKER?(cage.length?0:-1):cage.indexOf(sym);if(k<0&&sym!==JOKER)k=cage.indexOf(JOKER);return k>=0?cage.filter((_,i)=>i!==k):[...cage,sym]}
+    // Finds a removal order that clears the given cards from this cage state without overflowing, or null (none) / undefined (gave up).
+    // Depth-first with dead-state memo; tries matches first, then cards whose partner is free or least buried.
+    function solveLine(tiles,cage,budget=60000){
+      const dead=new Set(),byId=new Map(tiles.map(t=>[t.id,t]));let nodes=0;
+      const freeIn=left=>tiles.filter(t=>left.has(t.id)&&!t.blockers.some(b=>left.has(b)));
+      const buried=(id,left,seen=new Set())=>{for(const b of byId.get(id).blockers)if(left.has(b)&&!seen.has(b)){seen.add(b);buried(b,left,seen)}return seen.size};
+      const cost=(m,left,cage)=>{if(m.next.length<cage.length||m.t.symbol===KEVIN)return 0;if(m.t.symbol===JOKER)return 1;let best=99;for(const o of tiles)if(o!==m.t&&left.has(o.id)&&o.symbol===m.t.symbol)best=Math.min(best,buried(o.id,left));return 2+best+m.next.length*3};
+      const go=(left,cage,path)=>{
+        if(!left.size)return cage.length?null:path;if(++nodes>budget)return undefined;
+        const key=[...left].sort().join()+'|'+cage.join();if(dead.has(key))return null;
+        let moves=freeIn(left).map(t=>({t,next:cageStep(cage,t.symbol)})).filter(m=>m.next.length<4).map(m=>({...m,c:cost(m,left,cage)})).sort((a,b)=>a.c-b.c);
+        // Never worth branching: Kevin (no cage slot, frees what's under him) or a card that pairs with its twin already caged.
+        // Same for one of two free twins while the cage has room: the twin pairs with it straight after, so nothing is lost.
+        // Only for cards with an even number of copies left: an odd one out is the joker's partner, and its timing matters.
+        const copies=new Map();for(const id of left){const sym=byId.get(id).symbol;copies.set(sym,(copies.get(sym)||0)+1)}for(const sym of cage)copies.set(sym,(copies.get(sym)||0)+1);const even=sym=>sym!==JOKER&&copies.get(sym)%2===0;
+        const sure=moves.find(m=>m.t.symbol===KEVIN||(m.next.length<cage.length&&even(m.t.symbol)&&cage.includes(m.t.symbol)))||(cage.length<=2&&!cage.includes(JOKER)&&moves.find(m=>even(m.t.symbol)&&moves.some(o=>o!==m&&o.t.symbol===m.t.symbol)));if(sure)moves=[sure];
+        for(const m of moves){const l=new Set(left);l.delete(m.t.id);const r=go(l,m.next,[...path,m.t]);if(r||r===undefined)return r}
+        dead.add(key);return null
+      };
+      return go(new Set(tiles.map(t=>t.id)),cage,[])
+    }
     // Seeded RNG so each level always deals the same board (Retry Level replays it exactly).
     function mulberry32(seed){return()=>{seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
     const KEVIN_WINDOW=[.6,.9];
@@ -477,7 +509,7 @@
       featuredSymbol=null;$('#dragLayer').replaceChildren();goodEyeClears=[];
       // Difficulty is read here, so a change in Settings applies from the next level start or retry, never mid-board.
       const easy=progress.settings.difficulty==='easy';
-      state={level,easy,tiles:buildLevelBoard(level,easy),tray:[],pairs:0,shuffles:0,undosLeft:easy?UNDOS_PER_LEVEL_EASY:UNDOS_PER_LEVEL,shufflesLeft:SHUFFLES_PER_LEVEL,locked:false,busy:0,over:false,won:false,history:[],clearing:new Set(),clock:{elapsed:0,startedAt:null}};
+      state={level,easy,tiles:buildLevelBoard(level,easy),tray:[],pairs:0,shuffles:0,hintsLeft:HINTS_PER_LEVEL,hintsUsed:0,hintIds:null,hintSlot:null,undosLeft:easy?UNDOS_PER_LEVEL_EASY:UNDOS_PER_LEVEL,shufflesLeft:SHUFFLES_PER_LEVEL,locked:false,busy:0,over:false,won:false,history:[],clearing:new Set(),clock:{elapsed:0,startedAt:null}};
       $('#overlay').classList.remove('show');$('#winOverlay').classList.remove('show');render();renderClock();renderStreak();setMessage(retry?`Level ${level} reset — same board, new plan.`:'Reveal an exposed card to begin.');
       if(silent)pendingLevelStart=true;else playSound('levelStart',{volume:.78})
     }
@@ -494,14 +526,14 @@
         const free=isFree(tile,activeIds),hasPhoto=tile.revealed&&Boolean(SYMBOL_IMAGES[tile.symbol]),renderKey=`${tile.symbol}|${tile.revealed}`;
         let node=board.querySelector(`[data-id="${tile.id}"]`);
         if(!node){node=document.createElement('button');node.dataset.id=tile.id;node.dataset.code=`L${tile.layer}`;node.style.left=`${tile.x}%`;node.style.rotate=`${((tile.x*7+tile.y*3)%5)-2}deg`;board.append(node)}
-        node.style.top=`${displayY(tile.y)}%`;node.style.zIndex=tile.layer*100+Math.round(tile.y)+(tile.revealed&&free?1000:0);node.className=`tile board-tile ${free?'free':'blocked'} ${tile.revealed?'revealed':'face-down'} ${hasPhoto?'has-photo':''} ${tile.temporaryReveal?'on-top':''} ${tile.revealed&&(tile.symbol===JOKER||tile.symbol===KEVIN)?'joker-card':''}`;
+        node.style.top=`${displayY(tile.y)}%`;node.style.zIndex=tile.layer*100+Math.round(tile.y)+(tile.revealed&&free?1000:0);node.className=`tile board-tile ${free?'free':'blocked'} ${tile.revealed?'revealed':'face-down'} ${hasPhoto?'has-photo':''} ${tile.temporaryReveal?'on-top':''} ${tile.revealed&&(tile.symbol===JOKER||tile.symbol===KEVIN)?'joker-card':''} ${state.hintIds?.has(tile.id)?'hinted':''}`;
         if(node.dataset.renderKey!==renderKey){node.getAnimations().forEach(animation=>animation.cancel());node.replaceChildren();if(tile.revealed)setSymbolContent(node,tile.symbol);node.dataset.renderKey=renderKey}
         node.setAttribute('aria-disabled',String(!free||state.locked));node.onclick=e=>{if(performance.now()-(Number(node.dataset.tapAt)||0)<700)return;handleTile(tile,e.currentTarget)};
         if(free)enablePeekDrag(node);else{node.onpointerdown=null;node.onpointermove=null;node.onpointerup=null;node.onpointercancel=null}
       });
       if(tray.children.length!==4){tray.replaceChildren();for(let i=0;i<4;i++){const slot=document.createElement('div');slot.innerHTML=`<span></span><small class="slot-num">0${i+1}</small>`;tray.append(slot)}}
-      for(let i=0;i<4;i++){const slot=tray.children[i],span=slot.querySelector('span'),held=state.tray[i],renderKey=held?`${held.id}|${held.symbol}`:'';slot.className=`slot${held?' filled':''}`;if(slot.dataset.renderKey!==renderKey){span.replaceChildren();if(held)setSymbolContent(span,held.symbol);slot.dataset.renderKey=renderKey}if(held){slot.dataset.tileId=held.id;slot.dataset.shine=shineFor(held.symbol)}else{delete slot.dataset.tileId;delete slot.dataset.shine}}
-      $('#levelNum').textContent=state.level;$('#bufferStatus').textContent=`${state.tray.length} / 4`;setBooster('undo',state.undosLeft,!state.history.length||state.locked||state.clearing.size>0);setBooster('shuffle',state.shufflesLeft,state.locked||state.clearing.size>0);
+      for(let i=0;i<4;i++){const slot=tray.children[i],span=slot.querySelector('span'),held=state.tray[i],renderKey=held?`${held.id}|${held.symbol}`:'';slot.className=`slot${held?' filled':''}${state.hintSlot===i?' hinted':''}`;if(slot.dataset.renderKey!==renderKey){span.replaceChildren();if(held)setSymbolContent(span,held.symbol);slot.dataset.renderKey=renderKey}if(held){slot.dataset.tileId=held.id;slot.dataset.shine=shineFor(held.symbol)}else{delete slot.dataset.tileId;delete slot.dataset.shine}}
+      $('#levelNum').textContent=state.level;$('#bufferStatus').textContent=`${state.tray.length} / 4`;setBooster('undo',state.undosLeft,!state.history.length||state.locked||state.clearing.size>0);setBooster('shuffle',state.shufflesLeft,state.locked||state.clearing.size>0);setBooster('hint',state.hintsLeft,state.locked||state.clearing.size>0||state.over);
       renderFeatured();
     }
     function setBooster(id,left,blocked){const button=$(`#${id}`);$(`#${id}Count`).textContent=left>0?left:'🔒';button.classList.toggle('empty',left<=0);button.disabled=left<=0||blocked}
@@ -525,7 +557,7 @@
     // A locked card shakes and plays the can't-select sound instead of doing nothing.
     function rejectTap(node){const now=performance.now();if(now-(node.rejectedAt||0)<250)return;node.rejectedAt=now;node.animate([{translate:'0 0'},{translate:'-3px 0'},{translate:'3px 0'},{translate:'-2px 0'},{translate:'2px 0'},{translate:'0 0'}],{duration:220,easing:'ease-in-out'});playSound('cantSelect',{volume:.26});haptic('cardBlocked')}
     function handleTile(tile,node){
-      if(state.locked||!tile.active)return;
+      if(state.locked||!tile.active)return;if(state.hintIds)clearHint(false);
       if(!isFree(tile)){rejectTap(node);return}
       if(tile.revealed&&tile.revealedAt&&performance.now()-tile.revealedAt<260)return;
       startClock();featuredSymbol=tile.symbol;renderFeatured();
@@ -594,7 +626,9 @@
       if(pairIds.some(id=>state.tiles.find(t=>t.id===id)?.bonus))return;
       const now=performance.now();goodEyeClears=goodEyeClears.filter(t=>now-t<=GOOD_EYE_WINDOW_MS);goodEyeClears.push(now);
       if(goodEyeClears.length<GOOD_EYE_COUNT||goodEyeBusy||now-goodEyeAt<GOOD_EYE_COOLDOWN_MS)return;
-      goodEyeClears=[];goodEyeAt=now;showGoodEye()
+      goodEyeClears=[];goodEyeAt=now;showGoodEye();
+      // A combo earns an Owl Eyes hint.
+      if(state.hintsLeft<HINTS_MAX){state.hintsLeft++;render();const badge=$('#hintCount');badge.classList.remove('pop');void badge.offsetWidth;badge.classList.add('pop')}
     }
     // Never overlaps or queues: while it runs, goodEyeBusy blocks another one.
     function showGoodEye(){
@@ -648,6 +682,32 @@
       state.tray.push({id:a.id,symbol:a.symbol},{id:b.id,symbol:b.symbol});nodes.forEach((node,i)=>{if(node)flyToTray(node,Math.min(start+i,3))});
       render();setMessage(message);scheduleClear(a.symbol,[a.id,b.id])
     }
+    // Owl Eyes: searches for a line that clears the board from here (cage rules as in play, matches tried first) and shows its
+    // first move with that card's partner: a cage slot, or the next card in the line when it's free now. Face-down cards it points
+    // at are revealed. Never a dead end; if no safe line exists the hint isn't spent.
+    function findHint(){
+      const active=state.tiles.filter(t=>t.active),cage0=state.tray.filter(t=>!state.clearing.has(t.id)).map(t=>t.symbol);
+      const step=cageStep;let path=solveLine(active,cage0);
+      // If the search runs out of time, fall back to an obvious match: a card that pairs with the cage, else two free twins.
+      if(path===undefined){const free=active.filter(t=>isFree(t)),pairCage=free.find(t=>t.symbol!==KEVIN&&step(cage0,t.symbol).length<cage0.length),twin=free.find(t=>t.symbol!==KEVIN&&t.symbol!==JOKER&&free.some(o=>o!==t&&o.symbol===t.symbol));
+        path=pairCage?[pairCage]:twin&&cage0.length<3?[twin,free.find(o=>o!==twin&&o.symbol===twin.symbol)]:null}
+      if(!path?.length)return null;
+      const [first,second]=path,activeIds=new Set(active.map(t=>t.id));
+      if(step(cage0,first.symbol).length<cage0.length&&first.symbol!==KEVIN){const held=state.tray.filter(t=>!state.clearing.has(t.id));let k=first.symbol===JOKER?0:held.findIndex(t=>t.symbol===first.symbol);if(k<0)k=held.findIndex(t=>t.symbol===JOKER);return{tiles:[first],slot:state.tray.indexOf(held[k])}}
+      if(second&&isMate(first.symbol,second.symbol)&&isFree(second,activeIds))return{tiles:[first,second],slot:null};
+      return{tiles:[first],slot:null}
+    }
+    function useHint(){
+      if(state.locked||state.hintsLeft<=0||state.clearing.size||state.over)return;
+      const hint=findHint();if(!hint){setMessage('No safe match from here — try Undo or Shuffle.');rejectTap($('#hint'));return}
+      state.hintsLeft--;state.hintsUsed++;startClock();hint.tiles.forEach(t=>{t.revealed=true});state.hintIds=new Set(hint.tiles.map(t=>t.id));state.hintSlot=hint.slot;render();
+      const targets=[...hint.tiles.map(t=>board.querySelector(`[data-id="${t.id}"]`)),hint.slot!=null?tray.children[hint.slot]:null].filter(Boolean);
+      for(const node of targets){const r=node.getBoundingClientRect(),eyes=document.createElement('div');eyes.className='hint-eyes';eyes.innerHTML=$('#hint .owl-eyes').outerHTML;eyes.style.left=`${r.left+r.width/2}px`;eyes.style.top=`${r.top+Math.min(r.height*.3,40)}px`;document.body.append(eyes);
+        eyes.animate([{transform:'scaleY(0)',opacity:0},{transform:'scaleY(1.15)',opacity:1,offset:.08},{transform:'scaleY(1)',opacity:1,offset:.14},{transform:'scaleY(.1)',opacity:1,offset:.5},{transform:'scaleY(1)',opacity:1,offset:.56},{transform:'scaleY(1)',opacity:1,offset:.85},{transform:'scaleY(1)',opacity:0}],{duration:2600,easing:'ease-out'}).onfinish=()=>eyes.remove()}
+      const kevin=hint.tiles[0].symbol===KEVIN;setMessage(kevin?'OWL EYES // use Kevin now':hint.slot!=null?`OWL EYES // this one pairs with the cage`:hint.tiles.length>1?'OWL EYES // match these two':'OWL EYES // take this card next');
+      playSound('pickup',{volume:.3,rate:.68});haptic('cardFlip');clearTimeout(hintTimer);hintTimer=setTimeout(()=>clearHint(true),3400)
+    }
+    function clearHint(redraw){clearTimeout(hintTimer);if(!state.hintIds&&state.hintSlot==null)return;state.hintIds=null;state.hintSlot=null;if(redraw)render()}
     function reshuffle(){
       if(state.locked||state.shufflesLeft<=0||state.clearing.size)return;state.history.push(snapshot());startClock();
       // Only the board is re-dealt: cards in the cage stay put, in order, and the deal is built around them.
@@ -710,7 +770,7 @@
       if(previous==null||newRecord)times[level]=time;
       const today=localDate(),streak=progress.streak,firstToday=streak.lastDate!==today;
       if(firstToday){streak.count=streak.lastDate===localDate(-1)?streak.count+1:1;streak.lastDate=today}
-      const assists=(state.easy?UNDOS_PER_LEVEL_EASY:UNDOS_PER_LEVEL)-state.undosLeft+state.shuffles,points=levelPoints(level,time,assists),stats=progress.stats,ratingBefore=ratingOf(stats.scores);
+      const assists=(state.easy?UNDOS_PER_LEVEL_EASY:UNDOS_PER_LEVEL)-state.undosLeft+state.shuffles+state.hintsUsed,points=levelPoints(level,time,assists),stats=progress.stats,ratingBefore=ratingOf(stats.scores);
       const xpGain=points+(firstToday?DAILY_XP:0);stats.xp+=xpGain;if(!state.easy)stats.scores=[...stats.scores,points].slice(-20);
       const reached=progress.level<=level;progress.level=Math.max(progress.level,level+1);saveProgress();renderStreak();state.rankSync=syncProfile();
       return{level,time,previous,newRecord,best:times[level],firstToday,streak:streak.count,easy:state.easy,reached,points,xpGain,ratingBefore,rating:ratingOf(stats.scores)}
@@ -821,7 +881,7 @@
       probe('art/home/button.png',()=>{$('#homePlay').style.backgroundImage="url('art/home/button.png')"});
     }
     $('#homeBtn').onclick=showHome;$('#winHome').onclick=showHome;$('#failHome').onclick=()=>{startLevel(state.level,{silent:true});pendingLevelStart=false;showHome()};$('#homePlay').onclick=playFromHome;$('#homeSound').onclick=()=>{$('#sound').click();$('#homeSound').textContent=soundEnabled?'♪':'♩'};
-    $('#shuffle').onclick=reshuffle;$('#undo').onclick=undo;$('#overlayUndo').onclick=undo;$('#retryLevel').onclick=()=>startLevel(state.level,{retry:true});$('#nextLevel').onclick=()=>startLevel(state.level+1);$('#sound').onclick=()=>{soundEnabled=!soundEnabled;$('#sound').textContent=soundEnabled?'♪':'♩';$('#sound').title=soundEnabled?'Sound on':'Sound off';$('#sound').setAttribute('aria-label',$('#sound').title);$('#sound').classList.toggle('active',soundEnabled);if(soundEnabled){if(audioUnlocked)music.play().catch(()=>{});playSound('control',{volume:.4})}else music.pause()};$('#prevVariant').onclick=()=>cycleVariant(-1);$('#nextVariant').onclick=()=>cycleVariant(1);
+    $('#shuffle').onclick=()=>{clearHint(true);reshuffle()};$('#hint').onclick=useHint;$('#undo').onclick=undo;$('#overlayUndo').onclick=undo;$('#retryLevel').onclick=()=>startLevel(state.level,{retry:true});$('#nextLevel').onclick=()=>startLevel(state.level+1);$('#sound').onclick=()=>{soundEnabled=!soundEnabled;$('#sound').textContent=soundEnabled?'♪':'♩';$('#sound').title=soundEnabled?'Sound on':'Sound off';$('#sound').setAttribute('aria-label',$('#sound').title);$('#sound').classList.toggle('active',soundEnabled);if(soundEnabled){if(audioUnlocked)music.play().catch(()=>{});playSound('control',{volume:.4})}else music.pause()};$('#prevVariant').onclick=()=>cycleVariant(-1);$('#nextVariant').onclick=()=>cycleVariant(1);
     // Player profile: a display name plus a private id/secret (for posting scores later); no account or password.
     const NAME_BLOCKLIST=['fuck','shit','cunt','bitch','nigg','fag','dick','cock','pussy','whore','slut','rape','nazi','hitler'];
     function cleanName(raw){const name=raw.normalize('NFC').replace(/\s+/g,' ').trim();if(name.length<2)return{error:'At least 2 characters, please.'};if(name.length>16)return{error:'16 characters max.'};if(!/^[\p{L}\p{N} _.'’-]+$/u.test(name))return{error:'Letters, numbers, spaces and - _ . only.'};const flat=name.toLowerCase().replace(/[^a-z]/g,'');if(NAME_BLOCKLIST.some(w=>flat.includes(w)))return{error:'Let’s keep it jungle-friendly.'};return{name}}
@@ -902,7 +962,7 @@
       const values={music:progress.settings.music,difficulty:progress.settings.difficulty,sound:soundEnabled?'on':'off'};
       for(const dip of document.querySelectorAll('.dip')){const buttons=[...dip.children],value=values[dip.dataset.setting];dip.dataset.on=buttons.findIndex(b=>b.dataset.value===value);buttons.forEach(b=>{b.setAttribute('aria-checked',String(b.dataset.value===value));b.disabled=dip.dataset.setting==='music'&&!MUSIC[b.dataset.value]?.length})}
       $('#musicHint').textContent=values.music==='relaxed'?'Calm jungle grooves.':'Faster beats for chasing records.';
-      $('#difficultyHint').textContent=(values.difficulty==='easy'?'More cards face up, a bonus pair every level and 3 undos. Easy clears aren’t ranked.':'The standard challenge.')+(values.difficulty!==(state.easy?'easy':'normal')&&state.tiles.length?' Starts next level.':'');
+      $('#difficultyHint').textContent=(values.difficulty==='easy'?'Even more cards face up, a bonus pair every level and 3 undos. Easy clears aren’t ranked.':'The standard challenge.')+(values.difficulty!==(state.easy?'easy':'normal')&&state.tiles.length?' Starts next level.':'');
       $('#soundHint').textContent='';
     }
     document.querySelectorAll('.dip').forEach(dip=>dip.onclick=e=>{
