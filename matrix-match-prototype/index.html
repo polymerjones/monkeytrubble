@@ -270,7 +270,7 @@
     ];let lastPraise=null;
     let goodEyeClears=[],goodEyeAt=-Infinity,goodEyeBusy=false;
     const SOUND_FILES={...Object.fromEntries(PRAISE.flatMap(p=>p.takes.map(t=>[`praise:${t}`,`audio/praise/${t}.mp3`]))),homeSting:'audio/polyhome.mp3',callCaleb:'audio/video-calls/caleb-the-monkey.mp3',callWarren:'audio/video-calls/warren-the-monkey.mp3',
-      pickup:'audio/blippage.wav',match:'audio/success.wav',control:'audio/complete.mp3',win:'audio/level-complete.mp3',levelStart:'audio/japanesevoice.mp3',
+      pickup:'audio/blippage.wav',match:'audio/success.wav',control:'audio/complete.mp3',win:'audio/sfx/level-complete.mp3',gameOverA:'audio/sfx/game-over-a.mp3',gameOverB:'audio/sfx/game-over-b.mp3',comboSting:'audio/sfx/combo.mp3',praiseSting:'audio/sfx/praise-sting.mp3',praiseOrEnd:'audio/sfx/praise-or-end.mp3',levelStart:'audio/japanesevoice.mp3',
       callHamadryas:'audio/video-calls/official-hamadryas.mp3',callGuereza:'audio/video-calls/official-guereza.mp3',callBarbary:'audio/video-calls/official-barbary-macaque.mp3',
       callDeBrazza:'audio/video-calls/official-debrazza-monkey.mp3',callMandrill:'audio/video-calls/official-mandrill.mp3',callCapuchin:'audio/video-calls/official-capuchin-monkey.mp3',
       callAgile:'audio/video-calls/official-agile-gibbon.mp3',callHowler:'audio/video-calls/HOWLERYELL.wav',callSmallApe:'audio/video-calls/SMALLAPEYELL.wav',
@@ -335,7 +335,7 @@
     }
     // Polymer Jones sting: once per app launch, on the home screen, as soon as audio is allowed (at once in the iOS app, first tap in a browser).
     let homeStingPending=true;
-    function playHomeSting(){if(!homeStingPending||!audioUnlocked||!soundEnabled||$('#home').classList.contains('hidden'))return;homeStingPending=false;duckMusic(soundLengthMs('homeSting',4400)+200);playSound('homeSting',{volume:.9})}
+    function playHomeSting(){if(!homeStingPending||!audioUnlocked||!soundEnabled||$('#home').classList.contains('hidden'))return;homeStingPending=false;playSound('homeSting',{volume:.9})}
     function unlockAudio(){if(audioUnlocked)return;audioUnlocked=true;setTimeout(playHomeSting,0);audioContext?.resume().catch(()=>{});if(soundEnabled){music.play().catch(()=>{});if(pendingLevelStart){pendingLevelStart=false;playSound('levelStart',{volume:.78})}}}
     function resumeMonkeyAudio(){if(audioContext?.state==='suspended')audioContext.resume().catch(()=>{});if(soundEnabled&&audioUnlocked&&document.visibilityState==='visible')music.play().catch(()=>{})}
     window.__resumeMonkeyAudio=resumeMonkeyAudio;document.addEventListener('visibilitychange',()=>{if(document.hidden){music.pause();if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}}else{resumeMonkeyAudio();if(state.clock.resume){state.clock.resume=false;startClock()}}});
@@ -585,7 +585,8 @@
       const el=$('#goodEye'),voiced=soundEnabled&&!!(soundBuffers[key]||fallbackAudio[key]),holdMs=Math.max(2500,(voiced?soundLengthMs(key,1400):0)+1600);goodEyeBusy=true;
       // Long lines wrap; a single long word (MAGNIFICENT!) is shrunk until it fits the screen.
       el.textContent=line.text;el.style.fontSize=line.text.length>14?'clamp(1.7rem,8.6vw,2.7rem)':'';const over=el.scrollWidth/el.clientWidth;if(over>1)el.style.fontSize=`${parseFloat(getComputedStyle(el).fontSize)/over*.86}px`;
-      if(voiced){duckMusic(holdMs+300);playSound(key,{volume:1,delay:.25,praise:true})}
+      // A combo sting (one of two) leads, then the praise line.
+      playSound(Math.random()<.5?'comboSting':'praiseSting',{volume:.7});if(voiced){duckMusic(holdMs+300);playSound(key,{volume:1,delay:.4,praise:true})}
       const r=$('#board').getBoundingClientRect();el.style.top=`${r.top+r.height*.42}px`;
       el.getAnimations().forEach(a=>a.cancel());
       el.animate([{opacity:0,scale:1.9,rotate:'-6deg'},{opacity:1,scale:.94,rotate:'-3deg',offset:.18},{opacity:1,scale:1,rotate:'-4deg',offset:.26},{opacity:1,scale:1.04,rotate:'-4deg',offset:.8},{opacity:0,scale:1.15,rotate:'-4deg'}],{duration:holdMs,easing:'cubic-bezier(.2,.8,.2,1)'}).onfinish=()=>{goodEyeBusy=false};
@@ -662,7 +663,7 @@
     function explode(node){if(!node)return;const r=node.getBoundingClientRect();for(let i=0;i<24;i++){const p=document.createElement('i');p.className='particle';p.style.left=`${r.left+r.width/2}px`;p.style.top=`${r.top+r.height/2}px`;document.body.append(p);const x=(Math.random()-.5)*150,y=(Math.random()-.6)*150,rot=rand(360);p.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${x}px,${y}px) rotate(${rot}deg) scale(.2)`,opacity:0}],{duration:380+rand(300),easing:'cubic-bezier(.15,.7,.25,1)'}).onfinish=()=>p.remove()}}
     function finish(won,reason='overflow'){
       state.over=true;state.locked=true;pauseClock();
-      if(!won){playSound('control',{volume:.5,rate:.58});haptic('cageOverflow');const stuck=reason==='stuck';$('#resultTitle').textContent=stuck?'NO MOVES':'CAGE FULL';$('#resultTitle').style.color='var(--danger)';$('#resultText').textContent=stuck?'The cards left in the cage can’t be matched.':'Four unmatched cards filled the Holding Cage.';const canUndo=state.undosLeft>0&&state.history.length>0;$('#overlayUndo').hidden=!canUndo;$('#overlayUndo').textContent=`Undo last move (${state.undosLeft})`;$('#overlay').classList.add('show');return}
+      if(!won){playSound(Math.random()<.6?'gameOverA':'gameOverB',{volume:.8});haptic('cageOverflow');const stuck=reason==='stuck';$('#resultTitle').textContent=stuck?'NO MOVES':'CAGE FULL';$('#resultTitle').style.color='var(--danger)';$('#resultText').textContent=stuck?'The cards left in the cage can’t be matched.':'Four unmatched cards filled the Holding Cage.';const canUndo=state.undosLeft>0&&state.history.length>0;$('#overlayUndo').hidden=!canUndo;$('#overlayUndo').textContent=`Undo last move (${state.undosLeft})`;$('#overlay').classList.add('show');return}
       state.won=true;playSound('win',{volume:.72});showLevelComplete(recordLevelClear())
     }
     // Scoring (Normal clears only count toward rank; Easy earns XP).
@@ -724,7 +725,7 @@
       box.animate([{opacity:0,transform:'translateY(12px)'},{opacity:1,transform:'none'}],{duration:320,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'});
       const t0=performance.now();await new Promise(resolve=>{const tick=now=>{const k=Math.min(1,(now-t0)/600),e=1-Math.pow(1-k,3);$('#winPoints').textContent=`+${Math.round(r.points*e)}`;$('#winXp').textContent=`+${Math.round(r.xpGain*e)}`;if(k<1&&s===state)requestAnimationFrame(tick);else resolve()};requestAnimationFrame(tick)});
       if(s!==state)return;playSound('pickup',{volume:.18,rate:1.4});
-      if(!r.easy){fill.animate([{width:`${from*100}%`},{width:`${tierProgress(r.rating)*100}%`}],{duration:700,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'});if(tier!==before&&TIERS.indexOf(tier)>TIERS.indexOf(before)){await wait(500);if(s!==state)return;explode($('#winTierBadge'));playSound('match',{volume:.3,rate:1.1});haptic('pairCleared');$('#winTierText').textContent=`PROMOTED TO ${tier.name}!`}}
+      if(!r.easy){fill.animate([{width:`${from*100}%`},{width:`${tierProgress(r.rating)*100}%`}],{duration:700,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'});if(tier!==before&&TIERS.indexOf(tier)>TIERS.indexOf(before)){await wait(500);if(s!==state)return;explode($('#winTierBadge'));playSound('praiseOrEnd',{volume:.75});haptic('pairCleared');$('#winTierText').textContent=`PROMOTED TO ${tier.name}!`}}
       // Climbed the global board (or joined it): say so, with a way in. The board itself never pops up uninvited.
       const climb=await Promise.race([state.rankSync,wait(2500)]);if(s!==state)return;
       $('#winRank').hidden=true;$('#winUnlock').hidden=true;
@@ -790,8 +791,8 @@
       const resumable=state.tiles.length&&state.level===progress.level&&!state.over&&state.history.length;
       if(resumable){if(state.clock.resume){state.clock.resume=false;startClock()}}
       else{startLevel(progress.level,{silent:true});pendingLevelStart=false}
-      // Pressing PLAY announces "MONKEY TRUBBLE!" (in place of the level-start voice), with the praise doubler + echo.
-      const take=`praise:monkey-trubble-${'ab'[rand(2)]}`;duckMusic(soundLengthMs(take,1700)+900);playSound(take,{volume:1,delay:.1,praise:true})
+      // Pressing PLAY announces "MONKEY TRUBBLE!" (in place of the level-start voice), with the praise doubler + echo, over undipped music.
+      const take=`praise:monkey-trubble-${'ab'[rand(2)]}`;playSound(take,{volume:1,delay:.1,praise:true})
     }
     // Background trial: each home visit shows a random candidate (never the same twice in a row), tagged in the corner so the favorite can be named.
     const HOME_BGS=['A','B','E','3','4'];let homeBgKey=null;
