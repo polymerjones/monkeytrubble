@@ -353,7 +353,11 @@
     function resumeMonkeyAudio(){if(audioContext?.state==='suspended')audioContext.resume().catch(()=>{});if(soundEnabled&&audioUnlocked&&document.visibilityState==='visible')music.play().catch(()=>{})}
     window.__resumeMonkeyAudio=resumeMonkeyAudio;document.addEventListener('visibilitychange',()=>{if(document.hidden){music.pause();if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}}else{resumeMonkeyAudio();if(state.clock.resume){state.clock.resume=false;startClock()}}});
     function setMusicLevel(level,smoothing){if(musicGain)musicGain.gain.setTargetAtTime(level,audioContext.currentTime,smoothing);else music.volume=level}
-    function duckMusic(duration=2400){clearTimeout(musicDuckTimer);setMusicLevel(musicLevel()*MUSIC_DUCK,.06);musicDuckTimer=setTimeout(()=>setMusicLevel(musicLevel(),.4),duration)}
+    // Music dip: fast attack, held for about the length of the sound that caused it, then a short release so the music is back as the sound ends.
+    const DUCK_ATTACK_S=.04,DUCK_RELEASE_S=.12;
+    function duckMusic(duration=1500){clearTimeout(musicDuckTimer);setMusicLevel(musicLevel()*MUSIC_DUCK,DUCK_ATTACK_S);musicDuckTimer=setTimeout(()=>setMusicLevel(musicLevel(),DUCK_RELEASE_S),duration)}
+    // Hold time for a sound: release starts at 85% of its length (at the playback rate), plus any start delay.
+    const duckFor=(name,{rate=1,delay=0}={})=>Math.max(400,soundLengthMs(name,1500)/rate*.85+delay*1000);
         // echo: how many 1-second repeats follow (true = 1), each quieter and a touch lower. praise: the voiceover effect (see playPraise).
     function playSound(name,{volume=1,rate=1,echo=0,delay=0,praise=false}={}){
       if(!soundEnabled||!userSfxGain)return;const trim=Math.pow(10,(MIX_DB[name]??(name.startsWith('praise:')?MIX_DB.praise:0))/20),level=Math.max(0,volume*trim*userSfxGain*(name==='pickup'?CARD_SELECT_GAIN:1)),buffer=soundBuffers[name],echoes=echo===true?1:echo||0;
@@ -584,7 +588,7 @@
     }
     function playMatchFx(symbol){
       const symbols=[].concat(symbol),main=symbols.find(s=>s!==JOKER)||JOKER,choices=CARD_DATA[main]?.sounds||[],monkeySound=choices[rand(choices.length)],rate=1+Math.min(state.pairs,8)*.012;
-      duckMusic();playSound('match',{volume:.27,rate});if(monkeySound)playSound(monkeySound,{volume:1,rate,echo:CARD_DATA[main]?.echoes??1});if(main!==JOKER&&symbols.includes(JOKER))playSound('jokerClear',{volume:.7,delay:.35});const extras=CARD_DATA[main]?.clearExtras;if(extras)playSound(extras[rand(extras.length)],{volume:.85,delay:.15});haptic('pairCleared');
+      duckMusic(monkeySound?duckFor(monkeySound,{rate}):800);playSound('match',{volume:.27,rate});if(monkeySound)playSound(monkeySound,{volume:1,rate,echo:CARD_DATA[main]?.echoes??1});if(main!==JOKER&&symbols.includes(JOKER))playSound('jokerClear',{volume:.7,delay:.35});const extras=CARD_DATA[main]?.clearExtras;if(extras)playSound(extras[rand(extras.length)],{volume:.85,delay:.15});haptic('pairCleared');
     }
     function noteGoodEye(pairIds){
       if(pairIds.some(id=>state.tiles.find(t=>t.id===id)?.bonus))return;
@@ -599,7 +603,7 @@
       // Long lines wrap; a single long word (MAGNIFICENT!) is shrunk until it fits the screen.
       el.textContent=line.text;el.style.fontSize=line.text.length>14?'clamp(1.7rem,8.6vw,2.7rem)':'';const over=el.scrollWidth/el.clientWidth;if(over>1)el.style.fontSize=`${parseFloat(getComputedStyle(el).fontSize)/over*.86}px`;
       // A combo sting (one of two) leads, then the praise line.
-      playSound(Math.random()<.5?'comboSting':'praiseSting',{volume:.7});if(voiced){duckMusic(holdMs+300);playSound(key,{volume:1,delay:.4,praise:true})}
+      playSound(Math.random()<.5?'comboSting':'praiseSting',{volume:.7});if(voiced){duckMusic(duckFor(key,{delay:.4})+250);playSound(key,{volume:1,delay:.4,praise:true})}
       const r=$('#board').getBoundingClientRect();el.style.top=`${r.top+r.height*.42}px`;
       el.getAnimations().forEach(a=>a.cancel());
       el.animate([{opacity:0,scale:1.9,rotate:'-6deg'},{opacity:1,scale:.94,rotate:'-3deg',offset:.18},{opacity:1,scale:1,rotate:'-4deg',offset:.26},{opacity:1,scale:1.04,rotate:'-4deg',offset:.8},{opacity:0,scale:1.15,rotate:'-4deg'}],{duration:holdMs,easing:'cubic-bezier(.2,.8,.2,1)'}).onfinish=()=>{goodEyeBusy=false};
@@ -660,7 +664,7 @@
     function fireKevin(tile){
       const s=state,node=board.querySelector(`[data-id="${tile.id}"]`);tile.active=false;tile.temporaryReveal=false;
       if(node){const r=node.getBoundingClientRect(),copy=node.cloneNode(true);copy.removeAttribute('data-id');copy.classList.remove('board-tile');copy.style.left=`${r.left+r.width/2}px`;copy.style.top=`${r.top+r.height/2}px`;copy.style.zIndex='';$('#dragLayer').append(copy);copy.animate([{scale:1,opacity:1},{scale:1.35,opacity:1,offset:.4},{scale:1.7,opacity:0}],{duration:560,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'}).onfinish=()=>copy.remove();explode(node)}
-      featuredSymbol=KEVIN;duckMusic(4600);playSound('kevinClear',{volume:1});playSound('match',{volume:.25,rate:1.25});haptic('pairCleared');render();setMessage('MVP VISION // every card revealed');startPeek(soundLengthMs('kevinClear',4368));
+      featuredSymbol=KEVIN;duckMusic(duckFor('kevinClear'));playSound('kevinClear',{volume:1});playSound('match',{volume:.25,rate:1.25});haptic('pairCleared');render();setMessage('MVP VISION // every card revealed');startPeek(soundLengthMs('kevinClear',4368));
       setTimeout(()=>{if(s===state&&!s.over)finishIfCleared()},560)
     }
     // How long a loaded sound runs, in ms (fallback until it's decoded).
