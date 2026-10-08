@@ -54,7 +54,7 @@
     .game-shell{padding-bottom:174px}
     .top-left{display:flex;align-items:center;gap:10px}.home-btn{flex:none;width:34px;height:34px;padding:0;border:1px solid #27894a;border-radius:50%;background:#06160b;color:var(--green);font:700 1.1rem system-ui,sans-serif;cursor:pointer}.link-btn{display:block;margin:14px auto 0;padding:4px 10px;border:0;background:none;color:#8fd6a2;font:800 .76rem system-ui,sans-serif;letter-spacing:.22em;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
     .home{position:fixed;inset:0;z-index:900;display:flex;flex-direction:column;align-items:center;gap:14px;padding:calc(14px + env(safe-area-inset-top)) 20px calc(22px + env(safe-area-inset-bottom));overflow:hidden;background:radial-gradient(circle at 50% 36%,#0c3019 0,#020905 55%,#000 88%);transition:opacity .32s ease,transform .32s ease}.home.hidden{opacity:0;transform:scale(1.08);visibility:hidden;pointer-events:none;transition:opacity .32s ease,transform .32s ease,visibility 0s .32s}
-    .home-bg{position:absolute;inset:0;z-index:-1;background-size:cover;background-position:center}.home-bg-tag{position:absolute;left:10px;bottom:calc(8px + env(safe-area-inset-bottom));padding:3px 7px;border-radius:6px;background:#000a;color:#9dffb5;font:800 .62rem system-ui,sans-serif;letter-spacing:.12em;pointer-events:none}.home-top{width:100%;display:flex;justify-content:space-between;align-items:center}.home-icon{width:42px;height:42px;padding:0;border:1px solid #27894a;border-radius:50%;background:#06160bcc;color:var(--green);font:600 1.15rem system-ui,sans-serif;cursor:pointer}.home-streak{display:flex;align-items:center;gap:7px;padding:6px 13px;border:1px solid #27894a;border-radius:999px;background:#06160bcc;color:#fff;font:900 1rem system-ui,sans-serif}.home-streak small{color:var(--amber);font:800 .56rem/1.2 system-ui,sans-serif;letter-spacing:.16em}
+    .home-bg{position:absolute;inset:0;z-index:-1;background-size:cover;background-position:center}.home-bg-tag{position:absolute;left:10px;bottom:calc(8px + env(safe-area-inset-bottom));padding:3px 7px;border-radius:6px;background:#000a;color:#9dffb5;font:800 .62rem system-ui,sans-serif;letter-spacing:.12em;pointer-events:none}.home-top{width:100%;display:flex;justify-content:space-between;align-items:center}.home-top-right{display:flex;align-items:center;gap:10px}.home-icon{width:42px;height:42px;padding:0;border:1px solid #27894a;border-radius:50%;background:#06160bcc;color:var(--green);font:600 1.15rem system-ui,sans-serif;cursor:pointer}.home-streak{display:flex;align-items:center;gap:7px;padding:6px 13px;border:1px solid #27894a;border-radius:999px;background:#06160bcc;color:#fff;font:900 1rem system-ui,sans-serif}.home-streak small{color:var(--amber);font:800 .56rem/1.2 system-ui,sans-serif;letter-spacing:.16em}
     .home-logo{margin-top:4px;text-align:center;font-weight:900;font-size:clamp(1.5rem,8vw,2.5rem);letter-spacing:.14em;text-shadow:0 0 18px #32ff6d}.home-logo span{color:var(--bright)}.home-logo img{display:block;width:min(74vw,340px);max-height:16vh;object-fit:contain;filter:drop-shadow(0 3px 8px #000d)}
     /* 3D ticker: a strip of cards, tipped back, scrolls left forever (no rotateZ on the strip: it is thousands of px wide, so its ends would swing off screen); each card has its own angle and depth and slowly turns. */.home-card{flex:1;min-height:0;width:calc(100% + 40px);margin:50px -20px 0;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;perspective:900px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent)}.ticker-plane{width:100%;transform:rotateX(12deg);transform-style:preserve-3d}.ticker-track{display:flex;width:max-content;padding:26px 0;transform-style:preserve-3d;animation:tickerScroll var(--ticker-dur,80s) linear infinite}.ticker-card{flex:none;width:clamp(62px,18vw,88px);aspect-ratio:2/3;margin-right:14px;overflow:hidden;border:1.5px solid #baffca;border-radius:8px;background:#06160b;box-shadow:0 8px 16px #000c,0 0 12px #57ff8640;transform:rotateY(var(--ry)) rotateZ(var(--rz)) translateZ(var(--tz)) translateY(var(--ty));animation:tickerTurn var(--turn) ease-in-out var(--delay) infinite alternate;backface-visibility:hidden}.ticker-card .symbol-image{display:block;width:100%;height:100%;object-fit:cover}@keyframes tickerScroll{to{transform:translateX(-50%)}}@keyframes tickerTurn{to{transform:rotateY(calc(var(--ry) * -1)) rotateZ(calc(var(--rz) * -.5)) translateZ(var(--tz)) translateY(calc(var(--ty) * -1))}}.home.hidden .ticker-track,.home.hidden .ticker-card{animation-play-state:paused}
     .home-play{width:min(320px,86vw);padding:14px 0 16px;display:flex;flex-direction:column;align-items:center;gap:3px;border:2px solid #baffca;border-radius:22px;background:linear-gradient(180deg,#6dff9a,#1c9a45 70%,#137a35) center/cover;color:#002a0e;box-shadow:0 6px 0 #0a4a20,0 0 40px #57ff8666;cursor:pointer;animation:playPulse 2.2s ease-in-out infinite;-webkit-tap-highlight-color:transparent}.home-play small{font:900 .7rem system-ui,sans-serif;letter-spacing:.32em;opacity:.75}.home-play span{font:950 2.05rem/1 system-ui,sans-serif;letter-spacing:.08em}.home-play:active{translate:0 4px;box-shadow:0 2px 0 #0a4a20}@keyframes playPulse{0%,100%{scale:1}50%{scale:1.035}}
@@ -62,13 +62,23 @@
     @media(prefers-reduced-motion:reduce){.home-play{animation:none}}
     .ios-app .topbar .logo{display:none}
     .ios-app .logo{font-size:.6rem;letter-spacing:.1em;align-self:center}.ios-app .level-pill{font-size:.8rem;padding:4px 12px}.ios-app .top-stats{font-size:.72rem;gap:9px}.ios-app .featured-card{height:170px}.ios-app .featured-art{width:112px;height:166px}.ios-app .featured-copy{padding-top:30px}.ios-app .featured-name{font-size:1.18rem}.ios-app .featured-fact{-webkit-line-clamp:2}/* Hero copy on a solid panel: the CURRENT CARD tag and the sound button sit on the card's top border, the status line is hidden, and the freed room goes to larger text. Card height is unchanged so the board keeps its size. */.ios-app .featured-card{overflow:visible}.ios-app .featured-copy{position:relative;align-self:stretch;overflow:visible;max-height:none;padding:13px 10px 8px;border-radius:10px;background:#1a1d1c;box-shadow:inset 0 0 0 1px #ffffff14}.ios-app .featured-kicker{position:absolute;top:-19px;left:8px;padding:3px 7px;font-size:.74rem;box-shadow:0 2px 0 #001d09}.ios-app .featured-name{margin:0 0 3px;font-size:1.5rem;line-height:.98}.ios-app .featured-latin{min-height:0;font-size:.95rem}.ios-app .featured-fact{margin-top:5px;font-size:.9rem;line-height:1.24;color:#a9d8b5;-webkit-line-clamp:3}.ios-app .message{display:none}.ios-app .actions{top:-14px;right:10px}.ios-app .game-shell{padding-bottom:calc(178px + env(safe-area-inset-bottom))}
+    /* Settings: monkey-paw gear (48px touch target around the visible button) and chunky two-position switches with a sliding knob. */
+    .gear-btn{position:relative;flex:none;display:grid;place-items:center;width:36px;height:36px;padding:0;border:1px solid #27894a;border-radius:50%;background:#06160b;color:var(--green);cursor:pointer;-webkit-tap-highlight-color:transparent}.gear-btn::after{content:'';position:absolute;inset:-6px}.gear-btn svg{width:28px;height:28px;transition:transform .45s cubic-bezier(.2,.8,.2,1)}.gear-btn:active svg,.gear-btn.spin svg{transform:rotate(90deg)}
+    .home-gear{width:46px;height:46px;background:#06160bcc}.home-gear svg{width:36px;height:36px}
+    #settings{z-index:5000}.settings-dialog{text-align:left;padding:26px 22px 22px}.settings-dialog h2{text-align:center;color:var(--green)}
+    .set-row{margin-top:18px}.set-label{margin:0 0 8px;color:#8fd6a2;font:900 .72rem system-ui,sans-serif;letter-spacing:.24em}
+    .dip{position:relative;display:grid;grid-template-columns:1fr 1fr;padding:5px;border:2px solid #1d6b39;border-radius:14px;background:linear-gradient(180deg,#010804,#04140a);box-shadow:inset 0 3px 8px #000c,0 1px 0 #2a8d4f55}
+    .dip::before{content:'';position:absolute;top:5px;bottom:5px;left:5px;width:calc(50% - 5px);border-radius:10px;background:linear-gradient(180deg,#8dffb0,#2bbf5a 50%,#168a3e);box-shadow:0 4px 0 #0a4a20,0 7px 12px #000b,inset 0 1px 0 #f0fff4;transition:transform .24s cubic-bezier(.3,1.5,.5,1)}.dip[data-on="1"]::before{transform:translateX(100%)}
+    .dip button{position:relative;z-index:1;min-height:46px;padding:0 6px;border:0;background:none;color:#5fae78;font:900 .8rem system-ui,sans-serif;letter-spacing:.14em;cursor:pointer;transition:color .2s;-webkit-tap-highlight-color:transparent}.dip button[aria-checked="true"]{color:#002b0e}.dip button:disabled{opacity:.4;cursor:not-allowed}
+    .set-hint{display:block;min-height:1em;margin-top:7px;color:#6fa983;font:600 .72rem system-ui,sans-serif;letter-spacing:.03em}
+    #settingsDone{display:block;width:100%;margin:22px 0 0}
   </style>
 </head>
 <body>
   <div class="asset-loader" id="assetLoader" role="status" aria-live="polite"><div class="loader-box"><div class="loader-mark">MONKEY<span>//TRUBBLE</span></div><div class="loader-status" id="loaderStatus">LOADING CAGE // 0%</div><div class="loader-track"><div class="loader-fill" id="loaderFill"></div></div></div></div>
   <div class="rain"></div>
   <div class="app">
-    <header class="topbar"><div class="top-left"><button class="home-btn" id="homeBtn" title="Home" aria-label="Home">⌂</button><div class="logo">MONKEY<span>//TRUBBLE</span></div></div><div class="level-pill">LEVEL <b id="levelNum">1</b></div><div class="top-stats"><span title="Level time">⏱ <b id="clock">0:00</b></span><span class="streak-pill" id="streakPill" title="Daily streak"><span>🔥</span><b id="streakCount">0</b></span></div></header>
+    <header class="topbar"><div class="top-left"><button class="home-btn" id="homeBtn" title="Home" aria-label="Home">⌂</button><div class="logo">MONKEY<span>//TRUBBLE</span></div></div><div class="level-pill">LEVEL <b id="levelNum">1</b></div><div class="top-stats"><span title="Level time">⏱ <b id="clock">0:00</b></span><span class="streak-pill" id="streakPill" title="Daily streak"><span>🔥</span><b id="streakCount">0</b></span><button class="gear-btn" id="gearBtn" title="Settings" aria-label="Settings"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width="4" stroke-dasharray="4.6 5.61"/><circle cx="16" cy="16" r="10.8" fill="none" stroke="currentColor" stroke-width="2.4"/><g fill="currentColor"><ellipse cx="16" cy="19.2" rx="3.7" ry="3.1"/><circle cx="11.5" cy="15.3" r="1.55"/><circle cx="14.2" cy="12.4" r="1.6"/><circle cx="17.8" cy="12.4" r="1.6"/><circle cx="20.5" cy="15.3" r="1.55"/></g></svg></button></div></header>
     <main class="game-shell">
       <div class="hud"><section class="featured-card" aria-live="polite"><div class="featured-art" id="featuredArt">?</div><div class="featured-copy"><div class="featured-kicker">CURRENT CARD</div><div class="featured-name" id="featuredName">Choose a card</div><div class="featured-latin" id="featuredLatin"></div><div class="featured-fact" id="featuredFact">Reveal a portrait to meet the species.</div><div class="message" id="message">Reveal an exposed card to begin.</div></div></section><div class="actions"><button class="action icon active" id="sound" title="Sound on" aria-label="Sound on">♪</button></div></div>
       <section class="board-wrap" aria-label="Layered tile board"><canvas id="microSlats" aria-hidden="true"></canvas><div id="board"></div></section>
@@ -77,7 +87,8 @@
   <aside class="tray-panel"><div class="boosters"><button class="booster" id="undo" aria-label="Undo"><span class="booster-icon">↶</span>UNDO<b class="badge" id="undoCount">2</b></button><button class="booster" id="shuffle" aria-label="Shuffle"><span class="booster-icon">⟳</span>SHUFFLE<b class="badge" id="shuffleCount">1</b></button></div><div class="tray-label"><span>HOLDING CAGE</span><span class="build-id" aria-hidden="true">261006.2000</span><span id="bufferStatus">0 / 4</span></div><div class="tray" id="tray"></div></aside>
   <div class="overlay" id="overlay"><div class="dialog"><h2 id="resultTitle">CAGE FULL</h2><p id="resultText"></p><button class="action primary" id="retryLevel">RETRY LEVEL</button><button class="action" id="overlayUndo" hidden>Undo last move</button><button class="link-btn" id="failHome">Home</button></div></div>
   <div class="overlay" id="winOverlay"><div class="dialog win-dialog"><div class="win-level win-step" id="winLevel">LEVEL 1</div><div class="win-complete win-step" id="winComplete">COMPLETE</div><div class="win-time win-step" id="winTimeBox"><small>TIME</small><b id="winTime">0:00</b></div><div class="win-badge win-step" id="winBadge"></div><div class="win-streak win-step" id="winStreak" hidden><span class="flame">🔥</span><b id="winStreakCount">1</b><small id="winStreakLabel">DAY<br>STREAK</small></div><div class="win-next win-step" id="winNext">LEVEL <span class="win-roll"><span id="winRoll"><span id="winFrom">1</span><span id="winTo">2</span></span></span></div><button class="action primary win-step" id="nextLevel">NEXT LEVEL</button><button class="link-btn win-step" id="winHome">Home</button></div></div>
-  <section class="home" id="home" aria-label="Home"><div class="home-bg" id="homeBg"></div><div class="home-bg-tag" id="homeBgTag"></div><header class="home-top"><button class="home-icon" id="homeSound" title="Sound" aria-label="Sound">♪</button><div class="home-streak"><span>🔥</span><b id="homeStreak">0</b><small>DAY<br>STREAK</small></div></header><div class="home-logo" id="homeLogo">MONKEY<span>//TRUBBLE</span></div><div class="home-card" aria-hidden="true"><div class="ticker-plane"><div class="ticker-track" id="homeTicker"></div></div></div><button class="home-play" id="homePlay"><small>PLAY</small><span>LEVEL <b id="homeLevel">1</b></span></button><div class="home-best" id="homeBest"></div><div class="home-week" id="homeWeek"></div></section>
+<div class="overlay" id="settings"><div class="dialog settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settingsTitle"><h2 id="settingsTitle">SETTINGS</h2><div class="set-row"><div class="set-label" id="musicLabel">MUSIC</div><div class="dip" data-setting="music" role="radiogroup" aria-labelledby="musicLabel"><button role="radio" data-value="relaxed">RELAXED</button><button role="radio" data-value="competitive">COMPETITIVE</button></div><small class="set-hint" id="musicHint"></small></div><div class="set-row"><div class="set-label" id="difficultyLabel">DIFFICULTY</div><div class="dip" data-setting="difficulty" role="radiogroup" aria-labelledby="difficultyLabel"><button role="radio" data-value="easy">EASY</button><button role="radio" data-value="normal">NORMAL</button></div><small class="set-hint" id="difficultyHint"></small></div><div class="set-row"><div class="set-label" id="soundLabel">SOUND</div><div class="dip" data-setting="sound" role="radiogroup" aria-labelledby="soundLabel"><button role="radio" data-value="on">ON</button><button role="radio" data-value="off">OFF</button></div><small class="set-hint" id="soundHint"></small></div><button class="action primary" id="settingsDone">DONE</button></div></div>
+  <section class="home" id="home" aria-label="Home"><div class="home-bg" id="homeBg"></div><div class="home-bg-tag" id="homeBgTag"></div><header class="home-top"><button class="home-icon" id="homeSound" title="Sound" aria-label="Sound">♪</button><div class="home-top-right"><div class="home-streak"><span>🔥</span><b id="homeStreak">0</b><small>DAY<br>STREAK</small></div><button class="gear-btn home-gear" id="homeGear" title="Settings" aria-label="Settings"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width="4" stroke-dasharray="4.6 5.61"/><circle cx="16" cy="16" r="10.8" fill="none" stroke="currentColor" stroke-width="2.4"/><g fill="currentColor"><ellipse cx="16" cy="19.2" rx="3.7" ry="3.1"/><circle cx="11.5" cy="15.3" r="1.55"/><circle cx="14.2" cy="12.4" r="1.6"/><circle cx="17.8" cy="12.4" r="1.6"/><circle cx="20.5" cy="15.3" r="1.55"/></g></svg></button></div></header><div class="home-logo" id="homeLogo">MONKEY<span>//TRUBBLE</span></div><div class="home-card" aria-hidden="true"><div class="ticker-plane"><div class="ticker-track" id="homeTicker"></div></div></div><button class="home-play" id="homePlay"><small>PLAY</small><span>LEVEL <b id="homeLevel">1</b></span></button><div class="home-best" id="homeBest"></div><div class="home-week" id="homeWeek"></div></section>
   <div id="dragLayer" aria-hidden="true"></div>
   <nav class="variant-switcher" aria-label="Prototype variants"><button id="prevVariant" aria-label="Previous variant">←</button><span id="variantLabel"></span><button id="nextVariant" aria-label="Next variant">→</button></nav>
   <script>
@@ -125,9 +136,10 @@
     const CHARACTER_NAMES=Object.fromEntries(Object.entries(CARD_DATA).map(([id,card])=>[id,card.name]));
     const BASE_LAYOUT=buildLayout(),TOTAL=BASE_LAYOUT.length;
     const variants={A:'Layered terminal',B:'Operator console',C:'Glyph shrine',D:'Micro slats'};
-    const UNDOS_PER_LEVEL=2,SHUFFLES_PER_LEVEL=1;
+    const UNDOS_PER_LEVEL=2,UNDOS_PER_LEVEL_EASY=3,SHUFFLES_PER_LEVEL=1;
     // Difficulty ramp: the share of cards dealt face up starts high and drops 5% a level to a floor of 35%.
-    const faceUpShare=level=>Math.max(.35,.85-(level-1)*.05);
+    // Easy (Settings) ramps gently instead: 90% minus 2.5% a level, floor 60%. It also gets the bonus pair every level and a third undo.
+    const faceUpShare=(level,easy=false)=>easy?Math.max(.6,.9-(level-1)*.025):Math.max(.35,.85-(level-1)*.05);
     let state={level:1,tiles:[],tray:[],pairs:0,shuffles:0,undosLeft:UNDOS_PER_LEVEL,shufflesLeft:SHUFFLES_PER_LEVEL,locked:false,history:[],clearing:new Set(),clock:{elapsed:0,startedAt:null}};
     const SOUND_FILES={
       pickup:'audio/blippage.wav',match:'audio/success.wav',control:'audio/complete.mp3',win:'audio/level-complete.mp3',levelStart:'audio/japanesevoice.mp3',
@@ -141,7 +153,10 @@
     };
     const soundBuffers={},fallbackAudio={};let soundEnabled=true,audioUnlocked=false,pendingLevelStart=true,audioContext=null,reverbInput,musicGain,featuredSymbol=null,musicDuckTimer;
     const MUSIC_VOLUME=Math.pow(10,-22/20),MUSIC_CLEAR_DUCK_VOLUME=Math.pow(10,-42/20),CARD_SELECT_GAIN=.5;
-    const music=new Audio('audio/polyjong-mus1.mp3');music.preload='auto';music.loop=true;music.load();
+    // Music Mode tracks (Settings). Competitive stays disabled until its file is added here.
+    const MUSIC_TRACKS={relaxed:'audio/polyjong-mus1.mp3',competitive:null},MUSIC_FADE_S=1.5;
+    let music=new Audio(MUSIC_TRACKS.relaxed);music.preload='auto';music.loop=true;music.load();
+    const musicTracks={relaxed:music},trackGains=new Map();let musicBus=null;
     const $=s=>document.querySelector(s), board=$('#board'), tray=$('#tray');
     const isIOSApp=!!window.webkit?.messageHandlers?.haptics;if(isIOSApp)document.body.classList.add('ios-app');
     const rand=n=>Math.floor(Math.random()*n);
@@ -164,7 +179,17 @@
       dry.gain.value=.82;wet.gain.value=.22;const length=Math.floor(audioContext.sampleRate*.8),impulse=audioContext.createBuffer(2,length,audioContext.sampleRate);
       for(let channel=0;channel<2;channel++){const data=impulse.getChannelData(channel);for(let i=0;i<length;i++)data[i]=(Math.random()*2-1)*Math.pow(1-i/length,2.8)}
       convolver.buffer=impulse;reverbInput.connect(dry).connect(audioContext.destination);reverbInput.connect(convolver).connect(wet).connect(audioContext.destination);
-      musicFilter.type='lowpass';musicFilter.frequency.value=5200;musicFilter.Q.value=.55;musicGain.gain.value=MUSIC_VOLUME;audioContext.createMediaElementSource(music).connect(musicFilter).connect(musicGain).connect(audioContext.destination);
+      musicFilter.type='lowpass';musicFilter.frequency.value=5200;musicFilter.Q.value=.55;musicGain.gain.value=MUSIC_VOLUME;musicFilter.connect(musicGain).connect(audioContext.destination);musicBus=musicFilter;routeTrack(music);
+    }
+    // Every music track gets its own gain into the shared filter/volume bus, so switching modes can crossfade.
+    function routeTrack(el){if(!musicBus||trackGains.has(el))return;const g=audioContext.createGain();audioContext.createMediaElementSource(el).connect(g).connect(musicBus);trackGains.set(el,g)}
+    function setMusicMode(mode){
+      const src=MUSIC_TRACKS[mode];if(!src)return;
+      const next=musicTracks[mode]??=Object.assign(new Audio(src),{preload:'auto',loop:true});if(next===music)return;
+      const prev=music;music=next;routeTrack(next);const gPrev=trackGains.get(prev),gNext=trackGains.get(next);
+      if(gPrev&&gNext){const t=audioContext.currentTime;gNext.gain.cancelScheduledValues(t);gNext.gain.setValueAtTime(0,t);gNext.gain.linearRampToValueAtTime(1,t+MUSIC_FADE_S);gPrev.gain.cancelScheduledValues(t);gPrev.gain.setValueAtTime(gPrev.gain.value,t);gPrev.gain.linearRampToValueAtTime(0,t+MUSIC_FADE_S);setTimeout(()=>{if(prev!==music)prev.pause()},MUSIC_FADE_S*1000+100)}
+      else{next.volume=prev.volume;prev.pause()}
+      if(soundEnabled&&audioUnlocked&&!document.hidden)music.play().catch(()=>{})
     }
     function unlockAudio(){if(audioUnlocked)return;audioUnlocked=true;audioContext?.resume().catch(()=>{});if(soundEnabled){music.play().catch(()=>{});if(pendingLevelStart){pendingLevelStart=false;playSound('levelStart',{volume:.78})}}}
     function resumeMonkeyAudio(){if(audioContext?.state==='suspended')audioContext.resume().catch(()=>{});if(soundEnabled&&audioUnlocked&&document.visibilityState==='visible')music.play().catch(()=>{})}
@@ -246,14 +271,16 @@
     }
     // About half the levels open with a bonus: two side-by-side top cards, face up and matching. It uses its own seeded RNG, so levels without one deal exactly as before.
     const BONUS_PAIR_CHANCE=.5;
-    function bonusPairFor(level){const rng=mulberry32(level*7919+17);if(rng()>=BONUS_PAIR_CHANCE)return null;const top=BASE_LAYOUT.filter(p=>p.layer===3),pairs=[];for(const a of top)for(const b of top)if(a.id<b.id&&(a.x===b.x)!==(a.y===b.y))pairs.push([a.id,b.id]);return pairs[Math.floor(rng()*pairs.length)]}
-    function buildLevelBoard(level){const rng=mulberry32(level*9973),pos=BASE_LAYOUT.map(p=>({...p,blockers:[...p.blockers]})),freePair=bonusPairFor(level),assignments=dealUnits(pos,levelUnits(rng),rng,{noFreePair:true,freePair});return pos.map(p=>({...p,symbol:assignments.get(p.id),active:true,revealed:rng()<faceUpShare(level)||!!freePair?.includes(p.id),temporaryReveal:false}))}
+    function bonusPairFor(level,always=false){const rng=mulberry32(level*7919+17);if(rng()>=BONUS_PAIR_CHANCE&&!always)return null;const top=BASE_LAYOUT.filter(p=>p.layer===3),pairs=[];for(const a of top)for(const b of top)if(a.id<b.id&&(a.x===b.x)!==(a.y===b.y))pairs.push([a.id,b.id]);return pairs[Math.floor(rng()*pairs.length)]}
+    function buildLevelBoard(level,easy=false){const rng=mulberry32(level*9973),pos=BASE_LAYOUT.map(p=>({...p,blockers:[...p.blockers]})),freePair=bonusPairFor(level,easy),assignments=dealUnits(pos,levelUnits(rng),rng,{noFreePair:true,freePair});return pos.map(p=>({...p,symbol:assignments.get(p.id),active:true,revealed:rng()<faceUpShare(level,easy)||!!freePair?.includes(p.id),temporaryReveal:false}))}
     // Progress persists through the iOS app's native store (injected as window.__monkeySave) or localStorage in a browser.
     const SAVE_KEY='monkeyTrubble.save.v1',params=new URLSearchParams(location.search);
-    function loadProgress(){let saved=window.__monkeySave;if(saved==null)try{saved=localStorage.getItem(SAVE_KEY)}catch{}if(typeof saved==='string')try{saved=JSON.parse(saved)}catch{saved=null}const base={version:1,level:1,bestTimes:{},streak:{count:0,lastDate:null}};return saved?.version===1?{...base,...saved,streak:{...base.streak,...saved.streak}}:base}
+    function loadProgress(){let saved=window.__monkeySave;if(saved==null)try{saved=localStorage.getItem(SAVE_KEY)}catch{}if(typeof saved==='string')try{saved=JSON.parse(saved)}catch{saved=null}const base=freshProgress();return saved?.version===1?{...base,...saved,streak:{...base.streak,...saved.streak},settings:{...base.settings,...saved.settings}}:base}
+    // bestTimesEasy keeps Easy clears apart so they never set Normal records.
+    function freshProgress(){return{version:1,level:1,bestTimes:{},bestTimesEasy:{},streak:{count:0,lastDate:null},settings:{music:'relaxed',difficulty:'normal'}}}
     function saveProgress(){const json=JSON.stringify(progress);if(isIOSApp)window.webkit.messageHandlers.storage?.postMessage(json);try{localStorage.setItem(SAVE_KEY,json)}catch{}}
     let progress=loadProgress();
-    if(params.has('reset')){progress={version:1,level:1,bestTimes:{},streak:{count:0,lastDate:null}};saveProgress()}
+    if(params.has('reset')){progress=freshProgress();saveProgress()}
     if(Number(params.get('level'))>0){progress.level=Math.floor(Number(params.get('level')));saveProgress()}
     // ?today=YYYY-MM-DD fakes the calendar date for testing the daily streak.
     function localDate(offsetDays=0){const d=params.get('today')?new Date(`${params.get('today')}T12:00`):new Date();d.setDate(d.getDate()+offsetDays);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
@@ -266,7 +293,9 @@
     function renderStreak(){const {count,lastDate}=progress.streak,live=lastDate===localDate()||lastDate===localDate(-1);$('#streakCount').textContent=live?count:0;$('#streakPill').classList.toggle('cold',lastDate!==localDate())}
     function startLevel(level,{silent=false,retry=false}={}){
       featuredSymbol=null;$('#dragLayer').replaceChildren();
-      state={level,tiles:buildLevelBoard(level),tray:[],pairs:0,shuffles:0,undosLeft:UNDOS_PER_LEVEL,shufflesLeft:SHUFFLES_PER_LEVEL,locked:false,busy:0,over:false,won:false,history:[],clearing:new Set(),clock:{elapsed:0,startedAt:null}};
+      // Difficulty is read here, so a change in Settings applies from the next level start or retry, never mid-board.
+      const easy=progress.settings.difficulty==='easy';
+      state={level,easy,tiles:buildLevelBoard(level,easy),tray:[],pairs:0,shuffles:0,undosLeft:easy?UNDOS_PER_LEVEL_EASY:UNDOS_PER_LEVEL,shufflesLeft:SHUFFLES_PER_LEVEL,locked:false,busy:0,over:false,won:false,history:[],clearing:new Set(),clock:{elapsed:0,startedAt:null}};
       $('#overlay').classList.remove('show');$('#winOverlay').classList.remove('show');render();renderClock();renderStreak();setMessage(retry?`Level ${level} reset — same board, new plan.`:'Reveal an exposed card to begin.');
       if(silent)pendingLevelStart=true;else playSound('levelStart',{volume:.78})
     }
@@ -455,12 +484,12 @@
     }
     // A record needs an earlier time to beat, by at least a displayed second: the first clear of a level is shown as "BEST TIME SET", later faster clears as "NEW RECORD!".
     function recordLevelClear(){
-      const level=state.level,time=Math.round(clockMs()),previous=progress.bestTimes[level]??null,newRecord=previous!=null&&Math.floor(time/1000)<Math.floor(previous/1000);
-      if(previous==null||newRecord)progress.bestTimes[level]=time;
+      const level=state.level,time=Math.round(clockMs()),times=progress[state.easy?'bestTimesEasy':'bestTimes'],previous=times[level]??null,newRecord=previous!=null&&Math.floor(time/1000)<Math.floor(previous/1000);
+      if(previous==null||newRecord)times[level]=time;
       const today=localDate(),streak=progress.streak,firstToday=streak.lastDate!==today;
       if(firstToday){streak.count=streak.lastDate===localDate(-1)?streak.count+1:1;streak.lastDate=today}
       progress.level=Math.max(progress.level,level+1);saveProgress();renderStreak();
-      return{level,time,previous,newRecord,best:progress.bestTimes[level],firstToday,streak:streak.count}
+      return{level,time,previous,newRecord,best:times[level],firstToday,streak:streak.count}
     }
     async function showLevelComplete(r){
       const s=state,wait=ms=>new Promise(resolve=>setTimeout(resolve,ms)),overlay=$('#winOverlay'),steps=[...overlay.querySelectorAll('.win-step')],badge=$('#winBadge');
@@ -524,7 +553,7 @@
       for(let pass=0;pass<2;pass++)syms.forEach((symbol,i)=>{const card=document.createElement('div');card.className='ticker-card';card.style.cssText=poses[i];setSymbolContent(card,symbol,'hero');track.append(card)});
       track.style.setProperty('--ticker-dur',`${syms.length*3.4}s`)}
     function renderHome(){
-      const level=progress.level,best=progress.bestTimes[level];$('#homeLevel').textContent=level;$('#homeBest').textContent=best!=null?`BEST ${formatTime(best)}`:level===1?'TAP TO START':'NEW LEVEL';
+      const level=progress.level,best=progress[progress.settings.difficulty==='easy'?'bestTimesEasy':'bestTimes'][level];$('#homeLevel').textContent=level;$('#homeBest').textContent=best!=null?`BEST ${formatTime(best)}`:level===1?'TAP TO START':'NEW LEVEL';
       const {count,lastDate}=progress.streak,live=lastDate===localDate()||lastDate===localDate(-1);$('#homeStreak').textContent=live?count:0;
       const week=$('#homeWeek');week.replaceChildren();
       for(let k=-6;k<=0;k++){const date=localDate(k),d=new Date(`${date}T12:00`),back=lastDate?Math.round((new Date(`${lastDate}T12:00`)-d)/864e5):-1,lit=live&&back>=0&&back<count,day=document.createElement('div');day.className=`home-day${lit?' lit':''}${k===0?' today':''}`;day.innerHTML=`<span>🔥</span>${'SMTWTFS'[d.getDay()]}`;week.append(day)}
@@ -548,9 +577,26 @@
     }
     $('#homeBtn').onclick=showHome;$('#winHome').onclick=showHome;$('#failHome').onclick=()=>{startLevel(state.level,{silent:true});pendingLevelStart=false;showHome()};$('#homePlay').onclick=playFromHome;$('#homeSound').onclick=()=>{$('#sound').click();$('#homeSound').textContent=soundEnabled?'♪':'♩'};
     $('#shuffle').onclick=reshuffle;$('#undo').onclick=undo;$('#overlayUndo').onclick=undo;$('#retryLevel').onclick=()=>startLevel(state.level,{retry:true});$('#nextLevel').onclick=()=>startLevel(state.level+1);$('#sound').onclick=()=>{soundEnabled=!soundEnabled;$('#sound').textContent=soundEnabled?'♪':'♩';$('#sound').title=soundEnabled?'Sound on':'Sound off';$('#sound').setAttribute('aria-label',$('#sound').title);$('#sound').classList.toggle('active',soundEnabled);if(soundEnabled){if(audioUnlocked)music.play().catch(()=>{});playSound('control',{volume:.4})}else music.pause()};$('#prevVariant').onclick=()=>cycleVariant(-1);$('#nextVariant').onclick=()=>cycleVariant(1);
+    // Settings: opening it pauses the level clock like Home does; each switch saves at once.
+    function openSettings(){if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}renderSettings();$('#settings').classList.add('show');playSound('pickup',{volume:.12,rate:.9})}
+    function closeSettings(){$('#settings').classList.remove('show');if(state.clock.resume&&$('#home').classList.contains('hidden')){state.clock.resume=false;startClock()}}
+    function renderSettings(){
+      const values={music:progress.settings.music,difficulty:progress.settings.difficulty,sound:soundEnabled?'on':'off'};
+      for(const dip of document.querySelectorAll('.dip')){const buttons=[...dip.children],value=values[dip.dataset.setting];dip.dataset.on=buttons.findIndex(b=>b.dataset.value===value);buttons.forEach(b=>{b.setAttribute('aria-checked',String(b.dataset.value===value));b.disabled=dip.dataset.setting==='music'&&!MUSIC_TRACKS[b.dataset.value]})}
+      $('#musicHint').textContent=MUSIC_TRACKS.competitive?(values.music==='relaxed'?'Laid-back jungle grooves.':'Faster beats for chasing records.'):'Competitive track coming soon.';
+      $('#difficultyHint').textContent=(values.difficulty==='easy'?'More cards face up, a bonus pair every level and 3 undos. Easy clears aren’t ranked.':'The standard challenge.')+(values.difficulty!==(state.easy?'easy':'normal')&&state.tiles.length?' Starts next level.':'');
+      $('#soundHint').textContent='';
+    }
+    document.querySelectorAll('.dip').forEach(dip=>dip.onclick=e=>{
+      const value=e.target.closest('button')?.dataset.value,key=dip.dataset.setting;if(!value)return;
+      if(key==='sound'){if((value==='on')!==soundEnabled){$('#sound').click();$('#homeSound').textContent=soundEnabled?'♪':'♩'}}
+      else{if(progress.settings[key]===value)return;progress.settings[key]=value;saveProgress();if(key==='music')setMusicMode(value);if(key==='difficulty')renderHome()}
+      playSound('pickup',{volume:.16,rate:value==='on'||value==='competitive'||value==='normal'?1.2:.95});haptic('cardCaged');renderSettings()
+    });
+    $('#gearBtn').onclick=openSettings;$('#homeGear').onclick=openSettings;$('#settingsDone').onclick=closeSettings;$('#settings').onclick=e=>{if(e.target===e.currentTarget)closeSettings()};
     addEventListener('pointerdown',unlockAudio,{once:true,capture:true});
     addEventListener('keydown',e=>{if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName)||document.activeElement.isContentEditable)return;if(e.key==='ArrowLeft')cycleVariant(-1);if(e.key==='ArrowRight')cycleVariant(1)});
-    async function bootstrap(){new ResizeObserver(()=>{if(updateSpread()&&state.tiles.length)render()}).observe(board);setupFeaturedGloss();setupMicroSlats();setVariant(isIOSApp?'D':new URLSearchParams(location.search).get('variant')||'A');loadHomeArt();buildHomeTicker();await preloadAssets();startLevel(progress.level,{silent:true});pendingLevelStart=false;if(params.has('play'))playFromHome();else showHome();setInterval(()=>{if(!document.hidden)renderClock()},250);if(params.has('soundcheck'))showSoundcheck();if(isIOSApp)unlockAudio()}
+    async function bootstrap(){setMusicMode(progress.settings.music);new ResizeObserver(()=>{if(updateSpread()&&state.tiles.length)render()}).observe(board);setupFeaturedGloss();setupMicroSlats();setVariant(isIOSApp?'D':new URLSearchParams(location.search).get('variant')||'A');loadHomeArt();buildHomeTicker();await preloadAssets();startLevel(progress.level,{silent:true});pendingLevelStart=false;if(params.has('play'))playFromHome();else showHome();setInterval(()=>{if(!document.hidden)renderClock()},250);if(params.has('soundcheck'))showSoundcheck();if(isIOSApp)unlockAudio()}
     bootstrap();
   </script>
 </body>

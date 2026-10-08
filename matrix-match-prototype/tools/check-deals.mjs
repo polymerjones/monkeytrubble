@@ -17,7 +17,7 @@ const game=new Function(`
   ${['buildLayout','mulberry32','dealUnits','levelUnits','unitsFromSymbols','bonusPairFor'].map(fn).join('\n')}
   const BASE_LAYOUT=buildLayout(),TOTAL=BASE_LAYOUT.length;
   // Same deal as buildLevelBoard, plus the removal order it was built along.
-  function levelBoard(level){const rng=mulberry32(level*9973),pos=BASE_LAYOUT.map(p=>({...p,blockers:[...p.blockers]})),trace=[],assignments=dealUnits(pos,levelUnits(rng),rng,{noFreePair:true,freePair:bonusPairFor(level),trace});return{tiles:pos.map(p=>({...p,symbol:assignments.get(p.id)})),order:trace}}
+  function levelBoard(level,easy=false){const rng=mulberry32(level*9973),pos=BASE_LAYOUT.map(p=>({...p,blockers:[...p.blockers]})),trace=[],assignments=dealUnits(pos,levelUnits(rng),rng,{noFreePair:true,freePair:bonusPairFor(level,easy),trace});return{tiles:pos.map(p=>({...p,symbol:assignments.get(p.id)})),order:trace}}
   return {dealUnits,unitsFromSymbols,levelBoard,mulberry32,KEVIN_WINDOW};
 `)();
 const {JOKER,KEVIN}={JOKER:'JOKER',KEVIN:'KEVIN'};
@@ -39,11 +39,13 @@ function replay(tiles,order,cage=[]){
 const depth=(tiles,id)=>{const byId=new Map(tiles.map(t=>[t.id,t])),seen=new Set(),walk=i=>{for(const b of byId.get(i).blockers)if(!seen.has(b)){seen.add(b);walk(b)}};walk(id);return seen.size};
 
 const levels=Number(process.argv[2])||300;let problems=0;const depths=[],kevinSpots=[];
-for(let level=1;level<=levels;level++){
-  const {tiles,order}=game.levelBoard(level),kevin=tiles.find(t=>t.symbol===KEVIN);kevinSpots.push(order.indexOf(kevin.id)/order.length);
-  if(!kevin.blockers.length){problems++;console.log(`level ${level}: Kevin is free at the start`)}
+// Normal levels, then the same levels on Easy (bonus pair every level).
+for(let run=0;run<levels*2;run++){
+  const level=run%levels+1,easy=run>=levels;
+  const {tiles,order}=game.levelBoard(level,easy),kevin=tiles.find(t=>t.symbol===KEVIN);kevinSpots.push(order.indexOf(kevin.id)/order.length);
+  if(!kevin.blockers.length){problems++;console.log(`${easy?'easy ':''}level ${level}: Kevin is free at the start`)}
   depths.push(depth(tiles,kevin.id));
-  const err=replay(tiles,order);if(err){problems++;console.log(`level ${level}: ${err}`)}
+  const err=replay(tiles,order);if(err){problems++;console.log(`${easy?'easy ':''}level ${level}: ${err}`)}
   // Shuffle from a random mid-level position: play a random legal line, stop with 0-3 cards caged, re-deal the board around the cage.
   const rng=game.mulberry32(level*31),left=new Map(tiles.map(t=>[t.id,{...t}]));let cage=[];
   const target=Math.floor(rng()*tiles.length*.7);
@@ -60,13 +62,13 @@ for(let level=1;level<=levels;level++){
   if(!board.length)continue;
   let assignments;const trace=[];
   try{assignments=game.dealUnits(board.map(({id,x,y,layer,blockers})=>({id,x,y,layer,blockers})),game.unitsFromSymbols([...board.map(t=>t.symbol),...cage]),rng,{caged:cage,trace})}
-  catch(e){problems++;console.log(`level ${level}: shuffle with cage [${cage}] threw: ${e.message}`);continue}
+  catch(e){problems++;console.log(`${easy?'easy ':''}level ${level}: shuffle with cage [${cage}] threw: ${e.message}`);continue}
   board.forEach(t=>{t.symbol=assignments.get(t.id)});
-  if(cage.join()!==before.join()){problems++;console.log(`level ${level}: shuffle changed the cage`)}
+  if(cage.join()!==before.join()){problems++;console.log(`${easy?'easy ':''}level ${level}: shuffle changed the cage`)}
   const sorted=s=>[...s].sort().join();
   const counts=sorted([...left.values()].map(t=>t.symbol)),after=sorted(board.map(t=>t.symbol));
-  if(counts!==after){problems++;console.log(`level ${level}: shuffle changed which cards are on the board`)}
-  const shuffleErr=replay(board,trace,cage);if(shuffleErr){problems++;console.log(`level ${level}: after shuffle with cage [${cage}] (${board.length} cards left): ${shuffleErr}`)}
+  if(counts!==after){problems++;console.log(`${easy?'easy ':''}level ${level}: shuffle changed which cards are on the board`)}
+  const shuffleErr=replay(board,trace,cage);if(shuffleErr){problems++;console.log(`${easy?'easy ':''}level ${level}: after shuffle with cage [${cage}] (${board.length} cards left): ${shuffleErr}`)}
 }
 depths.sort((a,b)=>a-b);
 kevinSpots.sort((a,b)=>a-b);console.log(`Kevin dealt before the 60% mark (window fallback): ${kevinSpots.filter(x=>x<game.KEVIN_WINDOW[0]-.03).length} level(s)`);const pct=x=>`${Math.round(x*100)}%`;
