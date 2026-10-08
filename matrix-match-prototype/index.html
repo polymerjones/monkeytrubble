@@ -66,7 +66,7 @@
     .gear-btn{position:relative;flex:none;display:grid;place-items:center;width:36px;height:36px;padding:0;border:1px solid #27894a;border-radius:50%;background:#06160b;color:var(--green);cursor:pointer;-webkit-tap-highlight-color:transparent}.gear-btn::after{content:'';position:absolute;inset:-6px}.gear-btn svg{width:28px;height:28px;transition:transform .45s cubic-bezier(.2,.8,.2,1)}.gear-btn:active svg,.gear-btn.spin svg{transform:rotate(90deg)}
     .home-gear{width:46px;height:46px;background:#06160bcc}.home-gear svg{width:36px;height:36px}
     /* "Good Eye!" combo stamp: floats over the board without taking taps. */
-    .good-eye{position:fixed;left:50%;top:46%;z-index:4000;translate:-50% -50%;pointer-events:none;opacity:0;white-space:nowrap;color:#fff4c9;font:900 clamp(2.3rem,12vw,3.6rem) system-ui,sans-serif;letter-spacing:.06em;-webkit-text-stroke:2px #6b4300;text-shadow:0 4px 0 #8a5a00,0 0 24px #ffcf57,0 0 48px #ffcf5788}
+    .good-eye{position:fixed;left:50%;top:46%;z-index:4000;translate:-50% -50%;pointer-events:none;opacity:0;width:max-content;max-width:94vw;text-align:center;line-height:1.05;color:#fff4c9;font:900 clamp(2.3rem,12vw,3.6rem) system-ui,sans-serif;letter-spacing:.06em;-webkit-text-stroke:2px #6b4300;text-shadow:0 4px 0 #8a5a00,0 0 24px #ffcf57,0 0 48px #ffcf5788}
     #settings{z-index:5000}
     /* Player profile: name entry, tier badges, home chip and the win screen's points + tier bar. */
     /* Leaderboard screen: sits over home, rows tinted by tier, your own row pinned at the bottom. */
@@ -140,8 +140,8 @@
       CAULIN_PLUSH:{echoes:2,image:'caulin-plush.jpg',name:'Caulin Plushie',latin:'Caulinus plushus',facts:['Hand-stitched, fully huggable and the softest member of the troop.','Survived three washing machines and one very long road trip.','Has never once won a staring contest. No eyelids.','Officially rated 10/10 for nap support.'],sounds:['caulinClear']},
       PATRIOT_1:{image:'patriot-1.jpg',name:'Monkey Patriot',latin:'Pan libertatis',facts:['Reports for duty in a tricorn hat and refuses to be caged without a fight.','Declared independence from bedtime in 1776 and never looked back.','Rides at midnight shouting “The bananas are coming!”','Signs every document in very large letters.'],sounds:['callYell'],clearExtras:WAR_CLEARS},
       PATRIOT_3:{image:'patriot-3.jpg',name:'Parade Patriot',latin:'Pan libertatis',facts:['Never misses a parade, and never takes off the striped hat.','Knows every word of every marching song, and a few extra.','Sets off fireworks in July and again any other day he can.','The hat is part of the uniform. Do not touch the hat.'],sounds:['callAgile'],clearExtras:WAR_CLEARS},
-      BIRTHDAY_BOY:{image:'birthday-boy.jpg',name:'Birthday Boy Monkey',latin:'Pan cakeus',facts:['One year older, zero years wiser. Wishes for more bananas every single time.','Blows out the candles, then eats the frosting off the top first.','Has asked for a cake shaped like a banana for six years running.','Claims every day of the week is his half birthday.'],sounds:['callChimp','callScream']},
-      FIRST_DAY:{image:'first-day-school.jpg',name:'1st Day of School Monkey',latin:'Pan pupillus',facts:['New backpack, fresh kicks and a tail that will not fit under the desk. Already sent to the principal.','Packed three bananas for lunch and traded two of them before first bell.','Raised his hand for every question. Answered “bananas” for all of them.','Swung on the monkey bars all recess, which he says counts as homework.'],sounds:['callChimp','callShout']},
+      BIRTHDAY_BOY:{image:'birthday-boy.jpg',name:'Birthday Boy Monkey',latin:'Pan cakeus',facts:['One year older, zero years wiser. Wishes for more bananas every single time.','Blows out the candles, then eats the frosting off the top first.','Has asked for a cake shaped like a banana for six years running.','Claims every day of the week is his half birthday.'],sounds:['callCaleb']},
+      FIRST_DAY:{image:'first-day-school.jpg',name:'1st Day of School Monkey',latin:'Pan pupillus',facts:['New backpack, fresh kicks and a tail that will not fit under the desk. Already sent to the principal.','Packed three bananas for lunch and traded two of them before first bell.','Raised his hand for every question. Answered “bananas” for all of them.','Swung on the monkey bars all recess, which he says counts as homework.'],sounds:['callWarren']},
       JOKER:{image:'caulin-joker.jpg',name:'Joker Caulin',latin:'Wildcard',facts:['Matches any card in the cage. Save him for the card that has no partner nearby.','Plays by his own rules, and some days by none at all.','He pairs with the oldest card in the cage, so plan around who has waited longest.','Grin first, questions later.'],sounds:['jokerClear']},
       // Single card, one per level: tapping him fires MVP Vision instead of going to the cage.
       KEVIN:{image:'kevin-kelly.jpg',name:'KEVIN KELLY',latin:'Limited Edition 2019 MVP',facts:['Tap him for MVP Vision: every hidden card flips up while he celebrates.','Limited edition, and he will remind you of it every time.','MVP Vision lasts as long as his celebration does, so look fast.','Best saved for the back half of a level, when the hidden cards matter most.'],sounds:['kevinClear'],power:'peek'}
@@ -169,10 +169,31 @@
     const faceUpShare=(level,easy=false)=>easy?Math.max(.6,.9-(level-1)*.025):Math.max(.35,.85-(level-1)*.05);
     let state={level:1,tiles:[],tray:[],pairs:0,shuffles:0,undosLeft:UNDOS_PER_LEVEL,shufflesLeft:SHUFFLES_PER_LEVEL,locked:false,history:[],clearing:new Set(),clock:{elapsed:0,startedAt:null}};
     // "Good Eye!" combo: GOOD_EYE_COUNT clears the player makes within GOOD_EYE_WINDOW_MS, at most once per GOOD_EYE_COOLDOWN_MS.
-    // The opening bonus pair doesn't count. Set GOOD_EYE_CLIP to the voiceover's path once it's added; until then only the stamp shows.
-    const GOOD_EYE_COUNT=3,GOOD_EYE_WINDOW_MS=12000,GOOD_EYE_COOLDOWN_MS=60000,GOOD_EYE_CLIP=null;
+    // The opening bonus pair doesn't count. Each combo plays a random praise line (never the same line twice running) with its text stamped.
+    const GOOD_EYE_COUNT=3,GOOD_EYE_WINDOW_MS=12000,GOOD_EYE_COOLDOWN_MS=60000;
+    // Praise voiceovers (audio/praise, catalogued in match-sfx/rec-20261008-1043/CATALOG.md): a line's takes are alternatives.
+    const PRAISE=[
+      {text:'WAY TO GO!',takes:['way-to-go']},
+      {text:'CLEVER LITTLE MONKEY!',takes:['clever-little-monkey-a','clever-little-monkey-b']},
+      {text:'CLEVER MONKEY!',takes:['clever-monkey-a','clever-monkey-b']},
+      {text:'BRILLIANT!',takes:['brilliant-a','brilliant-b']},
+      {text:'APE-SOLUTELY!',takes:['apesolutely']},
+      {text:'ABSOLUTELY!',takes:['absolutely']},
+      {text:'MONKEY MAGIC!',takes:['monkey-magic-a','monkey-magic-b']},
+      {text:'KING OF THE JUNGLE!',takes:['king-of-the-jungle-a','king-of-the-jungle-b']},
+      {text:'JUNGLE GENIUS!',takes:['jungle-genius-a','jungle-genius-b']},
+      {text:'PRIMATE POWER!',takes:['primate-power']},
+      {text:'WELL SPOTTED!',takes:['well-spotted']},
+      {text:'SMOOTH MOVE!',takes:['smooth-move']},
+      {text:'OUTSTANDING!',takes:['outstanding-a','outstanding-b']},
+      {text:'JUNGLE LEGEND!',takes:['jungle-legend-a','jungle-legend-b']},
+      {text:'6-7 BANANA BREATH!',takes:['six-seven-banana-breath-a','six-seven-banana-breath-b']},
+      {text:'MAGNIFICENT!',takes:['magnificent-a','magnificent-b']},
+      {text:'APE-TASTIC!',takes:['ape-tastic']},
+      {text:'MONKEY TRUBBLE!',takes:['monkey-trubble-a','monkey-trubble-b']}
+    ];let lastPraise=null;
     let goodEyeClears=[],goodEyeAt=-Infinity,goodEyeBusy=false;
-    const SOUND_FILES={...(GOOD_EYE_CLIP?{goodEye:GOOD_EYE_CLIP}:{}),
+    const SOUND_FILES={...Object.fromEntries(PRAISE.flatMap(p=>p.takes.map(t=>[`praise:${t}`,`audio/praise/${t}.mp3`]))),homeSting:'audio/polyhome.mp3',callCaleb:'audio/video-calls/caleb-the-monkey.mp3',callWarren:'audio/video-calls/warren-the-monkey.mp3',
       pickup:'audio/blippage.wav',match:'audio/success.wav',control:'audio/complete.mp3',win:'audio/level-complete.mp3',levelStart:'audio/japanesevoice.mp3',
       callHamadryas:'audio/video-calls/official-hamadryas.mp3',callGuereza:'audio/video-calls/official-guereza.mp3',callBarbary:'audio/video-calls/official-barbary-macaque.mp3',
       callDeBrazza:'audio/video-calls/official-debrazza-monkey.mp3',callMandrill:'audio/video-calls/official-mandrill.mp3',callCapuchin:'audio/video-calls/official-capuchin-monkey.mp3',
@@ -234,7 +255,10 @@
       else{next.volume=prev.volume;prev.pause()}
       if(soundEnabled&&audioUnlocked&&!document.hidden)music.play().catch(()=>{})
     }
-    function unlockAudio(){if(audioUnlocked)return;audioUnlocked=true;audioContext?.resume().catch(()=>{});if(soundEnabled){music.play().catch(()=>{});if(pendingLevelStart){pendingLevelStart=false;playSound('levelStart',{volume:.78})}}}
+    // Polymer Jones sting: once per app launch, on the home screen, as soon as audio is allowed (at once in the iOS app, first tap in a browser).
+    let homeStingPending=true;
+    function playHomeSting(){if(!homeStingPending||!audioUnlocked||!soundEnabled||$('#home').classList.contains('hidden'))return;homeStingPending=false;duckMusic(soundLengthMs('homeSting',4400)+200);playSound('homeSting',{volume:.9})}
+    function unlockAudio(){if(audioUnlocked)return;audioUnlocked=true;setTimeout(playHomeSting,0);audioContext?.resume().catch(()=>{});if(soundEnabled){music.play().catch(()=>{});if(pendingLevelStart){pendingLevelStart=false;playSound('levelStart',{volume:.78})}}}
     function resumeMonkeyAudio(){if(audioContext?.state==='suspended')audioContext.resume().catch(()=>{});if(soundEnabled&&audioUnlocked&&document.visibilityState==='visible')music.play().catch(()=>{})}
     window.__resumeMonkeyAudio=resumeMonkeyAudio;document.addEventListener('visibilitychange',()=>{if(document.hidden){music.pause();if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}}else{resumeMonkeyAudio();if(state.clock.resume){state.clock.resume=false;startClock()}}});
     function setMusicLevel(level,smoothing){if(musicGain)musicGain.gain.setTargetAtTime(level,audioContext.currentTime,smoothing);else music.volume=level}
@@ -470,8 +494,10 @@
     }
     // Never overlaps or queues: while it runs, goodEyeBusy blocks another one.
     function showGoodEye(){
-      const el=$('#goodEye'),voiced=soundEnabled&&!!(soundBuffers.goodEye||fallbackAudio.goodEye),holdMs=voiced?Math.max(1400,soundLengthMs('goodEye',1400)):1400;goodEyeBusy=true;
-      if(voiced){duckMusic(holdMs+300);playSound('goodEye',{volume:1,delay:.25,praise:true})}
+      const pool=PRAISE.filter(p=>p!==lastPraise),line=pool[rand(pool.length)],key=`praise:${line.takes[rand(line.takes.length)]}`;lastPraise=line;
+      const el=$('#goodEye'),voiced=soundEnabled&&!!(soundBuffers[key]||fallbackAudio[key]),holdMs=Math.max(1500,(voiced?soundLengthMs(key,1400):0)+600);goodEyeBusy=true;
+      el.textContent=line.text;el.style.fontSize=line.text.length>14?'clamp(1.7rem,8.6vw,2.7rem)':'';
+      if(voiced){duckMusic(holdMs+300);playSound(key,{volume:1,delay:.25,praise:true})}
       const r=$('#board').getBoundingClientRect();el.style.top=`${r.top+r.height*.42}px`;
       el.getAnimations().forEach(a=>a.cancel());
       el.animate([{opacity:0,scale:1.9,rotate:'-6deg'},{opacity:1,scale:.94,rotate:'-3deg',offset:.18},{opacity:1,scale:1,rotate:'-4deg',offset:.26},{opacity:1,scale:1.04,rotate:'-4deg',offset:.8},{opacity:0,scale:1.15,rotate:'-4deg'}],{duration:holdMs,easing:'cubic-bezier(.2,.8,.2,1)'}).onfinish=()=>{goodEyeBusy=false};
@@ -666,7 +692,7 @@
     const BYLINES=['A GAME BY POLYMER JONES','DEVELOPED BY POLYMER JONES'];
     function showHome(){playMusic('home');$('#homeByline').textContent=BYLINES[rand(BYLINES.length)];if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}$('#overlay').classList.remove('show');$('#winOverlay').classList.remove('show');renderHome();pickHomeBg();$('#home').classList.remove('hidden');buildHomeTicker()}
     function playFromHome(){
-      $('#home').classList.add('hidden');unlockAudio();playMusic(progress.settings.music);
+      $('#home').classList.add('hidden');homeStingPending=false;unlockAudio();playMusic(progress.settings.music);
       // Resume the level in progress; anything finished or behind the saved level starts fresh.
       const resumable=state.tiles.length&&state.level===progress.level&&!state.over&&state.history.length;
       if(resumable){if(state.clock.resume){state.clock.resume=false;startClock()}playSound('control',{volume:.35})}
@@ -751,7 +777,7 @@
     $('#gearBtn').onclick=openSettings;$('#homeGear').onclick=openSettings;$('#settingsDone').onclick=closeSettings;$('#settings').onclick=e=>{if(e.target===e.currentTarget)closeSettings()};
     addEventListener('pointerdown',unlockAudio,{once:true,capture:true});
     addEventListener('keydown',e=>{if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName)||document.activeElement.isContentEditable)return;if(e.key==='ArrowLeft')cycleVariant(-1);if(e.key==='ArrowRight')cycleVariant(1)});
-    async function bootstrap(){new ResizeObserver(()=>{if(updateSpread()&&state.tiles.length)render()}).observe(board);setupFeaturedGloss();setupMicroSlats();setVariant(isIOSApp?'D':new URLSearchParams(location.search).get('variant')||'A');loadHomeArt();buildHomeTicker();await preloadAssets();startLevel(progress.level,{silent:true});pendingLevelStart=false;if(params.has('play'))playFromHome();else showHome();if(!progress.player)openNameDialog();flushSync();setInterval(()=>{if(!document.hidden)renderClock()},250);if(params.has('soundcheck'))showSoundcheck();if(isIOSApp)unlockAudio()}
+    async function bootstrap(){new ResizeObserver(()=>{if(updateSpread()&&state.tiles.length)render()}).observe(board);setupFeaturedGloss();setupMicroSlats();setVariant(isIOSApp?'D':new URLSearchParams(location.search).get('variant')||'A');loadHomeArt();buildHomeTicker();await preloadAssets();startLevel(progress.level,{silent:true});pendingLevelStart=false;if(params.has('play'))playFromHome();else showHome();if(!progress.player)openNameDialog();flushSync();playHomeSting();setInterval(()=>{if(!document.hidden)renderClock()},250);if(params.has('soundcheck'))showSoundcheck();if(isIOSApp)unlockAudio()}
     bootstrap();
   </script>
 </body>
