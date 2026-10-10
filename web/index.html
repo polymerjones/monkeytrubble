@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <script id="frame-redirect">/* Wide desktop window: play inside a phone-sized frame (frame.html), the way the iPhone app hosts this page. */if(window.top===window&&!window.webkit?.messageHandlers?.haptics&&matchMedia("(min-width:700px) and (hover:hover)").matches&&!/[?&]noframe/.test(location.search))location.replace("frame.html"+location.search)</script>
+  <script id="frame-redirect">/* Wide desktop window: play inside a phone-sized frame (frame.html), the way the iPhone app hosts this page. */if(window.top===window&&!window.webkit?.messageHandlers?.haptics&&matchMedia("(min-width:700px) and (hover:hover)").matches&&!/[?&]noframe/.test(location.search)){const q=new URLSearchParams(location.search);q.delete("variant");const t=q.toString();location.replace("frame.html"+(t?"?"+t:""))}</script>
   <meta name="format-detection" content="telephone=no">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Monkey Trubble</title>
@@ -1129,7 +1129,7 @@
     });
     $('#gearBtn').onclick=openSettings;$('#homeGear').onclick=openSettings;$('#settingsDone').onclick=closeSettings;$('#settings').onclick=e=>{if(e.target===e.currentTarget)closeSettings()};
     addEventListener('pointerdown',unlockAudio,{once:true,capture:true});
-    async function bootstrap(){new ResizeObserver(()=>{if(state.tiles.length)render()}).observe(board);setupFeaturedGloss();setupMicroSlats();setVariant(new URLSearchParams(location.search).get('variant')||'D');loadHomeArt();buildHomeTicker();await preloadAssets();startLevel(progress.level,{silent:true});pendingLevelStart=false;if(params.has('play'))playFromHome();else showHome();if(!progress.player)openNameDialog();flushSync();playHomeSting();setInterval(()=>{if(!document.hidden)renderClock()},250);if(params.has('soundcheck'))showSoundcheck();if(isIOSApp)unlockAudio()}
+    async function bootstrap(){new ResizeObserver(()=>{if(state.tiles.length)render()}).observe(board);setupFeaturedGloss();setupMicroSlats();setVariant('D');loadHomeArt();buildHomeTicker();await preloadAssets();startLevel(progress.level,{silent:true});pendingLevelStart=false;if(params.has('play'))playFromHome();else showHome();if(!progress.player)openNameDialog();flushSync();playHomeSting();setInterval(()=>{if(!document.hidden)renderClock()},250);if(params.has('soundcheck'))showSoundcheck();if(isIOSApp)unlockAudio()}
     bootstrap();
   </script>
 <script src="register-sw.js"></script>
