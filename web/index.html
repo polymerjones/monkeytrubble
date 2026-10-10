@@ -569,7 +569,7 @@
     const SAVE_KEY='monkeyTrubble.save.v1',params=new URLSearchParams(location.search);
     function loadProgress(){let saved=window.__monkeySave;if(saved==null)try{saved=localStorage.getItem(SAVE_KEY)}catch{}if(typeof saved==='string')try{saved=JSON.parse(saved)}catch{saved=null}const base=freshProgress();return saved?.version===1?{...base,...saved,streak:{...base.streak,...saved.streak},settings:{...base.settings,...saved.settings},stats:{...base.stats,...saved.stats}}:base}
     // bestTimesEasy keeps Easy clears apart so they never set Normal records.
-    function freshProgress(){return{version:1,level:1,bestTimes:{},bestTimesEasy:{},streak:{count:0,lastDate:null},settings:{music:'relaxed',difficulty:'normal',theme:'console',musicVol:100,sfxVol:100},player:null,stats:{xp:0,scores:[]}}}
+    function freshProgress(){return{version:1,level:1,bestTimes:{},bestTimesEasy:{},streak:{count:0,lastDate:null},settings:{music:'relaxed',difficulty:'normal',theme:'jungle',musicVol:100,sfxVol:80},player:null,stats:{xp:0,scores:[]}}}
     function saveProgress(){const json=JSON.stringify(progress);if(isIOSApp)window.webkit.messageHandlers.storage?.postMessage(json);try{localStorage.setItem(SAVE_KEY,json)}catch{}}
     let progress=loadProgress();
     if(params.has('reset')){progress=freshProgress();saveProgress()}
@@ -953,7 +953,7 @@
       await wait(560)
     }
     function setMessage(s){$('#message').textContent=s}
-    function setVariant(key){if(!variants[key])key='A';document.body.classList.remove('variant-a','variant-b','variant-c');document.body.classList.add(`variant-${key.toLowerCase()}`);$('#variantLabel').textContent=`${key} — ${variants[key]}`;const url=new URL(location.href);url.searchParams.set('variant',key);history.replaceState({},'',url)}
+    function setVariant(key){if(!variants[key])key='A';document.body.classList.remove('variant-a','variant-b','variant-c');document.body.classList.add(`variant-${key.toLowerCase()}`);$('#variantLabel').textContent=`${key} — ${variants[key]}`;}
     function cycleVariant(dir){const keys=Object.keys(variants),current=new URLSearchParams(location.search).get('variant')||'A',i=keys.indexOf(current);setVariant(keys[(i+dir+keys.length)%keys.length])}
     function setupFeaturedGloss(){
       const art=$('#featuredArt'),arts=[art],card=art.closest('.featured-card'),clamp=(n,min,max)=>Math.max(min,Math.min(max,n)),REST={x:80,o:.45,ry:0,rx:0},keys=['x','o','ry','rx'];let cur={...REST},target={...REST},frame=0,lastTilt=-Infinity,pointerInside=false;
@@ -1130,7 +1130,6 @@
     });
     $('#gearBtn').onclick=openSettings;$('#homeGear').onclick=openSettings;$('#settingsDone').onclick=closeSettings;$('#settings').onclick=e=>{if(e.target===e.currentTarget)closeSettings()};
     addEventListener('pointerdown',unlockAudio,{once:true,capture:true});
-    addEventListener('keydown',e=>{if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName)||document.activeElement.isContentEditable)return;if(e.key==='ArrowLeft')cycleVariant(-1);if(e.key==='ArrowRight')cycleVariant(1)});
     async function bootstrap(){new ResizeObserver(()=>{if(state.tiles.length)render()}).observe(board);setupFeaturedGloss();setupMicroSlats();setVariant(new URLSearchParams(location.search).get('variant')||'D');loadHomeArt();buildHomeTicker();await preloadAssets();startLevel(progress.level,{silent:true});pendingLevelStart=false;if(params.has('play'))playFromHome();else showHome();if(!progress.player)openNameDialog();flushSync();playHomeSting();setInterval(()=>{if(!document.hidden)renderClock()},250);if(params.has('soundcheck'))showSoundcheck();if(isIOSApp)unlockAudio()}
     bootstrap();
   </script>
