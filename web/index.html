@@ -566,9 +566,11 @@
     }
     // Progress persists through the iOS app's native store (injected as window.__monkeySave) or localStorage in a browser.
     const SAVE_KEY='monkeyTrubble.save.v1',params=new URLSearchParams(location.search);
-    function loadProgress(){let saved=window.__monkeySave;if(saved==null)try{saved=localStorage.getItem(SAVE_KEY)}catch{}if(typeof saved==='string')try{saved=JSON.parse(saved)}catch{saved=null}const base=freshProgress();return saved?.version===1?{...base,...saved,streak:{...base.streak,...saved.streak},settings:{...base.settings,...saved.settings},stats:{...base.stats,...saved.stats}}:base}
+    function loadProgress(){let saved=window.__monkeySave;if(saved==null)try{saved=localStorage.getItem(SAVE_KEY)}catch{}if(typeof saved==='string')try{saved=JSON.parse(saved)}catch{saved=null}const base=freshProgress();if(saved?.version!==1)return base;const p={...base,...saved,streak:{...base.streak,...saved.streak},settings:{...base.settings,...saved.settings},stats:{...base.stats,...saved.stats}};
+      // One-time move of older saves onto the new defaults (Jungle theme, 80% effects); later choices are kept.
+      if(!(saved.settings?.defaultsRev>=2))Object.assign(p.settings,{theme:'jungle',sfxVol:80,defaultsRev:2});return p}
     // bestTimesEasy keeps Easy clears apart so they never set Normal records.
-    function freshProgress(){return{version:1,level:1,bestTimes:{},bestTimesEasy:{},streak:{count:0,lastDate:null},settings:{music:'relaxed',difficulty:'normal',theme:'jungle',musicVol:100,sfxVol:80},player:null,stats:{xp:0,scores:[]}}}
+    function freshProgress(){return{version:1,level:1,bestTimes:{},bestTimesEasy:{},streak:{count:0,lastDate:null},settings:{music:'relaxed',difficulty:'normal',theme:'jungle',musicVol:100,sfxVol:80,defaultsRev:2},player:null,stats:{xp:0,scores:[]}}}
     function saveProgress(){const json=JSON.stringify(progress);if(isIOSApp)window.webkit.messageHandlers.storage?.postMessage(json);try{localStorage.setItem(SAVE_KEY,json)}catch{}}
     let progress=loadProgress();
     if(params.has('reset')){progress=freshProgress();saveProgress()}
