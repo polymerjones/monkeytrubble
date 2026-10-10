@@ -79,6 +79,48 @@
     .home-play{width:min(320px,86vw);padding:14px 0 16px;display:flex;flex-direction:column;align-items:center;gap:3px;border:2px solid var(--accent-hi);border-radius:22px;background:linear-gradient(180deg,#6dff9a,#1c9a45 70%,#137a35) center/cover;color:#002a0e;box-shadow:0 6px 0 var(--accent-shadow),0 0 40px #57ff8666;cursor:pointer;animation:playPulse 2.2s ease-in-out infinite;-webkit-tap-highlight-color:transparent}.home-play small{font:900 .7rem system-ui,sans-serif;letter-spacing:.32em;opacity:.75}.home-play span{font:950 2.05rem/1 system-ui,sans-serif;letter-spacing:.08em}.home-play:active{translate:0 4px;box-shadow:0 2px 0 var(--accent-shadow)}@keyframes playPulse{0%,100%{scale:1}50%{scale:1.035}}
     .home-best{min-height:18px;color:var(--text-dim);font:700 .76rem system-ui,sans-serif;letter-spacing:.14em}.home-week{display:flex;gap:10px;padding:10px 16px;border:1px solid var(--line-deep);border-radius:16px;background:#031008cc}.home-day{display:flex;flex-direction:column;align-items:center;gap:3px;color:#5c8f6a;font:800 .6rem system-ui,sans-serif}.home-day span{font-size:1.15rem;filter:grayscale(1);opacity:.32}.home-day.lit span{filter:none;opacity:1}.home-day.today{color:#fff}
     @media(prefers-reduced-motion:reduce){.home-play{animation:none}}
+    /* Halloween levels (body.pack-halloween, set per level in startLevel): a pumpkin/violet wash over whichever theme is chosen, and Halloween foil colours. */
+    body.pack-halloween [data-shine]{--foil-grad:linear-gradient(115deg,#ff7a1a 6%,#9b4dff 36%,#3dff7a 66%,#ff2a3d 94%)}
+    /* !important: the themes (jungle, art boards) style these with higher specificity; a Halloween level sits on top of any theme. */
+    body.pack-halloween .board-wrap{background:radial-gradient(ellipse at 50% 110%,#ff7a1a33 0,transparent 55%),radial-gradient(ellipse at 50% -10%,#7a2cff40 0,transparent 60%),#07030c!important;border-color:#ff7a1a99!important;box-shadow:inset 0 0 90px #2a0b3dcc,0 0 28px #ff7a1a33,0 20px 70px #000!important}
+    body.pack-halloween .tile.face-down{background:radial-gradient(circle at 50% 50%,#ff7a1a2a 0 16%,#0000 17%),repeating-linear-gradient(135deg,#140820 0 7px,#2a1240 8px 10px,#10061a 11px 17px)!important}
+    body.pack-halloween .tile.blocked.face-down{background:repeating-linear-gradient(135deg,#0b0512 0 7px,#1a0b28 8px 10px,#08040e 11px 17px)!important}
+    body.pack-halloween .board-wrap::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 20% 85%,#c9b6ff14 0,transparent 40%),radial-gradient(ellipse at 80% 70%,#c9b6ff10 0,transparent 45%);animation:hwFog 14s ease-in-out infinite alternate}
+    @keyframes hwFog{to{transform:translateX(6%)}}
+    body.pack-halloween .tile{border-color:#ff8a2a!important}
+    /* Fairy dust (drag match). */
+    .dust,.dust-flash{position:fixed;z-index:3600;pointer-events:none}
+    .dust{border-radius:50%;background:var(--c);color:var(--c);display:grid;place-items:center;line-height:1;box-shadow:0 0 8px 2px var(--c),0 0 18px 4px color-mix(in srgb,var(--c) 50%,transparent)}
+    .dust:not(:empty){background:none;box-shadow:none;text-shadow:0 0 8px var(--c),0 0 16px var(--c)}
+    .dust-flash{width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,#fff 0,var(--c) 30%,transparent 70%);mix-blend-mode:screen}
+    /* Drag to match: the card it would pair with, a face-down card it would test, and the cage slot it would land in. */
+    .tile.drop-match{box-shadow:0 0 0 3px var(--playable),0 0 26px 8px var(--playable)!important;animation:dropPulse .7s ease-in-out infinite alternate}
+    .tile.drop-reveal{box-shadow:0 0 0 2px #fff8,0 0 18px 4px #ffffff66!important}
+    .slot.drop-slot{box-shadow:0 0 0 3px var(--playable),0 0 22px 6px var(--playable)!important;animation:dropPulse .7s ease-in-out infinite alternate}
+    @keyframes dropPulse{to{filter:brightness(1.25)}}
+    body.pack-halloween .tile.drop-match,body.pack-halloween .slot.drop-slot{box-shadow:0 0 0 3px #5dff3a,0 0 28px 8px #2bff00cc!important}
+    .tile.peek-show{background:#000!important}
+    /* Good Eye combo text on Halloween levels: pumpkin letters, a violet outline and a toxic-green glow. */
+    body.pack-halloween .good-eye{color:#ffb347;-webkit-text-stroke:2px #3a0f6b;text-shadow:0 4px 0 #2a0b3d,0 0 18px #ff7a1a,0 0 40px #5dff3a99,0 0 70px #9b4dff88}
+    /* Owl Eyes on Halloween levels: toxic-green glowing eyes, a slow creepy blink with a flicker, and green hint glows. */
+    body.pack-halloween .owl-eyes circle[fill="#ffb31a"]{fill:#5dff3a}
+    body.pack-halloween .owl-eyes circle[fill="#2b1a06"]{fill:#06140a}
+    body.pack-halloween .owl-eyes circle[fill="#120a02"]{fill:#021a06}
+    body.pack-halloween .owl-eyes path{stroke:#b8ffb0}
+    body.pack-halloween .owl-eyes{filter:drop-shadow(0 0 4px #5dff3a) drop-shadow(0 0 10px #2bff00aa)}
+    body.pack-halloween .owl-eyes .lids{animation:hwOwlBlink 6.5s infinite}
+    @keyframes hwOwlBlink{0%,84%,100%{transform:scaleY(1);opacity:1}87%{transform:scaleY(.08)}90%{transform:scaleY(1)}93%{opacity:.35}94%{opacity:1}96%{opacity:.5}97%{opacity:1}}
+    body.pack-halloween .hint-eyes{filter:drop-shadow(0 0 8px #5dff3a) drop-shadow(0 0 22px #2bff00) drop-shadow(0 2px 2px #000)}
+    body.pack-halloween .hint-eyes .lids{animation:hwOwlFlicker 1.6s infinite}
+    @keyframes hwOwlFlicker{0%,100%{opacity:1}45%{opacity:.75}50%{opacity:1}52%{opacity:.55}54%{opacity:1}}
+    body.pack-halloween .hint-eyes small{background:#5dff3a;border-color:#06140a;color:#06140a}
+    body.pack-halloween .tile.hinted,body.pack-halloween .slot.hinted{box-shadow:0 0 0 3px #5dff3a,0 0 26px 8px #2bff00cc!important;animation:hwHintPulse .8s ease-in-out infinite alternate}
+    @keyframes hwHintPulse{to{box-shadow:0 0 0 3px #d4ffb0,0 0 40px 12px #3dff1aee}}
+    body.pack-halloween .tile.hinted.blocked{outline-color:#5dff3a}
+    /* The animated slat floor behind the board: shift its green to pumpkin and violet. */
+    body.pack-halloween #microSlats{filter:hue-rotate(-110deg) saturate(1.4)}
+    body.pack-halloween .tile.free{box-shadow:0 0 10px #ff7a1a88,0 7px 14px #000d}
+    body.pack-halloween .level-pill::after{content:" 🎃"}
     .ios-app .topbar .logo{display:none}
     .ios-app .logo{font-size:.6rem;letter-spacing:.1em;align-self:center}.ios-app .level-pill{font-size:.8rem;padding:4px 12px}.ios-app .top-stats{font-size:.72rem;gap:9px}.ios-app .featured-card{height:170px}.ios-app .featured-art{width:112px;height:166px}.ios-app .featured-copy{padding-top:30px}.ios-app .featured-name{font-size:1.18rem}.ios-app .featured-fact{-webkit-line-clamp:2}/* Hero copy on a solid panel: the CURRENT CARD tag and the sound button sit on the card's top border, the status line is hidden, and the freed room goes to larger text. Card height is unchanged so the board keeps its size. */.ios-app .featured-card{overflow:visible}.ios-app .featured-copy{position:relative;align-self:stretch;overflow:visible;max-height:none;padding:13px 10px 8px;border-radius:10px;background:#1a1d1c;box-shadow:inset 0 0 0 1px #ffffff14}.ios-app .featured-kicker{position:absolute;top:-19px;left:8px;padding:3px 7px;font-size:.74rem;box-shadow:0 2px 0 var(--accent-ink)}.ios-app .featured-name{margin:0 0 3px;font-size:1.5rem;line-height:.98}.ios-app .featured-latin{min-height:0;font-size:.95rem}.ios-app .featured-fact{margin-top:5px;font-size:.9rem;line-height:1.24;color:#a9d8b5;-webkit-line-clamp:3}.ios-app .message{display:none}.ios-app .actions{top:-14px;right:10px}.ios-app .game-shell{padding-bottom:calc(178px + env(safe-area-inset-bottom))}
     /* Settings: monkey-paw gear (48px touch target around the visible button) and chunky two-position switches with a sliding knob. */
@@ -217,6 +259,56 @@
     .tile.board-tile.free,html[data-theme="jungle"] .tile.board-tile.free{border-color:var(--playable)}
     .tile.board-tile.blocked,html[data-theme="jungle"] .tile.board-tile.blocked{border-color:#0c1a10}
     html[data-theme="jungle"] .tile.board-tile.blocked{border-color:#1a1206}
+    /* ===== Halloween theme: the Jungle theme's layout recoloured (greens to violet night, gold to pumpkin, wood to dark plum).
+       Generated from the Jungle rules; Halloween levels switch to it automatically (themeFor). ===== */
+    html[data-theme="halloween"].ios-app .tile.blocked.face-down,html[data-theme="halloween"] .ios-app .tile.blocked.face-down{background:repeating-linear-gradient(135deg,#140c1a 0 7px,#22142d 8px 10px,#110a16 11px 17px)}
+    --green:#ffd84d;--amber:#ffd84d;--danger:#ff5a4f;
+    html[data-theme="halloween"] body{background-color:#120918;color:var(--text-pale);font-family:ui-rounded,'SF Pro Rounded',system-ui,sans-serif}
+    html[data-theme="halloween"] .topbar{background:linear-gradient(180deg,#2c1939f0,#21122de6);border-bottom:3px solid #3f2e46;box-shadow:0 3px 0 #68537255}
+    html[data-theme="halloween"] .level-pill{background:var(--wood-grain),var(--wood);border:2px solid #2c2032;color:#ffecdc;font-family:var(--display);font-weight:400;letter-spacing:.08em;text-shadow:0 2px 0 #211725;box-shadow:inset 0 1px 0 #ecd1b355,0 3px 0 #211725}
+    html[data-theme="halloween"] .home-btn,html[data-theme="halloween"] .gear-btn,html[data-theme="halloween"] .home-icon{background:radial-gradient(circle at 35% 30%,#412852,#21122d);border:2px solid #685372;color:#ffa04d}
+    html[data-theme="halloween"] .featured-card{border:3px solid #685372;background:radial-gradient(120% 120% at 0% 0%,#412852,#21122d 70%);box-shadow:inset 0 0 0 2px #3f2e46,0 6px 0 #21172588}
+    html[data-theme="halloween"] .featured-kicker{background:#ffa04d;color:#170f1a;font-family:var(--display);font-weight:400}
+    html[data-theme="halloween"] .featured-name,html[data-theme="halloween"] .win-level{font-family:var(--display);font-weight:400;letter-spacing:.03em;text-shadow:2px 2px 0 #3d2a45,3px 3px 0 #170f1a}
+    html[data-theme="halloween"].ios-app .featured-copy,html[data-theme="halloween"] .ios-app .featured-copy{background:#160b1d;box-shadow:inset 0 0 0 1px #68537266}
+    html[data-theme="halloween"] .board-wrap{border:3px solid #3f2e46;background:radial-gradient(130% 90% at 50% 0%,#341f44,#160b1d 75%);box-shadow:inset 0 0 70px #0b050fcc,inset 0 0 0 2px #68537255,0 16px 50px #000000}
+    html[data-theme="halloween"] .tray-panel{border:3px solid #685372;background:var(--wood-grain),linear-gradient(180deg,#34273a,#241a28);box-shadow:inset 0 2px 0 #ecd1b344,0 -4px 30px #0008}
+    html[data-theme="halloween"] .slot{border:2px dashed #d5bb9d66;background:#18111bcc;color:#ffd5b0}
+    html[data-theme="halloween"] .tray-label{color:#f5c9a2}
+    html[data-theme="halloween"] .booster{border:2px solid #2c2032;background:linear-gradient(180deg,#ffbb80,#ef7f1d 60%,#684278);color:#170f1a;font-family:var(--display);font-weight:400;letter-spacing:.08em;box-shadow:0 4px 0 #3d2a45}
+    html[data-theme="halloween"] .booster:disabled,html[data-theme="halloween"] .booster.empty{filter:saturate(.3) brightness(.7)}
+    html[data-theme="halloween"] .dialog{border:7px solid transparent;border-radius:24px;background:radial-gradient(120% 90% at 50% 0%,#3b244b,#21122d 70%) padding-box,var(--wood-grain) border-box,var(--wood) border-box;box-shadow:0 10px 0 #211725,0 24px 60px #000c,inset 0 0 0 2px #160b1d88,inset 0 20px 40px #ffffff0d;color:var(--text-pale)}
+    html[data-theme="halloween"] .dialog::before,html[data-theme="halloween"] .dialog::after{display:none}
+    html[data-theme="halloween"] .dialog h2,html[data-theme="halloween"] .leaders-top h2,html[data-theme="halloween"] .win-level{position:relative}
+    html[data-theme="halloween"] .win-level{width:fit-content;margin:0 auto}
+    html[data-theme="halloween"] .dialog h2::before,html[data-theme="halloween"] .dialog h2::after,html[data-theme="halloween"] .leaders-top h2::before,html[data-theme="halloween"] .leaders-top h2::after,html[data-theme="halloween"] .win-level::before,html[data-theme="halloween"] .win-level::after{content:'';position:absolute;top:50%;width:46px;height:46px;translate:0 -58%;pointer-events:none;filter:drop-shadow(0 2px 2px #0009);background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Cpath d='M6 6c18 2 30 10 36 26' fill='none' stroke='%2336283c' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M14 8c4-8 18-8 22 0-6 6-16 6-22 0z' fill='%23582c77'/%3E%3Cpath d='M26 16c8-6 20-2 20 8-8 2-16-1-20-8z' fill='%2369358e'/%3E%3Cpath d='M8 20c-6-6-4-16 4-18 4 6 3 14-4 18z' fill='%23492464'/%3E%3Cpath d='M36 30c8-2 16 6 12 14-8-1-13-7-12-14z' fill='%23582c77'/%3E%3Cpath d='M18 12q8 2 14 2M30 21q6 1 10 3M10 8q0 6-2 10' stroke='%239549cc' stroke-width='1' fill='none' opacity='.7'/%3E%3C/svg%3E") center/contain no-repeat;z-index:2}
+    html[data-theme="halloween"] .dialog h2::before,html[data-theme="halloween"] .leaders-top h2::before,html[data-theme="halloween"] .win-level::before{left:-34px;rotate:-18deg}
+    html[data-theme="halloween"] .dialog h2::after,html[data-theme="halloween"] .leaders-top h2::after,html[data-theme="halloween"] .win-level::after{right:-34px;transform:scaleX(-1);rotate:18deg}
+    html[data-theme="halloween"] .tile.face-down,html[data-theme="halloween"] .featured-art:not(.has-gloss){background:radial-gradient(circle at 50% 50%,#ffbb8022 0 18%,#0000 19%),repeating-linear-gradient(135deg,#2d1b39 0 7px,#412852 8px 10px,#261631 11px 17px);border-color:#685372}
+    html[data-theme="halloween"] .win-dialog{overflow:visible}
+    html[data-theme="halloween"] .dialog h2,html[data-theme="halloween"] .leaders-top h2{padding:7px 24px 8px;border:2px solid #2c2032;border-radius:12px;background:var(--wood-grain),var(--wood);color:#ffecdc !important;font-family:var(--display);font-weight:400;letter-spacing:.06em;text-shadow:0 2px 0 #211725,0 0 1px #211725;box-shadow:inset 0 2px 0 #ecd1b366,inset 0 -3px 0 #2c203288,0 4px 0 #211725}
+    html[data-theme="halloween"] #resultTitle{color:#f7ebde !important}
+    html[data-theme="halloween"] .action{border:2px solid #2c2032;background:linear-gradient(180deg,#412852,#2c1939);color:#ffecdc;border-radius:14px}
+    html[data-theme="halloween"] .action.primary{border-color:#3d2a45;background:linear-gradient(180deg,#ffbb80,#fb8b29 55%,#e17211);color:#170f1a;font-family:var(--display);font-weight:400;letter-spacing:.1em;font-size:1.05rem}
+    html[data-theme="halloween"] .link-btn{color:#f5c9a2}
+    html[data-theme="halloween"] .dip{border-color:#3f2e46;background:#160b1d}
+    html[data-theme="halloween"] .dip::before{background:linear-gradient(180deg,#ffbb80,#fb8b29 55%,#e17211);box-shadow:0 4px 0 #3d2a45,0 7px 12px #000b,inset 0 1px 0 #ffe6d0}
+    html[data-theme="halloween"] .dip button{color:#cba27e}
+    html[data-theme="halloween"] .dip button[aria-checked="true"]{color:#170f1a}
+    html[data-theme="halloween"] .name-chip,html[data-theme="halloween"] #nameInput{border-color:#3f2e46;background:#160b1d}
+    html[data-theme="halloween"] .home{background:radial-gradient(circle at 50% 36%,#412852 0,#21122d 55%,#0d0612 88%)}
+    html[data-theme="halloween"] .home-play{border:3px solid #3d2a45;background:linear-gradient(180deg,#ffbb80,#fb8b29 60%,#e17211);color:#170f1a;box-shadow:0 6px 0 #3d2a45,0 0 40px #ff963a55;font-family:var(--display)}
+    html[data-theme="halloween"] .home-play span,html[data-theme="halloween"] .home-play small{font-family:var(--display);font-weight:400}
+    html[data-theme="halloween"] .home-streak,html[data-theme="halloween"] .home-week,html[data-theme="halloween"] .home-profile{border:2px solid #685372;background:#21122dd9}
+    html[data-theme="halloween"] .leaders{background:radial-gradient(circle at 50% 20%,#412852 0,#21122d 55%,#0d0612 88%)}
+    html[data-theme="halloween"] .leaders-tabs{border-color:#3f2e46;background:#160b1d}
+    html[data-theme="halloween"] .leaders-tabs [aria-selected="true"]{background:linear-gradient(180deg,#ffbb80,#fb8b29 55%,#e17211);color:#170f1a}
+    html[data-theme="halloween"] .lb-row{border-color:#3f2e46;background:linear-gradient(90deg,color-mix(in srgb,var(--tier) 22%,#21122d),#21122d 65%)}
+    html[data-theme="halloween"] .overlay{background:#0a050ecc}
+    html[data-theme="halloween"]{--playable:#ff851a}
+    html[data-theme="halloween"] .tile.board-tile.free{border-color:var(--playable)}
+    html[data-theme="halloween"] .tile.board-tile.blocked{border-color:#100a14}
+    html[data-theme="halloween"] .tile.board-tile.blocked{border-color:#0f0b11}
     .tile.board-tile.blocked.joker-card{box-shadow:none}
     .tile.board-tile.on-top{border-color:#fff}
     /* Stacked cards show their thickness: each layer above the floor casts a hard edge down-right, like a mahjong tile stack. */
@@ -268,11 +360,34 @@
       CAULIN_PLUSH:{echoes:2,image:'caulin-plush.jpg',name:'Caulin Plushie',latin:'Caulinus plushus',facts:['Hand-stitched, fully huggable and the softest member of the troop.','Survived three washing machines and one very long road trip.','Has never once won a staring contest. No eyelids.','Officially rated 10/10 for nap support.'],sounds:['caulinClear']},
       PATRIOT_1:{image:'patriot-1.jpg',name:'Monkey Patriot',latin:'Pan libertatis',facts:['Reports for duty in a tricorn hat and refuses to be caged without a fight.','Declared independence from bedtime in 1776 and never looked back.','Rides at midnight shouting “The bananas are coming!”','Signs every document in very large letters.'],sounds:['callYell'],clearExtras:WAR_CLEARS},
       PATRIOT_3:{image:'patriot-3.jpg',name:'Parade Patriot',latin:'Pan libertatis',facts:['Never misses a parade, and never takes off the striped hat.','Knows every word of every marching song, and a few extra.','Sets off fireworks in July and again any other day he can.','The hat is part of the uniform. Do not touch the hat.'],sounds:['callAgile'],clearExtras:WAR_CLEARS},
-      JOKER:{image:'caulin-joker.jpg',name:'Joker Caulin',latin:'Wildcard',facts:['Matches any card in the cage. Save him for the card that has no partner nearby.','Plays by his own rules, and some days by none at all.','He pairs with the oldest card in the cage, so plan around who has waited longest.','Grin first, questions later.'],sounds:['jokerClear']},
+      JOKER:{image:'caulin-joker.jpg',name:'Joker Caulin',halloween:{image:'halloween-joker.jpg',name:'Joker Howler',foil:'linear-gradient(115deg,#2fe0d0 6%,#9b4dff 38%,#d9c7ff 70%,#2fe0d0 94%)'},latin:'Wildcard',facts:['Matches any card in the cage. Save him for the card that has no partner nearby.','Plays by his own rules, and some days by none at all.','He pairs with the oldest card in the cage, so plan around who has waited longest.','Grin first, questions later.'],sounds:['jokerClear']},
+      // Halloween pack (haunted primates): dealt only on Halloween levels (levelPack). foil tints the hero card's shine.
+      H01:{pack:'halloween',image:'halloween-01-howler.jpg',name:'The Blood Moon Howler',latin:'Alouatta (howler monkey)',facts:['Howler monkeys are among the loudest land animals: their roar carries for miles through the forest.','A howler troop roars at dawn to tell neighbours exactly where it is.','A hollow, enlarged bone in its throat turns the howl into a booming echo.'],sounds:['callHowler'],foil:'linear-gradient(115deg,#ff2a3d 6%,#ffb347 38%,#8a0f1f 70%,#ff2a3d 94%)'},
+      H02:{pack:'halloween',image:'halloween-02-capuchin.jpg',name:'The Crypt Trickster',latin:'Cebus (capuchin monkey)',facts:['Capuchins use stones as hammers to crack open hard nuts.','Some capuchins rub crushed millipedes on their fur as a bug repellent.','Capuchins are named after the hooded robes of Capuchin friars.'],sounds:['callCapuchin'],foil:'linear-gradient(115deg,#3dff7a 6%,#ff8a1f 38%,#7a2cff 70%,#3dff7a 94%)'},
+      H03:{pack:'halloween',image:'halloween-03-lemur.jpg',name:'The Phantom Lemur',latin:'Lemur catta',facts:['Ring-tailed lemurs hold “stink fights,” wafting scent from their tails at rivals.','They sunbathe in the morning, sitting upright with arms spread wide.','Lemurs live wild only on Madagascar.'],sounds:['callLemur1'],foil:'linear-gradient(115deg,#c9a6ff 6%,#7ff3ff 38%,#4b3bff 70%,#c9a6ff 94%)'},
+      H04:{pack:'halloween',image:'halloween-04-mandrill.jpg',name:'The Bone King',latin:'Mandrillus sphinx',facts:['The mandrill is the largest monkey in the world.','The brightest colours on a male’s face belong to the most dominant males.','Mandrills gather in hordes of hundreds in the forests of central Africa.'],sounds:['callMandrill'],foil:'linear-gradient(115deg,#2f6bff 6%,#ff2a3d 38%,#ffd447 70%,#2f6bff 94%)'},
+      H05:{pack:'halloween',image:'halloween-05-spider.jpg',name:'The Graveyard Acrobat',latin:'Ateles (spider monkey)',facts:['A spider monkey’s tail can grip a branch and hold its whole weight.','The tail tip has a bare, ridged pad that works like a fingerprint.','Spider monkeys have only tiny thumb stubs, which keeps their hands hook-shaped for swinging.'],sounds:['callScream'],foil:'linear-gradient(115deg,#22e6c8 6%,#9dff3a 38%,#0b7a6b 70%,#22e6c8 94%)'},
+      H06:{pack:'halloween',image:'halloween-06-gorilla.jpg',name:'The Crypt Guardian',latin:'Gorilla gorilla',facts:['A silverback can be more than ten times as strong as an adult human.','Gorillas beat their chests to show off, not just to threaten.','Gorillas are mostly gentle plant-eaters.'],sounds:['callGorilla1','callGorilla2'],foil:'linear-gradient(115deg,#9b4dff 6%,#d9c7ff 38%,#4a1a8a 70%,#9b4dff 94%)'},
+      H07:{pack:'halloween',image:'halloween-07-proboscis.jpg',name:'The Plague Sniffer',latin:'Nasalis larvatus',facts:['The male’s giant nose may make his honking calls even louder.','Proboscis monkeys can swim, and even dive, using their webbed feet.','They live only on the island of Borneo.'],sounds:['callLemur2'],foil:'linear-gradient(115deg,#b6ff3a 6%,#ffb347 38%,#5c7a14 70%,#b6ff3a 94%)'},
+      H08:{pack:'halloween',image:'halloween-08-tamarin.jpg',name:'The Crypt Gentleman',latin:'Saguinus imperator',facts:['Its white moustache curls past the shoulders, though newborns are born without it.','Legend says it was named for German Emperor Wilhelm II’s moustache.','Tamarin dads and older siblings do most of the baby carrying.'],sounds:['callLemur3'],foil:'linear-gradient(115deg,#ffd447 6%,#a8123a 38%,#fff1c4 70%,#ffd447 94%)'},
+      H09:{pack:'halloween',image:'halloween-09-aye-aye.jpg',name:'The Bone Collector',latin:'Daubentonia madagascariensis',facts:['The aye-aye taps on wood with a long, thin middle finger to find hidden grubs.','Its front teeth never stop growing, like a rodent’s.','In some Malagasy folklore, the aye-aye is an omen of bad luck.'],sounds:['callYell'],foil:'linear-gradient(115deg,#b14dff 6%,#c6ff3a 38%,#3a0f6b 70%,#b14dff 94%)'},
+      H10:{pack:'halloween',image:'halloween-10-snub.jpg',name:'The Frost Wraith',latin:'Rhinopithecus roxellana',facts:['It lives higher and colder than almost any other monkey, sometimes in snow.','Its tiny upturned nose may help against frostbite.','In winter it gets by on lichen, bark and pine needles.'],sounds:['callGuereza'],foil:'linear-gradient(115deg,#7ff3ff 6%,#ffb347 38%,#2f9bff 70%,#7ff3ff 94%)'},
+      H13:{pack:'halloween',image:'halloween-13-tarsier.jpg',name:'The Watcher',latin:'Tarsiidae (tarsier)',facts:['Each of a tarsier’s eyes is as big as its whole brain.','It can turn its head almost all the way around, like an owl.','Tarsiers hunt insects at night and are among the few primates that eat only animals.'],sounds:['callBaby'],foil:'linear-gradient(115deg,#ffc14d 6%,#2fe0d0 38%,#6b2cff 70%,#ffc14d 94%)'},
+      H14:{pack:'halloween',image:'halloween-14-ruffed-lemur.jpg',name:'The Infernal Jester',latin:'Varecia rubra',facts:['Red ruffed lemurs have one of the loudest calls of any lemur.','They live only in the Masoala rainforest of northeastern Madagascar.','Unlike most primates, ruffed lemur mothers leave their babies in a nest.'],sounds:['callShout'],foil:'linear-gradient(115deg,#ff5a1f 6%,#ffd447 38%,#a8120f 70%,#ff5a1f 94%)'},
+      H01b:{pack:'halloween',image:'halloween-01b-midnight-howler.jpg',name:'The Midnight Howler',latin:'Alouatta (howler monkey)',facts:['A howler’s call can be heard up to three miles away.','Howlers spend most of the day resting, saving energy from their diet of leaves.','Howler troops roar back and forth to keep out of each other’s way.'],sounds:['callHowler'],foil:'linear-gradient(115deg,#9b4dff 6%,#d9c7ff 38%,#2b0f5c 70%,#9b4dff 94%)'},
+      H15:{pack:'halloween',image:'halloween-15-saki.jpg',name:'The Pale Reaper',latin:'Pithecia pithecia',facts:['Only male white-faced sakis have the pale face; females are brown and grizzled.','Sakis can leap up to 30 feet between trees.','They live in the rainforests of northern South America.'],sounds:['callSmallApe'],foil:'linear-gradient(115deg,#d9e4ff 6%,#4b3bff 38%,#7ff3ff 70%,#d9e4ff 94%)'},
+      H16:{pack:'halloween',image:'halloween-16-uakari.jpg',name:'The Bloodface',latin:'Cacajao calvus',facts:['A bald uakari’s face is bright red because blood vessels show through its bare skin.','A pale face can be a sign of illness, so the reddest uakaris look the healthiest.','It has one of the shortest tails of any monkey.'],sounds:['callCapuchin'],foil:'linear-gradient(115deg,#ff2a3d 6%,#1a0408 38%,#ff7a1a 70%,#ff2a3d 94%)'},
+      H17:{pack:'halloween',image:'halloween-17-marmoset.jpg',name:'The Tiny Terror',latin:'Cebuella pygmaea',facts:['The pygmy marmoset is the smallest monkey in the world, about the weight of a stick of butter.','It gnaws holes in tree bark and feeds on the sap that oozes out.','Pygmy marmosets can turn their heads 180 degrees.'],sounds:['callBaby'],foil:'linear-gradient(115deg,#b14dff 6%,#ffd447 38%,#5c1a8a 70%,#b14dff 94%)'},
+      H18:{pack:'halloween',image:'halloween-18-crested-macaque.jpg',name:'The Shadow Punk',latin:'Macaca nigra',facts:['Its “grin” is friendly: bared teeth mean peace among crested macaques.','It lives only on the Indonesian island of Sulawesi.','A crested macaque named Naruto famously snapped selfies with a photographer’s camera.'],sounds:['callDeBrazza'],foil:'linear-gradient(115deg,#9b4dff 6%,#2f6bff 38%,#1a0b2e 70%,#9b4dff 94%)'},
+      H19:{pack:'halloween',image:'halloween-19-orangutan.jpg',name:'The Ember Giant',latin:'Pongo pygmaeus',facts:['Orangutans build a fresh sleeping nest high in the trees nearly every night.','Big males grow wide cheek pads called flanges.','The name comes from Malay for “person of the forest.”'],sounds:['callHowler'],foil:'linear-gradient(115deg,#ff7a1a 6%,#ffd447 38%,#2a1206 70%,#ff7a1a 94%)'},
+      H20:{pack:'halloween',image:'halloween-20-gibbon.jpg',name:'The Hanging Phantom',latin:'Hylobates lar',facts:['Gibbons swing arm over arm at up to 35 miles per hour.','Mated gibbon pairs sing duets every morning.','A white-handed gibbon’s arms are longer than its legs and body together.'],sounds:['callAgile'],foil:'linear-gradient(115deg,#2fe0d0 6%,#d9e4ff 38%,#0b4a5c 70%,#2fe0d0 94%)'},
       // Single card, one per level: tapping him fires MVP Vision instead of going to the cage.
       KEVIN:{image:'kevin-kelly.jpg',name:'KEVIN KELLY',latin:'Limited Edition 2019 MVP',facts:['Tap him for MVP Vision: every hidden card flips up while he celebrates.','Limited edition, and he will remind you of it every time.','MVP Vision lasts as long as his celebration does, so look fast.','Best saved for the back half of a level, when the hidden cards matter most.'],sounds:['kevinClear'],power:'peek'}
     };
-    const MONKEY_SYMBOLS=Object.keys(CARD_DATA),DECK=MONKEY_SYMBOLS.filter(id=>id!==JOKER&&id!==KEVIN);
+    const MONKEY_SYMBOLS=Object.keys(CARD_DATA),DECK=MONKEY_SYMBOLS.filter(id=>id!==JOKER&&id!==KEVIN&&!CARD_DATA[id].pack),HALLOWEEN_DECK=MONKEY_SYMBOLS.filter(id=>CARD_DATA[id].pack==='halloween');
+    // Each level is a regular or a Halloween level, chosen by its own seed so retries deal the same set. Level 1 is always regular.
+    const HALLOWEEN_CHANCE=.5;
+    function levelPack(level){if(level<=1||!HALLOWEEN_DECK.length)return'regular';return mulberry32(level*7919+0x4a11)()<HALLOWEEN_CHANCE?'halloween':'regular'}
     // Card groups: a card belongs to group 1 unless it says group:N. A group joins the deal from its unlockLevel once it has cards;
     // Kevin and the Joker belong to every level.
     const CARD_GROUPS={1:{name:'THE ORIGINAL TROOP',unlockLevel:1},2:{name:'GROUP 2',unlockLevel:10}};
@@ -282,10 +397,11 @@
     const groupUnlockedAt=level=>Object.values(CARD_GROUPS).find(g=>g.unlockLevel===level&&g.unlockLevel>1&&groupDecks(level).length>groupDecks(level-1).length);
     const SHINE_GROUPS={
       light:['M7535','M7547','M7550','M7572','M7575','M7578','M7595'],
-      fractal:['M7543','M7557','M7590','CAULIN_PLUSH'],
-      strings:['M7560','M7564','M7569','PATRIOT_1'],
+      fractal:['M7543','M7557','M7590','CAULIN_PLUSH','H03','H09','H13','H17'],
+      strings:['M7560','M7564','M7569','PATRIOT_1','H05','H08','H15','H20'],
       blocks:['PATRIOT_3'],
-      sparkle:['M7554','JOKER','KEVIN']
+      sparkle:['M7554','JOKER','KEVIN','H04','H14']
+      // Halloween cards not listed here use light.
     };
     const SHINE_BY_SYMBOL=Object.fromEntries(Object.entries(SHINE_GROUPS).flatMap(([shine,ids])=>ids.map(id=>[id,shine])));
     const shineFor=symbol=>SHINE_BY_SYMBOL[symbol]||'light';
@@ -341,6 +457,9 @@
     let goodEyeClears=[],goodEyeAt=-Infinity,goodEyeBusy=false;
     const SOUND_FILES={...Object.fromEntries(PRAISE.flatMap(p=>p.takes.map(t=>[`praise:${t}`,`audio/praise/${t}.mp3`]))),homeSting:'audio/polyhome.mp3',
       pickup:'audio/blippage.wav',dragDrop:'audio/sfx/bongo-hit.mp3',match:'audio/success.wav',control:'audio/complete.mp3',win:'audio/sfx/level-complete.mp3',gameOverA:'audio/sfx/game-over-a.mp3',gameOverB:'audio/sfx/game-over-b.mp3',comboSting:'audio/sfx/combo.mp3',praiseSting:'audio/sfx/praise-sting.mp3',praiseOrEnd:'audio/sfx/praise-or-end.mp3',levelStart:'audio/japanesevoice.mp3',
+      hwGrab1:'audio/halloween/halloween-cardgrab1.wav',hwGrab2:'audio/halloween/halloween-cardgrab2.wav',hwGrab3:'audio/halloween/halloween-cardgrab3.wav',hwCantSelect:'audio/halloween/halloween-cant-select-card.wav',
+      hwLevelStart:'audio/halloween/growl-levelstart.wav',hwOwl:'audio/halloween/howl-owleyes.wav',hwShuffle1:'audio/halloween/windupcrank-useshuffle.wav',hwShuffle2:'audio/halloween/windupcrank2-shuffle.wav',
+      hwGameOver:'audio/halloween/gameover.wav',hwJoker:'audio/halloween/halloween-special.wav',hwScream:'audio/halloween/scream.wav',
       callHamadryas:'audio/video-calls/official-hamadryas.mp3',callGuereza:'audio/video-calls/official-guereza.mp3',callBarbary:'audio/video-calls/official-barbary-macaque.mp3',
       callDeBrazza:'audio/video-calls/official-debrazza-monkey.mp3',callMandrill:'audio/video-calls/official-mandrill.mp3',callCapuchin:'audio/video-calls/official-capuchin-monkey.mp3',
       callAgile:'audio/video-calls/official-agile-gibbon.mp3',callHowler:'audio/video-calls/HOWLERYELL.wav',callSmallApe:'audio/video-calls/SMALLAPEYELL.wav',
@@ -349,15 +468,21 @@
       callChimp:'audio/video-calls/chimpanzee.mp3',callScream:'audio/monkeyscream.mp3',callShout:'audio/monkey-shout.mp3',callYell:'audio/monkeyyell3.mp3',callBaby:'audio/babymonkey.mp3',callJoker:'audio/monkeyscream2.mp3',jokerClear:'audio/video-calls/jokersqueal.wav',kevinClear:'audio/video-calls/kevinkellyclear.mp3',caulinClear:'audio/video-calls/kaulinannounce2.mp3',
       cantSelect:'audio/video-calls/card%20cant%20select.wav',warClear1:'audio/video-calls/warmonkeyclear1.wav',warClear2:'audio/video-calls/warmonkeyclear2.wav',warClear3:'audio/video-calls/warmonkeyclear3.wav'
     };
-    const soundBuffers={},fallbackAudio={};let soundEnabled=true,audioUnlocked=false,pendingLevelStart=true,audioContext=null,reverbInput,musicGain,featuredSymbol=null,musicDuckTimer;
+    const soundBuffers={},fallbackAudio={};let soundEnabled=true,audioUnlocked=false,pendingLevelStart=true,audioContext=null,reverbInput,horrorInput=null,musicGain,featuredSymbol=null,musicDuckTimer;
     // Mix: music sits about 15 dB under the monkey calls and dips 14 dB (not out) while a call plays.
-    const MUSIC_VOLUME=Math.pow(10,-10/20),MUSIC_DUCK=Math.pow(10,-14/20),CARD_SELECT_GAIN=.5;
+    // Halloween clears play their calls this much slower (about 5.7 semitones down) into the horror reverb.
+    const HORROR_RATE=.72,PRAISE_HORROR_RATE=.8;
+    // Monkey vocalizations (card calls) sit this much under their measured trims, and a new call ducks any still playing to CALL_DUCK.
+    const MONKEY_CALL_DB=-4,CALL_DUCK=.3,isMonkeyCall=name=>/^(call|warClear)/.test(name);const liveCalls=new Set();
+    // Halloween levels swap these sounds for their own; with several files, each play picks one at random.
+    const HALLOWEEN_SFX={pickup:['hwGrab1','hwGrab2','hwGrab3'],cantSelect:['hwCantSelect'],hwShuffle:['hwShuffle1','hwShuffle2'],gameOverA:['hwGameOver'],gameOverB:['hwGameOver'],jokerClear:['hwJoker'],dragDrop:['hwShuffle2']};
+    const MUSIC_VOLUME=Math.pow(10,-10/20),MUSIC_DUCK=Math.pow(10,-14/20),CARD_SELECT_GAIN=.85;
     // Player volume sliders (Settings), as gains: (percent/100)^2 so the slider feels even. Set from progress by applyVolumes.
     let userMusicGain=1,userSfxGain=1;const musicLevel=()=>MUSIC_VOLUME*userMusicGain;
     // Per-sound trims in dB, from measured loudness, so each category plays at one level (at the volumes the calls already use):
     // monkey calls about -10.5 LUFS (loudest), praise lines -12, voices -13/-14, stings -15, the pair chime -20, UI blips last.
     // 'praise' covers every praise:* take. A master limiter (setupAudioGraph) keeps the louder mix from clipping.
-    const MIX_DB={callHamadryas:0,callGuereza:3,callBarbary:0.8,callDeBrazza:0.2,callMandrill:0.9,callCapuchin:1.6,callAgile:-2.3,callHowler:4,callSmallApe:1,callGorilla1:-0.4,callGorilla2:3.7,callLemur1:-0.1,callLemur2:-0.2,callLemur3:0.5,callChimp:-3.9,callScream:0.8,callShout:6.9,callYell:-0.2,callBaby:6.1,caulinClear:4.5,kevinClear:1.6,jokerClear:8.4,warClear1:-3.2,warClear2:7.1,warClear3:2,callJoker:-0.7,praise:1.3,levelStart:2.6,homeSting:0.9,win:2.9,gameOverA:1.4,gameOverB:1.4,comboSting:2.7,praiseSting:2.7,praiseOrEnd:2.1,match:2.3,pickup:4,cantSelect:4.9};
+    const MIX_DB={hwGrab1:7.5,hwGrab2:7,hwGrab3:8,hwCantSelect:12,hwLevelStart:7,hwOwl:8,hwShuffle1:10,hwShuffle2:10,hwGameOver:9,hwJoker:10,hwScream:6,callHamadryas:0,callGuereza:3,callBarbary:0.8,callDeBrazza:0.2,callMandrill:0.9,callCapuchin:1.6,callAgile:-2.3,callHowler:4,callSmallApe:1,callGorilla1:-0.4,callGorilla2:3.7,callLemur1:-0.1,callLemur2:-0.2,callLemur3:0.5,callChimp:-3.9,callScream:0.8,callShout:6.9,callYell:-0.2,callBaby:6.1,caulinClear:4.5,kevinClear:1.6,jokerClear:8.4,warClear1:-3.2,warClear2:7.1,warClear3:2,callJoker:-0.7,praise:1.3,levelStart:2.6,homeSting:0.9,win:2.9,gameOverA:1.4,gameOverB:1.4,comboSting:2.7,praiseSting:2.7,praiseOrEnd:2.1,match:2.3,pickup:4,cantSelect:4.9};
     // Music: the home screen loops its own track; in a level the Music Mode playlist (Settings) shuffles, never the same track twice in a row.
     // trim (dB) evens out loudness: every track is matched to polyjong-mus1 (-15.8 LUFS).
     // The home track doubles as a calm level track.
@@ -365,7 +490,10 @@
     const MUSIC={
       home:[HOME_TRACK],
       relaxed:[HOME_TRACK,{src:'audio/polyjong-mus1.mp3'},{src:'audio/music/calm-2.mp3',trim:-.6},{src:'audio/music/calm-3.mp3',trim:-.3},{src:'audio/music/calm-4.mp3',trim:-.6}],
-      competitive:[{src:'audio/music/competitive-1.mp3',trim:-.6},{src:'audio/music/competitive-2.mp3',trim:-1.8},{src:'audio/music/competitive-3.mp3',trim:-1.2}]
+      competitive:[{src:'audio/music/competitive-1.mp3',trim:-.6},{src:'audio/music/competitive-2.mp3',trim:-1.8},{src:'audio/music/competitive-3.mp3',trim:-1.2}],
+      // Halloween levels swap in these, by the same Music Mode setting (levelMusic).
+      halloweenRelaxed:[{src:'audio/music/halloween/halloween-calm.mp3',trim:-.3}],
+      halloweenCompetitive:[{src:'audio/music/halloween/halloween-competitive1.mp3',trim:-.7},{src:'audio/music/halloween/halloween-competitive2.mp3',trim:-1.1}]
     },MUSIC_FADE_S=1.5;
     const musicEls=new Map(),trackOf=new Map(),trackGains=new Map(),trackVolume=el=>Math.pow(10,(trackOf.get(el).trim||0)/20);let musicBus=null,musicList='home';
     function musicEl(track){
@@ -380,7 +508,7 @@
     function haptic(type){if(isIOSApp)window.webkit.messageHandlers.haptics.postMessage(type)}
     setupAudioGraph();
     async function preloadAssets(){
-      const started=performance.now(),images=[...new Set([...Object.values(SYMBOL_IMAGES),...Object.values(HERO_IMAGES)])],sounds=Object.entries(SOUND_FILES),total=images.length+sounds.length+1;let loaded=0;
+      const started=performance.now(),images=[...new Set([...Object.values(SYMBOL_IMAGES),...Object.values(HERO_IMAGES),...Object.values(CARD_DATA).filter(c=>c.halloween).flatMap(c=>[cardImage('thumb',c.halloween),cardImage('hero',c.halloween)]),...HOME_BG_FILES])],sounds=Object.entries(SOUND_FILES),total=images.length+sounds.length+1;let loaded=0;
       const update=()=>{loaded++;const pct=Math.round(loaded/total*100);$('#loaderFill').style.width=`${pct}%`;$('#loaderStatus').textContent=`LOADING CAGE // ${pct}%`};
       const loadImage=src=>new Promise(resolve=>{const image=new Image(),finish=()=>{update();resolve()};let done=false;const once=()=>{if(done)return;done=true;finish()};image.onload=async()=>{try{if(image.decode)await image.decode()}catch{}decodedImages.set(src,image);once()};image.onerror=once;image.src=src;if(image.complete)image.onload()});
       const loadAudio=element=>new Promise(resolve=>{let done=false;const finish=()=>{if(done)return;done=true;clearTimeout(timer);element.removeEventListener('loadeddata',finish);element.removeEventListener('canplaythrough',finish);element.removeEventListener('error',finish);resolve()};const timer=setTimeout(finish,4500);if(element.readyState>=2)finish();else{element.addEventListener('loadeddata',finish,{once:true});element.addEventListener('canplaythrough',finish,{once:true});element.addEventListener('error',finish,{once:true});element.load()}});
@@ -398,12 +526,19 @@
       // Master limiter: everything ends here, so loud calls on top of the music never clip.
       const master=audioContext.createDynamicsCompressor();master.threshold.value=-2;master.knee.value=0;master.ratio.value=20;master.attack.value=.003;master.release.value=.15;master.connect(audioContext.destination);
       convolver.buffer=impulse;reverbInput.connect(dry).connect(master);reverbInput.connect(convolver).connect(wet).connect(master);
+      // Horror bus (Halloween clears): a long, dark, wetter tail.
+      {const hLen=Math.floor(audioContext.sampleRate*2.6),hImp=audioContext.createBuffer(2,hLen,audioContext.sampleRate);for(let c=0;c<2;c++){const d=hImp.getChannelData(c);for(let i=0;i<hLen;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/hLen,2.2)}
+        const hConv=audioContext.createConvolver(),hTone=audioContext.createBiquadFilter(),hDry=audioContext.createGain(),hWet=audioContext.createGain();hConv.buffer=hImp;hTone.type='lowpass';hTone.frequency.value=1800;hDry.gain.value=.7;hWet.gain.value=.55;horrorInput=audioContext.createGain();horrorInput.connect(hDry).connect(master);horrorInput.connect(hConv).connect(hTone).connect(hWet).connect(master)}
       musicFilter.type='lowpass';musicFilter.frequency.value=5200;musicFilter.Q.value=.55;musicGain.gain.value=musicLevel();musicFilter.connect(musicGain).connect(master);musicBus=musicFilter;routeTrack(music);
     }
     // Every music track gets its own gain (carrying its trim) into the shared filter/volume bus, so switching tracks can crossfade.
     function routeTrack(el){if(!musicBus||trackGains.has(el))return;const g=audioContext.createGain();g.gain.value=trackVolume(el);audioContext.createMediaElementSource(el).connect(g).connect(musicBus);trackGains.set(el,g)}
     // Switches to a playlist ('home', 'relaxed', 'competitive'). It keeps the current track if it already belongs to that list,
     // unless advance asks for the next one (a track ended).
+    // The level's playlist: the Music Mode setting, or its Halloween counterpart on a Halloween level.
+    // Level-start voiceover. On Halloween levels it is pitched down into the horror reverb, and the growl follows once it ends.
+    function playLevelStart(){if(state?.pack!=='halloween'){playSound('levelStart',{volume:.78});return}playSound('levelStart',{volume:.78,horror:true});playSound('hwLevelStart',{volume:.9,delay:soundLengthMs('levelStart',2000)/HORROR_RATE/1000})}
+    function levelMusic(){const m=progress.settings.music;if(state?.pack!=='halloween')return m;const h=`halloween${m[0].toUpperCase()}${m.slice(1)}`;return MUSIC[h]?.length?h:m}
     function playMusic(list,advance=false){
       musicList=list;const tracks=MUSIC[list],current=trackOf.get(music);music.loop=tracks.length===1;if(!advance&&tracks.includes(current))return;
       const pool=tracks.length>1?tracks.filter(t=>t!==current):tracks,next=musicEl(pool[rand(pool.length)]);if(next===music)return;
@@ -415,7 +550,7 @@
     // Polymer Jones sting: once per app launch, on the home screen, as soon as audio is allowed (at once in the iOS app, first tap in a browser).
     let homeStingPending=true;
     function playHomeSting(){if(!homeStingPending||!audioUnlocked||!soundEnabled||$('#home').classList.contains('hidden'))return;homeStingPending=false;playSound('homeSting',{volume:.9})}
-    function unlockAudio(){if(audioUnlocked)return;audioUnlocked=true;setTimeout(playHomeSting,0);audioContext?.resume().catch(()=>{});if(soundEnabled){music.play().catch(()=>{});if(pendingLevelStart){pendingLevelStart=false;playSound('levelStart',{volume:.78})}}}
+    function unlockAudio(){if(audioUnlocked)return;audioUnlocked=true;setTimeout(playHomeSting,0);audioContext?.resume().catch(()=>{});if(soundEnabled){music.play().catch(()=>{});if(pendingLevelStart){pendingLevelStart=false;playLevelStart()}}}
     function resumeMonkeyAudio(){if(audioContext?.state==='suspended')audioContext.resume().catch(()=>{});if(soundEnabled&&audioUnlocked&&document.visibilityState==='visible')music.play().catch(()=>{})}
     window.__resumeMonkeyAudio=resumeMonkeyAudio;document.addEventListener('visibilitychange',()=>{if(document.hidden){music.pause();if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}}else{resumeMonkeyAudio();if(state.clock.resume){state.clock.resume=false;startClock()}}});
     function setMusicLevel(level,smoothing){if(musicGain)musicGain.gain.setTargetAtTime(level,audioContext.currentTime,smoothing);else music.volume=level}
@@ -425,17 +560,19 @@
     // Hold time for a sound: release starts at 80% of its length (at the playback rate), plus any start delay.
     const duckFor=(name,{rate=1,delay=0}={})=>Math.max(300,soundLengthMs(name,1500)/rate*.8+delay*1000);
         // echo: how many 1-second repeats follow (true = 1), each quieter and a touch lower. praise: the voiceover effect (see playPraise).
-    function playSound(name,{volume=1,rate=1,echo=0,delay=0,praise=false}={}){
-      if(!soundEnabled||!userSfxGain)return;const trim=Math.pow(10,(MIX_DB[name]??(name.startsWith('praise:')?MIX_DB.praise:0))/20),level=Math.max(0,volume*trim*userSfxGain*(name==='pickup'?CARD_SELECT_GAIN:1)),buffer=soundBuffers[name],echoes=echo===true?1:echo||0;
-      if(buffer&&audioContext){if(praise){playPraise(buffer,level,rate,delay);return}const source=audioContext.createBufferSource(),gain=audioContext.createGain();source.buffer=buffer;source.playbackRate.value=rate;gain.gain.value=level;source.connect(gain).connect(reverbInput);source.onended=()=>gain.disconnect();source.start(audioContext.currentTime+delay);if(echoes)playSound(name,{volume:volume*.42,rate:.97*rate,delay:delay+1,echo:echoes-1});return}
-      const a=fallbackAudio[name];if(!a)return;a.pause();a.currentTime=0;a.volume=Math.min(1,level);a.playbackRate=rate;a.play()?.catch(()=>{});if(echoes)setTimeout(()=>playSound(name,{volume:volume*.42,rate:.97*rate,echo:echoes-1}),1000)
+    function playSound(name,{volume=1,rate=1,echo=0,delay=0,praise=false,horror=false,isEcho=false}={}){
+      if(state?.pack==='halloween'&&HALLOWEEN_SFX[name]){const alts=HALLOWEEN_SFX[name];name=alts[Math.floor(Math.random()*alts.length)]}
+      if(!soundEnabled||!userSfxGain)return;const trim=Math.pow(10,((MIX_DB[name]??(name.startsWith('praise:')?MIX_DB.praise:0))+(isMonkeyCall(name)?MONKEY_CALL_DB:0))/20),level=Math.max(0,volume*trim*userSfxGain*(name==='pickup'?CARD_SELECT_GAIN:1)),buffer=soundBuffers[name],echoes=echo===true?1:echo||0;
+      if(buffer&&audioContext){if(praise){playPraise(buffer,level,rate,delay,horror&&horrorInput?horrorInput:reverbInput);return}const source=audioContext.createBufferSource(),gain=audioContext.createGain();source.buffer=buffer;source.playbackRate.value=horror?rate*HORROR_RATE:rate;gain.gain.value=level;source.connect(gain).connect(horror&&horrorInput?horrorInput:reverbInput);source.onended=()=>{gain.disconnect();liveCalls.delete(gain)};const startAt=audioContext.currentTime+delay;
+        if(isMonkeyCall(name)&&!isEcho){for(const g of liveCalls)g.gain.setTargetAtTime(g.gain.value*CALL_DUCK,startAt,.04);liveCalls.add(gain)}else if(isMonkeyCall(name))liveCalls.add(gain);source.start(startAt);if(echoes)playSound(name,{volume:volume*.42,rate:.97*rate,delay:delay+1,echo:echoes-1,horror,isEcho:true});return}
+      const a=fallbackAudio[name];if(!a)return;a.pause();a.currentTime=0;a.volume=Math.min(1,level);a.preservesPitch=!horror;a.playbackRate=horror?rate*HORROR_RATE:rate;a.play()?.catch(()=>{});if(echoes)setTimeout(()=>playSound(name,{volume:volume*.42,rate:.97*rate,echo:echoes-1,horror,isEcho:true}),1000)
     }
     // Praise voiceovers ("Good Eye!"): a doubler (a second copy 22ms late, slightly detuned, the two panned apart) into a
     // feedback echo (240ms, darkening as it repeats), on top of the usual room reverb.
-    function playPraise(buffer,level,rate,delay){
+    function playPraise(buffer,level,rate,delay,bus=reverbInput){
       const t=audioContext.currentTime+delay,out=audioContext.createGain(),send=audioContext.createGain(),echo=audioContext.createDelay(1),feedback=audioContext.createGain(),tone=audioContext.createBiquadFilter(),nodes=[out,send,echo,feedback,tone];
       out.gain.value=level;send.gain.value=.5;echo.delayTime.value=.24;feedback.gain.value=.38;tone.type='lowpass';tone.frequency.value=3200;
-      out.connect(reverbInput);out.connect(send).connect(echo).connect(tone).connect(feedback).connect(echo);tone.connect(reverbInput);
+      out.connect(bus);out.connect(send).connect(echo).connect(tone).connect(feedback).connect(echo);tone.connect(bus);
       const voice=(r,pan,offset,gain)=>{const source=audioContext.createBufferSource(),g=audioContext.createGain(),p=audioContext.createStereoPanner?.();source.buffer=buffer;source.playbackRate.value=r;g.gain.value=gain;source.connect(g);if(p){p.pan.value=pan;g.connect(p).connect(out);nodes.push(p)}else g.connect(out);nodes.push(g);source.start(t+offset)};
       voice(rate,-.3,0,.8);voice(rate*1.008,.3,.022,.62);
       setTimeout(()=>nodes.forEach(n=>n.disconnect()),(delay+buffer.duration/rate+3)*1000)
@@ -443,6 +580,8 @@
     // Peek-drag lift sound, made on the fly: a soft rising swish with a glassy blip (the drop is a bongo hit, dragDrop).
     let dragNoise=null;
     function playDragSound(kind){
+      // Halloween levels: the peek-drag lift plays one of the Halloween card grabs instead of the swish.
+      if(state?.pack==='halloween'){playSound('pickup',{volume:.3});return}
       if(!soundEnabled||!audioContext||!userSfxGain||!reverbInput)return;const ctx=audioContext,t=ctx.currentTime,out=ctx.createGain(),nodes=[out];out.gain.value=userSfxGain;out.connect(reverbInput);
       if(!dragNoise){dragNoise=ctx.createBuffer(1,ctx.sampleRate*.4,ctx.sampleRate);const d=dragNoise.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}
       const env=(g,peak,attack,len)=>{g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(peak,t+attack);g.gain.exponentialRampToValueAtTime(.0001,t+len)};
@@ -541,7 +680,7 @@
     // With more than one card group unlocked, the pairs are split evenly between the groups (leftover pairs go to random groups),
     // each group dealt from its own shuffled cards, repeating only once all of them are used.
     function levelUnits(rng,level=1,total=TOTAL){
-      const decks=groupDecks(level),pairs=(total-3)/2;let bag;
+      const decks=levelPack(level)==='halloween'?[HALLOWEEN_DECK]:groupDecks(level),pairs=(total-3)/2;let bag;
       if(decks.length<=1){const deck=decks[0]||DECK;bag=[...shuffleWith([...deck],rng),...shuffleWith([...deck],rng)]}
       // pairs + 1 symbols: the regular pairs plus the joker's partner.
       else{const need=pairs+1,share=decks.map(()=>Math.floor(need/decks.length)),order=shuffleWith(decks.map((_,i)=>i),rng);for(let k=0;k<need%decks.length;k++)share[order[k]]++;
@@ -595,15 +734,20 @@
       featuredSymbol=null;$('#dragLayer').replaceChildren();goodEyeClears=[];
       // Difficulty is read here, so a change in Settings applies from the next level start or retry, never mid-board.
       const easy=progress.settings.difficulty==='easy';
-      state={level,easy,tiles:buildLevelBoard(level,easy),tray:[],pairs:0,shuffles:0,hintsLeft:HINTS_PER_LEVEL,hintsUsed:0,hintIds:null,hintSlot:null,undosLeft:easy?UNDOS_PER_LEVEL_EASY:UNDOS_PER_LEVEL,shufflesLeft:SHUFFLES_PER_LEVEL,locked:false,busy:0,over:false,won:false,history:[],clearing:new Set(),clock:{elapsed:0,startedAt:null}};
+      const pack=levelPack(level);document.body.classList.toggle('pack-halloween',pack==='halloween');
+      state={level,easy,pack,tiles:buildLevelBoard(level,easy),tray:[],pairs:0,shuffles:0,hintsLeft:HINTS_PER_LEVEL,hintsUsed:0,hintIds:null,hintSlot:null,undosLeft:easy?UNDOS_PER_LEVEL_EASY:UNDOS_PER_LEVEL,shufflesLeft:SHUFFLES_PER_LEVEL,locked:false,busy:0,over:false,won:false,history:[],clearing:new Set(),clock:{elapsed:0,startedAt:null}};
       $('#overlay').classList.remove('show');$('#winOverlay').classList.remove('show');render();renderClock();renderStreak();setMessage(retry?`Level ${level} reset — same board, new plan.`:'Reveal an exposed card to begin.');
-      if(silent)pendingLevelStart=true;else playSound('levelStart',{volume:.78})
+      if($('#home').classList.contains('hidden')&&musicList!=='home'&&musicList!==levelMusic())playMusic(levelMusic());
+      if(document.documentElement.dataset.theme!==themeFor())applyTheme(themeFor(),{instant:true});
+      if(silent)pendingLevelStart=true;else playLevelStart()
     }
     // Each pending animation holds the board; it unlocks only when every hold is released (and never after game over or a new game).
     function hold(){const s=state;s.busy++;s.locked=true;let done=false;return()=>{if(done)return;done=true;s.busy--;s.locked=s.busy>0||s.over}}
     // Rows are laid out on a 14–82 logical grid; spread them as far apart as the board's height allows (blocking still uses logical y).
     // Fits the shape to the board: card size from the shape's extent (5:7 cards), positions straight off the grid, each layer nudged
     // up-left a little for a stacked look. Cards are drawn slightly smaller than their grid cell so neighbours have a hairline gap.
+    // Home backgrounds (see pickHomeBg) are preloaded with the cards so a fresh one never pops in late.
+    const HOME_BGS=['A','B','E','3','4'],HOME_BG_FILES=HOME_BGS.map(k=>`art/home/bg-${k}.jpg`);
     const CARD_RATIO=1.4,LAYER_NUDGE=7,CARD_FILL=.97;
     function boardMetrics(){
       let c0=Infinity,c1=-Infinity,r0=Infinity,r1=-Infinity,top=0;for(const t of state.tiles){c0=Math.min(c0,t.c);c1=Math.max(c1,t.c);r0=Math.min(r0,t.r);r1=Math.max(r1,t.r);top=Math.max(top,t.layer)}
@@ -618,10 +762,10 @@
         const free=isFree(tile,activeIds),hasPhoto=tile.revealed&&Boolean(SYMBOL_IMAGES[tile.symbol]),renderKey=`${tile.symbol}|${tile.revealed}`;
         let node=board.querySelector(`[data-id="${tile.id}"]`);
         if(!node){node=document.createElement('button');node.dataset.id=tile.id;node.dataset.code=`L${tile.layer}`;board.append(node)}
-        node.style.left=`${m.x(tile)}px`;node.style.top=`${m.y(tile)}px`;node.style.zIndex=tile.layer*100+tile.r+(tile.revealed&&free?1000:0);node.className=`tile board-tile ${free?'free':'blocked'} ${tile.revealed?'revealed':'face-down'} ${hasPhoto?'has-photo':''} ${tile.temporaryReveal?'on-top':''} ${tile.revealed&&(tile.symbol===JOKER||tile.symbol===KEVIN)?'joker-card':''} ${state.hintIds?.has(tile.id)?'hinted':''}`;
+        node.style.left=`${m.x(tile)}px`;node.style.top=`${m.y(tile)}px`;node.style.zIndex=tile.layer*100+tile.r+(tile.revealed&&free?1000:0);node.className=`tile board-tile ${free?'free':'blocked'} ${tile.revealed?'revealed':'face-down'} ${hasPhoto?'has-photo':''} ${tile.temporaryReveal?'on-top':''} ${tile.revealed&&(tile.symbol===JOKER||tile.symbol===KEVIN)?'joker-card':''} ${state.hintIds?.has(tile.id)?'hinted':''}${['lifted','drop-match','drop-reveal','peek-show'].filter(c=>node.classList.contains(c)).map(c=>' '+c).join('')}`;
         if(node.dataset.renderKey!==renderKey){node.getAnimations().forEach(animation=>animation.cancel());node.replaceChildren();if(tile.revealed){setSymbolContent(node,tile.symbol);if(tile.symbol===KEVIN||tile.symbol===JOKER)node.append(Object.assign(document.createElement('i'),{className:'special-star',textContent:'★'}))}node.dataset.renderKey=renderKey}
         node.setAttribute('aria-disabled',String(!free||state.locked));node.onclick=e=>{if(performance.now()-(Number(node.dataset.tapAt)||0)<700)return;handleTile(tile,e.currentTarget)};
-        if(free)enablePeekDrag(node);else{node.onpointerdown=null;node.onpointermove=null;node.onpointerup=null;node.onpointercancel=null}
+        if(free)enablePeekDrag(node);else{node.peekBound=false;node.onpointerdown=null;node.onpointermove=null;node.onpointerup=null;node.onpointercancel=null}
       });
       if(tray.children.length!==4){tray.replaceChildren();for(let i=0;i<4;i++){const slot=document.createElement('div');slot.innerHTML=`<span></span><small class="slot-num">0${i+1}</small>`;tray.append(slot)}}
       for(let i=0;i<4;i++){const slot=tray.children[i],span=slot.querySelector('span'),held=state.tray[i],renderKey=held?`${held.id}|${held.symbol}`:'';slot.className=`slot${held?' filled':''}${state.hintSlot===i?' hinted':''}`;if(slot.dataset.renderKey!==renderKey){span.replaceChildren();if(held)setSymbolContent(span,held.symbol);slot.dataset.renderKey=renderKey}if(held){slot.dataset.tileId=held.id;slot.dataset.shine=shineFor(held.symbol)}else{delete slot.dataset.tileId;delete slot.dataset.shine}}
@@ -636,8 +780,12 @@
       const fresh=facts.map((_,i)=>i).filter(i=>!seen.includes(i)),pick=fresh.length?fresh[rand(fresh.length)]:(seen[0]??0);
       seen.push(pick);while(seen.length>Math.max(1,facts.length>>1))seen.shift();saveProgress();return facts[pick]
     }
-    function renderFeatured(){const art=$('#featuredArt'),name=$('#featuredName'),latin=$('#featuredLatin'),fact=$('#featuredFact'),renderKey=featuredSymbol||'';if(art.dataset.renderKey===renderKey)return;art.replaceChildren();art.classList.toggle('has-gloss',Boolean(featuredSymbol&&SYMBOL_IMAGES[featuredSymbol]));if(!featuredSymbol){delete art.dataset.shine;delete art.dataset.glare;art.textContent='?';name.textContent='Choose a card';latin.textContent='';fact.textContent='Reveal a portrait to meet the species.';art.dataset.renderKey=renderKey;return}const card=CARD_DATA[featuredSymbol];art.dataset.shine=shineFor(featuredSymbol);if(CARD_DATA[featuredSymbol].paleShine)art.dataset.glare='screen';else delete art.dataset.glare;setSymbolContent(art,featuredSymbol,'hero');const foil=document.createElement('i');foil.className='foil';foil.setAttribute('aria-hidden','true');foil.append(Object.assign(document.createElement('i'),{className:'foil-tex'}));art.append(foil);name.textContent=card.name;latin.textContent=card.latin;fact.textContent=pickFact(featuredSymbol);art.dataset.renderKey=renderKey}
-    function setSymbolContent(container,symbol,size='thumb'){const src=(size==='hero'?HERO_IMAGES:SYMBOL_IMAGES)[symbol];if(!src){container.textContent=symbol;return}const img=document.createElement('img');img.className='symbol-image';img.decoding='async';img.draggable=false;img.src=src;img.alt=`${CARD_DATA[symbol].name} portrait`;if(PHOTO_POSITIONS[symbol])img.style.objectPosition=PHOTO_POSITIONS[symbol];container.append(img)}
+    function renderFeatured(){const art=$('#featuredArt'),name=$('#featuredName'),latin=$('#featuredLatin'),fact=$('#featuredFact'),renderKey=featuredSymbol||'';if(art.dataset.renderKey===renderKey)return;art.replaceChildren();art.classList.toggle('has-gloss',Boolean(featuredSymbol&&SYMBOL_IMAGES[featuredSymbol]));if(!featuredSymbol){delete art.dataset.shine;delete art.dataset.glare;art.textContent='?';name.textContent='Choose a card';latin.textContent='';fact.textContent='Reveal a portrait to meet the species.';art.dataset.renderKey=renderKey;return}const card=CARD_DATA[featuredSymbol];art.dataset.shine=shineFor(featuredSymbol);const foilGrad=packVariant(featuredSymbol)?.foil||card.foil;if(foilGrad)art.style.setProperty('--foil-grad',foilGrad);else art.style.removeProperty('--foil-grad');if(CARD_DATA[featuredSymbol].paleShine)art.dataset.glare='screen';else delete art.dataset.glare;setSymbolContent(art,featuredSymbol,'hero');const foil=document.createElement('i');foil.className='foil';foil.setAttribute('aria-hidden','true');foil.append(Object.assign(document.createElement('i'),{className:'foil-tex'}));art.append(foil);name.textContent=packVariant(featuredSymbol)?.name||card.name;latin.textContent=card.latin;fact.textContent=pickFact(featuredSymbol);art.dataset.renderKey=renderKey;
+      // Each new portrait pops in: a little small, a touch of overshoot, then settles (the scale property, which stacks on the tilt transform, so the text beside it never moves).
+      art.animate([{scale:'.86',opacity:.6},{scale:'1.04',opacity:1,offset:.62},{scale:'1',opacity:1}],{duration:380,easing:'cubic-bezier(.2,.8,.2,1)'})}
+    // A card with a halloween:{image,name} variant (the Joker) shows it on Halloween levels.
+    const packVariant=symbol=>state?.pack==='halloween'&&CARD_DATA[symbol]?.halloween||null;
+    function setSymbolContent(container,symbol,size='thumb'){const v=packVariant(symbol),src=v?cardImage(size,v):(size==='hero'?HERO_IMAGES:SYMBOL_IMAGES)[symbol];if(!src){container.textContent=symbol;return}const img=document.createElement('img');img.className='symbol-image';img.decoding='async';img.draggable=false;img.src=src;img.alt=`${CARD_DATA[symbol].name} portrait`;if(PHOTO_POSITIONS[symbol])img.style.objectPosition=PHOTO_POSITIONS[symbol];container.append(img)}
     const FLIP_OUT_MS=150,FLIP_IN_MS=185;
     const FLIP_VARIANTS=[{axis:'Y',sign:-1,x:-2,y:-1},{axis:'Y',sign:1,x:2,y:-1},{axis:'X',sign:1,x:0,y:-3},{axis:'X',sign:-1,x:0,y:3}];
     function flipFrames(variant,opening=false){
@@ -669,7 +817,7 @@
       startClock();featuredSymbol=tile.symbol;renderFeatured();
       if(!tile.revealed){
         const previous=state.tiles.find(t=>t.id!==tile.id&&t.active&&t.temporaryReveal),previousNode=previous?board.querySelector(`[data-id="${previous.id}"]`):null;
-        const matchingFlip=Boolean(previous)&&isMate(previous.symbol,tile.symbol)&&isFree(previous);
+        const matchingFlip=Boolean(previous)&&previous.symbol!==JOKER&&tile.symbol!==JOKER&&isMate(previous.symbol,tile.symbol)&&isFree(previous);
         state.history.push(snapshot());const release=hold(),s=state;playSound('pickup',{volume:.075,rate:1.12+Math.random()*.08});haptic('cardFlip');
         const flipVariant=FLIP_VARIANTS[rand(FLIP_VARIANTS.length)];
         if(!matchingFlip)previousNode?.animate(flipFrames(FLIP_VARIANTS[rand(FLIP_VARIANTS.length)]),{duration:FLIP_OUT_MS,easing:'cubic-bezier(.38,0,.7,1)',fill:'forwards'});
@@ -678,7 +826,7 @@
         setTimeout(()=>{release();if(s!==state)return;render();if(!autoResolveRevealed(tile,previous))setMessage('')},FLIP_OUT_MS+FLIP_IN_MS+5);return
       }
       if(tile.symbol===KEVIN){state.history.push(snapshot());fireKevin(tile);return}
-      const flippedMate=state.tiles.find(t=>t.id!==tile.id&&t.active&&t.temporaryReveal&&isMate(t.symbol,tile.symbol)&&isFree(t));
+      const flippedMate=tile.symbol===JOKER?null:state.tiles.find(t=>t.id!==tile.id&&t.active&&t.temporaryReveal&&t.symbol!==JOKER&&isMate(t.symbol,tile.symbol)&&isFree(t));
       if(flippedMate){state.history.push(snapshot());if(autoResolveRevealed(tile,flippedMate))return}
       commitTile(tile,node,true)
     }
@@ -692,22 +840,62 @@
       if(!tile.active||!tile.revealed||!isFree(tile))return false;
       // Flipping Kevin up only shows him; MVP Vision needs a deliberate tap on the revealed card.
       if(tile.symbol===KEVIN){setMessage('Kevin’s ready — tap him for MVP Vision');return true}
+      // The Joker never auto-plays: flipped up he waits to be tapped or dragged (and a flip never pairs with a flipped-up Joker).
+      if(tile.symbol===JOKER){setMessage('Joker’s up — tap him or drag him onto a card');return true}
       if(state.tray.some(held=>!state.clearing.has(held.id)&&isMate(held.symbol,tile.symbol))){
         const node=board.querySelector(`[data-id="${tile.id}"]`),newIndex=state.tray.length;playSound('pickup',{volume:.12,rate:1.04});playJokerPick(tile.symbol);haptic('cardCaged');
         tile.active=false;tile.temporaryReveal=false;state.tray.push({id:tile.id,symbol:tile.symbol});flyToTray(node,newIndex);render();setMessage(`AUTO MATCH // ${cardName(tile.symbol)}`);scheduleClear(tile.symbol);return true
       }
-      const mate=previous?.active&&isMate(previous.symbol,tile.symbol)&&isFree(previous)?previous:null;
+      const mate=previous?.active&&previous.symbol!==JOKER&&isMate(previous.symbol,tile.symbol)&&isFree(previous)?previous:null;
       if(!mate)return false;
       if(!mate.revealed){mate.revealed=true;render()}
       // Normal: a fresh pair needs two open cage slots. Otherwise both cards just stay face up and the cage rattles.
       if(!pairFits()){mate.temporaryReveal=false;tile.temporaryReveal=false;render();cageRattle();return true}
       cagePair(mate,tile,`AUTO MATCH // ${cardName(tile.symbol)}`);return true
     }
+    // ---- Drag to match. Drop targets use the same rules as tapping (isFree, isMate, pairFits, handleTile); only free cards can be dragged.
+    const flightFrom=new Map(),tileOf=node=>state.tiles.find(t=>t.id===node.dataset.id&&t.active);
+    // Undo after a drag: the dragged card goes back face down if it was only turned up for the drag.
+    function dragSnapshot(tile){const s=snapshot();if(tile.dragRevealed){const t=s.tiles.find(x=>x.id===tile.id);if(t){t.revealed=false;delete t.dragRevealed}}return s}
+    // What the dragged card (centre x,y) is over: the top card under it, if that card is free, as a 'match' (face-up partner) or
+    // 'reveal' (face-down); otherwise the cage, aiming at the next open slot. Forgiving: a card counts within 60% of its size.
+    function findDropTarget(tile,x,y,origin){
+      if(!tile||state.locked)return null;
+      const activeIds=new Set(state.tiles.filter(t=>t.active).map(t=>t.id));let best=null,bestZ=-1;
+      for(const node of board.querySelectorAll('.board-tile')){const id=node.dataset.id;if(id===tile.id)continue;const r=node.getBoundingClientRect();if(Math.abs(x-(r.left+r.width/2))>r.width*.6||Math.abs(y-(r.top+r.height/2))>r.height*.6)continue;const z=Number(node.style.zIndex)||0;if(z>bestZ){bestZ=z;best=node}}
+      if(best){const t=state.tiles.find(o=>o.id===best.dataset.id);if(!t||!isFree(t,activeIds))return null;if(t.revealed)return isMate(tile.symbol,t.symbol)?{kind:'match',tile:t,node:best}:null;return{kind:'reveal',tile:t,node:best}}
+      const cage=$('.tray-panel').getBoundingClientRect();if(x>=cage.left&&x<=cage.right&&y>=cage.top-origin.h*.3&&y<=cage.bottom){const slot=state.tray.length;return slot<4?{kind:'cage',slot:tray.children[slot]}:null}
+      return null
+    }
+    function showDropTarget(t){document.querySelectorAll('.drop-match,.drop-reveal,.drop-slot').forEach(n=>n.classList.remove('drop-match','drop-reveal','drop-slot'));if(!t)return;if(t.kind==='cage')t.slot?.classList.add('drop-slot');else t.node.classList.add(t.kind==='match'?'drop-match':'drop-reveal')}
+    // A face-down card that isn't a match turns up for a moment and back: display only, its state never changes, so nothing activates.
+    function peekFlip(t,node){const v=FLIP_VARIANTS[rand(FLIP_VARIANTS.length)],s=state;node.animate(flipFrames(v),{duration:FLIP_OUT_MS,easing:'cubic-bezier(.38,0,.7,1)'});
+      setTimeout(()=>{if(s!==state||!t.active||t.revealed)return;node.replaceChildren();setSymbolContent(node,t.symbol);node.classList.add('peek-show');node.animate(flipFrames(v,true),{duration:FLIP_IN_MS,easing:'cubic-bezier(.2,.72,.2,1)'})},FLIP_OUT_MS-5);
+      setTimeout(()=>{if(s!==state||!t.active||t.revealed)return;node.animate(flipFrames(v),{duration:FLIP_OUT_MS,easing:'cubic-bezier(.38,0,.7,1)'});setTimeout(()=>{if(s!==state)return;node.classList.remove('peek-show');node.dataset.renderKey='';render()},FLIP_OUT_MS-5)},FLIP_OUT_MS+FLIP_IN_MS+750)}
+    // Resolves a drag release. Returns true if it handled the card (caged, paired or rattled home); false means "nothing here".
+    function resolveDrop(tile,t,{releaseInto,drop,unflip}){
+      if(!tile||!t||state.locked)return false;
+      if(t.kind==='match'||(t.kind==='reveal'&&isMate(tile.symbol,t.tile.symbol))){
+        if(!pairFits()){drop(unflip);if(t.kind==='reveal')peekFlip(t.tile,t.node);cageRattle();return true}
+        state.history.push(dragSnapshot(tile));startClock();t.tile.revealed=true;delete tile.dragRevealed;featuredSymbol=tile.symbol;
+        {const r=t.node.getBoundingClientRect();fairyDust(r.left+r.width/2,r.top+r.height/2)}haptic('pairCleared');
+        releaseInto(()=>cagePair(t.tile,tile,`PAIR CAGED // ${cardName(tile.symbol)}`));return true}
+      if(t.kind==='reveal'){drop(unflip);peekFlip(t.tile,t.node);setMessage('No match — that card stays hidden.');return true}
+      if(t.kind==='cage'){
+        // Exactly a tap on the card (Kevin fires MVP Vision, cage rules apply), flying in from the drop point.
+        if(tile.symbol===KEVIN){drop(()=>{delete tile.dragRevealed;handleTile(tile,board.querySelector(`[data-id="${tile.id}"]`))});return true}
+        const before=state.history.length;releaseInto(()=>{const n=board.querySelector(`[data-id="${tile.id}"]`);handleTile(tile,n)});
+        if(state.history.length>before&&tile.dragRevealed){const last=state.history[state.history.length-1].tiles.find(x=>x.id===tile.id);if(last){last.revealed=false;delete last.dragRevealed}}
+        delete tile.dragRevealed;return true}
+      return false
+    }
     const activePresses=new Map();
     // Free cards act on pointerup rather than click: iOS drops the click on a light or slightly rolling tap, which made cards feel sticky.
     // The click that may still follow is ignored for a moment (tapAt), and a peek drag never counts as a tap.
     function enablePeekDrag(node){
-      let startX=0,startY=0,dragging=false,pressed=false,ghost=null;
+      // Bound once per free spell: re-binding mid-drag (any render) would drop the drag's state.
+      if(node.peekBound)return;node.peekBound=true;
+      let startX=0,startY=0,dragging=false,pressed=false,ghost=null,origin=null,target=null;
       const offset=(target,dx,dy)=>{target.style.setProperty('--drag-x',`${dx}px`);target.style.setProperty('--drag-y',`${dy}px`)};
       // A dragged card is lifted into a fixed top layer so it stays above the hero, the cage and every other card instead of being clipped by the board.
       // Lift: the copy keeps the card's exact size, then springs up to LIFT_SCALE with a glow, a deep shadow and a soft swish. One
@@ -722,16 +910,26 @@
           st.r+=(Math.max(-10,Math.min(10,st.vx*.012))-st.r)*Math.min(1,dt*14);
           g.style.transform=`translate(-50%,-50%) translate3d(${st.x.toFixed(1)}px,${st.y.toFixed(1)}px,0) rotate(${st.r.toFixed(2)}deg) scale(${st.s.toFixed(3)})`;
           if(st.home&&!st.landed&&Math.hypot(st.x,st.y)<6){st.landed=true;playSound('dragDrop',{volume:.55});haptic('cardSettle')}
-          if(st.home&&Math.hypot(st.x,st.y)<.4&&Math.abs(st.vs)<.02&&Math.abs(st.s-1)<.004&&Math.abs(st.r)<.05){node.style.transition='none';node.classList.remove('lifted');void node.offsetWidth;g.remove();requestAnimationFrame(()=>{node.style.transition=''});return}
+          if(st.home&&Math.hypot(st.x,st.y)<.4&&Math.abs(st.vs)<.02&&Math.abs(st.s-1)<.004&&Math.abs(st.r)<.05){node.style.transition='none';node.classList.remove('lifted');void node.offsetWidth;g.remove();requestAnimationFrame(()=>{node.style.transition=''});st.onSettled?.();return}
           st.raf=requestAnimationFrame(step)};
         st.raf=requestAnimationFrame(step);return st};
-      const lift=()=>{markWouldFree(node.dataset.id,true);const r=node.getBoundingClientRect();ghost=node.cloneNode(true);ghost.removeAttribute('data-id');ghost.classList.remove('board-tile','touch-glow');ghost.classList.add('drag-ghost');ghost.style.left=`${r.left+r.width/2}px`;ghost.style.top=`${r.top+r.height/2}px`;ghost.style.setProperty('--tile-w',`${r.width}px`);ghost.style.setProperty('--tile-h',`${r.height}px`);ghost.style.zIndex='';$('#dragLayer').append(ghost);node.classList.add('lifted');
-        void ghost.offsetWidth;ghost.classList.add('dragging');anim=run(ghost);playDragSound('lift');haptic('cardFlip')};
-      const drop=()=>{peekDragging=false;dragging=false;markWouldFree(node.dataset.id,false);if(!ghost)return;const g=ghost;ghost=null;g.classList.remove('dragging');g.classList.add('settling');if(anim){anim.home=true;anim.tx=0;anim.ty=0;anim.ts=1;anim=null}};
+      const lift=()=>{markWouldFree(node.dataset.id,true);
+        // A face-down card flips face up as it's picked up (not a turn: no history, no auto-match); dropped on nothing it flips back.
+        const t=tileOf(node);let flipped=false;if(t&&!t.revealed){t.revealed=true;t.dragRevealed=true;featuredSymbol=t.symbol;render();flipped=true;playSound('pickup',{volume:.075,rate:1.12+Math.random()*.08})}
+        const r=node.getBoundingClientRect();origin={x:r.left+r.width/2,y:r.top+r.height/2,w:r.width,h:r.height};ghost=node.cloneNode(true);ghost.removeAttribute('data-id');ghost.classList.remove('board-tile','touch-glow');ghost.classList.add('drag-ghost');ghost.style.left=`${r.left+r.width/2}px`;ghost.style.top=`${r.top+r.height/2}px`;ghost.style.setProperty('--tile-w',`${r.width}px`);ghost.style.setProperty('--tile-h',`${r.height}px`);ghost.style.zIndex='';$('#dragLayer').append(ghost);node.classList.add('lifted');
+        void ghost.offsetWidth;ghost.classList.add('dragging');anim=run(ghost);if(flipped)ghost.firstElementChild?.animate([{opacity:0,scale:'.6'},{opacity:1,scale:'1'}],{duration:FLIP_IN_MS,easing:'cubic-bezier(.2,.72,.2,1)'});playDragSound('lift');haptic('cardFlip')};
+      const drop=(onSettled)=>{peekDragging=false;dragging=false;markWouldFree(node.dataset.id,false);showDropTarget(null);target=null;if(!ghost)return;const g=ghost;ghost=null;g.classList.remove('dragging');g.classList.add('settling');if(anim){anim.home=true;anim.tx=0;anim.ty=0;anim.ts=1;anim.onSettled=onSettled;anim=null}};
+      // Flip a card that was turned up for the drag back face down once it's home (no state change beyond undoing the drag reveal).
+      const unflip=()=>{const t=tileOf(node);if(!t?.dragRevealed)return;const v=FLIP_VARIANTS[rand(FLIP_VARIANTS.length)],s=state;
+        // Turn edge-on showing the face, swap to the back, then open up face down (the same two-step flip as a tap).
+        node.animate(flipFrames(v),{duration:FLIP_OUT_MS,easing:'cubic-bezier(.38,0,.7,1)',fill:'forwards'});
+        setTimeout(()=>{if(s!==state)return;node.getAnimations().forEach(a=>a.cancel());if(t.dragRevealed){delete t.dragRevealed;t.revealed=false}render();board.querySelector(`[data-id="${t.id}"]`)?.animate(flipFrames(v,true),{duration:FLIP_IN_MS,easing:'cubic-bezier(.2,.72,.2,1)'})},FLIP_OUT_MS-5)};
+      // The ghost becomes the flight source, so a dropped card flies to the cage from where the finger let go.
+      const releaseInto=fn=>{peekDragging=false;dragging=false;markWouldFree(node.dataset.id,false);showDropTarget(null);const g=ghost,t=tileOf(node);ghost=null;target=null;if(anim){cancelAnimationFrame(anim.raf);anim=null}if(t&&g)flightFrom.set(t.id,g);try{fn()}finally{if(t)flightFrom.delete(t.id);g?.remove();node.classList.remove('lifted')}};
       node.onpointerdown=e=>{if(state.locked)return;startClock();const tile=state.tiles.find(t=>t.id===node.dataset.id);if(tile?.revealed){const mate=[...activePresses.values()].find(t=>t!==tile&&isMate(t.symbol,tile.symbol)&&t.active&&t.revealed&&isFree(t));if(mate){activePresses.clear();if(!pairFits()){cageRattle();return}state.history.push(snapshot());cagePair(mate,tile,`PAIR CAGED // ${cardName(tile.symbol)}`);return}activePresses.set(e.pointerId,tile)}startX=e.clientX;startY=e.clientY;dragging=false;pressed=true;node.classList.remove('touch-glow');void node.offsetWidth;node.classList.add('touch-glow');setTimeout(()=>node.classList.remove('touch-glow'),560);node.setPointerCapture(e.pointerId)};
-      node.onpointermove=e=>{if(!node.hasPointerCapture(e.pointerId))return;const dx=e.clientX-startX,dy=e.clientY-startY;if(!dragging&&Math.hypot(dx,dy)>14){dragging=true;peekDragging=true;lift()}if(dragging&&anim){anim.tx=dx;anim.ty=dy}};
-      node.onpointerup=e=>{activePresses.delete(e.pointerId);if(node.hasPointerCapture(e.pointerId))node.releasePointerCapture(e.pointerId);const wasDrag=dragging,wasPressed=pressed;pressed=false;node.dataset.tapAt=performance.now();if(wasDrag)setMessage('Peek only — the card underneath stays barricaded until this card is played.');drop();if(wasPressed&&!wasDrag){const tile=state.tiles.find(t=>t.id===node.dataset.id);if(tile)handleTile(tile,node)}};
-      node.onpointercancel=e=>{activePresses.delete(e.pointerId);pressed=false;drop()}
+      node.onpointermove=e=>{if(!node.hasPointerCapture(e.pointerId))return;const dx=e.clientX-startX,dy=e.clientY-startY;if(!dragging&&Math.hypot(dx,dy)>14){dragging=true;peekDragging=true;lift()}if(dragging&&anim){anim.tx=dx;anim.ty=dy;target=findDropTarget(tileOf(node),origin.x+dx,origin.y+dy,origin);showDropTarget(target)}};
+      node.onpointerup=e=>{activePresses.delete(e.pointerId);if(node.hasPointerCapture(e.pointerId))node.releasePointerCapture(e.pointerId);const wasDrag=dragging,wasPressed=pressed;pressed=false;node.dataset.tapAt=performance.now();if(wasDrag){if(resolveDrop(tileOf(node),target,{releaseInto,drop,unflip}))return;setMessage('Peek only — the card underneath stays barricaded until this card is played.')}drop(unflip);if(wasPressed&&!wasDrag){const tile=state.tiles.find(t=>t.id===node.dataset.id);if(tile)handleTile(tile,node)}};
+      node.onpointercancel=e=>{activePresses.delete(e.pointerId);pressed=false;drop(unflip)}
     }
     // A pair that is mid-clear is recorded as already cleared, so undo never brings it back into the cage.
     function snapshot(){return{tiles:state.tiles.map(t=>t.peeking?{...t,revealed:false,peeking:false}:{...t}),tray:state.tray.filter(t=>!state.clearing.has(t.id)).map(t=>({...t})),pairs:state.pairs+state.clearing.size/2,shuffles:state.shuffles}}
@@ -743,8 +941,8 @@
       const s=state.history.pop();state.tiles=s.tiles;state.tray=s.tray;state.pairs=s.pairs;state.shuffles=s.shuffles;state.undosLeft--;render();setMessage(`Move undone — ${state.undosLeft} undo${state.undosLeft===1?'':'s'} left.`);playSound('pickup',{volume:.075,rate:.72})
     }
     function playMatchFx(symbol){
-      const symbols=[].concat(symbol),main=symbols.find(s=>s!==JOKER)||JOKER,choices=CARD_DATA[main]?.sounds||[],monkeySound=choices[rand(choices.length)],rate=1+Math.min(state.pairs,8)*.012;
-      duckMusic(monkeySound?duckFor(monkeySound,{rate}):800);playSound('match',{volume:.27,rate});if(monkeySound)playSound(monkeySound,{volume:1,rate,echo:CARD_DATA[main]?.echoes??1});if(main!==JOKER&&symbols.includes(JOKER))playSound('jokerClear',{volume:.7,delay:.35});const extras=CARD_DATA[main]?.clearExtras;if(extras)playSound(extras[rand(extras.length)],{volume:.85,delay:.15});haptic('pairCleared');
+      const symbols=[].concat(symbol),main=symbols.find(s=>s!==JOKER)||JOKER,choices=CARD_DATA[main]?.sounds||[],monkeySound=choices[rand(choices.length)],rate=1+Math.min(state.pairs,8)*.012,horror=state.pack==='halloween';
+      duckMusic(monkeySound?duckFor(monkeySound,{rate:horror?rate*HORROR_RATE:rate}):800);playSound('match',{volume:.27,rate});if(monkeySound)playSound(monkeySound,{volume:1,rate,echo:CARD_DATA[main]?.echoes??1,horror});if(main!==JOKER&&symbols.includes(JOKER))playSound('jokerClear',{volume:.7,delay:.35,horror});const extras=CARD_DATA[main]?.clearExtras;if(extras)playSound(extras[rand(extras.length)],{volume:.85,delay:.15});haptic('pairCleared');
     }
     function noteGoodEye(pairIds){
       if(pairIds.some(id=>state.tiles.find(t=>t.id===id)?.bonus))return;
@@ -761,7 +959,9 @@
       // Long lines wrap; a single long word (MAGNIFICENT!) is shrunk until it fits the screen.
       el.textContent=line.text;el.style.fontSize=line.text.length>14?'clamp(1.7rem,8.6vw,2.7rem)':'';const over=el.scrollWidth/el.clientWidth;if(over>1)el.style.fontSize=`${parseFloat(getComputedStyle(el).fontSize)/over*.86}px`;
       // A combo sting (one of two) leads, then the praise line.
-      playSound(Math.random()<.5?'comboSting':'praiseSting',{volume:.7});if(voiced){duckMusic(duckFor(key,{delay:.4})+250);playSound(key,{volume:1,delay:.4,praise:true})}
+      const hw=state.pack==='halloween';if(hw)playSound('hwScream',{volume:.9});else playSound(Math.random()<.5?'comboSting':'praiseSting',{volume:.7});
+      // On Halloween levels the praise line is pitched down (PRAISE_HORROR_RATE) into the horror reverb.
+      if(voiced){const r=hw?PRAISE_HORROR_RATE:1;duckMusic(duckFor(key,{delay:.4,rate:r})+250);playSound(key,{volume:1,delay:.4,praise:true,rate:r,horror:hw})}
       const r=$('#board').getBoundingClientRect();el.style.top=`${r.top+r.height*.42}px`;
       el.getAnimations().forEach(a=>a.cancel());
       el.animate([{opacity:0,scale:1.9,rotate:'-6deg'},{opacity:1,scale:.94,rotate:'-3deg',offset:.18},{opacity:1,scale:1,rotate:'-4deg',offset:.26},{opacity:1,scale:1.04,rotate:'-4deg',offset:.8},{opacity:0,scale:1.15,rotate:'-4deg'}],{duration:holdMs,easing:'cubic-bezier(.2,.8,.2,1)'}).onfinish=()=>{goodEyeBusy=false};
@@ -855,14 +1055,14 @@
         eyes.querySelector('svg').animate([{transform:'scaleY(0)'},{transform:'scaleY(1.15)',offset:.08},{transform:'scaleY(1)',offset:.14},{transform:'scaleY(1)',offset:.46},{transform:'scaleY(.1)',offset:.5},{transform:'scaleY(1)',offset:.56},{transform:'scaleY(1)'}],{duration:2600,easing:'ease-out'});
         eyes.animate([{opacity:0},{opacity:1,offset:.08},{opacity:1,offset:.85},{opacity:0}],{duration:2600}).onfinish=()=>eyes.remove()}
       setMessage(hint.slot!=null?'OWL EYES // this one pairs with the cage':hint.buried?'OWL EYES // these two match — take the free one, then dig out its partner':'OWL EYES // match these two');
-      playSound('pickup',{volume:.3,rate:.68});haptic('cardFlip');clearTimeout(hintTimer);hintTimer=setTimeout(()=>clearHint(true),3400)
+      (state.pack==='halloween'?playSound('hwOwl',{volume:.85}):playSound('pickup',{volume:.3,rate:.68}));haptic('cardFlip');clearTimeout(hintTimer);hintTimer=setTimeout(()=>clearHint(true),3400)
     }
     function clearHint(redraw){clearTimeout(hintTimer);if(!state.hintIds&&state.hintSlot==null)return;state.hintIds=null;state.hintSlot=null;if(redraw)render()}
     function reshuffle(){
       if(state.locked||state.shufflesLeft<=0||state.clearing.size)return;state.history.push(snapshot());startClock();
       // Only the board is re-dealt: cards in the cage stay put, in order, and the deal is built around them.
       const active=state.tiles.filter(t=>t.active),caged=state.tray.map(t=>t.symbol),assignments=dealUnits(active.map(({id,x,y,layer,blockers})=>({id,x,y,layer,blockers})),unitsFromSymbols([...active.map(t=>t.symbol),...caged]),Math.random,{caged});
-      active.forEach(t=>{t.symbol=assignments.get(t.id);t.temporaryReveal=false});state.shuffles++;state.shufflesLeft--;setMessage('Cards reshuffled into a new solvable sequence.');playSound('control',{volume:.52,rate:.9});shuffleFx();setBooster('shuffle',state.shufflesLeft,true)
+      active.forEach(t=>{t.symbol=assignments.get(t.id);t.temporaryReveal=false});state.shuffles++;state.shufflesLeft--;setMessage('Cards reshuffled into a new solvable sequence.');if(state.pack==='halloween')playSound('hwShuffle',{volume:.8});else playSound('control',{volume:.52,rate:.9});shuffleFx();setBooster('shuffle',state.shufflesLeft,true)
     }
     // Shuffle: every card shakes and swells, the faces swap at the peak, then the cards settle back down.
     function shuffleFx(){
@@ -886,7 +1086,12 @@
       setTimeout(()=>{if(s!==state)return;const back=state.tiles.filter(t=>t.active&&t.peeking);state.tiles.forEach(t=>{if(t.peeking){t.peeking=false;if(t.active)t.revealed=false}});render();flipIn(back,8)},holdMs)
     }
     let activeCardFlights=0,peekDragging=false;
-    function flyToTray(source,index){const target=tray.children[Math.min(index,3)];if(!target)return;const a=source.getBoundingClientRect(),b=target.getBoundingClientRect(),ghost=source.cloneNode(true),dx=b.left-a.left,dy=b.top-a.top,sx=b.width/a.width,sy=b.height/a.height;activeCardFlights++;document.body.classList.add('card-in-flight');ghost.style.cssText=`position:fixed;z-index:190;left:${a.left}px;top:${a.top}px;width:${a.width}px;height:${a.height}px;transform:none;transform-origin:top left;rotate:0deg;transition:transform .24s cubic-bezier(.2,.8,.2,1),opacity .24s ease;pointer-events:none;will-change:transform,opacity`;document.body.append(ghost);requestAnimationFrame(()=>{ghost.style.transform=`translate3d(${dx}px,${dy}px,0) scale(${sx},${sy})`;ghost.style.opacity='.2'});setTimeout(()=>{ghost.remove();activeCardFlights--;if(!activeCardFlights)document.body.classList.remove('card-in-flight')},260)}
+    function flyToTray(source,index){source=flightFrom.get(source?.dataset?.id)||source;const target=tray.children[Math.min(index,3)];if(!target)return;const a=source.getBoundingClientRect(),b=target.getBoundingClientRect(),ghost=source.cloneNode(true),dx=b.left-a.left,dy=b.top-a.top,sx=b.width/a.width,sy=b.height/a.height;activeCardFlights++;document.body.classList.add('card-in-flight');ghost.style.cssText=`position:fixed;z-index:190;left:${a.left}px;top:${a.top}px;width:${a.width}px;height:${a.height}px;transform:none;transform-origin:top left;rotate:0deg;transition:transform .24s cubic-bezier(.2,.8,.2,1),opacity .24s ease;pointer-events:none;will-change:transform,opacity`;document.body.append(ghost);requestAnimationFrame(()=>{ghost.style.transform=`translate3d(${dx}px,${dy}px,0) scale(${sx},${sy})`;ghost.style.opacity='.2'});setTimeout(()=>{ghost.remove();activeCardFlights--;if(!activeCardFlights)document.body.classList.remove('card-in-flight')},260)}
+    // Fairy dust for a drag match: a soft flash, a ring, and glowing sparkles that drift out and twinkle away (Halloween: green, violet, pumpkin).
+    function fairyDust(x,y){const hw=state.pack==='halloween',colors=hw?['#5dff3a','#b14dff','#ff8a1f','#e8ffd9']:['#fff6c9','#ffd84d','#7ff3ff','#ff9be8','#ffffff'];
+      const flash=document.createElement('i');flash.className='dust-flash';flash.style.left=`${x}px`;flash.style.top=`${y}px`;flash.style.setProperty('--c',colors[0]);document.body.append(flash);flash.animate([{transform:'translate(-50%,-50%) scale(.2)',opacity:.95},{transform:'translate(-50%,-50%) scale(2.6)',opacity:0}],{duration:520,easing:'cubic-bezier(.1,.7,.3,1)'}).onfinish=()=>flash.remove();
+      for(let i=0;i<34;i++){const p=document.createElement('i'),c=colors[i%colors.length],a=Math.random()*Math.PI*2,d=50+Math.random()*120,size=4+Math.random()*7;p.className='dust';p.textContent=i%3?'':'✦';p.style.cssText=`left:${x}px;top:${y}px;width:${size}px;height:${size}px;--c:${c};font-size:${size*2.2}px`;document.body.append(p);
+        const dx=Math.cos(a)*d,dy=Math.sin(a)*d-20,spin=rand(360)-180;p.animate([{transform:'translate(-50%,-50%) scale(.4)',opacity:0},{transform:`translate(calc(-50% + ${dx*.55}px),calc(-50% + ${dy*.55}px)) scale(1.2) rotate(${spin/2}deg)`,opacity:1,offset:.35},{transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy+30}px)) scale(.2) rotate(${spin}deg)`,opacity:0}],{duration:700+rand(500),delay:rand(90),easing:'cubic-bezier(.2,.7,.3,1)',fill:'backwards'}).onfinish=()=>p.remove()}}
     function explode(node){if(!node)return;const r=node.getBoundingClientRect();for(let i=0;i<24;i++){const p=document.createElement('i');p.className='particle';p.style.left=`${r.left+r.width/2}px`;p.style.top=`${r.top+r.height/2}px`;document.body.append(p);const x=(Math.random()-.5)*150,y=(Math.random()-.6)*150,rot=rand(360);p.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${x}px,${y}px) rotate(${rot}deg) scale(.2)`,opacity:0}],{duration:380+rand(300),easing:'cubic-bezier(.15,.7,.25,1)'}).onfinish=()=>p.remove()}}
     function finish(won,reason='overflow'){
       state.over=true;state.locked=true;pauseClock();
@@ -964,14 +1169,14 @@
     function setVariant(key){if(!variants[key])key='A';document.body.classList.remove('variant-a','variant-b','variant-c');document.body.classList.add(`variant-${key.toLowerCase()}`);$('#variantLabel').textContent=`${key} — ${variants[key]}`;}
     function cycleVariant(dir){const keys=Object.keys(variants),current=new URLSearchParams(location.search).get('variant')||'A',i=keys.indexOf(current);setVariant(keys[(i+dir+keys.length)%keys.length])}
     function setupFeaturedGloss(){
-      const art=$('#featuredArt'),arts=[art],card=art.closest('.featured-card'),clamp=(n,min,max)=>Math.max(min,Math.min(max,n)),REST={x:80,o:.45,ry:0,rx:0},keys=['x','o','ry','rx'];let cur={...REST},target={...REST},frame=0,lastTilt=-Infinity,pointerInside=false;
+      const art=$('#featuredArt'),arts=[art],card=art.closest('.featured-card'),clamp=(n,min,max)=>Math.max(min,Math.min(max,n)),REST={x:70,o:.45,ry:0,rx:0},keys=['x','o','ry','rx'];let cur={...REST},target={...REST},frame=0,lastTilt=-Infinity,pointerInside=false;
       function step(){frame=0;let settled=true;for(const k of keys){const d=target[k]-cur[k];if(Math.abs(d)>(k==='o'?.002:.03)){cur[k]+=d*.18;settled=false}else cur[k]=target[k]}if(!settled)frame=requestAnimationFrame(step);for(const el of arts){el.style.setProperty('--glare-shift',`${(cur.x-50).toFixed(2)}%`);el.style.setProperty('--glare-opacity',cur.o.toFixed(3));el.style.setProperty('--card-ry',`${cur.ry.toFixed(2)}deg`);el.style.setProperty('--card-rx',`${cur.rx.toFixed(2)}deg`)}}
       function update(next){target=next;if(!frame)frame=requestAnimationFrame(step)}
       // Turn t (side to side) and lean p (toward/away), each in [-1,1]. At rest the wipe sits faintly at the card's right edge; tilting
       // sweeps it across the card (mostly toward the left) and brightens it only while the phone is moving.
-      const pose=(t,p)=>{t=clamp(t,-1,1);p=clamp(p,-1,1);const u=clamp(t+p*.45,-1,1);return{x:clamp(REST.x+(u<0?u*68:u*14),8,96),o:REST.o+Math.abs(u)*.4,ry:t*14,rx:-p*6}};
+      const pose=(t,p)=>{t=clamp(t,-1,1);p=clamp(p,-1,1);const u=clamp(t+p*.45,-1,1);return{x:clamp(REST.x+(u<0?u*62:u*40),8,96),o:REST.o+Math.abs(u)*.5,ry:t*14,rx:-p*6}};
       // Tilt arrives in radians away from a slowly drifting neutral pose, so it responds however the phone is held and never sticks at an extreme.
-      const fromTilt=(turn,lean)=>{window.__settingsTilt?.(turn,lean);lastTilt=performance.now();update(pose(Math.tanh(turn/.3),Math.tanh(lean/.3)))};
+      const fromTilt=(turn,lean)=>{window.__settingsTilt?.(turn,lean);lastTilt=performance.now();update(pose(Math.tanh(turn/.18),Math.tanh(lean/.18)))};
       window.__setMonkeyTilt=fromTilt;
       if(!isIOSApp){
         card.addEventListener('pointermove',e=>{pointerInside=true;const r=art.getBoundingClientRect();const t=clamp(((e.clientX-r.left)/r.width-.5)*2,-1,1);update({x:clamp(50+t*42,8,96),o:.38,ry:t*14,rx:0})},{passive:true});
@@ -1011,18 +1216,21 @@
     }
     // The home byline picks one of these at random on each visit.
     const BYLINES=['A GAME BY POLYMER JONES','DEVELOPED BY POLYMER JONES'];
-    function showHome(){playMusic('home');$('#homeByline').textContent=BYLINES[rand(BYLINES.length)];if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}$('#overlay').classList.remove('show');$('#winOverlay').classList.remove('show');renderHome();pickHomeBg();$('#home').classList.remove('hidden');buildHomeTicker()}
+    function showHome(){playMusic('home');if(document.documentElement.dataset.theme!==progress.settings.theme)applyTheme(progress.settings.theme,{instant:true});$('#homeByline').textContent=BYLINES[rand(BYLINES.length)];if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}$('#overlay').classList.remove('show');$('#winOverlay').classList.remove('show');renderHome();pickHomeBg();$('#home').classList.remove('hidden');buildHomeTicker()}
     function playFromHome(){
-      $('#home').classList.add('hidden');homeStingPending=false;unlockAudio();playMusic(progress.settings.music,musicList==='home');
+      $('#home').classList.add('hidden');homeStingPending=false;unlockAudio();playMusic(levelMusic(),musicList==='home');if(document.documentElement.dataset.theme!==themeFor())applyTheme(themeFor(),{instant:true});
       // Resume the level in progress; anything finished or behind the saved level starts fresh.
       const resumable=state.tiles.length&&state.level===progress.level&&!state.over&&state.history.length;
       if(resumable){if(state.clock.resume){state.clock.resume=false;startClock()}}
       else{startLevel(progress.level,{silent:true});pendingLevelStart=false}
       // Pressing PLAY announces "MONKEY TRUBBLE!" (in place of the level-start voice), with the praise doubler + echo, over undipped music.
-      const take=`praise:monkey-trubble-${'ab'[rand(2)]}`;playSound(take,{volume:1,delay:.1,praise:true})
+      const take=`praise:monkey-trubble-${'ab'[rand(2)]}`;
+      // Halloween levels: the announcement is pitched down into the horror reverb, then the growl follows.
+      if(state.pack==='halloween'){playSound(take,{volume:1,delay:.1,praise:true,rate:PRAISE_HORROR_RATE,horror:true});playSound('hwLevelStart',{volume:.9,delay:.1+soundLengthMs(take,1500)/PRAISE_HORROR_RATE/1000})}
+      else playSound(take,{volume:1,delay:.1,praise:true})
     }
     // Background trial: each home visit shows a random candidate (never the same twice in a row), tagged in the corner so the favorite can be named.
-    const HOME_BGS=['A','B','E','3','4'];let homeBgKey=null;
+    let homeBgKey=null;
     function pickHomeBg(){const pool=HOME_BGS.filter(k=>k!==homeBgKey),key=pool[Math.floor(Math.random()*pool.length)];homeBgKey=key;$('#homeBg').style.backgroundImage=`url('art/home/bg-${key}.jpg')`;$('#homeBgTag').textContent=`BG ${key}`}
     function loadHomeArt(){
       const probe=(src,apply)=>{const img=new Image();img.onload=()=>apply(img);img.src=src};
@@ -1086,16 +1294,21 @@
     // they load: bg (game background), board (board backdrop), frame (9-slice dialog frame).
     const THEMES={
       console:{name:'GREEN CONSOLE',swatch:['#020905','#57ff86','#27894a']},
-      jungle:{name:'JUNGLE',swatch:['#1d4a26','#ffd84d','#a8743f'],art:['bg.jpg','board.jpg','frame.png']}
+      jungle:{name:'JUNGLE',swatch:['#1d4a26','#ffd84d','#a8743f'],art:['bg.jpg','board.jpg','frame.png']},
+      halloween:{name:'HALLOWEEN',swatch:['#2a1240','#ff8a1f','#3a2440']}
     };
     const ART_SLOTS={bg:['--theme-bg','art-bg'],board:['--board-backdrop','art-board'],frame:['--dialog-frame','art-frame']};
-    function applyTheme(id){
+    // The theme on screen: Halloween levels always use the Halloween theme; everywhere else, the player's chosen theme.
+    const themeFor=()=>state?.pack==='halloween'&&$('#home').classList.contains('hidden')?'halloween':progress.settings.theme;
+    // instant: no view-transition crossfade. Automatic switches (Home <-> level, Halloween levels) use it: the crossfade snapshots the
+    // screen as it was, so leaving Home it flashed the Home background over the board. Only picking a theme in Settings crossfades.
+    function applyTheme(id,{instant=false}={}){
       if(!THEMES[id])id='console';const root=document.documentElement,swap=()=>{root.dataset.theme=id;for(const [,cls] of Object.values(ART_SLOTS))root.classList.remove(cls)};
-      if(document.startViewTransition&&root.dataset.theme&&root.dataset.theme!==id)document.startViewTransition(swap);else swap();
+      if(!instant&&document.startViewTransition&&root.dataset.theme&&root.dataset.theme!==id)document.startViewTransition(swap);else swap();
       for(const file of THEMES[id].art||[]){const [prop,cls]=ART_SLOTS[file.split('.')[0]],src=`art/themes/${id}/${file}`,img=new Image();img.onload=()=>{if(root.dataset.theme!==id)return;root.style.setProperty(prop,`url('${src}')`);root.classList.add(cls)};img.src=src}
     }
     function renderThemeChips(){
-      $('#themeChips').replaceChildren(...Object.entries(THEMES).map(([id,t])=>{const b=document.createElement('button');b.className='theme-chip';b.setAttribute('role','radio');b.setAttribute('aria-checked',String(progress.settings.theme===id));const sw=document.createElement('span');sw.className='theme-swatch';sw.style.background=`linear-gradient(135deg,${t.swatch[0]} 0 45%,${t.swatch[1]} 45% 70%,${t.swatch[2]} 70%)`;b.append(sw,t.name);b.onclick=()=>{if(progress.settings.theme===id)return;progress.settings.theme=id;saveProgress();applyTheme(id);renderThemeChips();playSound('pickup',{volume:.16,rate:1.2});haptic('cardCaged')};return b}))
+      $('#themeChips').replaceChildren(...Object.entries(THEMES).map(([id,t])=>{const b=document.createElement('button');b.className='theme-chip';b.setAttribute('role','radio');b.setAttribute('aria-checked',String(progress.settings.theme===id));const sw=document.createElement('span');sw.className='theme-swatch';sw.style.background=`linear-gradient(135deg,${t.swatch[0]} 0 45%,${t.swatch[1]} 45% 70%,${t.swatch[2]} 70%)`;b.append(sw,t.name);b.onclick=()=>{if(progress.settings.theme===id)return;progress.settings.theme=id;saveProgress();applyTheme(themeFor());renderThemeChips();playSound('pickup',{volume:.16,rate:1.2});haptic('cardCaged')};return b}))
     }
     applyTheme(progress.settings.theme);
     function applyVolumes(){userMusicGain=(progress.settings.musicVol/100)**2;userSfxGain=(progress.settings.sfxVol/100)**2;setMusicLevel(musicLevel(),.08)}
@@ -1133,7 +1346,7 @@
     document.querySelectorAll('.dip').forEach(dip=>dip.onclick=e=>{
       const value=e.target.closest('button')?.dataset.value,key=dip.dataset.setting;if(!value)return;
       if(key==='sound'){if((value==='on')!==soundEnabled){$('#sound').click();$('#homeSound').textContent=soundEnabled?'♪':'♩'}}
-      else{if(progress.settings[key]===value)return;progress.settings[key]=value;saveProgress();if(key==='music'&&$('#home').classList.contains('hidden'))playMusic(value);if(key==='difficulty')renderHome()}
+      else{if(progress.settings[key]===value)return;progress.settings[key]=value;saveProgress();if(key==='music'&&$('#home').classList.contains('hidden'))playMusic(levelMusic());if(key==='difficulty')renderHome()}
       playSound('pickup',{volume:.16,rate:value==='on'||value==='competitive'||value==='normal'?1.2:.95});haptic('cardCaged');renderSettings()
     });
     $('#gearBtn').onclick=openSettings;$('#homeGear').onclick=openSettings;$('#settingsDone').onclick=closeSettings;$('#settings').onclick=e=>{if(e.target===e.currentTarget)closeSettings()};

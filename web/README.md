@@ -53,3 +53,18 @@ Pending playtest.
 3. Rebuild the app. Until `config.js` has both values the leaderboard shows "not connected yet"; scores keep saving on the phone and post on the next launch after it's connected.
 
 Players have no login: each install gets a random id and a private secret (stored in the save), and only the SQL functions can write scores.
+
+## Halloween levels
+
+From level 2 on, each level is either a regular level or a Halloween level, about half the time. The pick is seeded by the level number, so Retry always deals the same set. Change the odds with `HALLOWEEN_CHANCE` in `index.html`.
+
+A Halloween level deals only the haunted primates (`pack:'halloween'` in `CARD_DATA`), plus Kevin and the Joker. Card calls play about 5–6 semitones lower (`HORROR_RATE`) through a long, dark reverb, and the music switches to the `halloweenRelaxed` or `halloweenCompetitive` playlist that matches the Music Mode setting. The board, face-down cards and the hero card's shine (each card's `foil` gradient) take Halloween colors.
+
+To add a Halloween card:
+1. Put the art in `../source/art/halloween/`.
+2. Add a `build` line for it in `tools/make-card-images.sh`, then run the script.
+3. Add an `H##` entry to `CARD_DATA`, after the other `H` cards.
+
+Halloween levels also swap some sounds through the `HALLOWEEN_SFX` map. Each entry maps a regular sound key to a list of Halloween sounds, and when a list has several files, each play picks one at random. The swapped sounds are card grabs, the locked-card buzz, level start, shuffle, game over and the Joker clear. Owl Eyes plays `hwOwl` (a howl). A Good Eye combo plays a scream (`hwScream`) instead of the usual sting, and its praise voiceover is pitched down (`PRAISE_HORROR_RATE`) into the horror reverb. The Joker shows as the Joker Howler, from the `halloween:{image,name,foil}` variant on its `CARD_DATA` entry. To add a sound, put the file in `audio/halloween/`, give it a key in `SOUND_FILES` and a loudness trim in `MIX_DB`, then add the key to the right `HALLOWEEN_SFX` list. On Halloween levels the Owl Eyes glow toxic green.
+
+To add a Halloween music track, put it in `audio/music/halloween/` and add it to `MUSIC.halloweenRelaxed` or `MUSIC.halloweenCompetitive`. Use `trim` (in dB) to match it to -15.8 LUFS.
