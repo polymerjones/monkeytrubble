@@ -69,7 +69,7 @@ struct GameWebView: UIViewRepresentable {
         if let direct = Bundle.main.url(
             forResource: "index",
             withExtension: "html",
-            subdirectory: "matrix-match-prototype"
+            subdirectory: "web"
         ) {
             return direct
         }
@@ -82,7 +82,7 @@ struct GameWebView: UIViewRepresentable {
 
         return enumerator.compactMap { $0 as? URL }.first {
             $0.lastPathComponent == "index.html" &&
-            $0.deletingLastPathComponent().lastPathComponent == "matrix-match-prototype"
+            $0.deletingLastPathComponent().lastPathComponent == "web"
         }
     }
 

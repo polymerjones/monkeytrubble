@@ -5,13 +5,13 @@ description: Build the Monkey Trubble iOS app in Xcode, install it on the user's
 
 # Ship Monkey Trubble to the iPhone
 
-Builds `MonkeyTrubbleIOS` (which bundles `matrix-match-prototype/`), installs it on the paired iPhone and launches it. Run from the repo root `/Users/paulfisher/fed2026open`.
+Builds `MonkeyTrubbleIOS` (which bundles `web/`), installs it on the paired iPhone and launches it. Run from the repo root `<repo root>`.
 
 ## Steps
 
 1. **Sanity-check the game script** so a JS syntax error never ships:
    ```sh
-   cd /Users/paulfisher/fed2026open/matrix-match-prototype && sed -n '/<script>/,/<\/script>/p' index.html | sed '1d;$d' > /tmp/monkeytrubble-game.js && node --check /tmp/monkeytrubble-game.js
+   cd <repo root>/web && sed -n '/<script>/,/<\/script>/p' index.html | sed '1d;$d' > /tmp/monkeytrubble-game.js && node --check /tmp/monkeytrubble-game.js
    ```
    If it fails, stop and fix the error before building.
 
@@ -23,7 +23,7 @@ Builds `MonkeyTrubbleIOS` (which bundles `matrix-match-prototype/`), installs it
 
 3. **Build** (signing is automatic, team `976XKW42U9`):
    ```sh
-   cd /Users/paulfisher/fed2026open/MonkeyTrubbleIOS && xcodebuild -project MonkeyTrubbleIOS.xcodeproj -scheme MonkeyTrubble -configuration Debug -destination 'platform=iOS,id=<DEVICE_ID>' -derivedDataPath build/DerivedData -allowProvisioningUpdates build 2>&1 | grep -E "error|BUILD" | tail -5
+   cd <repo root>/MonkeyTrubbleIOS && xcodebuild -project MonkeyTrubbleIOS.xcodeproj -scheme MonkeyTrubble -configuration Debug -destination 'platform=iOS,id=<DEVICE_ID>' -derivedDataPath build/DerivedData -allowProvisioningUpdates build 2>&1 | grep -E "error|BUILD" | tail -5
    ```
    Needs `** BUILD SUCCEEDED **`. On failure, show the errors and stop.
 

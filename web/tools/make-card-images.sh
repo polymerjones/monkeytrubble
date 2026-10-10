@@ -1,9 +1,9 @@
 #!/bin/sh
-# Builds the downsized card artwork the game loads (cards/thumb, cards/hero) from ../matrix-match-source/raw images.
+# Builds the downsized card artwork the game loads (cards/thumb, cards/hero) from ../source/art/raw images.
 # IMG_*.JPG portraits keep their names; the named sources below are written under a slug.
 set -e
 cd "$(dirname "$0")/.."
-RAW="../matrix-match-source/raw images"
+RAW="../source/art/raw images"
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 mkdir -p cards/thumb cards/hero

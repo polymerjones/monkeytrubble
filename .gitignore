@@ -1,15 +1,16 @@
-# This folder also holds large video/audio projects. Only the Monkey Trubble game is tracked.
+# Only the Monkey Trubble game is tracked.
 /*
 !/.gitignore
-!/matrix-match-prototype/
+!/README.md
+!/web/
 !/MonkeyTrubbleIOS/
-!/matrix-match-source/
-!/match-sfx/
-# Family cards kept out of the app (not bundled): see secret-stack/README.md
-!/secret-stack/
+!/source/
 !/.claude/
 /.claude/*
 !/.claude/skills/
+
+# Family cards live outside the repo (see ~/monkeytrubble-private); never track them.
+/secret-stack/
 
 # macOS and Xcode per-user files
 .DS_Store

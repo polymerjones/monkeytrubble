@@ -1,6 +1,6 @@
 # Monkey Trubble for iPhone
 
-The SwiftUI app packages `../matrix-match-prototype` as an offline game and presents it in a full-screen `WKWebView`.
+The SwiftUI app packages `../web` as an offline game and presents it in a full-screen `WKWebView`.
 
 ## Run on an iPhone
 
@@ -12,4 +12,4 @@ The SwiftUI app packages `../matrix-match-prototype` as an offline game and pres
 
 The app is portrait-only, runs offline, uses Variant D, respects safe areas, and provides native haptics for flips, cage placement, successful pairs, and cage overflow.
 
-Edits made inside `../matrix-match-prototype` are automatically included the next time the Xcode app is built.
+Edits made inside `../web` are automatically included the next time the Xcode app is built.

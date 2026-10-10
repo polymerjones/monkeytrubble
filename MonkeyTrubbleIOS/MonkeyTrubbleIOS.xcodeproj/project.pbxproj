@@ -10,14 +10,14 @@
 		A10000000000000000000001 /* MonkeyTrubbleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000001 /* MonkeyTrubbleApp.swift */; };
 		A10000000000000000000002 /* GameWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* GameWebView.swift */; };
 		A10000000000000000000003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000003 /* Assets.xcassets */; };
-		A10000000000000000000004 /* matrix-match-prototype in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* matrix-match-prototype */; };
+		A10000000000000000000004 /* web in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* web */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		A20000000000000000000001 /* MonkeyTrubbleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonkeyTrubbleApp.swift; sourceTree = "<group>"; };
 		A20000000000000000000002 /* GameWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameWebView.swift; sourceTree = "<group>"; };
 		A20000000000000000000003 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		A20000000000000000000004 /* matrix-match-prototype */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "matrix-match-prototype"; path = "../matrix-match-prototype"; sourceTree = "<group>"; };
+		A20000000000000000000004 /* web */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "web"; path = "../web"; sourceTree = "<group>"; };
 		A20000000000000000000005 /* MonkeyTrubble.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MonkeyTrubble.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -36,7 +36,7 @@
 			isa = PBXGroup;
 			children = (
 				A40000000000000000000002 /* MonkeyTrubbleIOS */,
-				A20000000000000000000004 /* matrix-match-prototype */,
+				A20000000000000000000004 /* web */,
 				A40000000000000000000003 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -118,7 +118,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000003 /* Assets.xcassets in Resources */,
-				A10000000000000000000004 /* matrix-match-prototype in Resources */,
+				A10000000000000000000004 /* web in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
