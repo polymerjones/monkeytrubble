@@ -4,7 +4,14 @@
   <meta charset="utf-8">
   <meta name="format-detection" content="telephone=no">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <title>Monkey Trubble — Prototype</title>
+  <title>Monkey Trubble</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <meta name="theme-color" content="#010402">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Monkey Trubble">
   <!-- PROTOTYPE: three playable visual directions, switch with ?variant=A, B, or C. -->
   <style>
     /* Theme tokens: Green Console values. Other themes override these under html[data-theme="…"]. */
@@ -1123,5 +1130,6 @@
     async function bootstrap(){new ResizeObserver(()=>{if(state.tiles.length)render()}).observe(board);setupFeaturedGloss();setupMicroSlats();setVariant(isIOSApp?'D':new URLSearchParams(location.search).get('variant')||'A');loadHomeArt();buildHomeTicker();await preloadAssets();startLevel(progress.level,{silent:true});pendingLevelStart=false;if(params.has('play'))playFromHome();else showHome();if(!progress.player)openNameDialog();flushSync();playHomeSting();setInterval(()=>{if(!document.hidden)renderClock()},250);if(params.has('soundcheck'))showSoundcheck();if(isIOSApp)unlockAudio()}
     bootstrap();
   </script>
+<script src="register-sw.js"></script>
 </body>
 </html>

@@ -5,8 +5,10 @@
 !/web/
 !/MonkeyTrubbleIOS/
 !/source/
+!/.github/
 !/.claude/
 /.claude/*
+!/.github/
 !/.claude/skills/
 
 # Family cards live outside the repo (see ~/monkeytrubble-private); never track them.
