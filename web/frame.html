@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Monkey Trubble</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <meta name="theme-color" content="#000000">
+  <style>
+    html,body{height:100%;margin:0;background:#000;overflow:hidden}
+    body{display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,#0d2a14 0,#000 70%)}
+    /* iPhone Pro Max proportions (430 x 932), scaled to fit the window height. */
+    iframe{display:block;width:min(430px,calc(100dvh*.4614));height:min(932px,100dvh);border:0;border-radius:28px;box-shadow:0 0 0 1px #2d8d4c,0 0 90px #2d8d4c55;background:#010402}
+  </style>
+</head>
+<body>
+  <iframe id="game" title="Monkey Trubble" allow="autoplay; fullscreen; gyroscope; accelerometer"></iframe>
+  <script>
+    const q=new URLSearchParams(location.search);q.set('noframe','');
+    document.getElementById('game').src='index.html?'+q.toString().replace(/noframe=(&|$)/,'noframe$1');
+    document.getElementById('game').focus();
+  </script>
+</body>
+</html>
