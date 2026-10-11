@@ -225,9 +225,10 @@
     .lt-door.left svg{transform-origin:0 50%}.lt-door.right svg{transform-origin:100% 50%}
     .lt-lock{position:absolute;left:50%;top:50%;width:96px;height:118px;margin:-70px 0 0 -48px;filter:drop-shadow(0 10px 14px #000c)}.lt-lock svg{display:block;width:100%;height:100%;overflow:visible}
     /* Dimensional menu style (trial): layered buttons with a lip, a top sheen and a real press; dialogs float in with depth. */
-    body.ui-dim .action,body.ui-dim .home-play{position:relative;border-width:2px;border-radius:16px;box-shadow:0 6px 0 var(--accent-shadow,#0009),0 12px 20px #000a,inset 0 2px 0 #ffffff70,inset 0 -4px 0 #0000002e;transition:transform .07s ease,box-shadow .07s ease}
-    body.ui-dim .action::before,body.ui-dim .home-play::before{content:"";position:absolute;left:8px;right:8px;top:3px;height:40%;border-radius:12px 12px 40% 40%/12px 12px 10px 10px;background:linear-gradient(#ffffff66,#fff0);pointer-events:none}
-    body.ui-dim .action:active,body.ui-dim .home-play:active{transform:translateY(5px);box-shadow:0 1px 0 var(--accent-shadow,#0009),0 3px 6px #000a,inset 0 2px 0 #ffffff50,inset 0 -2px 0 #0000002e}
+    /* The top sheen is an inset shadow (no ::before layer, no position change): iOS WebKit could skip painting the button's
+       own face under an overlay layer until it was tapped. The press uses `translate`, like the classic buttons. */
+    body.ui-dim .action,body.ui-dim .home-play{border-width:2px;border-radius:16px;box-shadow:0 6px 0 var(--accent-shadow,#0009),0 12px 20px #000a,inset 0 12px 10px -7px #ffffff70,inset 0 2px 0 #ffffff70,inset 0 -4px 0 #0000002e;transition:translate .07s ease,box-shadow .07s ease}
+    body.ui-dim .action:active,body.ui-dim .home-play:active{translate:0 5px;box-shadow:0 1px 0 var(--accent-shadow,#0009),0 3px 6px #000a,inset 0 10px 8px -7px #ffffff55,inset 0 2px 0 #ffffff50,inset 0 -2px 0 #0000002e}
     body.ui-dim .dialog{box-shadow:0 0 0 1px #ffffff18,0 34px 70px #000e,0 0 80px #1eff6833,inset 0 1px 0 #ffffff22}
     body.ui-dim .overlay.show>.dialog{animation:dimIn .5s cubic-bezier(.2,1.25,.35,1) both}@keyframes dimIn{from{opacity:0;transform:perspective(900px) translateY(46px) rotateX(16deg) scale(.9)}}
     body.ui-dim .overlay{background:radial-gradient(ellipse at 50% 42%,#0006,#000e 75%)}
@@ -1357,8 +1358,8 @@
     function setMessage(s){$('#message').textContent=s}
     function setVariant(key){if(!variants[key])key='A';document.body.classList.remove('variant-a','variant-b','variant-c');document.body.classList.add(`variant-${key.toLowerCase()}`);$('#variantLabel').textContent=`${key} — ${variants[key]}`;}
     function cycleVariant(dir){const keys=Object.keys(variants),current=new URLSearchParams(location.search).get('variant')||'A',i=keys.indexOf(current);setVariant(keys[(i+dir+keys.length)%keys.length])}
-    // Dev trials: reversible prototypes picked from Settings in dev mode. Players get TRIAL_DEFAULTS (approved: Depth background, Card Spiral transition, Dimensional menus, new monkey badge face).
-    const TRIALS_KEY='monkeyTrubble.trials',TRIAL_DEFAULTS={bg:'D',transition:'spiral',ui:'dim',avatar:'monkey',drift:'off'};let trials={...TRIAL_DEFAULTS};try{trials={...TRIAL_DEFAULTS,...JSON.parse(localStorage.getItem(TRIALS_KEY)||'{}')}}catch{}
+    // Dev trials: reversible prototypes picked from Settings in dev mode. Players get TRIAL_DEFAULTS (approved: Depth background, Card Spiral transition, Dimensional menus, new monkey badge face, background drift).
+    const TRIALS_KEY='monkeyTrubble.trials',TRIAL_DEFAULTS={bg:'D',transition:'spiral',ui:'dim',avatar:'monkey',drift:'on'};let trials={...TRIAL_DEFAULTS};try{trials={...TRIAL_DEFAULTS,...JSON.parse(localStorage.getItem(TRIALS_KEY)||'{}')}}catch{}
     const trial=k=>devMode?trials[k]:TRIAL_DEFAULTS[k];
     function applyTrials(){const cmp=$('#badgeCompare');if(cmp)cmp.innerHTML=['classic','monkey'].map(f=>`<span>${tierBadge(TIERS[2],44,f)}${f==='classic'?'CLASSIC':'NEW'}</span>`).join('')+`<span>${tierBadge(TIERS[TIERS.length-1],22,'monkey')}22px</span>`;document.body.dataset.bg=trial('bg');document.body.classList.toggle('ui-dim',trial('ui')==='dim');document.body.classList.toggle('bg-drift',trial('drift')==='on');if(trial('bg')==='D')buildCardField();for(const row of document.querySelectorAll('.trial-chips'))for(const b of row.children)b.setAttribute('aria-checked',String(trials[row.dataset.trial]===b.dataset.value))}
     function setupTrials(){$('#previewTransition').onclick=()=>{if(trials.transition==='off')return;closeSettings();setTimeout(()=>playLevelTransition(()=>{}),150)};for(const row of document.querySelectorAll('.trial-chips'))row.onclick=e=>{const v=e.target.closest('button')?.dataset.value;if(!v)return;trials[row.dataset.trial]=v;try{localStorage.setItem(TRIALS_KEY,JSON.stringify(trials))}catch{}applyTrials();if(row.dataset.trial==='avatar'){renderProfile();renderHome()}playSound('control',{volume:.3})};applyTrials()}
