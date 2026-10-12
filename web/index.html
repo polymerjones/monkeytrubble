@@ -261,7 +261,7 @@
     body.pack-halloween .chain-meter{border-color:#ff8a2a;--chain-c:#5dff3a}
     .chain-stamp{position:fixed;left:50%;top:34%;z-index:4000;translate:-50% -50%;pointer-events:none;opacity:0;white-space:nowrap;color:#fff;font:900 clamp(1.5rem,8vw,2.3rem) system-ui,sans-serif;letter-spacing:.06em;-webkit-text-stroke:1.5px var(--chain-ink,#6b4300);text-shadow:0 3px 0 var(--chain-ink,#6b4300),0 0 18px var(--chain-glow,#ffd84d)}
     body.pack-halloween .chain-stamp{--chain-ink:#3a0f6b;--chain-glow:#ff7a1a;color:#ffb347}
-    .edge-glow{position:fixed;inset:0;z-index:3900;pointer-events:none;opacity:0;box-shadow:inset 0 0 50px 12px var(--edge-c,#ffd84dcc),inset 0 0 120px 30px var(--edge-c2,#ff9be855)}body.pack-halloween .edge-glow{--edge-c:#ff7a1acc;--edge-c2:#9b4dff66}
+    /* The top bar and the current-card panel sit above the combo edge glow (z-index 79), like the cage panel (80). */.topbar,.hud{position:relative;z-index:81}.edge-glow{position:fixed;inset:0;z-index:79;pointer-events:none;opacity:0;box-shadow:inset 0 0 calc(50px + 30px*var(--edge-i,0)) calc(12px + 10px*var(--edge-i,0)) var(--edge-c,#ffd84dcc),inset 0 0 calc(120px + 40px*var(--edge-i,0)) calc(30px + 14px*var(--edge-i,0)) var(--edge-c2,#ff9be855)}body.pack-halloween .edge-glow{--edge-c:#ff7a1acc;--edge-c2:#9b4dff66}
     .win-chain{margin:4px 0 2px;color:var(--amber,#ffd84d);font:900 .82rem system-ui,sans-serif;letter-spacing:.14em}.win-chain[hidden]{display:none}
     /* Hero lightbox: the hero portrait expands into a big collectible card over a dimmed game (presentation only). */
     .lightbox{position:fixed;inset:0;z-index:4500;display:grid;place-items:center;touch-action:none}.lightbox[hidden]{display:none}.lightbox-scrim{position:absolute;inset:0;overflow:hidden;background:#000}
@@ -305,7 +305,7 @@
     .boosters{gap:10px}.booster{flex:1;min-width:0;max-width:136px;padding:0 10px;gap:6px;letter-spacing:.08em}
     .owl-eyes{display:block;width:30px;height:18px}.owl-eyes .lids{transform-origin:50% 58%;animation:owlBlink 5s infinite}@keyframes owlBlink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
     .tile.hinted,.slot.hinted{box-shadow:0 0 0 3px #ffb31a,0 0 24px 6px #ffb31acc;animation:hintPulse .8s ease-in-out infinite alternate}@keyframes hintPulse{to{box-shadow:0 0 0 3px #ffe08a,0 0 34px 10px #ffb31aee}}
-    .hint-eyes{position:fixed;z-index:3500;width:66px;height:39px;translate:-50% -50%;pointer-events:none;filter:drop-shadow(0 0 10px #ffb31a) drop-shadow(0 2px 2px #000)}.hint-eyes .owl-eyes{width:100%;height:100%}.hint-eyes small{position:absolute;left:50%;top:100%;translate:-50% 4px;padding:3px 9px;border:2px solid #2b1a06;border-radius:99px;background:#ffb31a;color:#2b1a06;font:900 .66rem system-ui,sans-serif;letter-spacing:.1em;white-space:nowrap;box-shadow:0 3px 8px #000c}.tile.hinted.blocked{opacity:1;outline:3px dashed #ffb31a;outline-offset:2px}.hint-eyes .lids{animation:none}
+    .hint-eyes{position:fixed;z-index:3500;width:66px;height:39px;translate:-50% -50%;pointer-events:none;filter:drop-shadow(0 0 10px #ffb31a) drop-shadow(0 2px 2px #000)}.hint-eyes .owl-eyes{width:100%;height:100%}.hint-eyes small{position:absolute;left:50%;top:100%;translate:-50% 4px;padding:3px 9px;border:2px solid #2b1a06;border-radius:99px;background:#ffb31a;color:#2b1a06;font:900 .66rem system-ui,sans-serif;letter-spacing:.1em;white-space:nowrap;box-shadow:0 3px 8px #000c}.tile.hinted.blocked{opacity:1;outline:3px dashed #ffb31a;outline-offset:2px}.hint-eyes .lids{animation:owlBlink 4s infinite}.hint-eyes:not(.buried) small{display:none}
     .badge.pop{animation:badgePop .5s cubic-bezier(.2,.8,.2,1)}@keyframes badgePop{0%{transform:scale(1)}40%{transform:scale(1.7)}100%{transform:scale(1)}}
     /* Volume sliders: chunky track that fills with the accent, big pressable knob (theme tokens, so Jungle gets banana knobs). */
     .vol-row{display:grid;grid-template-columns:54px 1fr 44px;align-items:center;gap:10px;margin-top:6px;color:var(--text-dim);font:900 .7rem system-ui,sans-serif;letter-spacing:.14em}.vol-row b{text-align:right;color:#fff;font-variant-numeric:tabular-nums}
@@ -668,7 +668,7 @@
     const variants={A:'Layered terminal',B:'Operator console',C:'Glyph shrine',D:'Micro slats'};
     const UNDOS_PER_LEVEL=2,UNDOS_PER_LEVEL_EASY=3,SHUFFLES_PER_LEVEL=1;
     // Owl Eyes hints: 1 per level, +1 for every Good Eye combo, holding at most HINTS_MAX. Each one used costs 5% like an undo.
-    const HINTS_PER_LEVEL=1,HINTS_MAX=3;let hintTimer;
+    const HINTS_PER_LEVEL=1,HINTS_MAX=3,hintEyes=new Map();let hintTimer;
     // Difficulty ramp: the share of cards dealt face up starts at 95% and drops 2.5% a level to a floor of 65%.
     // Easy (Settings) ramps gently instead: 98% minus 2% a level, floor 80%. It also gets the bonus pair every level and a third undo.
     const faceUpShare=(level,easy=false)=>easy?Math.max(.8,.98-(level-1)*.02):Math.max(.65,.95-(level-1)*.025);
@@ -747,7 +747,8 @@
       gorilla:[{src:'audio/music/gorilla-roar-1.mp3',trim:-2.4},{src:'audio/music/gorilla-roar-2.mp3',trim:-1.1},{src:'audio/music/gorilla-roar-3.mp3',trim:.2},{src:'audio/music/gorilla-roar-4.mp3',trim:-3.6},{src:'audio/music/gorilla-roar-5.mp3',trim:-.7}],
       primate:[{src:'audio/music/primate-howl-a.mp3',trim:-.3},{src:'audio/music/primate-howl-b.mp3',trim:-2.3},{src:'audio/music/competitive-4-rhythmic-tension.mp3',trim:-.5},{src:'audio/music/competitive-3.mp3',trim:-1.2}],
       // Combo music (setMusicTension, comboMusic 'swap'): a long combo crossfades into one of these, looping, until the chain ends.
-      combo:[{src:'audio/music/combo-hunter-loop.mp3',trim:1.8},{src:'audio/music/combo-howl-forest.mp3',trim:-.6},{src:'audio/music/primate-howl-b.mp3',trim:-2.3}],
+      // Official combo loops (gapless: decoded and looped sample-exactly by BufferLoop); trims level them to -15.8 LUFS.
+      combo:[{src:'audio/music/combo-loop-1.mp3',trim:-3.3,gapless:true},{src:'audio/music/combo-loop-2.mp3',trim:-2.9,gapless:true}],
       competitiveDeep:[{src:'audio/music/competitive-4-rhythmic-tension.mp3',trim:-.5},{src:'audio/music/competitive-5-sparse-toms.mp3',trim:-1.9},{src:'audio/music/competitive-3.mp3',trim:-1.2}],
       halloweenCompetitive:[{src:'audio/music/halloween/halloween-competitive1.mp3',trim:-.7},{src:'audio/music/halloween/halloween-competitive2.mp3',trim:-1.1}]
     },MUSIC_FADE_S=1.5;
@@ -755,8 +756,23 @@
     const MUSIC_TONE_REST=5200,COMBO_MUSIC=[{at:4,rate:1.06,cutoff:3800},{at:6,rate:1.10,cutoff:2900}];
     const musicTension={rate:1,cutoff:MUSIC_TONE_REST,timer:0,key:0};
     const musicEls=new Map(),trackOf=new Map(),trackGains=new Map(),trackVolume=el=>Math.pow(10,(trackOf.get(el).trim||0)/20);let musicBus=null,musicList='home',musicTone=null;
+    // A music track that must loop without a gap (track.gapless) plays from a decoded buffer through Web Audio, since an <audio>
+    // loop leaves a small gap at the wrap (MP3 padding). BufferLoop offers the parts of the <audio> API the music code uses
+    // (play, pause, currentTime, paused), so crossfades, mute, Settings music and backgrounding treat it like any other track.
+    // Near-silence at the very start and end (encoder padding) is left out of the loop.
+    class BufferLoop{constructor(src){this.src=src;this.loop=true;this.playbackRate=1;this.volume=1;this.paused=true;this.offset=0;this.node=null;this.gain=null;this.buf=null;
+        readArrayBuffer(src).then(decodeSound).then(b=>{this.buf=b;const d=b.getChannelData(0),edge=Math.min(d.length>>2,Math.round(b.sampleRate*.08));let a=0,z=d.length;while(a<edge&&Math.abs(d[a])<1e-4)a++;while(z>d.length-edge&&Math.abs(d[z-1])<1e-4)z--;this.start=a/b.sampleRate;this.end=z/b.sampleRate;if(!this.paused&&!this.node)this.begin()}).catch(()=>{})}
+      get len(){return this.end-this.start}
+      get currentTime(){return this.node?(audioContext.currentTime-this.t0)%this.len:this.offset}
+      set currentTime(v){this.offset=v;if(this.node){this.halt();this.begin()}}
+      begin(){if(!this.buf||!this.gain)return;const n=audioContext.createBufferSource();n.buffer=this.buf;n.loop=true;n.loopStart=this.start;n.loopEnd=this.end;n.connect(this.gain);const off=this.offset%this.len;n.start(0,this.start+off);this.t0=audioContext.currentTime-off;this.node=n}
+      halt(){if(!this.node)return;this.offset=this.currentTime;try{this.node.stop()}catch{}this.node.disconnect();this.node=null}
+      play(){this.paused=false;if(!this.node)this.begin();return Promise.resolve()}
+      pause(){this.halt();this.paused=true}
+      load(){}}
     function musicEl(track){
       let el=musicEls.get(track);if(el)return el;
+      if(track.gapless&&audioContext){el=new BufferLoop(track.src);musicEls.set(track,el);trackOf.set(el,track);routeTrack(el);return el}
       el=new Audio(track.src);el.preload='auto';el.preservesPitch=true;el.webkitPreservesPitch=true;el.mozPreservesPitch=true;
       el.onended=()=>{if(el===music)playMusic(musicList,true)};musicEls.set(track,el);trackOf.set(el,track);routeTrack(el);return el
     }
@@ -791,7 +807,7 @@
       musicTone=musicFilter;musicFilter.type='lowpass';musicFilter.frequency.value=MUSIC_TONE_REST;musicFilter.Q.value=.55;musicGain.gain.value=musicLevel();musicFilter.connect(musicGain).connect(master);musicBus=musicFilter;routeTrack(music);
     }
     // Every music track gets its own gain (carrying its trim) into the shared filter/volume bus, so switching tracks can crossfade.
-    function routeTrack(el){if(!musicBus||trackGains.has(el))return;const g=audioContext.createGain();g.gain.value=trackVolume(el);audioContext.createMediaElementSource(el).connect(g).connect(musicBus);trackGains.set(el,g)}
+    function routeTrack(el){if(!musicBus||trackGains.has(el))return;const g=audioContext.createGain();g.gain.value=trackVolume(el);if(el instanceof BufferLoop){el.gain=g;g.connect(musicBus);if(!el.paused)el.begin()}else audioContext.createMediaElementSource(el).connect(g).connect(musicBus);trackGains.set(el,g)}
     // Switches to a playlist ('home', 'relaxed', 'competitive'). It keeps the current track if it already belongs to that list,
     // unless advance asks for the next one (a track ended).
     // The level's playlist: the Music Mode setting, or its Halloween counterpart on a Halloween level.
@@ -1116,7 +1132,7 @@
       $('#bannerChapter').textContent=`${first?'NEW CHAPTER · ':''}CHAPTER ${ch.number}${ch.plus?'+':''} · ${ch.name}`;{const f=first&&state.pack!=='halloween'?(ch.featured||[]).map(id=>CARD_DATA[id]?.name).filter(Boolean):[];$('#bannerFeatured').textContent=f.length?`FEATURED: ${f.join(' · ')}`:'';$('#bannerFeatured').hidden=!f.length}$('#bannerLevel').textContent=`LEVEL ${lv} · ${shape.name}`;{const r=$('#board').getBoundingClientRect();el.style.top=`${r.top+28}px`}el.classList.toggle('new-chapter',first);el.style.setProperty('--banner-c',ch.accent);el.style.setProperty('--banner-glow',ch.accent+'44');
       fitStamp($('#bannerLevel'),1.06);fitStamp($('#bannerChapter'),1.06);el.getAnimations().forEach(a=>a.cancel());el.animate(reduceMotion.matches?[{opacity:0},{opacity:1,offset:.08},{opacity:1,offset:.88},{opacity:0}]:[{opacity:0,scale:.85},{opacity:1,scale:1.04,offset:.08},{opacity:1,scale:1,offset:.14},{opacity:1,scale:1,offset:.88},{opacity:0,scale:.96}],{duration:first?4200:3200,delay:350,easing:'cubic-bezier(.2,.8,.2,1)',fill:'backwards'})}
     function startLevel(level,{silent=false,retry=false}={}){
-      closeLightbox({instant:true});featuredSymbol=null;$('#dragLayer').replaceChildren();board.replaceChildren();$('#featuredArt').dataset.renderKey='~';clearDust();clearTimeout(chainTimer);endChain();
+      closeLightbox({instant:true});featuredSymbol=null;for(const e of hintEyes.values())e.remove();hintEyes.clear();$('#dragLayer').replaceChildren();board.replaceChildren();$('#featuredArt').dataset.renderKey='~';clearDust();clearTimeout(chainTimer);endChain();
       // Difficulty is read here, so a change in Settings applies from the next level start or retry, never mid-board.
       const easy=progress.settings.difficulty==='easy';
       const pack=levelPack(level);document.body.classList.toggle('pack-halloween',pack==='halloween');
@@ -1141,7 +1157,7 @@
       return {w,h,x:t=>W/2+((t.c-(c0+c1)/2)/2)*w-t.layer*LAYER_NUDGE+depth/2,y:t=>H/2+((t.r-(r0+r1)/2)/2)*h-t.layer*LAYER_NUDGE+depth/2}
     }
     function isFree(tile,activeIds){return !tile.blockers.some(id=>activeIds?activeIds.has(id):state.tiles.some(t=>t.id===id&&t.active))}
-    function render(){renderGen++;
+    function render(){renderGen++;syncHints();
       const m=state.tiles.length?boardMetrics():null;if(m){board.style.setProperty('--tile-w',`${m.w*CARD_FILL}px`);board.style.setProperty('--tile-h',`${m.h*CARD_FILL}px`)}const activeTiles=state.tiles.filter(t=>t.active).sort((a,b)=>a.layer-b.layer),activeIds=new Set(activeTiles.map(t=>t.id));
       board.querySelectorAll('.board-tile').forEach(node=>{if(!activeIds.has(node.dataset.id)){node.remove();if(node.classList.contains('lifted'))$('#dragLayer').querySelectorAll('.drag-ghost').forEach(g=>{if(!flightFrom.size)g.remove()})}});
       activeTiles.forEach(tile=>{
@@ -1258,8 +1274,9 @@
     }
     function rejectTap(node){const now=performance.now();if(now-(node.rejectedAt||0)<250)return;node.rejectedAt=now;node.animate([{translate:'0 0'},{translate:'-3px 0'},{translate:'3px 0'},{translate:'-2px 0'},{translate:'2px 0'},{translate:'0 0'}],{duration:220,easing:'ease-in-out'});playSound('cantSelect',{volume:.26});haptic('cardBlocked')}
     function handleTile(tile,node){
-      if(state.locked||!tile.active)return;if(state.hintIds)clearHint(false);
+      if(state.locked||!tile.active)return;
       if(!isFree(tile)){rejectTap(node);showBlockers(tile);return}
+      releaseHint(tile.id);
       if(tile.revealed&&tile.revealedAt&&performance.now()-tile.revealedAt<260)return;
       startClock();featuredSymbol=tile.symbol;renderFeatured();
       if(!tile.revealed){
@@ -1398,7 +1415,7 @@
       const fromOverflow=state.over&&!state.won&&!state.busy;
       if(!state.history.length||state.undosLeft<=0||state.clearing.size||(state.locked&&!fromOverflow))return;
       if(fromOverflow){state.over=false;state.locked=false;$('#overlay').classList.remove('show');startClock()}
-      const s=state.history.pop();state.tiles=s.tiles;state.tray=s.tray;state.pairs=s.pairs;state.shuffles=s.shuffles;state.undosLeft--;render();setMessage(`Move undone — ${state.undosLeft} undo${state.undosLeft===1?'':'s'} left.`);playSound('pickup',{volume:.075,rate:.72})
+      clearHint(false);const s=state.history.pop();state.tiles=s.tiles;state.tray=s.tray;state.pairs=s.pairs;state.shuffles=s.shuffles;state.undosLeft--;render();setMessage(`Move undone — ${state.undosLeft} undo${state.undosLeft===1?'':'s'} left.`);playSound('pickup',{volume:.075,rate:.72})
     }
     // Monkey calls dip the music for the level's first few pairs only; after that the music holds its level under them.
     const MUSIC_DUCK_PAIRS=3;
@@ -1425,7 +1442,7 @@
       const n=c.n;setMusicTension(n);if(n>=2)playComboHit(n);if(n===3){if(!goodEyeBusy)showGoodEye();if(state.hintsLeft<HINTS_MAX){state.hintsLeft++;render();const badge=$('#hintCount');badge.classList.remove('pop');void badge.offsetWidth;badge.classList.add('pop')}return}
       const text=CHAIN_TIERS[Math.min(n,6)];if(!text)return;chainStamp(n>=6?`${text} ×${n}`:text,n);
       if(n===5)playSound('praiseSting',{volume:.45,delay:.15});
-      if(n>=5&&!reduceMotion.matches)$('#edgeGlow').animate([{opacity:0},{opacity:n>=6?1:.7,offset:.2},{opacity:0}],{duration:1200,easing:'ease-out'});
+      comboEdge(n);
       if(n>=4&&liveDust<40){const r=$('#board').getBoundingClientRect();fairyDust(r.left+r.width/2,r.top+r.height*.35,14)}haptic('pairCleared')}
     // Combo hit: every chain step from x2 plays a combo take climbing a major pentatonic scale (always in tune with itself), a bit
     // louder as it climbs; past the top it cycles the top three notes. COMBO_HITS lists the takes (one picked at random each time); add Paul's new combo sounds here.
@@ -1453,7 +1470,14 @@
       const cutoff=hit?hit.cutoff:MUSIC_TONE_REST,to=hit&&mode==='both'?hit.rate:1,up=key>0,from=musicTension.rate;musicTension.rate=to;musicTension.cutoff=cutoff;clearInterval(musicTension.timer);
       if(musicTone&&audioContext)musicTone.frequency.setTargetAtTime(cutoff,audioContext.currentTime,up?.25:.6);
       if(musicList==='home'||from===to)return;let k=0;musicTension.timer=setInterval(()=>{k++;try{music.playbackRate=from+(to-from)*k/8}catch{}if(k>=8)clearInterval(musicTension.timer)},up?75:110)}
-    function endChain(){const m=$('#chainMeter');if(m)m.classList.remove('on');if(state.chain)state.chain.n=0;setMusicTension(0)}
+    function endChain(){const m=$('#chainMeter');if(m)m.classList.remove('on');if(state.chain)state.chain.n=0;setMusicTension(0);comboEdgeOff()}
+    // Combo edges: from chain ×EDGE_FROM (with the combo music) the screen-edge glow stays on, pulsing, until the chain ends or the
+    // level finishes. It sits just under the cage panel (z-index 79 < 80), so it never tints the caged cards. Each pair
+    // restarts the pulse at its peak; the glow gets brighter, thicker (--edge-i) and quicker up to ×(EDGE_FROM+4), then fades out on a break.
+    const EDGE_FROM=COMBO_SWAP_AT;
+    function comboEdge(n){if(n<EDGE_FROM)return;const el=$('#edgeGlow'),k=Math.min(n-EDGE_FROM,4)/4,hi=.35+.65*k,lo=hi*.45;el.style.setProperty('--edge-i',k.toFixed(2));el.getAnimations().forEach(a=>a.cancel());
+      if(reduceMotion.matches){el.style.opacity=(hi*.75).toFixed(2);return}el.style.opacity='';el.animate([{opacity:hi},{opacity:lo,offset:.5},{opacity:hi}],{duration:1400-500*k,iterations:Infinity,easing:'ease-in-out'})}
+    function comboEdgeOff(){const el=$('#edgeGlow'),cur=+getComputedStyle(el).opacity;el.getAnimations().forEach(a=>a.cancel());el.style.opacity='';if(cur>.01)el.animate([{opacity:cur},{opacity:0}],{duration:800,easing:'ease-out'})}
     function showGoodEye(){
       const pool=PRAISE.filter(p=>p!==lastPraise),line=pool[rand(pool.length)],key=`praise:${line.takes[rand(line.takes.length)]}`;lastPraise=line;
       const el=$('#goodEye'),voiced=soundEnabled&&!!(soundBuffers[key]||fallbackAudio[key]),holdMs=Math.max(2500,(voiced?soundLengthMs(key,1400):0)+1600);goodEyeBusy=true;
@@ -1553,15 +1577,25 @@
       if(state.locked||state.clearing.size){if(tries<12)setTimeout(()=>useHint(tries+1),100);return}
       const hint=findHint();if(!hint){const kevin=state.tiles.some(t=>t.active&&t.symbol===KEVIN&&isFree(t));setMessage(kevin?`No safe match yet — try ${visionName()}’s ${visionPower()}.`:'No safe match from here — try Undo or Shuffle.');rejectTap($('#hint'));return}
       state.hintsLeft--;state.hintsUsed++;startClock();hint.tiles.forEach(t=>{t.revealed=true});state.hintIds=new Set(hint.tiles.map(t=>t.id));state.hintSlot=hint.slot;render();
-      const targets=[...hint.tiles.map(t=>board.querySelector(`[data-id="${t.id}"]`)),hint.slot!=null?tray.children[hint.slot]:null].filter(Boolean);
-      for(const node of targets){const r=node.getBoundingClientRect(),eyes=document.createElement('div');eyes.className='hint-eyes';eyes.innerHTML=$('#hint .owl-eyes').outerHTML+(node.classList.contains('blocked')?'<small>UNDER HERE</small>':'');eyes.style.left=`${r.left+r.width/2}px`;eyes.style.top=`${r.top+(node.classList.contains('blocked')?r.height*.5:Math.min(r.height*.3,40))}px`;document.body.append(eyes);
-        // Only the eyes blink; the overlay (and its UNDER HERE tag) just fades in and out.
-        eyes.querySelector('svg').animate([{transform:'scaleY(0)'},{transform:'scaleY(1.15)',offset:.08},{transform:'scaleY(1)',offset:.14},{transform:'scaleY(1)',offset:.46},{transform:'scaleY(.1)',offset:.5},{transform:'scaleY(1)',offset:.56},{transform:'scaleY(1)'}],{duration:2600,easing:'ease-out'});
-        eyes.animate([{opacity:0},{opacity:1,offset:.08},{opacity:1,offset:.85},{opacity:0}],{duration:2600}).onfinish=()=>eyes.remove()}
+      // The eyes stay on each hinted card (and the hinted cage slot) until it is tapped; see releaseHint.
+      state.hintSlotTile=hint.slot!=null?state.tray[hint.slot]?.id??null:null;
+      const targets=[...hint.tiles.map(t=>[t.id,board.querySelector(`[data-id="${t.id}"]`)]),hint.slot!=null?['slot',tray.children[hint.slot]]:null].filter(x=>x&&x[1]);
+      for(const [key,node] of targets){fadeHintEyes(key,true);const eyes=document.createElement('div');eyes.className='hint-eyes';eyes.innerHTML=$('#hint .owl-eyes').outerHTML+'<small>UNDER HERE</small>';document.body.append(eyes);hintEyes.set(key,eyes);placeHintEyes(eyes,node);
+        eyes.querySelector('svg').animate([{transform:'scaleY(0)'},{transform:'scaleY(1.15)',offset:.55},{transform:'scaleY(1)'}],{duration:420,easing:'ease-out'});eyes.animate([{opacity:0},{opacity:1}],{duration:220})}
       setMessage(hint.slot!=null?'OWL EYES // this one pairs with the cage':hint.buried?'OWL EYES // these two match — take the free one, then dig out its partner':'OWL EYES // match these two');
-      (state.pack==='halloween'?playSound('hwOwl',{volume:.85}):playSound('owlEyes',{volume:.8}));haptic('cardFlip');clearTimeout(hintTimer);hintTimer=setTimeout(()=>clearHint(true),3400)
+      (state.pack==='halloween'?playSound('hwOwl',{volume:.85}):playSound('owlEyes',{volume:.8}));haptic('cardFlip');clearTimeout(hintTimer)
     }
-    function clearHint(redraw){clearTimeout(hintTimer);if(!state.hintIds&&state.hintSlot==null)return;state.hintIds=null;state.hintSlot=null;if(redraw)render()}
+    function clearHint(redraw){clearTimeout(hintTimer);for(const k of [...hintEyes.keys()])fadeHintEyes(k);if(!state.hintIds&&state.hintSlot==null)return;state.hintIds=null;state.hintSlot=null;state.hintSlotTile=null;if(redraw)render()}
+    // Owl Eyes hold on their cards until each is tapped, then blur and fade out. A slot hint (this card pairs with the cage) ends
+    // with its card. syncHints (start of every render) drops hints whose card has left the board and keeps the eyes on their cards.
+    function placeHintEyes(eyes,node){const r=node.getBoundingClientRect(),buried=node.classList.contains('blocked');eyes.classList.toggle('buried',buried);eyes.style.left=`${r.left+r.width/2}px`;eyes.style.top=`${r.top+(buried?r.height*.5:Math.min(r.height*.3,40))}px`}
+    function fadeHintEyes(key,instant=false){const eyes=hintEyes.get(key);if(!eyes)return;hintEyes.delete(key);eyes.getAnimations().forEach(a=>a.cancel());if(instant){eyes.remove();return}
+      if(reduceMotion.matches){eyes.animate([{opacity:1},{opacity:0}],{duration:250,fill:'forwards'}).onfinish=()=>eyes.remove();return}
+      const f=getComputedStyle(eyes).filter,base=f&&f!=='none'?f+' ':'';eyes.animate([{opacity:1,filter:`${base}blur(0px)`,scale:1},{opacity:0,filter:`${base}blur(10px)`,scale:1.25}],{duration:520,easing:'cubic-bezier(.2,.7,.3,1)',fill:'forwards'}).onfinish=()=>eyes.remove()}
+    function releaseHint(id){if(!state.hintIds?.has(id))return;state.hintIds.delete(id);fadeHintEyes(id);if(state.hintSlotTile!=null){state.hintSlot=null;state.hintSlotTile=null;fadeHintEyes('slot')}if(!state.hintIds.size)state.hintIds=null}
+    function syncHints(){
+      if(state.hintIds)for(const id of [...state.hintIds]){const t=state.tiles.find(t=>t.id===id),node=t?.active&&board.querySelector(`[data-id="${id}"]`);if(!node){releaseHint(id);continue}const e=hintEyes.get(id);if(e)placeHintEyes(e,node)}
+      if(state.hintSlotTile!=null){const i=state.tray.findIndex(t=>t.id===state.hintSlotTile);if(i<0){state.hintSlot=null;state.hintSlotTile=null;fadeHintEyes('slot')}else{state.hintSlot=i;const e=hintEyes.get('slot');if(e&&tray.children[i])placeHintEyes(e,tray.children[i])}}}
     function reshuffle(){
       if(state.locked||state.shufflesLeft<=0||state.clearing.size)return;state.history.push(snapshot());startClock();
       // Only the board is re-dealt: cards in the cage stay put, in order, and the deal is built around them.
@@ -1633,7 +1667,7 @@
     function clearDust(){dustParts.length=0;liveDust=0;if(dustCx){dustCx.setTransform(1,0,0,1,0,0);dustCx.clearRect(0,0,dustCv.width,dustCv.height)}}
     function explode(node){if(!node)return;const r=node.getBoundingClientRect();for(let i=0;i<24;i++){const p=document.createElement('i');p.className='particle';p.style.left=`${r.left+r.width/2}px`;p.style.top=`${r.top+r.height/2}px`;document.body.append(p);const x=(Math.random()-.5)*150,y=(Math.random()-.6)*150,rot=rand(360);p.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${x}px,${y}px) rotate(${rot}deg) scale(.2)`,opacity:0}],{duration:380+rand(300),easing:'cubic-bezier(.15,.7,.25,1)'}).onfinish=()=>p.remove()}}
     function finish(won,reason='overflow'){
-      state.over=true;state.locked=true;pauseClock();
+      state.over=true;state.locked=true;pauseClock();comboEdgeOff();
       if(!won){playSound(Math.random()<.6?'gameOverA':'gameOverB',{volume:.8});haptic('cageOverflow');const stuck=reason==='stuck';$('#resultTitle').textContent=stuck?'NO MOVES':'CAGE FULL';$('#resultTitle').style.color='var(--danger)';$('#resultText').textContent=stuck?'The cards left in the cage can’t be matched.':'Four unmatched cards filled the Holding Cage.';state.failReason=reason;$('#continueLevel').hidden=$('#continuePitch').hidden=stuck;$('#retryLevel').classList.toggle('primary',stuck);const canUndo=state.undosLeft>0&&state.history.length>0;$('#overlayUndo').hidden=!canUndo;$('#overlayUndo').textContent=`Undo last move (${state.undosLeft})`;$('#overlay').classList.add('show');return}
       state.won=true;playSound('win',{volume:.72});showLevelComplete(recordLevelClear())
     }
