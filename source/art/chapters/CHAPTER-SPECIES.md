@@ -29,15 +29,16 @@ Great apes live wild only in Africa and on Borneo and Sumatra, so chapters 1, 2,
 
 - **Build depth from layers.** Each chapter takes three layers that move at different speeds as the phone tilts:
   - `far.jpg`: sky and distant hills in haze
-  - `mid.png`: trees, with a transparent background
-  - `near.png`: foliage framing the edges, with a transparent background
+  - `mid.webp`: trees, with a transparent background
+  - `near.webp`: foliage framing the edges, with a transparent background
+  - `water.png` (optional): a mask of the water on the far layer; the game ripples that area
 - **Soften the distance.** Ask for atmospheric haze and depth of field instead of everything sharp.
 - **Size:** portrait, at least 941×1672 (the size of the current backgrounds). The layers are drawn about 36% larger than the board so they can move, so keep important detail away from the edges.
 
 ## Adding art to the game
 
 - **Card source files:** `source/art/expedition/`. Add a `build` line in `web/tools/make-card-images.sh` and run it.
-- **Background source files:** `source/art/chapters/ch<n>_*.png`. The script builds `web/art/chapters/<n>/far.jpg`. For now, put `mid.png` and `near.png` straight into `web/art/chapters/<n>/`; the build script doesn't handle them yet.
+- **Background source files:** `source/art/chapters/ch<n>_*.png`. `split-layers.py` splits each painting into `layers/<n>/` automatically (depth model, see the top of the script). Hand-made layers go in the same folder with the same names. `web/tools/make-card-images.sh` copies `layers/<n>/` into the game; a chapter without one gets its painting as a single far layer.
 - **Featured species:** set in `CHAPTERS` in `web/index.html`. Species waiting for art are in `CARD_DATA` with `pending:true`; delete that flag once the art is built.
 - **Full steps:** "Chapter art and the Expedition set" in `web/README.md`.
 

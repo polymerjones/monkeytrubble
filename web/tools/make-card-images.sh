@@ -65,10 +65,15 @@ build "$EX/gibbon.png" set2-white-handed-gibbon
 build "$EX/macaque.png" set2-long-tailed-macaque
 build "$EX/langur.png" set2-silvered-langur
 build "$EX/baboon.png" set2-olive-baboon
-# Chapter backgrounds (../source/art/chapters/ch<n>_*.png): the painted far layer of each chapter scene.
+# Chapter backgrounds (../source/art/chapters/ch<n>_*.png). When split-layers.py has made layers/<n>/ (far.jpg, mid.webp,
+# near.webp, water.png), those are copied as they are; otherwise the painting becomes a single far layer.
 for src in ../source/art/chapters/ch*_*.png; do
   n=$(basename "$src" | sed -E 's/^ch([0-9]+)_.*/\1/')
-  mkdir -p "art/chapters/$n"
-  sips -s format jpeg -s formatOptions 80 "$src" --out "art/chapters/$n/far.jpg" >/dev/null
+  rm -rf "art/chapters/$n" && mkdir -p "art/chapters/$n"
+  if [ -d "../source/art/chapters/layers/$n" ]; then
+    cp "../source/art/chapters/layers/$n"/* "art/chapters/$n/"
+  else
+    sips -s format jpeg -s formatOptions 80 "$src" --out "art/chapters/$n/far.jpg" >/dev/null
+  fi
 done
 echo "thumb: $(ls cards/thumb | wc -l | tr -d ' ')  hero: $(ls cards/hero | wc -l | tr -d ' ')"

@@ -1010,7 +1010,7 @@
     function renderStreak(){const {count,lastDate}=progress.streak,live=lastDate===localDate()||lastDate===localDate(-1);$('#streakCount').textContent=live?count:0;$('#streakPill').classList.toggle('cold',lastDate!==localDate())}
     // ---- Chapter look: palette, a stylised 3-layer scene (placeholder art), time of day, ambient particles, optional ambience.
     // Scenes are original SVG silhouettes drawn into the Depth background layers (so tilt parallax and drift move them); a painted
-    // layer at art/chapters/<n>/far.jpg, mid.png or near.png replaces its SVG layer automatically. Time of day grades the scene
+    // layer at art/chapters/<n>/far.jpg, mid.webp or near.webp replaces its SVG layer automatically. Time of day grades the scene
     // across the chapter's 10 levels: day (1-4), golden (5-7), dusk (8-9), night (10); Halloween skin is always night.
     const svgURL=svg=>`url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
     const SV=(body,defs='')=>`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 130" preserveAspectRatio="xMidYMid slice"><defs>${defs}</defs>${body}</svg>`;
@@ -1051,16 +1051,41 @@
     const sceneCache=new Map(),sceneArt=new Map();
     // Halloween levels (skin) keep the stylised SVG scene; painted chapter art is for regular levels only.
     function chapterLayerURL(ch,layer,skin){const n=ch.number,key=`${n}:${layer}`;if(skin){if(!sceneCache.has(n))sceneCache.set(n,sceneSVG(ch.scene,ch.pal));return svgURL(sceneCache.get(n)[layer])}if(sceneArt.get(key))return`url('${sceneArt.get(key)}')`;
-      if(!sceneArt.has(key)){sceneArt.set(key,null);const src=`art/chapters/${n}/${layer}.${layer==='far'?'jpg':'png'}`,img=new Image();img.onload=()=>{sceneArt.set(key,src);if(chapterFor(state.level).number===n)applyChapterLook()};img.src=src}
+      if(!sceneArt.has(key)){sceneArt.set(key,null);const src=`art/chapters/${n}/${layer}.${layer==='far'?'jpg':'webp'}`,img=new Image();img.onload=()=>{sceneArt.set(key,src);if(chapterFor(state.level).number===n)applyChapterLook()};img.src=src}
       // A painted far layer is a whole scene, so the placeholder SVG mid and near layers stay off over it.
       if(layer!=='far'&&sceneArt.get(`${n}:far`))return'none';
       if(!sceneCache.has(n))sceneCache.set(n,sceneSVG(ch.scene,ch.pal));return svgURL(sceneCache.get(n)[layer])}
     const timeOfDay=(level,ch,skin)=>{if(skin)return'night';const k=level-ch.from+1;return k<=4?'day':k<=7?'golden':k<=9?'dusk':'night'};
     function applyChapterLook(){const lv=state.level||progress.level,ch=chapterFor(lv),fullHalloween=state.pack==='halloween'&&trial('pack')!=='skin',on=trial('scene')==='chapter'&&!fullHalloween,skin=on&&state.pack==='halloween',b=document.body;
       b.dataset.scene=on?'chapter':'cards';b.dataset.chapter=ch.number;b.classList.toggle('season-skin',skin);b.style.setProperty('--ch-accent',ch.pal.accent);
-      if(!on){for(const l of['far','mid','near'])$(`.bg-${l}`).style.backgroundImage='';b.dataset.tod='';ambient.set(null);return}
-      for(const l of['far','mid','near'])$(`.bg-${l}`).style.backgroundImage=chapterLayerURL(ch,l,skin);
-      const tod=timeOfDay(lv,ch,skin);b.dataset.tod=tod;ambient.set(tod==='night'?(ch.ambient==='snow'?'snow':'fireflies'):ch.ambient,ch,skin)}
+      if(!on){for(const l of['far','mid','near']){const el=$(`.bg-${l}`);el.style.backgroundImage='';el.style.opacity=''}b.dataset.tod='';ambient.set(null);water.set(null);return}
+      // Painted mid and near layers draw fully opaque (the 95% and 90% opacity suits only the placeholder SVG).
+      for(const l of['far','mid','near']){const el=$(`.bg-${l}`);el.style.backgroundImage=chapterLayerURL(ch,l,skin);el.style.opacity=!skin&&sceneArt.get(`${ch.number}:${l}`)?'1':''}
+      const tod=timeOfDay(lv,ch,skin);b.dataset.tod=tod;ambient.set(tod==='night'?(ch.ambient==='snow'?'snow':'fireflies'):ch.ambient,ch,skin);water.set(skin?null:ch)}
+    // Water ripple: a chapter with art/chapters/<n>/water.png (an alpha mask of the water on the painted far layer) gets a small
+    // canvas inside .bg-far, so it moves with the far layer's tilt and drift. Each frame redraws the water rows of far.jpg shifted
+    // sideways by a slow sine, stronger toward the viewer, then clips them to the mask. Drawn at 1x over the water's band only (it
+    // is soft art), ~30fps, skipped on the home screen, under the lightbox, while dragging, and for reduced motion.
+    const water=(()=>{const masks=new Map();let n=null,cv=null,cx=null,src=null,mk=null,raf=0,last=0,ro=null,far=null,mimg=null;
+      function stop(){n=null;cancelAnimationFrame(raf);raf=0;cv?.remove();cv=null;ro?.disconnect()}
+      function build(){const host=$('.bg-far'),W=host.offsetWidth,H=host.offsetHeight;if(!W||!H||!far||!mimg)return;
+        const iw=far.naturalWidth,ih=far.naturalHeight,s=Math.max(W/iw,H/ih),dx=(W-iw*s)/2,dy=(H-ih*s)/2,[f0,f1]=mimg.band,top=Math.max(0,Math.floor(dy+f0*ih*s)),h=Math.min(H,Math.ceil(dy+f1*ih*s))-top;if(h<4)return;
+        if(!cv){cv=document.createElement('canvas');cv.className='water-canvas';cx=cv.getContext('2d')}host.append(cv);
+        cv.width=Math.round(W);cv.height=h;cv.style.cssText=`position:absolute;left:0;top:${top}px;width:${W}px;height:${h}px;pointer-events:none`;
+        const off=()=>{const c=document.createElement('canvas');c.width=cv.width;c.height=h;return c};
+        src=off();src.getContext('2d').drawImage(far,dx,dy-top,iw*s,ih*s);mk=off();mk.getContext('2d').drawImage(mimg,dx,dy-top,iw*s,ih*s);draw(performance.now())}
+      function draw(t){const w=cv.width,h=cv.height;cx.clearRect(0,0,w,h);
+        for(let y=0;y<h;y+=2){const p=y/h,amp=.5+3.5*p,k=.16/(.22+p),x=amp*Math.sin(y*k-t*.0015*(1+p))+amp*.35*Math.sin(y*k*2.3+t*.0011);cx.drawImage(src,0,y,w,2,x,y,w,2)}
+        cx.globalCompositeOperation='destination-in';cx.drawImage(mk,0,0);cx.globalCompositeOperation='source-over'}
+      function loop(t){raf=requestAnimationFrame(loop);if(t-last<33||!cv)return;if(!$('#home').classList.contains('hidden')||lightbox.open||document.body.classList.contains('peek-drag'))return;last=t;draw(t)}
+      // The water's rows (fractions of the image height), read once from a small copy of the mask.
+      function band(img){const c=document.createElement('canvas');c.width=32;c.height=256;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(img,0,0,32,256);const d=x.getImageData(0,0,32,256).data;let a=-1,b=-1;
+        for(let y=0;y<256;y++)for(let i=0;i<32;i++)if(d[(y*32+i)*4+3]>8){if(a<0)a=y;b=y;break}return a<0?null:[a/256,(b+1)/256]}
+      function load(src){return new Promise(res=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>res(null);i.src=src})}
+      return{async set(ch){const k=ch&&!reduceMotion.matches&&sceneArt.get(`${ch.number}:far`)?ch.number:null;if(k===n&&cv)return;stop();if(k==null)return;n=k;
+        if(!masks.has(k))masks.set(k,load(`art/chapters/${k}/water.png`).then(i=>{if(i)i.band=band(i);return i?.band?i:null}));
+        const [m,f]=await Promise.all([masks.get(k),load(sceneArt.get(`${k}:far`))]);if(n!==k||!m||!f)return;mimg=m;far=f;build();
+        ro=new ResizeObserver(()=>{if(n===k)build()});ro.observe($('.bg-far'));if(!raf)raf=requestAnimationFrame(loop)}}})();
     // Chapter ambience slot: audio/ambience/ch<n>.mp3 (when Paul adds one) loops quietly under the music on that chapter's levels,
     // through the music bus (music volume applies), about 9 dB under the music. Missing files are simply skipped.
     const ambienceEls=new Map();let ambienceOn=null;
