@@ -1,6 +1,6 @@
 // Offline cache for the installed web app. Pages load network-first so updates show up on the next visit;
 // images and audio are cached as they are used and served from cache when offline.
-const CACHE = 'monkeytrubble-v16';
+const CACHE = 'monkeytrubble-v17';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(
   caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())
