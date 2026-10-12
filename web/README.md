@@ -68,3 +68,11 @@ To add a Halloween card:
 Halloween levels also swap some sounds through the `HALLOWEEN_SFX` map. Each entry maps a regular sound key to a list of Halloween sounds, and when a list has several files, each play picks one at random. The swapped sounds are card grabs, the locked-card buzz, level start, shuffle, game over and the Joker clear. Owl Eyes plays `hwOwl` (a howl). A Good Eye combo plays a scream (`hwScream`) instead of the usual sting, and its praise voiceover is pitched down (`PRAISE_HORROR_RATE`) into the horror reverb. The Joker shows as the Joker Howler, from the `halloween:{image,name,foil}` variant on its `CARD_DATA` entry. To add a sound, put the file in `audio/halloween/`, give it a key in `SOUND_FILES` and a loudness trim in `MIX_DB`, then add the key to the right `HALLOWEEN_SFX` list. On Halloween levels the Owl Eyes glow toxic green.
 
 To add a Halloween music track, put it in `audio/music/halloween/` and add it to `MUSIC.halloweenRelaxed` or `MUSIC.halloweenCompetitive`. Use `trim` (in dB) to match it to -15.8 LUFS.
+
+## Chapter art and the Expedition set
+
+The chapter guide is `../source/art/chapters/level-ref.png`: each of the 10 chapters features the species listed there, plus the great apes of its region (`featured` in `CHAPTERS`). Each chapter also deals one food card (`foods`).
+
+- **Backgrounds:** `../source/art/chapters/ch<n>_*.png` builds to `art/chapters/<n>/far.jpg` (run `tools/make-card-images.sh`). A painted far layer turns off the placeholder SVG mid and near layers.
+- **Expedition cards:** `../source/art/expedition/` holds the 2:3 crops cut from `contact-sheet.png`, built to `cards/*/set2-*.jpg`. They're upscales of ~200px-wide cards, so they're softer than the other sets.
+- **Species still missing art** are in `CARD_DATA` with `pending:true` and are skipped until it lands: Bornean and Sumatran orangutans, mountain and western lowland gorillas, chimpanzee, bonobo, siamang, mountain guenon, patas monkey, drill, sifaka and pig-tailed macaque. To add one, put its 2:3 art in `../source/art/expedition/`, add a `build` line in `tools/make-card-images.sh`, run it, and delete `pending:true`.

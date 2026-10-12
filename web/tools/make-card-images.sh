@@ -55,4 +55,20 @@ build_portrait "$HW/whitehandgibbon.png" halloween-20-gibbon
 build_portrait "$HW/jokerhowler-real.png" halloween-joker
 # Kevin Kelly: flat 2:3 Grok render (1152x1728), so a plain resize.
 build "$RAW/kevin kelly.jpg" kevin-kelly
+# Expedition set (../source/art/expedition): 2:3 crops of contact-sheet.png, each card only ~200px wide in the sheet, so these are upscales.
+EX="../source/art/expedition"
+for slug in white_faced_capuchin squirrel_monkey black_howler_monkey golden_lion_tamarin proboscis_monkey golden_snub_nosed_monkey \
+  mandrill red_colobus japanese_macaque ring_tailed_lemur indri banana heliconia_flower fig palm_fruit bamboo_shoot; do
+  build "$EX/$slug.png" "set2-$(echo $slug | tr _ -)"
+done
+build "$EX/gibbon.png" set2-white-handed-gibbon
+build "$EX/macaque.png" set2-long-tailed-macaque
+build "$EX/langur.png" set2-silvered-langur
+build "$EX/baboon.png" set2-olive-baboon
+# Chapter backgrounds (../source/art/chapters/ch<n>_*.png): the painted far layer of each chapter scene.
+for src in ../source/art/chapters/ch*_*.png; do
+  n=$(basename "$src" | sed -E 's/^ch([0-9]+)_.*/\1/')
+  mkdir -p "art/chapters/$n"
+  sips -s format jpeg -s formatOptions 80 "$src" --out "art/chapters/$n/far.jpg" >/dev/null
+done
 echo "thumb: $(ls cards/thumb | wc -l | tr -d ' ')  hero: $(ls cards/hero | wc -l | tr -d ' ')"
