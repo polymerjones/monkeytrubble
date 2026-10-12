@@ -204,6 +204,15 @@ struct GameWebView: UIViewRepresentable {
                 case "cardBlocked":
                     self.rigidImpact.impactOccurred(intensity: 0.45)
                     self.rigidImpact.prepare()
+                case "cageRattle", "cageRattleSoft":
+                    // A quick triple knock, like bars rattling: three rigid taps 60ms apart, fading slightly.
+                    let base: CGFloat = event == "cageRattle" ? 0.8 : 0.45
+                    for (i, scale) in [1.0, 0.85, 0.7].enumerated() {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(i * 60)) {
+                            self.rigidImpact.impactOccurred(intensity: base * scale)
+                            self.rigidImpact.prepare()
+                        }
+                    }
                 case "cageOverflow":
                     self.notification.notificationOccurred(.error)
                     self.notification.prepare()

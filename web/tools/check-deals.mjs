@@ -108,6 +108,6 @@ depths.sort((a,b)=>a-b);
   for(const [a,b] of freePairs)if(byId.get(a).symbol!==byId.get(b).symbol||byId.get(a).blockers.length||byId.get(b).blockers.length){problems++;console.log(`${easy?'easy ':''}level ${level}: start pair ${a}/${b} not an open match`)}
   if(free.length<12){problems++;console.log(`level ${level}: only ${free.length} playable at the start`)}}
   console.log('Shapes dealt:',JSON.stringify(shapes))}
-kevinSpots.sort((a,b)=>a-b);console.log(`Kevin dealt before the 60% mark (window fallback): ${kevinSpots.filter(x=>x<game.KEVIN_WINDOW[0]-.03).length} level(s)`);const pct=x=>`${Math.round(x*100)}%`;
+kevinSpots.sort((a,b)=>a-b);console.log(`Kevin dealt before the window (fallback): ${kevinSpots.filter(x=>x<game.KEVIN_WINDOW[0]-.03).length} level(s)`);const pct=x=>`${Math.round(x*100)}%`;
 console.log(`${levels} levels: ${problems} problem(s). Kevin's place in the removal order: ${pct(kevinSpots[0])}–${pct(kevinSpots.at(-1))} (median ${pct(kevinSpots[kevinSpots.length>>1])}). Cards stacked over Kevin: min ${depths[0]}, median ${depths[depths.length>>1]}, max ${depths.at(-1)}`);
 process.exit(problems?1:0);
