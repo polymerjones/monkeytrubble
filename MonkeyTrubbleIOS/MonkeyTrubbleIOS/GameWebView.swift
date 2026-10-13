@@ -3,6 +3,9 @@ import UIKit
 import WebKit
 import CoreMotion
 
+/// Same near-black green as the launch screen and the page's loading screen, so launch → web view → loader shows no black flash.
+let launchBackground = UIColor(named: "LaunchBackground") ?? .black
+
 struct GameWebView: UIViewRepresentable {
     func makeCoordinator() -> Coordinator {
         Coordinator()
@@ -36,8 +39,8 @@ struct GameWebView: UIViewRepresentable {
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = context.coordinator
         webView.isOpaque = false
-        webView.backgroundColor = .black
-        webView.scrollView.backgroundColor = .black
+        webView.backgroundColor = launchBackground
+        webView.scrollView.backgroundColor = launchBackground
         webView.scrollView.bounces = false
         webView.scrollView.alwaysBounceVertical = false
         webView.scrollView.alwaysBounceHorizontal = false
@@ -215,6 +218,13 @@ struct GameWebView: UIViewRepresentable {
                     }
                 case "cageOverflow":
                     self.notification.notificationOccurred(.error)
+                    self.notification.prepare()
+                case "rankPass":
+                    // Leaderboard climb: a tick each time the player's row moves past another player.
+                    self.mediumImpact.impactOccurred(intensity: 0.6)
+                    self.mediumImpact.prepare()
+                case "rankClimb":
+                    self.notification.notificationOccurred(.success)
                     self.notification.prepare()
                 default:
                     break

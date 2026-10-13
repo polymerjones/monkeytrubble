@@ -178,12 +178,12 @@
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = 976XKW42U9;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MonkeyTrubbleIOS/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Monkey Trubble";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				INFOPLIST_KEY_NSMotionUsageDescription = "Monkey Trubble uses device tilt to move the gloss across the featured card.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				INFOPLIST_KEY_UIStatusBarHidden = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -207,12 +207,12 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 976XKW42U9;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MonkeyTrubbleIOS/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Monkey Trubble";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				INFOPLIST_KEY_NSMotionUsageDescription = "Monkey Trubble uses device tilt to move the gloss across the featured card.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				INFOPLIST_KEY_UIStatusBarHidden = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;

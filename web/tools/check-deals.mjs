@@ -6,12 +6,19 @@ const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const script=html.slice(html.lastIndexOf('<script>')+8,html.lastIndexOf('</script>'));
 const fn=name=>{const start=script.indexOf(`function ${name}(`);if(start<0)throw new Error(`missing ${name}`);let depth=0;for(let i=script.indexOf('){',start)+1;i<script.length;i++){if(script[i]==='{')depth++;else if(script[i]==='}'&&!--depth)return script.slice(start,i+1)}};
 const block=start=>{const i=script.indexOf(start);if(i<0)throw new Error(`missing ${start}`);return script.slice(i,script.indexOf('];',i)+2)};
+// The chapter lookup (two lines, ending at its accent field).
+const chapterFor=()=>{const i=script.indexOf('const chapterFor=');if(i<0)throw new Error('missing chapterFor');const end='accent:c.pal.accent}};';return script.slice(i,script.indexOf(end,i)+end.length)};
 const line=prefix=>{const m=script.match(new RegExp(`^\\s*(${prefix}.*)$`,'m'));if(!m)throw new Error(`missing ${prefix}`);return m[1]};
 const deck=[...script.matchAll(/^\s+(\w+):\{image:/gm)].map(m=>m[1]).filter(id=>id!=='JOKER'&&id!=='KEVIN');
 // groups: the card groups as [unlockLevel, cards] (default: today's deck as one group).
 const makeGame=(groups=[[1,deck]])=>new Function(`
   const JOKER='JOKER',KEVIN='KEVIN',DECK=${JSON.stringify(groups.flatMap(g=>g[1]))},GROUPS=${JSON.stringify(groups)};
   const groupDecks=level=>GROUPS.filter(([at,cards])=>at<=level&&cards.length).map(([,cards])=>cards);
+  // Card art, sets and seasons don't matter to the deal checks: every level deals from the plain deck, no Halloween.
+  const CARD_DATA={},SET_DECKS={},HALLOWEEN_DECK=[],levelPack=()=>'regular';
+  ${line('const ALL_SET=')}
+  ${block('const CHAPTERS=[')}
+  ${chapterFor()}
   ${line('const KEVIN_WINDOW=')}
   ${block('const LAYOUTS=[')}
   ${line('const layoutFor=')}
@@ -22,8 +29,8 @@ const makeGame=(groups=[[1,deck]])=>new Function(`
   ${line('const faceUpShare=')}
   ${['buildLayout','mulberry32','dealUnits','levelUnits','unitsFromSymbols','startPairsFor','cageStep','solveLine'].map(fn).join('\n')}
   // Same deal as buildLevelBoard, plus the removal order it was built along and the start pairs.
-  function levelBoard(level,easy=false){const rng=mulberry32(level*9973),pos=buildLayout(layoutFor(level).cells),freePairs=startPairsFor(pos,START_PAIRS[easy?'easy':'normal'],rng),trace=[],assignments=dealUnits(pos,levelUnits(rng,level,pos.length),rng,{freePairs,trace});return{tiles:pos.map(p=>({...p,symbol:assignments.get(p.id)})),order:trace,freePairs,layout:layoutFor(level).id}}
-  return {dealUnits,unitsFromSymbols,levelBoard,mulberry32,KEVIN_WINDOW,solveLine,START_PAIRS};
+  function levelBoard(level,easy=false){const rng=mulberry32(level*9973),pos=buildLayout(layoutFor(level,easy).cells),freePairs=startPairsFor(pos,startPairsAt(level,easy),rng),trace=[],assignments=dealUnits(pos,levelUnits(rng,level,pos.length),rng,{freePairs,trace,maxOpen:maxOpenAt(level,easy)});return{tiles:pos.map(p=>({...p,symbol:assignments.get(p.id)})),order:trace,freePairs,layout:layoutFor(level,easy).id}}
+  return {dealUnits,unitsFromSymbols,levelBoard,mulberry32,KEVIN_WINDOW,solveLine,startPairsAt};
 `)();
 const game=makeGame();
 const {JOKER,KEVIN}={JOKER:'JOKER',KEVIN:'KEVIN'};
@@ -101,12 +108,14 @@ depths.sort((a,b)=>a-b);
     }
   }
   console.log(`Owl Eyes: ${found} lines found, ${gaveUp} gave up, slowest ${Math.round(slowest)}ms`)}
-// Start: every level opens with its start pairs (both cards playable and matching) and at least 12 playable cards; count shapes.
+// Start: every level opens with its start pairs (both cards playable and matching) and enough playable cards: 10 up to the jungle
+// and on Easy (the chapter shapes Monkey Head, Banana and Temple open 10-11), at least 3 on the cascade shapes from level 11
+// (few open cards on purpose); count shapes.
 {const shapes={};for(let level=1;level<=levels;level++)for(const easy of [false,true]){
   const {tiles,freePairs,layout}=game.levelBoard(level,easy),byId=new Map(tiles.map(t=>[t.id,t])),free=tiles.filter(t=>!t.blockers.length);shapes[layout]=(shapes[layout]||0)+1;
-  const want=game.START_PAIRS[easy?'easy':'normal'];if(freePairs.length!==want){problems++;console.log(`${easy?'easy ':''}level ${level}: ${freePairs.length} start pairs`)}
+  const want=game.startPairsAt(level,easy);if(freePairs.length!==want){problems++;console.log(`${easy?'easy ':''}level ${level}: ${freePairs.length} start pairs`)}
   for(const [a,b] of freePairs)if(byId.get(a).symbol!==byId.get(b).symbol||byId.get(a).blockers.length||byId.get(b).blockers.length){problems++;console.log(`${easy?'easy ':''}level ${level}: start pair ${a}/${b} not an open match`)}
-  if(free.length<12){problems++;console.log(`level ${level}: only ${free.length} playable at the start`)}}
+  if(free.length<(easy||level<=10?10:3)){problems++;console.log(`${easy?'easy ':''}level ${level}: only ${free.length} playable at the start`)}}
   console.log('Shapes dealt:',JSON.stringify(shapes))}
 kevinSpots.sort((a,b)=>a-b);console.log(`Kevin dealt before the window (fallback): ${kevinSpots.filter(x=>x<game.KEVIN_WINDOW[0]-.03).length} level(s)`);const pct=x=>`${Math.round(x*100)}%`;
 console.log(`${levels} levels: ${problems} problem(s). Kevin's place in the removal order: ${pct(kevinSpots[0])}–${pct(kevinSpots.at(-1))} (median ${pct(kevinSpots[kevinSpots.length>>1])}). Cards stacked over Kevin: min ${depths[0]}, median ${depths[depths.length>>1]}, max ${depths.at(-1)}`);

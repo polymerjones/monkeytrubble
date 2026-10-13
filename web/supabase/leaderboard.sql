@@ -81,3 +81,18 @@ revoke all on function public.player_rank(uuid) from public;
 grant execute on function public.submit_score(uuid, text, text, int, int, int, int) to anon, authenticated;
 grant execute on function public.top_players(int) to anon, authenticated;
 grant execute on function public.player_rank(uuid) to anon, authenticated;
+
+-- Added 2026-10-13. Run this part once in the SQL Editor too (it is safe to re-run the whole file).
+-- Players a score change passed: those now behind the player who were ahead before (old score < theirs < current score),
+-- nearest first, up to p_limit, plus how many were passed in all. Drives the climb screen between levels.
+create or replace function public.players_passed(p_id uuid, p_old_score int, p_limit int default 5)
+returns table (rank bigint, id uuid, name text, score int, rating int, tier text, streak int, xp int, level int, passed bigint)
+language sql stable security definer set search_path = public as $$
+  with me as (select p.score from public.players p where p.id = p_id),
+  passed as (select p.* from public.players p, me where p.id <> p_id and p.score > p_old_score and p.score < me.score)
+  select (select count(*) + 1 from public.players o where o.score > q.score), q.id, q.name, q.score, q.rating, q.tier, q.streak, q.xp, q.level,
+    (select count(*) from passed)
+  from passed q order by q.score desc, q.updated_at limit least(greatest(p_limit, 1), 20)
+$$;
+revoke all on function public.players_passed(uuid, int, int) from public;
+grant execute on function public.players_passed(uuid, int, int) to anon, authenticated;
