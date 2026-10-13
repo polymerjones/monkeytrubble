@@ -11,6 +11,8 @@
 		A10000000000000000000002 /* GameWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* GameWebView.swift */; };
 		A10000000000000000000003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000003 /* Assets.xcassets */; };
 		A10000000000000000000004 /* web in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* web */; };
+		A10000000000000000000005 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000006 /* PrivacyInfo.xcprivacy */; };
+		A10000000000000000000006 /* GameServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000009 /* GameServices.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +21,10 @@
 		A20000000000000000000003 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A20000000000000000000004 /* web */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "web"; path = "../web"; sourceTree = "<group>"; };
 		A20000000000000000000005 /* MonkeyTrubble.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MonkeyTrubble.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000000000000000000006 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		A20000000000000000000007 /* MonkeyTrubbleIOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MonkeyTrubbleIOS.entitlements; sourceTree = "<group>"; };
+		A20000000000000000000008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A20000000000000000000009 /* GameServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameServices.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -46,7 +52,11 @@
 			children = (
 				A20000000000000000000001 /* MonkeyTrubbleApp.swift */,
 				A20000000000000000000002 /* GameWebView.swift */,
+				A20000000000000000000009 /* GameServices.swift */,
 				A20000000000000000000003 /* Assets.xcassets */,
+				A20000000000000000000006 /* PrivacyInfo.xcprivacy */,
+				A20000000000000000000007 /* MonkeyTrubbleIOS.entitlements */,
+				A20000000000000000000008 /* Info.plist */,
 			);
 			path = MonkeyTrubbleIOS;
 			sourceTree = "<group>";
@@ -119,6 +129,7 @@
 			files = (
 				A10000000000000000000003 /* Assets.xcassets in Resources */,
 				A10000000000000000000004 /* web in Resources */,
+				A10000000000000000000005 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -131,6 +142,7 @@
 			files = (
 				A10000000000000000000001 /* MonkeyTrubbleApp.swift in Sources */,
 				A10000000000000000000002 /* GameWebView.swift in Sources */,
+				A10000000000000000000006 /* GameServices.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -173,6 +185,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = MonkeyTrubbleIOS/MonkeyTrubbleIOS.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
@@ -203,6 +216,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = MonkeyTrubbleIOS/MonkeyTrubbleIOS.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 976XKW42U9;

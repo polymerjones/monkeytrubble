@@ -2,7 +2,7 @@
 """Per-chapter UI themes, generated from the Jungle theme.
 
 The Jungle theme's colours are CSS variables (--jc-0, --jc-1, ...) defined in the "jungle-colors" block of index.html.
-Each chapter in CHAPTER_UI gets a block html[data-theme="jungle"][data-ui="<key>"]{...} that redefines those variables:
+Each chapter in CHAPTER_UI (and the Christmas season) gets a block html[data-theme="jungle"][data-ui="<key>"]{...} that redefines those variables:
 every Jungle colour is sorted into a family by its hue and lightness (panel greens, wood browns, gold accents; cream text,
 reds, blues and greys stay as they are) and moved to the chapter's hue for that family, keeping its lightness so contrast
 holds. index.html picks the block from CHAPTERS[].ui.
@@ -29,6 +29,8 @@ CHAPTER_UI = {
     'island':  {'panel': (182, .9, 1),   'wood': (36, .55, 1.15), 'accent': (46, 1, 1)},
     'temple':  {'panel': (42, .22, 1.05), 'wood': (30, .35, 1.05), 'accent': (45, 1.1, 1)},
     'canopy':  {'panel': (156, 1.05, .95), 'wood': (32, .95, 1),  'accent': (48, 1.15, 1)},
+    # Not a chapter: Christmas levels (CHRISTMAS in index.html). Pine-green panels, candy-red frames, gold.
+    'christmas': {'panel': (146, 1.0, .9), 'wood': (356, 1.25, 1), 'accent': (46, 1.15, 1)},
 }
 
 

@@ -15,12 +15,25 @@ struct GameWebView: UIViewRepresentable {
         let controller = WKUserContentController()
         controller.add(context.coordinator, name: "haptics")
         controller.add(context.coordinator, name: "storage")
-        // Level progress lives in UserDefaults (the web view's own storage is non-persistent) and is handed to the page before it runs.
-        if let saved = UserDefaults.standard.string(forKey: Coordinator.saveKey),
-           let data = saved.data(using: .utf8),
-           (try? JSONSerialization.jsonObject(with: data)) is [String: Any] {
+        controller.add(context.coordinator, name: "gameCenter")
+        // Debug builds (Xcode / ship) keep the page's dev mode on; Release builds (TestFlight, App Store) turn it off.
+        #if DEBUG
+        let debugBuild = true
+        #else
+        let debugBuild = false
+        #endif
+        controller.addUserScript(WKUserScript(
+            source: "window.__monkeyDebugBuild = \(debugBuild);",
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: true
+        ))
+        // Level progress lives in UserDefaults and iCloud (the web view's own storage is non-persistent); both copies are handed to
+        // the page before it runs, and the page merges them.
+        let services = context.coordinator.services
+        for (name, save) in [("__monkeySave", services.localSave), ("__monkeyCloudSave", services.cloudSave)] {
+            guard let save else { continue }
             controller.addUserScript(WKUserScript(
-                source: "window.__monkeySave = \(saved);",
+                source: "window.\(name) = \(save);",
                 injectionTime: .atDocumentStart,
                 forMainFrameOnly: true
             ))
@@ -65,6 +78,7 @@ struct GameWebView: UIViewRepresentable {
     static func dismantleUIView(_ webView: WKWebView, coordinator: Coordinator) {
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "haptics")
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "storage")
+        webView.configuration.userContentController.removeScriptMessageHandler(forName: "gameCenter")
         coordinator.detach()
     }
 
@@ -96,7 +110,9 @@ struct GameWebView: UIViewRepresentable {
     </body>
     """
 
+    @MainActor
     final class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
+        let services = GameServices()
         private weak var webView: WKWebView?
         private let lightImpact = UIImpactFeedbackGenerator(style: .light)
         private let mediumImpact = UIImpactFeedbackGenerator(style: .medium)
@@ -105,11 +121,11 @@ struct GameWebView: UIViewRepresentable {
         private let motionManager = CMMotionManager()
         private var activeObserver: NSObjectProtocol?
         private var inactiveObserver: NSObjectProtocol?
-        static let saveKey = "monkeyTrubbleSave"
         private var neutral: (turn: Double, lean: Double)?
 
         func attach(_ webView: WKWebView) {
             self.webView = webView
+            services.attach(webView)
             lightImpact.prepare()
             mediumImpact.prepare()
             notification.prepare()
@@ -119,15 +135,19 @@ struct GameWebView: UIViewRepresentable {
                 object: nil,
                 queue: .main
             ) { [weak self] _ in
-                self?.webView?.evaluateJavaScript("window.__resumeMonkeyAudio?.()")
-                self?.startMotionUpdates()
+                MainActor.assumeIsolated {
+                    self?.webView?.evaluateJavaScript("window.__resumeMonkeyAudio?.()")
+                    self?.startMotionUpdates()
+                }
             }
             inactiveObserver = NotificationCenter.default.addObserver(
                 forName: UIApplication.willResignActiveNotification,
                 object: nil,
                 queue: .main
             ) { [weak self] _ in
-                self?.motionManager.stopDeviceMotionUpdates()
+                MainActor.assumeIsolated {
+                    self?.motionManager.stopDeviceMotionUpdates()
+                }
             }
         }
 
@@ -171,13 +191,10 @@ struct GameWebView: UIViewRepresentable {
                 NotificationCenter.default.removeObserver(inactiveObserver)
             }
             motionManager.stopDeviceMotionUpdates()
+            services.detach()
             activeObserver = nil
             inactiveObserver = nil
             webView = nil
-        }
-
-        deinit {
-            detach()
         }
 
         func userContentController(
@@ -185,7 +202,11 @@ struct GameWebView: UIViewRepresentable {
             didReceive message: WKScriptMessage
         ) {
             if message.name == "storage", let json = message.body as? String {
-                UserDefaults.standard.set(json, forKey: Coordinator.saveKey)
+                services.store(json)
+                return
+            }
+            if message.name == "gameCenter", let body = message.body as? [String: Any] {
+                services.handle(body)
                 return
             }
             guard message.name == "haptics", let event = message.body as? String else { return }

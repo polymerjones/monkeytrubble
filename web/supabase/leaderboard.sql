@@ -19,6 +19,36 @@ create table if not exists public.players (
   updated_at  timestamptz not null default now()
 );
 create index if not exists players_score_idx on public.players (score desc, updated_at);
+-- Added 2026-10-13: the score before the latest submit (players_passed reads it, so the phone never supplies it) and whether the
+-- name is hidden after reports (names shown as "Monkey xxxx" until the player picks a new one).
+alter table public.players add column if not exists prev_score int;
+alter table public.players add column if not exists name_hidden boolean not null default false;
+
+-- Name filter (App Store guideline 1.2): a name is refused if, lowercased with common look-alikes swapped (0->o, 1->i, 3->e,
+-- 4->a, 5->s, 7->t, @->a, $->s) and everything but letters removed, it contains one of these, or has "nazi" as a whole word (so
+-- Nazir passes). Same rules as NAME_BLOCKLIST / nameAllowed in index.html.
+create or replace function public.name_ok(p_name text) returns boolean language sql immutable as $$
+  select not exists (
+    select 1 from unnest(array['fuck','shit','cunt','bitch','nigg','fagg','faggot','rapist','porn','slut','whore','retard',
+      'hitler','kike','chink','twat','wank','pussy','penis','vagin','dildo','jizz','asshole','bastard','motherf'])
+      as w(word)
+    where regexp_replace(translate(lower(coalesce(p_name, '')), '013457@$', 'oieastas'), '[^a-z]', '', 'g') like '%' || w.word || '%'
+  ) and coalesce(p_name, '') !~* '(^|[^a-z])nazis?([^a-z]|$)'
+$$;
+
+-- Reports: one per reporter per player. Three different reporters hide the name.
+create table if not exists public.name_reports (
+  reporter   uuid not null references public.players(id) on delete cascade,
+  player     uuid not null references public.players(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (reporter, player)
+);
+alter table public.name_reports enable row level security;
+revoke all on public.name_reports from anon, authenticated;
+-- How a name is shown: hidden names become "Monkey" plus four characters of the player's id.
+create or replace function public.shown_name(p public.players) returns text language sql stable as $$
+  select case when p.name_hidden then 'Monkey ' || upper(left(p.id::text, 4)) else p.name end
+$$;
 
 alter table public.players enable row level security;
 revoke all on public.players from anon, authenticated;
@@ -42,6 +72,7 @@ declare
 begin
   if char_length(coalesce(p_secret, '')) < 16 then raise exception 'bad secret'; end if;
   if char_length(clean_name) not between 2 and 16 then raise exception 'bad name'; end if;
+  if not name_ok(clean_name) then raise exception 'name not allowed'; end if;
   if p_level < 1 or p_level > 100000 or p_rating < 0 or p_xp < 0 or p_streak < 0 or p_streak > 100000 then raise exception 'bad values'; end if;
   if p_rating > 200 * (1 + p_level / 10.0) then raise exception 'rating out of range'; end if;
   new_score := round(p_rating * (1 + least(p_streak, 10) * 0.01));
@@ -52,9 +83,12 @@ begin
     values (p_id, crypt(p_secret, gen_salt('bf')), clean_name, p_rating, new_score, p_xp, p_streak, p_level, tier_for(p_rating));
   else
     if existing.secret_hash <> crypt(p_secret, existing.secret_hash) then raise exception 'bad secret'; end if;
-    update public.players set name = clean_name, rating = p_rating, score = new_score, xp = greatest(existing.xp, p_xp),
-      streak = p_streak, level = greatest(existing.level, p_level), tier = tier_for(p_rating), updated_at = now()
+    update public.players set name = clean_name, rating = p_rating, score = new_score, prev_score = existing.score,
+      xp = greatest(existing.xp, p_xp), streak = p_streak, level = greatest(existing.level, p_level), tier = tier_for(p_rating),
+      name_hidden = existing.name_hidden and existing.name = clean_name, updated_at = now()
     where id = p_id;
+    -- A new name starts clean.
+    if existing.name <> clean_name then delete from public.name_reports where player = p_id; end if;
   end if;
   return query select (select count(*) + 1 from public.players p where p.score > new_score), new_score, tier_for(p_rating);
 end $$;
@@ -63,7 +97,7 @@ end $$;
 create or replace function public.top_players(p_limit int default 50)
 returns table (rank bigint, id uuid, name text, score int, rating int, tier text, streak int, xp int, level int)
 language sql stable security definer set search_path = public as $$
-  select rank() over (order by p.score desc), p.id, p.name, p.score, p.rating, p.tier, p.streak, p.xp, p.level
+  select rank() over (order by p.score desc), p.id, shown_name(p), p.score, p.rating, p.tier, p.streak, p.xp, p.level
   from public.players p order by p.score desc, p.updated_at limit least(greatest(p_limit, 1), 200)
 $$;
 
@@ -71,7 +105,7 @@ $$;
 create or replace function public.player_rank(p_id uuid)
 returns table (rank bigint, id uuid, name text, score int, rating int, tier text, streak int, xp int, level int)
 language sql stable security definer set search_path = public as $$
-  select (select count(*) + 1 from public.players o where o.score > p.score), p.id, p.name, p.score, p.rating, p.tier, p.streak, p.xp, p.level
+  select (select count(*) + 1 from public.players o where o.score > p.score), p.id, shown_name(p), p.score, p.rating, p.tier, p.streak, p.xp, p.level
   from public.players p where p.id = p_id
 $$;
 
@@ -82,17 +116,35 @@ grant execute on function public.submit_score(uuid, text, text, int, int, int, i
 grant execute on function public.top_players(int) to anon, authenticated;
 grant execute on function public.player_rank(uuid) to anon, authenticated;
 
--- Added 2026-10-13. Run this part once in the SQL Editor too (it is safe to re-run the whole file).
--- Players a score change passed: those now behind the player who were ahead before (old score < theirs < current score),
--- nearest first, up to p_limit, plus how many were passed in all. Drives the climb screen between levels.
-create or replace function public.players_passed(p_id uuid, p_old_score int, p_limit int default 5)
+-- Added 2026-10-13. Re-running the whole file is safe.
+-- Players the latest submit passed: those now behind the player who were ahead before (previous score < theirs < current score),
+-- nearest first, up to p_limit, plus how many were passed in all. Both scores are the server's own (prev_score is kept by
+-- submit_score), so the result is bounded by a real score change. Drives the climb screen between levels.
+drop function if exists public.players_passed(uuid, int, int);
+create or replace function public.players_passed(p_id uuid, p_limit int default 5)
 returns table (rank bigint, id uuid, name text, score int, rating int, tier text, streak int, xp int, level int, passed bigint)
 language sql stable security definer set search_path = public as $$
-  with me as (select p.score from public.players p where p.id = p_id),
-  passed as (select p.* from public.players p, me where p.id <> p_id and p.score > p_old_score and p.score < me.score)
-  select (select count(*) + 1 from public.players o where o.score > q.score), q.id, q.name, q.score, q.rating, q.tier, q.streak, q.xp, q.level,
+  with me as (select p.score, p.prev_score from public.players p where p.id = p_id and p.prev_score is not null),
+  passed as (select p.* from public.players p, me where p.id <> p_id and p.score > me.prev_score and p.score < me.score)
+  select (select count(*) + 1 from public.players o where o.score > q.score), q.id, shown_name(q), q.score, q.rating, q.tier, q.streak, q.xp, q.level,
     (select count(*) from passed)
   from passed q order by q.score desc, q.updated_at limit least(greatest(p_limit, 1), 20)
 $$;
-revoke all on function public.players_passed(uuid, int, int) from public;
-grant execute on function public.players_passed(uuid, int, int) to anon, authenticated;
+
+-- Report a player's name. The reporter proves who they are with their secret; three different reporters hide the name.
+create or replace function public.report_player(p_reporter uuid, p_secret text, p_player uuid)
+returns void language plpgsql security definer set search_path = public, extensions as $$
+declare me public.players;
+begin
+  select * into me from public.players where id = p_reporter;
+  if not found or me.secret_hash <> crypt(p_secret, me.secret_hash) then raise exception 'bad secret'; end if;
+  if p_reporter = p_player then return; end if;
+  insert into public.name_reports (reporter, player) values (p_reporter, p_player) on conflict do nothing;
+  update public.players set name_hidden = true
+  where id = p_player and (select count(*) from public.name_reports r where r.player = p_player) >= 3;
+end $$;
+
+revoke all on function public.players_passed(uuid, int) from public;
+revoke all on function public.report_player(uuid, text, uuid) from public;
+grant execute on function public.players_passed(uuid, int) to anon, authenticated;
+grant execute on function public.report_player(uuid, text, uuid) to anon, authenticated;

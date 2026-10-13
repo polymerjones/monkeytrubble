@@ -48,6 +48,14 @@ Use the floating switcher or the left/right arrow keys to compare them. Once a d
 
 Pending playtest.
 
+## Release builds, ads, iCloud and Game Center
+
+- **Dev mode follows the build:** Debug builds (Xcode, `/ship`) have dev mode on. Release builds (TestFlight, App Store) have it off, because the app tells the page which kind of build it is (`window.__monkeyDebugBuild`). In a browser, dev mode is on only on a local server or file://.
+- **Ads:** `ADS_LIVE` is off for 1.0. With it off, each reward (resume, shuffle, undo, Owl Eyes) is free once per level (`FREE_REWARDS_PER_LEVEL`) and the buttons say **(Free)**. The ad plumbing stays in place: `requestReward` → `adProvider.show()`. To add real ads, swap `mockAdProvider` for the SDK's rewarded-ad call and set `ADS_LIVE=true`; the buttons go back to **(Watch Ad)**. Dev mode always shows the **YOUR AD HERE** simulator.
+- **iCloud save sync:** the save is stored on the phone and in the iCloud key-value store (`GameServices.swift`). At launch the page merges the two copies (`mergeSaves`): the furthest level, the best best-times, the most XP and the latest streak win. The leaderboard identity comes from the copy with more play. If another device moves the save on, it's folded in while the game runs.
+- **Game Center:** the app signs the player in at launch and offers their Game Center nickname as the default name. Scores go to two leaderboards, which must exist in App Store Connect with these IDs: `monkeytrubble.rating` (the leaderboard score) and `monkeytrubble.level` (highest level cleared). The Game Center button sits bottom-left on the home screen.
+- **App Store basics:** `PrivacyInfo.xcprivacy` (privacy manifest: no tracking; leaderboard ID, nickname and scores for app functionality; UserDefaults reason CA92.1), `MonkeyTrubbleIOS.entitlements` (Game Center, iCloud key-value store) and `ITSAppUsesNonExemptEncryption = NO` in `Info.plist`.
+
 ## Online leaderboard (Supabase)
 
 1. In the Supabase dashboard, open **SQL Editor → New query**, paste `supabase/leaderboard.sql` and run it.
@@ -57,6 +65,8 @@ Pending playtest.
 **Climb screen:** when a clear moves you past other players, tapping NEXT LEVEL first shows your row rising past each of them, with a haptic tick for each one. It shows at most every 5 levels (`CLIMB_EVERY`), plus at every chapter end and after a well-played level (a new record or a ×8 chain). It needs the `players_passed` function at the end of `supabase/leaderboard.sql`. Re-run the file once to add it; until then the climb screen just doesn't appear.
 
 Players have no login: each install gets a random id and a private secret (stored in the save), and only the SQL functions can write scores.
+
+**Names and moderation (App Store guideline 1.2):** offensive names are refused both on the phone (`nameAllowed`) and on the server (`name_ok`), using the same word list. Tapping another player's row on the board offers **REPORT NAME** and **HIDE PLAYER**. Hiding is per phone (`progress.hiddenPlayers`). A report also hides the player locally, and after three different players report a name it shows as "Monkey XXXX" for everyone until that player picks a new name. The climb screen's `players_passed` reads the previous score from the server's own records (`prev_score`), never from the phone.
 
 ## Halloween levels
 
@@ -72,6 +82,19 @@ To add a Halloween card:
 Halloween levels also swap some sounds through the `HALLOWEEN_SFX` map. Each entry maps a regular sound key to a list of Halloween sounds, and when a list has several files, each play picks one at random. The swapped sounds are card grabs, the locked-card buzz, level start, shuffle, game over and the Joker clear. Owl Eyes plays `hwOwl` (a howl). A Good Eye combo plays a scream (`hwScream`) instead of the usual sting, and its praise voiceover is pitched down (`PRAISE_HORROR_RATE`) into the horror reverb. The Joker shows as the Joker Howler, from the `halloween:{image,name,foil}` variant on its `CARD_DATA` entry. To add a sound, put the file in `audio/halloween/`, give it a key in `SOUND_FILES` and a loudness trim in `MIX_DB`, then add the key to the right `HALLOWEEN_SFX` list. On Halloween levels the Owl Eyes glow toxic green.
 
 To add a Halloween music track, put it in `audio/music/halloween/` and add it to `MUSIC.halloweenRelaxed` or `MUSIC.halloweenCompetitive`. Use `trim` (in dB) to match it to -15.8 LUFS.
+
+## Christmas
+
+Christmas mode is off for players until it's finished. Turn it on with the **CHRISTMAS** dev switch, or for everyone by setting `CHRISTMAS_LIVE=true`, which runs it from Dec 1 to Jan 6. While it's on, every level is a Christmas level:
+
+- **Scene:** one of Paul's two Christmas backgrounds (`art/seasons/christmas/bg1.jpg` and `bg2.jpg`, sources in `../source/art/seasons/christmas/`), alternating by level, with falling snowflakes.
+- **UI:** a red, pine-green and gold UI theme (`christmas` in `tools/chapter-themes.py`).
+- **Sparkles:** red, green, gold and white (`CHRISTMAS_DUST`).
+
+Still to come from Paul:
+- **Music:** put tracks in `audio/music/christmas/` and list them in `MUSIC.christmasRelaxed` / `MUSIC.christmasCompetitive`, trimmed to -15.8 LUFS. Until then Christmas levels play the chapter's music.
+- **Sounds:** add files to `SOUND_FILES` and map regular sounds to them in `CHRISTMAS_SFX`, the same way as `HALLOWEEN_SFX`.
+- **Cards:** Christmas levels deal the regular cards for now. Christmas cards will need a deck and card-art hookup like the Halloween one.
 
 ## Chapter art and the Expedition set
 
