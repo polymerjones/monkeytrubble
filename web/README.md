@@ -42,6 +42,8 @@ The deck is built from `../source/art/raw images/` (kept outside the app bundle;
 
 `data/monkey-species.json` is the reusable knowledge and media-source database. It currently contains 30 primate profiles ingested from the chaptered transcript of Animal Insider’s “Weir Sound of Different Monkeys (Primates),” with scientific names, concise facts, source provenance, chapter ranges, and candidate animal-call windows. Clean narration-section stills are stored in `../source/art/raw images/video-stills/`; rough MP3 call selects, cut from the opening pre-narration windows with short edge fades, are stored in `audio/video-calls/`. The video narration is recorded as a discovery source and should not be treated as an authoritative taxonomic reference without independent verification.
 
+Audio the game doesn't play is kept out of the app in `../source/audio-unused/` (old combo loops, unused pick sounds, and the species calls no card uses). The species database still lists those calls by their old `video-calls/` paths.
+
 Use the floating switcher or the left/right arrow keys to compare them. Once a direction wins, record the decision below and replace this prototype with a production implementation.
 
 ## Verdict
