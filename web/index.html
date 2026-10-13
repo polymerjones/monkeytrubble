@@ -1065,7 +1065,8 @@
     }
     // Progress persists through the iOS app's native store (injected as window.__monkeySave) or localStorage in a browser.
     const SAVE_KEY='monkeyTrubble.save.v1',params=new URLSearchParams(location.search);
-    // Hidden developer mode (?dev, or three quick taps on the home logo): exposes trial switches that players never see.
+    // Hidden developer mode (?dev, or three quick taps on the home logo): exposes trial switches that players never see. In the iOS
+    // app the logo taps work only in Debug and TestFlight builds (window.__monkeyDevTaps); the App Store build ignores them.
     // DEBUG_DEFAULTS: Paul's debugging build. Dev mode starts on and the season resets to Every Other each launch. The iOS app sets
     // window.__monkeyDebugBuild from its build configuration (Debug: true, Release/TestFlight/App Store: false), so player builds can't
     // ship with it on; a browser gets it on a local server or file:// only.
@@ -2189,7 +2190,7 @@
       const probe=(src,apply)=>{const img=new Image();img.onload=()=>apply(img);img.src=src};
       pickHomeBg();
       probe('art/home/button.png',()=>{$('#homePlay').style.backgroundImage="url('art/home/button.png')"});
-      let logoTaps=[];$('#homeLogo').addEventListener('click',()=>{const now=performance.now();logoTaps=logoTaps.filter(t=>now-t<1500).concat(now);if(logoTaps.length<3)return;logoTaps=[];setDevMode(!devMode);$('#homeByline').textContent=devMode?'DEV MODE ON':'DEV MODE OFF'});
+      let logoTaps=[];$('#homeLogo').addEventListener('click',()=>{if(window.__monkeyDevTaps===false)return;const now=performance.now();logoTaps=logoTaps.filter(t=>now-t<1500).concat(now);if(logoTaps.length<3)return;logoTaps=[];setDevMode(!devMode);$('#homeByline').textContent=devMode?'DEV MODE ON':'DEV MODE OFF'});
     }
     $('#homeBtn').onclick=showHome;$('#winHome').onclick=showHome;$('#failHome').onclick=()=>{startLevel(state.level,{silent:true});pendingLevelStart=false;showHome()};$('#homePlay').onclick=playFromHome;$('#homeSound').onclick=()=>{$('#sound').click();$('#homeSound').textContent=soundEnabled?'♪':'♩'};
     $('#shuffle').onclick=()=>{if(state.shufflesLeft<=0)return offerReward('shuffle');clearHint(true);reshuffle()};$('#hint').onclick=()=>{if(state.hintsLeft<=0)return offerReward('hint');useHint()};$('#undo').onclick=()=>{if(state.undosLeft<=0)return offerReward('undo');undo()};$('#continueLevel').onclick=()=>requestReward('continue');$('#overlayUndo').onclick=undo;$('#adShuffle').onclick=()=>requestReward('shuffle').then(({status})=>{if(status==='completed')shuffleAfterStuck()});$('#adUndo').onclick=()=>requestReward('undo').then(({status})=>{if(status==='completed')undo()});$('#retryLevel').onclick=()=>startLevel(state.level,{retry:true});$('#nextLevel').onclick=async()=>{const s=state,next=s.level+1,btn=$('#nextLevel');if(btn.disabled)return;btn.disabled=true;const c=await Promise.race([s.climbScreen,new Promise(r=>setTimeout(r,1500))]);if(s!==state)return;if(c)await showClimb(c);if(s!==state)return;playLevelTransition(()=>startLevel(next),{prepare:()=>decodeLevelImages(next)})};$('#sound').onclick=()=>{soundEnabled=!soundEnabled;setTimeout(syncAmbience,0);$('#sound').textContent=soundEnabled?'♪':'♩';$('#sound').title=soundEnabled?'Sound on':'Sound off';$('#sound').setAttribute('aria-label',$('#sound').title);$('#sound').classList.toggle('active',soundEnabled);if(soundEnabled){if(audioUnlocked)music.play().catch(()=>{});playSound('control',{volume:.4})}else music.pause()};$('#prevVariant').onclick=()=>cycleVariant(-1);$('#nextVariant').onclick=()=>cycleVariant(1);
