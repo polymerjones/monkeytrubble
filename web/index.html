@@ -879,7 +879,12 @@
     // iOS app: the home music starts as soon as its own file is ready, while the rest of the game is still loading (it used to wait for every asset).
     function startHomeMusicEarly(){const el=music,go=()=>{if(el!==music||!el.paused||!userMusicGain)return;audioContext?.resume().catch(()=>{});setNowPlaying();fadeInMusic(el);el.play().catch(()=>{})};if(el.readyState>=2)go();else el.addEventListener('loadeddata',go,{once:true})}
     // Now Playing (lock screen, Dynamic Island): name the game and show its icon instead of a blank entry.
-    function setNowPlaying(){try{if('mediaSession' in navigator&&!navigator.mediaSession.metadata)navigator.mediaSession.metadata=new MediaMetadata({title:'Monkey Trubble',artwork:[{src:new URL('icons/icon-512.png',location.href).href,sizes:'512x512',type:'image/png'},{src:new URL('icons/icon-192.png',location.href).href,sizes:'192x192',type:'image/png'}]})}catch{}}
+    // The artwork is a data: URL, since the page may be a file:// URL. Inside the iOS app this has no effect (2026-10-13): the web view
+    // shows its music as an untitled Now Playing entry whatever the page or the app sets. See RELEASE-CHECKLIST.md.
+    let nowPlayingSet=false;
+    function setNowPlaying(){if(nowPlayingSet||!('mediaSession' in navigator)||typeof MediaMetadata==='undefined')return;nowPlayingSet=true;
+      const art=src=>readArrayBuffer(src).then(buf=>{let bin='';const bytes=new Uint8Array(buf);for(let i=0;i<bytes.length;i+=8192)bin+=String.fromCharCode(...bytes.subarray(i,i+8192));return`data:image/png;base64,${btoa(bin)}`});
+      Promise.all([art('icons/icon-512.png'),art('icons/icon-192.png')]).then(([a512,a192])=>{navigator.mediaSession.metadata=new MediaMetadata({title:'Monkey Trubble',artist:'Polymer Jones',artwork:[{src:a512,sizes:'512x512',type:'image/png'},{src:a192,sizes:'192x192',type:'image/png'}]})}).catch(()=>{nowPlayingSet=false})}
     function resumeMonkeyAudio(){if(audioContext?.state==='suspended')audioContext.resume().catch(()=>{});if(soundEnabled&&audioUnlocked&&document.visibilityState==='visible')music.play().catch(()=>{})}
     window.__resumeMonkeyAudio=resumeMonkeyAudio;document.addEventListener('visibilitychange',()=>{syncAmbience();if(!document.hidden)ambient.wake();if(document.hidden){music.pause();if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}}else{resumeMonkeyAudio();if(state.clock.resume){state.clock.resume=false;startClock()}}});
     function setMusicLevel(level,smoothing){if(musicGain)musicGain.gain.setTargetAtTime(level,audioContext.currentTime,smoothing);else music.volume=level}
