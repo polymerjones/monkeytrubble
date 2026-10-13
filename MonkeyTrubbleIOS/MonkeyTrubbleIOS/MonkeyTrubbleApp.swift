@@ -14,7 +14,7 @@ struct MonkeyTrubbleApp: App {
     var body: some Scene {
         WindowGroup {
             GameWebView()
-                .background(Color.black)
+                .background(Color(launchBackground))
                 .ignoresSafeArea()
         }
     }

@@ -15,12 +15,12 @@ Builds `MonkeyTrubbleIOS` (which bundles `web/`), installs it on the paired iPho
    ```
    If it fails, stop and fix the error before building.
 
-2. **Find the iPhone.** The usual device is PolyiPhonePro (iPhone 14 Pro Max), id `A73156EF-387D-5EEE-A590-A7CD391914B7`. Confirm it's available:
+2. **Find the iPhone.** The usual device is PolyiPhonePro (iPhone 14 Pro Max), UDID `00008120-000C291E1E78C01E` (since 2026-10-13; the older CoreDevice id `A73156EF-387D-5EEE-A590-A7CD391914B7` no longer shows). Confirm it's available:
    ```sh
    xcrun devicectl list devices
    ```
    If that id isn't listed as `available (paired)`, use the id of the connected iPhone that is. If none is available, tell the user to connect and unlock the phone. Don't build.
-
+   If this or any Xcode command says the Xcode license hasn't been agreed to (common after an Xcode update), stop and ask the user to run `sudo xcodebuild -license accept` in Terminal. It needs their password.
 3. **Build** (signing is automatic, team `976XKW42U9`):
    ```sh
    cd <repo root>/MonkeyTrubbleIOS && xcodebuild -project MonkeyTrubbleIOS.xcodeproj -scheme MonkeyTrubble -configuration Debug -destination 'platform=iOS,id=<DEVICE_ID>' -derivedDataPath build/DerivedData -allowProvisioningUpdates build 2>&1 | grep -E "error|BUILD" | tail -5
