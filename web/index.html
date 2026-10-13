@@ -744,7 +744,8 @@
     // Christmas sound swaps, same shape as HALLOWEEN_SFX (a regular sound key -> Christmas sound keys in SOUND_FILES). Empty for now.
     const CHRISTMAS_SFX={};
     const SEASON_SFX={halloween:HALLOWEEN_SFX,christmas:CHRISTMAS_SFX};
-    const MUSIC_VOLUME=Math.pow(10,-7/20),MUSIC_DUCK=Math.pow(10,-14/20),CARD_SELECT_GAIN=.85;
+    // Music sits at -4 dB (was -7; Paul 2026-10-13: the music was too quiet next to the sound effects).
+    const MUSIC_VOLUME=Math.pow(10,-4/20),MUSIC_DUCK=Math.pow(10,-14/20),CARD_SELECT_GAIN=.85;
     // Player volume sliders (Settings), as gains: (percent/100)^2 so the slider feels even. Set from progress by applyVolumes.
     let userMusicGain=1,userSfxGain=1;const musicLevel=()=>MUSIC_VOLUME*userMusicGain;
     // Per-sound trims in dB, from measured loudness, so each category plays at one level (at the volumes the calls already use):
@@ -772,7 +773,8 @@
       // The Savannah's competitive music: percussion first (the guide's "rhythmic African-inspired percussion").
       savannah:[{src:'audio/music/competitive-4-rhythmic-tension.mp3',trim:-.5},{src:'audio/music/competitive-1.mp3',trim:-.6}],
       // Paul's 2026-10-11 tracks (source/newmus): first drafts he will crop and refine; trims level them to about -15.8 LUFS like the rest.
-      bridge:[{src:'audio/music/ch1-the-bridge.mp3',trim:.2},{src:'audio/music/competitive-2.mp3',trim:-1.8}],
+      // The Bridge's track starts slow (Paul 2026-10-13), so regular competitive tracks share the chapter with it.
+      bridge:[{src:'audio/music/ch1-the-bridge.mp3',trim:.2},{src:'audio/music/competitive-2.mp3',trim:-1.8},{src:'audio/music/competitive-1.mp3',trim:-.6},{src:'audio/music/competitive-3.mp3',trim:-1.2}],
       jungle:[{src:'audio/music/jungle.mp3',trim:1.1,start:35},{src:'audio/music/competitive-1.mp3',trim:-.6}],
       gorilla:[{src:'audio/music/gorilla-roar-1.mp3',trim:-2.4},{src:'audio/music/gorilla-roar-2.mp3',trim:-1.1},{src:'audio/music/gorilla-roar-3.mp3',trim:.2},{src:'audio/music/gorilla-roar-4.mp3',trim:-3.6},{src:'audio/music/gorilla-roar-5.mp3',trim:-.7}],
       primate:[{src:'audio/music/primate-howl-a.mp3',trim:-.3},{src:'audio/music/primate-howl-b.mp3',trim:-2.3},{src:'audio/music/competitive-4-rhythmic-tension.mp3',trim:-.5},{src:'audio/music/competitive-3.mp3',trim:-1.2}],
