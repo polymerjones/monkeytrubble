@@ -85,14 +85,14 @@ To add a Halloween music track, put it in `audio/music/halloween/` and add it to
 
 ## Christmas
 
-Christmas mode is off for players until it's finished. Turn it on with the **CHRISTMAS** dev switch, or for everyone by setting `CHRISTMAS_LIVE=true`, which runs it from Dec 1 to Jan 6. While it's on, every level is a Christmas level:
+Christmas mode is off for players until it's finished. Turn it on with the **SEASON** dev switch, or for everyone by setting `CHRISTMAS_LIVE=true`, which runs it from Dec 1 to Jan 6. SEASON has two Christmas settings. **CHRISTMAS LEVELS** makes every level a Christmas level. **CHRISTMAS (FULL)** (which is what the live season uses) also makes the home screen Christmassy, with the Christmas home music, Settings music, background, falling snow and UI colours. The debug build resets SEASON to Every Other at each launch. While it's on, every level is a Christmas level:
 
-- **Scene:** one of Paul's two Christmas backgrounds (`art/seasons/christmas/bg1.jpg` and `bg2.jpg`, sources in `../source/art/seasons/christmas/`), alternating by level, with falling snowflakes.
+- **Scene:** one of Paul's two Christmas backgrounds, alternating by level. `../source/art/chapters/split-layers.py christmas` gives them a snowy grade (shadows lifted into a cold white haze, lower contrast) and splits them into far, mid and near parallax layers like the chapters, plus `flat.jpg`, the whole graded picture, for the full-Christmas home screen. `tools/make-card-images.sh` copies them to `art/seasons/christmas/<n>/`. Snowflakes blow across the scene on a gusting wind.
 - **UI:** a red, pine-green and gold UI theme (`christmas` in `tools/chapter-themes.py`).
 - **Sparkles:** red, green, gold and white (`CHRISTMAS_DUST`).
+- **Music:** Paul's tracks are in `audio/music/christmas/`, trimmed to -15.8 LUFS. In full Christmas, the home screen plays `xmasmonkey2best` (`CHRISTMAS_HOME`) and Settings plays `xmasmonkey2better` (`CHRISTMAS_SETTINGS`). On levels, Competitive plays only `xmasmonkey2best`, and Relaxed shuffles the other four. Long combos tighten the tone instead of switching to the jungle combo loop, so the Christmas music keeps playing.
 
 Still to come from Paul:
-- **Music:** put tracks in `audio/music/christmas/` and list them in `MUSIC.christmasRelaxed` / `MUSIC.christmasCompetitive`, trimmed to -15.8 LUFS. Until then Christmas levels play the chapter's music.
 - **Sounds:** add files to `SOUND_FILES` and map regular sounds to them in `CHRISTMAS_SFX`, the same way as `HALLOWEEN_SFX`.
 - **Cards:** Christmas levels deal the regular cards for now. Christmas cards will need a deck and card-art hookup like the Halloween one.
 

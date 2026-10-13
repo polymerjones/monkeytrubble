@@ -3,6 +3,7 @@
 Run from this folder with a Python that has torch, transformers, opencv-python-headless and Pillow:
     python split-layers.py            # every chapter
     python split-layers.py 3 7        # just these chapters
+    python split-layers.py christmas  # the two Christmas scenes (../seasons/christmas/christmas-<n>.png -> layers/<n>/)
 Reads ch<n>_*.png here and writes layers/<n>/far.jpg, mid.webp, near.webp (and water.png for chapters with
 animated water). web/tools/make-card-images.sh copies layers/<n>/ into web/art/chapters/<n>/.
 
@@ -23,6 +24,10 @@ from PIL import Image, ImageFilter
 CHAPTERS = {
     1: {}, 2: {}, 3: dict(ground=.60, water='rows', mid_min=.16), 4: {}, 5: {}, 6: {},
     7: dict(ground=.52, water='color'), 8: {}, 9: {}, 10: {},
+}
+# Seasonal scenes: source picture, output folder, and snow (strength of the snowy grade, see snow_grade).
+SEASONS = {
+    'christmas': [dict(src=f'../seasons/christmas/christmas-{n}.png', out=f'../seasons/christmas/layers/{n}', snow=.34) for n in (1, 2)],
 }
 MID_PCT, NEAR_PCT = 40, 82          # depth percentiles where the mid and near bands start
 MID_MIN, NEAR_MIN = .2, .5          # ...but never closer to the far end than this (depth is 0 far to 1 near)
@@ -47,6 +52,17 @@ def soften(rgb, contrast, blur, lift):
     rgb = (rgb - mean) * contrast + mean
     rgb = rgb * (1 - lift) + (mean * .5 + 235 * .5) * lift          # lift toward a light version of the scene's own colour
     return np.array(Image.fromarray(rgb.clip(0, 255).astype('uint8')).filter(ImageFilter.GaussianBlur(blur)))
+
+def snow_grade(img, k):
+    """A snowy, wintry grade for a whole picture: shadows lifted toward a cold white haze (the darker a pixel, the more), a little
+    less contrast and saturation. Keeps the highlights (fairy lights, sun) bright. k is the strength (0 = none)."""
+    rgb = img.astype('float32'); lum = (rgb @ np.array([.299, .587, .114], 'float32'))[..., None] / 255
+    haze = np.array([214, 224, 238], 'float32')
+    rgb = rgb + (haze - rgb) * k * (1 - lum) ** 1.6
+    grey = (rgb @ np.array([.299, .587, .114], 'float32'))[..., None]
+    rgb = grey + (rgb - grey) * (1 - .25 * k)
+    m = rgb.mean(axis=(0, 1)); rgb = (rgb - m) * (1 - .3 * k) + m
+    return rgb.clip(0, 255).astype('uint8')
 
 def water_mask(img, H, W, cfg):
     g = int(H * cfg['ground'])
@@ -100,9 +116,10 @@ def inpaint(img, hole):
     m = cv2.GaussianBlur(hole.astype('float32') / 255, (0, 0), 2)[..., None]
     return (img * (1 - m) + fill * m).astype('float32')
 
-def split(n):
-    src = glob.glob(f'ch{n}_*.png')[0]; cfg = CHAPTERS[n]
+def split(n, src=None, out=None, cfg=None):
+    src = src or glob.glob(f'ch{n}_*.png')[0]; cfg = CHAPTERS[n] if cfg is None else cfg; out = out or f'layers/{n}'
     img = np.array(Image.open(src).convert('RGB')); H, W = img.shape[:2]
+    if cfg.get('snow'): img = snow_grade(img, cfg['snow'])
     v = cv2.GaussianBlur(depth(Image.fromarray(img)).astype('float32'), (0, 0), 3)
     # Percentile bands, with a floor so open scenes (distant mountains, sky) stay on the far layer.
     t1, t2 = max(np.percentile(v, MID_PCT), cfg.get('mid_min', MID_MIN)), max(np.percentile(v, NEAR_PCT), NEAR_MIN)
@@ -120,7 +137,7 @@ def split(n):
     far = np.array(Image.fromarray(far.astype('uint8')).filter(ImageFilter.GaussianBlur(1.6))).astype('float32')
     far = far * .88 + (far.mean(axis=(0, 1)) * .5 + 235 * .5) * .12
     mid_rgb = inpaint(img, cv2.dilate(((near > .5) * 255).astype('uint8'), np.ones((9, 9), np.uint8)))
-    out = f'layers/{n}'; os.makedirs(out, exist_ok=True)
+    os.makedirs(out, exist_ok=True)
     for f in ('near.webp', 'water.png'):
         if os.path.exists(f'{out}/{f}'): os.remove(f'{out}/{f}')
     Image.fromarray(soften(far.clip(0, 255), .72, 1.4, .08)).save(f'{out}/far.jpg', quality=82)
@@ -130,9 +147,12 @@ def split(n):
         Image.fromarray(rgba, 'RGBA').save(f'{out}/{name}.webp', quality=84, method=6)
     if wm is not None:                       # alpha mask of the water, for the ripple canvas
         Image.fromarray(np.dstack([np.full((H, W), 255, 'uint8'), (wm * 255).astype('uint8')]), 'LA').save(f'{out}/water.png', optimize=True)
-    print(f'ch{n}: mid {100 * (mid > .5).mean():.0f}%  near {100 * (near > .5).mean():.0f}%' + ('  water' if wm is not None else ''))
+    if cfg.get('snow'): Image.fromarray(img).save(f'{out}/flat.jpg', quality=84)     # the whole graded picture (home screen)
+    print(f'{n}: mid {100 * (mid > .5).mean():.0f}%  near {100 * (near > .5).mean():.0f}%' + ('  water' if wm is not None else ''))
 
 if __name__ == '__main__':
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    for n in [int(a) for a in sys.argv[1:]] or sorted(CHAPTERS):
-        split(n)
+    for a in sys.argv[1:] or sorted(CHAPTERS):
+        if a in SEASONS:
+            for cfg in SEASONS[a]: split(cfg['out'], cfg['src'], cfg['out'], cfg)
+        else: split(int(a))

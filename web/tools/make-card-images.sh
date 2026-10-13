@@ -76,4 +76,9 @@ for src in ../source/art/chapters/ch*_*.png; do
     sips -s format jpeg -s formatOptions 80 "$src" --out "art/chapters/$n/far.jpg" >/dev/null
   fi
 done
+# Christmas scenes: split-layers.py christmas makes ../source/art/seasons/christmas/layers/<n>/ (far, mid, near and flat.jpg,
+# the whole graded picture for the home screen); copied as they are.
+for d in ../source/art/seasons/christmas/layers/*/; do
+  n=$(basename "$d"); rm -rf "art/seasons/christmas/$n" && mkdir -p "art/seasons/christmas/$n" && cp "$d"* "art/seasons/christmas/$n/"
+done
 echo "thumb: $(ls cards/thumb | wc -l | tr -d ' ')  hero: $(ls cards/hero | wc -l | tr -d ' ')"
