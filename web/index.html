@@ -606,7 +606,10 @@
     // Full Christmas (SEASON: CHRISTMAS (FULL), and the live season) also dresses the home screen: Christmas home music and Settings music
     // (CHRISTMAS_HOME/CHRISTMAS_SETTINGS), the Christmas background and the Christmas UI colours.
     const CHRISTMAS_LIVE=false,christmasFull=()=>trial('pack')==='christmas'||CHRISTMAS_LIVE&&(d=>d>='12-01'||d<='01-06')(localDate().slice(5)),christmasOn=()=>trial('pack')==='christmasLevels'||christmasFull();
-    function levelPack(level){if(christmasOn())return'christmas';if(!HALLOWEEN_DECK.length)return'regular';const mode=trial('pack');if(mode==='halloween'||mode==='skin')return'halloween';if(mode==='regular'||level<=1)return'regular';if(mode==='alternate')return level%2===0?'halloween':'regular';return mulberry32(level*7919+0x4a11)()<HALLOWEEN_CHANCE?'halloween':'regular'}
+    // Halloween is seasonal (Oct 1 to Nov 2, local date): players get regular levels the rest of the year. In dev mode the SEASON
+    // switch decides all year, so Halloween can be tested any time (REGULAR shows the off-season game).
+    const halloweenSeason=()=>(d=>d>='10-01'&&d<='11-02')(localDate().slice(5));
+    function levelPack(level){if(christmasOn())return'christmas';if(!HALLOWEEN_DECK.length||!devMode&&!halloweenSeason())return'regular';const mode=trial('pack');if(mode==='halloween'||mode==='skin')return'halloween';if(mode==='regular'||level<=1)return'regular';if(mode==='alternate')return level%2===0?'halloween':'regular';return mulberry32(level*7919+0x4a11)()<HALLOWEEN_CHANCE?'halloween':'regular'}
     // Card groups: a card belongs to group 1 unless it says group:N. A group joins the deal from its unlockLevel once it has cards;
     // Kevin and the Joker belong to every level.
     const CARD_GROUPS={1:{name:'THE ORIGINAL TROOP',unlockLevel:1},2:{name:'GROUP 2',unlockLevel:10}};
@@ -2211,7 +2214,8 @@
     // shows on the home screen only, hidden while Settings is open.
     const GC_BOARDS={rating:'monkeytrubble.rating',level:'monkeytrubble.level'};let gcAlias=null;
     function gameCenter(msg){if(isIOSApp)window.webkit.messageHandlers.gameCenter?.postMessage(msg)}
-    function postGameCenterScores(){if(progress.devReset)return;gameCenter({type:'score',leaderboard:GC_BOARDS.rating,value:boardScore(ratingOf(progress.stats.scores))});gameCenter({type:'score',leaderboard:GC_BOARDS.level,value:Math.max(0,progress.level-1)})}
+    // A 0 (no level cleared yet) is never sent, so new players don't fill the boards with zeros.
+    function postGameCenterScores(){if(progress.devReset)return;for(const [leaderboard,value] of [[GC_BOARDS.rating,boardScore(ratingOf(progress.stats.scores))],[GC_BOARDS.level,progress.level-1]])if(value>0)gameCenter({type:'score',leaderboard,value})}
     const gcAccessPoint=()=>gameCenter({type:'accessPoint',show:!$('#home').classList.contains('hidden')&&!$('#settings').classList.contains('show')});
     window.__gameCenterReady=({alias}={})=>{gcAlias=alias||null;postGameCenterScores();gcAccessPoint();const input=$('#nameInput');if(!progress.player&&$('#nameDialog').classList.contains('show')&&!input.value&&gcAlias)input.value=cleanName(gcAlias).name||''};
     // Online leaderboard (Supabase; keys in config.js, schema in supabase/leaderboard.sql). Clears and name changes mark the profile

@@ -70,7 +70,7 @@ Players have no login: each install gets a random id and a private secret (store
 
 ## Halloween levels
 
-During the Halloween season (`HALLOWEEN_SEASON=true`) every level is a Halloween level. Otherwise, from level 2 on, each level is either a regular level or a Halloween level, about half the time. The pick is seeded by the level number, so Retry always deals the same set. Change the odds with `HALLOWEEN_CHANCE` in `index.html`.
+Halloween is seasonal: from Oct 1 to Nov 2 (the player's local date, `halloweenSeason`), every other level from level 2 is a Halloween level. The rest of the year players get regular levels only. In dev mode the **SEASON** switch decides all year: HALLOWEEN (FULL), HALLOWEEN SKIN, EVERY OTHER, MIXED (about half, seeded by the level number so Retry deals the same set; odds in `HALLOWEEN_CHANCE`) or REGULAR (the off-season game).
 
 A Halloween level deals only the haunted primates (`pack:'halloween'` in `CARD_DATA`), plus Kevin and the Joker. Card calls play about 5–6 semitones lower (`HORROR_RATE`) through a long, dark reverb, and the music switches to the `halloweenRelaxed` or `halloweenCompetitive` playlist that matches the Music Mode setting. The board, face-down cards and the hero card's shine (each card's `foil` gradient) take Halloween colors.
 
