@@ -47,7 +47,7 @@ Every October a haunted troop creeps into the jungle with spooky cards, sounds a
 • Progress syncs with iCloud
 • Easy mode for a more relaxed game
 
-Made by Polymer Jones.
+A game by Polymer Jones.
 
 ## URLs
 Support URL: https://polymerjones.github.io/monkeytrubble/support.html
