@@ -97,8 +97,9 @@ end $$;
 create or replace function public.top_players(p_limit int default 50)
 returns table (rank bigint, id uuid, name text, score int, rating int, tier text, streak int, xp int, level int)
 language sql stable security definer set search_path = public as $$
+  -- Players at 0 (named, but no level cleared yet) aren't listed until they score (added 2026-10-13).
   select rank() over (order by p.score desc), p.id, shown_name(p), p.score, p.rating, p.tier, p.streak, p.xp, p.level
-  from public.players p order by p.score desc, p.updated_at limit least(greatest(p_limit, 1), 200)
+  from public.players p where p.score > 0 order by p.score desc, p.updated_at limit least(greatest(p_limit, 1), 200)
 $$;
 
 -- One player's row and rank (for the pinned "you" row).
