@@ -1937,6 +1937,13 @@
     function buildCardField(){if(cardFieldBuilt)return;cardFieldBuilt=true;const rng=mulberry32(4242),pool=Object.values(SYMBOL_IMAGES);
       for(const [sel,count] of [['.bg-mid',22],['.bg-near',7]]){const layer=$(sel);for(let i=0;i<count;i++){const c=document.createElement('i');c.className='bg-card';c.style.backgroundImage=`url('${pool[Math.floor(rng()*pool.length)]}')`;c.style.left=`${rng()*100-8}%`;c.style.top=`${rng()*100-10}%`;c.style.transform=`rotate(${(rng()-.5)*50}deg)`;layer.append(c)}}}
     window.__bgTilt=(turn,lean)=>{if(document.body.dataset.bg!=='D'||reduceMotion.matches)return;bgTilt.x=Math.tanh(turn/.22);bgTilt.y=Math.tanh(lean/.22);if(!bgTilt.raf)bgTilt.raf=requestAnimationFrame(stepBgTilt)};
+    // Desktop browsers have no motion sensor, so the mouse stands in for tilt on the background layers: its place across the window
+    // (the whole browser window when the game sits in frame.html, which forwards its own mouse moves to __mouseTilt), easing back
+    // to centre when it leaves.
+    if(!isIOSApp&&matchMedia('(hover:hover) and (pointer:fine)').matches){
+      const tilt=(x,y)=>window.__bgTilt((x-.5)*.5,(y-.5)*.5),host=window.frameElement;window.__mouseTilt=tilt;
+      addEventListener('pointermove',e=>{if(e.pointerType!=='mouse')return;if(host){const r=host.getBoundingClientRect();tilt((r.left+e.clientX)/parent.innerWidth,(r.top+e.clientY)/parent.innerHeight)}else tilt(e.clientX/innerWidth,e.clientY/innerHeight)},{passive:true});
+      if(!host)document.documentElement.addEventListener('pointerleave',()=>tilt(.5,.5))}
     // A soft spring: the layers carry momentum, glide a long way and ease to rest slowly.
     function stepBgTilt(){bgTilt.raf=0;bgTilt.vx=(bgTilt.vx+(bgTilt.x-bgTilt.cx)*.008)*.9;bgTilt.vy=(bgTilt.vy+(bgTilt.y-bgTilt.cy)*.008)*.9;bgTilt.cx+=bgTilt.vx;bgTilt.cy+=bgTilt.vy;const d=bgTilt.depth??1,set=(sel,k)=>$(sel).style.transform=`translate3d(${(bgTilt.cx*k*d).toFixed(1)}px,${(bgTilt.cy*k*d).toFixed(1)}px,0)`;set('.bg-far',-12);set('.bg-mid',-30);set('.bg-near',-58);if((Math.abs(bgTilt.x-bgTilt.cx)+Math.abs(bgTilt.y-bgTilt.cy)>.002||Math.abs(bgTilt.vx)+Math.abs(bgTilt.vy)>.0005)&&!document.hidden)bgTilt.raf=requestAnimationFrame(stepBgTilt)}
     // Level transitions (trial). swap() runs while the screen is fully covered, so the next level is dealt out of sight.

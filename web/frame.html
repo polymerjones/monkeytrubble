@@ -27,6 +27,10 @@
     const q=new URLSearchParams(location.search);q.delete('variant');if(location.search)history.replaceState(null,'',location.pathname+(q.toString()?'?'+q:''));q.set('noframe','');
     document.getElementById('game').src='index.html?'+q.toString().replace(/noframe=(&|$)/,'noframe$1');
     document.getElementById('game').focus();
+    // Mouse tilt: moves anywhere in this window shift the game's background layers (window.__mouseTilt in index.html).
+    const game=document.getElementById('game'),tilt=(x,y)=>{try{game.contentWindow.__mouseTilt?.(x,y)}catch{}};
+    addEventListener('pointermove',e=>{if(e.pointerType==='mouse')tilt(e.clientX/innerWidth,e.clientY/innerHeight)},{passive:true});
+    document.documentElement.addEventListener('pointerleave',()=>tilt(.5,.5));
   </script>
 </body>
 </html>
