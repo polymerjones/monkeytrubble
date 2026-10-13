@@ -22,11 +22,10 @@ struct GameWebView: UIViewRepresentable {
         #else
         let debugBuild = false
         #endif
-        // The hidden dev mode (three taps on the home logo) works in Debug and TestFlight builds only, never in the App Store build
-        // (App Review guideline 2.3.1: no hidden features). TestFlight installs carry a sandbox receipt.
-        let testFlight = Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
+        // The hidden dev mode (three taps on the home logo) works in Debug builds only. Not in TestFlight either: App Review installs
+        // builds the same way TestFlight does, and guideline 2.3.1 forbids hidden features.
         controller.addUserScript(WKUserScript(
-            source: "window.__monkeyDebugBuild = \(debugBuild); window.__monkeyDevTaps = \(debugBuild || testFlight);",
+            source: "window.__monkeyDebugBuild = \(debugBuild); window.__monkeyDevTaps = \(debugBuild);",
             injectionTime: .atDocumentStart,
             forMainFrameOnly: true
         ))

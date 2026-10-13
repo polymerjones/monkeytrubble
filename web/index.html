@@ -1068,7 +1068,7 @@
     // Progress persists through the iOS app's native store (injected as window.__monkeySave) or localStorage in a browser.
     const SAVE_KEY='monkeyTrubble.save.v1',params=new URLSearchParams(location.search);
     // Hidden developer mode (?dev, or three quick taps on the home logo): exposes trial switches that players never see. In the iOS
-    // app the logo taps work only in Debug and TestFlight builds (window.__monkeyDevTaps); the App Store build ignores them.
+    // app the logo taps work only in Debug builds (window.__monkeyDevTaps); TestFlight and App Store builds ignore them.
     // DEBUG_DEFAULTS: Paul's debugging build. Dev mode starts on and the season resets to Every Other each launch. The iOS app sets
     // window.__monkeyDebugBuild from its build configuration (Debug: true, Release/TestFlight/App Store: false), so player builds can't
     // ship with it on; a browser gets it on a local server or file:// only.
