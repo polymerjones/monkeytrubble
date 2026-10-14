@@ -42,4 +42,12 @@ Great apes live wild only in Africa and on Borneo and Sumatra, so chapters 1, 2,
 - **Featured species:** set in `CHAPTERS` in `web/index.html`. Species waiting for art are in `CARD_DATA` with `pending:true`; delete that flag once the art is built.
 - **Full steps:** "Chapter art and the Expedition set" in `web/README.md`.
 
-Chapter assignments in `web/index.html` still follow `level-ref.png` and need updating to this table once the new art is in.
+## Region sets (done: chapters 1 and 2)
+
+- **Sources:** `source/art/regions/ch<n>-<slug>.(jpg|png)`. `web/tools/make-card-images.sh` builds each one as `region-ch<n>-<slug>.jpg`.
+- **Cards:** `R<n>_*` entries in `CARD_DATA` with `region:n`. They stay out of the shared illustrated deck.
+- **Dealing:** a chapter with `region:[...]` in `CHAPTERS` deals only those cards plus `fill:[...]`. Chapters without a `region` list still deal from the whole illustrated deck.
+- **Chapters 1 and 2 share one Americas pool:** the chapter 1 set (gold relief: white-faced capuchin, Geoffroy's spider monkey, mantled howler, Central American squirrel monkey, Geoffroy's tamarin), the chapter 2 set (red howler, emperor tamarin, pygmy marmoset, bald uakari, white-faced saki, woolly monkey), plus golden lion tamarin and black howler. Each chapter lists its own set as `region`, and its banner features its own set.
+- **Keep a pool to about 13 species.** A board holds 21 pairs. A chapter dealing only its own 5–8 species (dealt twice as often) made boards of near-identical gold cards, a regression, fixed 2026-10-14.
+
+Chapters 3 to 10 still follow `level-ref.png`. Give each one a `region` list as its art arrives.

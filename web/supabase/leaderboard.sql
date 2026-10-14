@@ -149,3 +149,59 @@ revoke all on function public.players_passed(uuid, int) from public;
 revoke all on function public.report_player(uuid, text, uuid) from public;
 grant execute on function public.players_passed(uuid, int) to anon, authenticated;
 grant execute on function public.report_player(uuid, text, uuid) to anon, authenticated;
+
+-- Added 2026-10-14: world records, the fastest Normal clear of each level. Every player gets the same board for a level (it is
+-- seeded from the level number), so times compare fairly. p_deal is the game's DEAL_VERSION: it is bumped whenever the dealing
+-- changes, which starts every level's record afresh instead of leaving one set on a different board.
+create table if not exists public.level_records (
+  level   int  not null check (level >= 1),
+  deal    int  not null check (deal >= 1),
+  player  uuid not null references public.players(id) on delete cascade,
+  time_ms int  not null check (time_ms > 0),
+  set_at  timestamptz not null default now(),
+  primary key (level, deal)
+);
+alter table public.level_records enable row level security;
+
+-- Records a clear and returns the level's record afterwards: the holder's shown name and id, the time, whether this clear set it
+-- (beat), and the record it replaced. The player must exist (submit_score runs first) and must already have cleared the level
+-- (their stored level is past it). Under 8 seconds is rejected: a level is 21 pairs.
+create or replace function public.submit_time(p_id uuid, p_secret text, p_level int, p_deal int, p_time_ms int)
+returns table (holder text, holder_id uuid, time_ms int, beat boolean, previous_holder text, previous_ms int)
+language plpgsql security definer set search_path = public, extensions as $$
+#variable_conflict use_column
+declare
+  me public.players;
+  prev public.level_records;
+  prev_name text;
+  did_beat boolean := false;
+begin
+  if p_level < 1 or p_level > 100000 or p_deal < 1 or p_time_ms < 8000 or p_time_ms > 86400000 then raise exception 'bad values'; end if;
+  select * into me from public.players where id = p_id;
+  if not found or me.secret_hash <> crypt(coalesce(p_secret, ''), me.secret_hash) then raise exception 'bad secret'; end if;
+  if me.level <= p_level then raise exception 'level not cleared'; end if;
+  select * into prev from public.level_records r where r.level = p_level and r.deal = p_deal for update;
+  if not found then
+    insert into public.level_records (level, deal, player, time_ms) values (p_level, p_deal, p_id, p_time_ms);
+    did_beat := true;
+  elsif p_time_ms < prev.time_ms then
+    select shown_name(p) into prev_name from public.players p where p.id = prev.player;
+    update public.level_records set player = p_id, time_ms = p_time_ms, set_at = now() where level = p_level and deal = p_deal;
+    did_beat := true;
+  end if;
+  return query select shown_name(p), p.id, r.time_ms, did_beat, case when did_beat then prev_name end, case when did_beat then prev.time_ms end
+    from public.level_records r join public.players p on p.id = r.player where r.level = p_level and r.deal = p_deal;
+end $$;
+
+-- The current record for a level (no row if nobody has set one yet).
+create or replace function public.level_record(p_level int, p_deal int)
+returns table (holder text, holder_id uuid, time_ms int)
+language sql stable security definer set search_path = public as $$
+  select shown_name(p), p.id, r.time_ms from public.level_records r join public.players p on p.id = r.player
+  where r.level = p_level and r.deal = p_deal
+$$;
+
+revoke all on function public.submit_time(uuid, text, int, int, int) from public;
+revoke all on function public.level_record(int, int) from public;
+grant execute on function public.submit_time(uuid, text, int, int, int) to anon, authenticated;
+grant execute on function public.level_record(int, int) to anon, authenticated;

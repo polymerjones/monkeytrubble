@@ -124,6 +124,7 @@ struct GameWebView: UIViewRepresentable {
         private var activeObserver: NSObjectProtocol?
         private var inactiveObserver: NSObjectProtocol?
         private var neutral: (turn: Double, lean: Double)?
+        private var lastSent: (turn: Double, lean: Double)?
 
         func attach(_ webView: WKWebView) {
             self.webView = webView
@@ -159,6 +160,7 @@ struct GameWebView: UIViewRepresentable {
             guard motionManager.isDeviceMotionAvailable,
                   !motionManager.isDeviceMotionActive else { return }
             neutral = nil
+            lastSent = nil
             let interval = 1.0 / 30.0
             let follow = 1 - exp(-interval / 3.0)
             motionManager.deviceMotionUpdateInterval = interval
@@ -176,6 +178,9 @@ struct GameWebView: UIViewRepresentable {
                 base.turn = wrap(base.turn + dTurn * follow)
                 base.lean = wrap(base.lean + dLean * follow)
                 self.neutral = base
+                // Skip sensor jitter below ~half a pixel of parallax so a resting phone stops waking the web view 30 times a second.
+                if let last = self.lastSent, abs(dTurn - last.turn) + abs(dLean - last.lean) < 0.002 { return }
+                self.lastSent = (dTurn, dLean)
                 let script = String(
                     format: "window.__setMonkeyTilt?.(%.4f,%.4f)",
                     dTurn,

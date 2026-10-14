@@ -67,6 +67,10 @@ build "$EX/langur.png" set2-silvered-langur
 build "$EX/baboon.png" set2-olive-baboon
 # Chapter backgrounds (../source/art/chapters/ch<n>_*.png). When split-layers.py has made layers/<n>/ (far.jpg, mid.webp,
 # near.webp, water.png), those are copied as they are; otherwise the painting becomes a single far layer.
+# Region sets (../source/art/regions): each chapter's own species, ch<n>-<slug>, already 2:3. Dealt only in that chapter (CARD_DATA region:n).
+for src in ../source/art/regions/ch*-*.*; do
+  build "$src" "region-$(basename "${src%.*}")"
+done
 for src in ../source/art/chapters/ch*_*.png; do
   n=$(basename "$src" | sed -E 's/^ch([0-9]+)_.*/\1/')
   rm -rf "art/chapters/$n" && mkdir -p "art/chapters/$n"
