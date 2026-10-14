@@ -609,7 +609,7 @@
     // Halloween is seasonal (Oct 1 to Nov 2, local date): players get regular levels the rest of the year. In dev mode the SEASON
     // switch decides all year, so Halloween can be tested any time (REGULAR shows the off-season game).
     const halloweenSeason=()=>(d=>d>='10-01'&&d<='11-02')(localDate().slice(5));
-    function levelPack(level){if(christmasOn())return'christmas';if(!HALLOWEEN_DECK.length||!devMode&&!halloweenSeason())return'regular';const mode=trial('pack');if(mode==='halloween'||mode==='skin')return'halloween';if(mode==='regular'||level<=1)return'regular';if(mode==='alternate')return level%2===0?'halloween':'regular';return mulberry32(level*7919+0x4a11)()<HALLOWEEN_CHANCE?'halloween':'regular'}
+    function levelPack(level){if(christmasOn())return'christmas';if(!HALLOWEEN_DECK.length||!devMode&&!halloweenSeason()||chapterFor(level).boss)return'regular';const mode=trial('pack');if(mode==='halloween'||mode==='skin')return'halloween';if(mode==='regular'||level<=1)return'regular';if(mode==='alternate')return level%2===0?'halloween':'regular';return mulberry32(level*7919+0x4a11)()<HALLOWEEN_CHANCE?'halloween':'regular'}
     // Card groups: a card belongs to group 1 unless it says group:N. A group joins the deal from its unlockLevel once it has cards;
     // Kevin and the Joker belong to every level.
     const CARD_GROUPS={1:{name:'THE ORIGINAL TROOP',unlockLevel:1},2:{name:'GROUP 2',unlockLevel:10}};
@@ -681,9 +681,11 @@
       {name:'KINGDOM OF THE CANOPY',ui:'canopy',habitat:'Upper tropical rainforest canopy',shapes:['twinstacks','valley','columns','monkey'],featured:['S2_GIBBON','S1_SPIDER','S1_GUEREZA','APE_SUMATRAN','APE_SIAMANG'],foods:['F_BANANA'],scene:'canopy',vision:'OWL',ambient:'leaves',music:{competitive:'gorilla'},
         pal:{sky:['#f2c27a','#bfe3d6'],far:'#4f9a6a',mid:'#2e7048',near:'#14452a',accent:'#ffe28a'}}
     ];
+    // Boss level (2026-10-14): each chapter's last level deals THE ORIGINAL TROOP (the photo set, Patriots, Caulin Plushie: DECK)
+    // instead of the illustrated set, and is never a Halloween level.
     // Expedition+ laps (level 51+) repeat the chapters with every board shape; lap shows as "+" in the banner.
     const chapterFor=level=>{const lap=Math.floor((Math.max(1,level)-1)/(CHAPTERS.length*CHAPTER_LEN)),inLap=(Math.max(1,level)-1)%(CHAPTERS.length*CHAPTER_LEN),i=Math.floor(inLap/CHAPTER_LEN),c=CHAPTERS[i],from=lap*CHAPTERS.length*CHAPTER_LEN+i*CHAPTER_LEN+1;
-      return{...c,set:ALL_SET,index:i,number:i+1,lap,plus:lap>0,from,to:from+CHAPTER_LEN-1,shapes:lap>0?LAYOUTS.map(l=>l.id):c.shapes,accent:c.pal.accent}};
+      const boss=level===from+CHAPTER_LEN-1;return{...c,set:boss?null:ALL_SET,boss,index:i,number:i+1,lap,plus:lap>0,from,to:from+CHAPTER_LEN-1,shapes:lap>0?LAYOUTS.map(l=>l.id):c.shapes,accent:c.pal.accent}};
     // Levels 1-2 use the most open shape; after that a seeded pick from the chapter's pool, so Retry gives the same board.
     // Easy leaves the cascades out (they open too few cards for its three start pairs).
     const layoutFor=(level,easy=false)=>{if(level<=2)return LAYOUTS[0];const pool=chapterFor(level).shapes.map(id=>LAYOUTS.find(l=>l.id===id)).filter(l=>l&&!(easy&&CASCADES.has(l.id)));if(!pool.length)return LAYOUTS[0];return pool[Math.floor(mulberry32(level*131+7)()*pool.length)]};
@@ -1249,7 +1251,7 @@
     const HALLOWEEN_LEVEL_NAMES=['MISCHIEVOUS MONKEYS','FRIGHT NIGHT','MACABRE MACAQUES','MONKEY MADNESS','BOO-NANAS','NIGHT OF THE APES','MONKEYS OF DOOM','THE HAUNTED CANOPY','CURSE OF THE CHIMP','PRIMATE PANIC','MONKEY AFTER DARK','TRICK OR TRUBBLE','THE UNDEAD APES','SPOOKY BUSINESS','JUNGLE OF TERROR'];
     const levelName=(lv,pack)=>pack==='halloween'?HALLOWEEN_LEVEL_NAMES[Math.floor((lv-1)/2)%HALLOWEEN_LEVEL_NAMES.length]:LEVEL_NAMES[(lv-1)%LEVEL_NAMES.length];
     function showLevelBanner(){if(!$('#home').classList.contains('hidden'))return;const lv=state.level,ch=chapterFor(lv),el=$('#levelBanner'),first=lv===ch.from&&lv>1;
-      $('#bannerChapter').textContent=`${first?'NEW CHAPTER · ':''}CHAPTER ${ch.number}${ch.plus?'+':''} · ${ch.name}`;{const f=first&&state.pack!=='halloween'?(ch.featured||[]).map(id=>CARD_DATA[id]?.name).filter(Boolean):[];$('#bannerFeatured').textContent=f.length?`FEATURED: ${f.join(' · ')}`:'';$('#bannerFeatured').hidden=!f.length}$('#bannerLevel').textContent=`LEVEL ${lv} · ${levelName(lv,state.pack)}`;{const r=$('#board').getBoundingClientRect();el.style.top=`${r.top+28}px`}el.classList.toggle('new-chapter',first);el.style.setProperty('--banner-c',ch.accent);el.style.setProperty('--banner-glow',ch.accent+'44');
+      $('#bannerChapter').textContent=`${first?'NEW CHAPTER · ':''}CHAPTER ${ch.number}${ch.plus?'+':''} · ${ch.name}`;{const f=first&&state.pack!=='halloween'?(ch.featured||[]).map(id=>CARD_DATA[id]?.name).filter(Boolean):[],t=ch.boss?'BOSS LEVEL · THE ORIGINAL TROOP':f.length?`FEATURED: ${f.join(' · ')}`:'';$('#bannerFeatured').textContent=t;$('#bannerFeatured').hidden=!t}$('#bannerLevel').textContent=`LEVEL ${lv} · ${levelName(lv,state.pack)}`;{const r=$('#board').getBoundingClientRect();el.style.top=`${r.top+28}px`}el.classList.toggle('new-chapter',first);el.style.setProperty('--banner-c',ch.accent);el.style.setProperty('--banner-glow',ch.accent+'44');
       fitStamp($('#bannerLevel'),1.06);fitStamp($('#bannerChapter'),1.06);el.getAnimations().forEach(a=>a.cancel());el.animate(reduceMotion.matches?[{opacity:0},{opacity:1,offset:.08},{opacity:1,offset:.88},{opacity:0}]:[{opacity:0,scale:.85},{opacity:1,scale:1.04,offset:.08},{opacity:1,scale:1,offset:.14},{opacity:1,scale:1,offset:.88},{opacity:0,scale:.96}],{duration:first?4200:3200,delay:350,easing:'cubic-bezier(.2,.8,.2,1)',fill:'backwards'})}
     function startLevel(level,{silent=false,retry=false}={}){
       closeLightbox({instant:true});featuredSymbol=null;for(const e of hintEyes.values())e.remove();hintEyes.clear();$('#dragLayer').replaceChildren();board.replaceChildren();$('#featuredArt').dataset.renderKey='~';clearDust();clearTimeout(chainTimer);endChain();
