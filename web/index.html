@@ -758,7 +758,7 @@
     ];let lastPraise=null;
     let goodEyeBusy=false;
     const SOUND_FILES={...Object.fromEntries(PRAISE.flatMap(p=>p.takes.map(t=>[`praise:${t}`,`audio/praise/${t}.mp3`]))),homeSting:'audio/polyhome.mp3',
-      pickup:'audio/blippage.wav',dragDrop:'audio/sfx/bongo-hit.mp3',match:'audio/success.wav',control:'audio/complete.mp3',win:'audio/sfx/level-complete.mp3',gameOverA:'audio/sfx/game-over-a.mp3',gameOverB:'audio/sfx/game-over-b.mp3',comboSting:'audio/sfx/combo.mp3',owlEyes:'audio/sfx/owl-eyes.mp3',goldJoker1:'audio/sfx/golden-joker-1.mp3',goldJoker2:'audio/sfx/golden-joker-2.mp3',praiseSting:'audio/sfx/praise-sting.mp3',praiseOrEnd:'audio/sfx/praise-or-end.mp3',levelStart:'audio/japanesevoice.mp3',
+      pickup:'audio/blippage.wav',dragDrop:'audio/sfx/bongo-hit.mp3',match:'audio/success.wav',control:'audio/complete.mp3',win:'audio/sfx/level-complete.mp3',gameOverA:'audio/sfx/game-over-a.mp3',gameOverB:'audio/sfx/game-over-b.mp3',comboSting:'audio/sfx/combo.mp3',owlEyes:'audio/sfx/owl-eyes.mp3',undo:'audio/sfx/undo.mp3',resumeGorilla:'audio/sfx/resume-gorilla.mp3',goldJoker1:'audio/sfx/golden-joker-1.mp3',goldJoker2:'audio/sfx/golden-joker-2.mp3',praiseSting:'audio/sfx/praise-sting.mp3',praiseOrEnd:'audio/sfx/praise-or-end.mp3',levelStart:'audio/japanesevoice.mp3',
       hwGrab1:'audio/halloween/halloween-cardgrab1.wav',hwGrab2:'audio/halloween/halloween-cardgrab2.wav',hwGrab3:'audio/halloween/halloween-cardgrab3.wav',hwCantSelect:'audio/halloween/halloween-cant-select-card.wav',
       hwLevelStart:'audio/halloween/growl-levelstart.wav',hwOwl:'audio/halloween/howl-owleyes.wav',hwShuffle1:'audio/halloween/windupcrank-useshuffle.wav',hwShuffle2:'audio/halloween/windupcrank2-shuffle.wav',
       hwGameOver:'audio/halloween/gameover.wav',hwJoker:'audio/halloween/halloween-special.wav',hwScream:'audio/halloween/scream.wav',
@@ -1418,7 +1418,7 @@
       });
       if(tray.children.length!==4){tray.replaceChildren();for(let i=0;i<4;i++){const slot=document.createElement('div');slot.innerHTML=`<span></span><small class="slot-num">0${i+1}</small>`;tray.append(slot)}}
       for(let i=0;i<4;i++){const slot=tray.children[i],span=slot.querySelector('span'),held=state.tray[i],renderKey=held?`${held.id}|${held.symbol}`:'';slot.className=`slot${held?' filled':''}${state.hintSlot===i?' hinted':''}`;if(slot.dataset.renderKey!==renderKey){span.replaceChildren();if(held){setSymbolContent(span,held.symbol);if(document.body.dataset.cage)span.animate([{scale:'1.14',filter:'brightness(1.6)'},{scale:'.97',offset:.6},{scale:'1',filter:'none'}],{duration:300,delay:220,easing:'cubic-bezier(.2,.8,.2,1)',fill:'backwards'});setTimeout(rattleChain,240)}slot.dataset.renderKey=renderKey}if(held){slot.dataset.tileId=held.id;slot.dataset.shine=shineFor(held.symbol)}else{delete slot.dataset.tileId;delete slot.dataset.shine}}
-      $('#levelNum').textContent=state.level;$('#bufferStatus').textContent=`${state.tray.length} / 4`;setBooster('undo',state.undosLeft,!state.history.length||state.locked||state.clearing.size>0);setBooster('shuffle',state.shufflesLeft,state.locked||state.clearing.size>0);setBooster('hint',state.hintsLeft,state.locked||state.clearing.size>0||state.over);
+      $('#levelNum').textContent=state.level;$('#bufferStatus').textContent=`${state.tray.length} / 4`;setBooster('undo',state.undosLeft,undoTarget()<0||state.locked||state.clearing.size>0);setBooster('shuffle',state.shufflesLeft,state.locked||state.clearing.size>0);setBooster('hint',state.hintsLeft,state.locked||state.clearing.size>0||state.over);
       renderFeatured();updateCageDanger()
     }
     // Cage style (Settings > CAGE): 'hand' is the big chained fan (body[data-cage=C]); 'classic' is the original compact bar.
@@ -1532,7 +1532,7 @@
       if(!tile.revealed){
         const previous=state.tiles.find(t=>t.id!==tile.id&&t.active&&t.temporaryReveal),previousNode=previous?board.querySelector(`[data-id="${previous.id}"]`):null;
         const matchingFlip=Boolean(previous)&&previous.symbol!==JOKER&&tile.symbol!==JOKER&&isMate(previous.symbol,tile.symbol)&&isFree(previous);
-        state.history.push(snapshot());const release=hold(),s=state;playSound('pickup',{volume:.075,rate:1.12+Math.random()*.08});haptic('cardFlip');
+        state.history.push(snapshot('flip'));const release=hold(),s=state;playSound('pickup',{volume:.075,rate:1.12+Math.random()*.08});haptic('cardFlip');
         const flipVariant=FLIP_VARIANTS[rand(FLIP_VARIANTS.length)];
         if(!matchingFlip)previousNode?.animate(flipFrames(FLIP_VARIANTS[rand(FLIP_VARIANTS.length)]),{duration:FLIP_OUT_MS,easing:'cubic-bezier(.38,0,.7,1)',fill:'forwards'});
         node.classList.add('on-top');node.animate(flipFrames(flipVariant),{duration:FLIP_OUT_MS,easing:'cubic-bezier(.38,0,.7,1)',fill:'forwards'});
@@ -1659,14 +1659,38 @@
       node.onlostpointercapture=e=>{activePresses.delete(e.pointerId);if(dragging&&ghost){pressed=false;drop(unflip)}}
     }
     // A pair that is mid-clear is recorded as already cleared, so undo never brings it back into the cage.
-    function snapshot(){return{tiles:state.tiles.map(t=>t.peeking?{...t,revealed:false,peeking:false}:{...t}),tray:state.tray.filter(t=>!state.clearing.has(t.id)).map(t=>({...t})),pairs:state.pairs+state.clearing.size/2,shuffles:state.shuffles}}
-    // Undo spends one of the level's charges. From the cage-full screen it rewinds the overflowing move and resumes play.
+    // Each history step is tagged: 'cage' (a card went toward the cage: tap, drag, auto-pair, Kevin), 'flip' (a face-down card was
+    // turned over to look) or 'shuffle'. Undo works on cagings only (undoTarget).
+    function snapshot(kind='cage'){return{kind,tiles:state.tiles.map(t=>t.peeking?{...t,revealed:false,peeking:false}:{...t}),tray:state.tray.filter(t=>!state.clearing.has(t.id)).map(t=>({...t})),pairs:state.pairs+state.clearing.size/2,shuffles:state.shuffles}}
+    // Undo takes back the last card the player sent to the cage (freeing its slot): it rewinds to just before that caging, so any
+    // cards flipped since are turned back too, all for one charge. A shuffle is a wall: cagings before it can't be undone (rewinding
+    // past it would undo the shuffle too). From the cage-full screen it takes back the overflowing card and resumes play.
+    function undoTarget(){for(let i=state.history.length-1;i>=0;i--){const k=state.history[i].kind;if(k==='shuffle')return -1;if(k!=='flip')return i}return -1}
     function undo(){
-      const fromOverflow=state.over&&!state.won&&!state.busy;
-      if(!state.history.length||state.undosLeft<=0||state.clearing.size||(state.locked&&!fromOverflow))return;
+      const fromOverflow=state.over&&!state.won&&!state.busy,i=undoTarget();
+      if(i<0||state.undosLeft<=0||state.clearing.size||(state.locked&&!fromOverflow))return;
       if(fromOverflow){state.over=false;state.locked=false;$('#overlay').classList.remove('show');startClock()}
-      clearHint(false);const s=state.history.pop();state.tiles=s.tiles;state.tray=s.tray;state.pairs=s.pairs;state.shuffles=s.shuffles;state.undosLeft--;render();setMessage(`Move undone — ${state.undosLeft} undo${state.undosLeft===1?'':'s'} left.`);playSound('pickup',{volume:.075,rate:.72})
+      clearHint(false);const s=state.history[i],was=new Map(state.tiles.map(t=>[t.id,t.active])),back=s.tiles.filter(t=>t.active&&!was.get(t.id)).map(t=>t.id);
+      // Where each returning card leaves from: its cage slot, or the cage's middle if its pair had already cleared.
+      const panel=document.querySelector('.tray-panel').getBoundingClientRect(),from=new Map(back.map(id=>{const k=state.tray.findIndex(t=>t.id===id),slot=k>=0?tray.children[Math.min(k,3)]:null;
+        return[id,slot?slot.getBoundingClientRect():{left:panel.left+panel.width/2-20,top:panel.top+panel.height/2-28,width:40,height:56}]}));
+      state.history.length=i;state.tiles=s.tiles;state.tray=s.tray;state.pairs=s.pairs;state.shuffles=s.shuffles;state.undosLeft--;render();setMessage(`Card returned — ${state.undosLeft} undo${state.undosLeft===1?'':'s'} left.`);
+      playSound('undo',{volume:1});haptic('cardSettle');undoFx(back,from)
     }
+    // Undo's show: the cage shakes and flashes, then each returned card spins from the cage back to its place and flashes as it lands.
+    function undoFx(ids,from){const calm=reduceMotion.matches,cage=document.querySelector('.tray-panel');
+      if(!calm)cage.animate([{transform:'none'},{transform:'translateX(-9px) rotate(-1deg)'},{transform:'translateX(8px) rotate(1deg)'},{transform:'translateX(-5px)'},{transform:'translateX(3px)'},{transform:'none'}],{duration:340,easing:'ease-out'});
+      cage.animate([{boxShadow:'0 0 0 2px #fff,0 0 60px 18px #bff0ffcc'},{boxShadow:''}],{duration:520,easing:'ease-out'});
+      const release=ids.length?hold():null,FLY=calm?0:560;
+      for(const id of ids){const node=board.querySelector(`[data-id="${id}"]`),a=from.get(id);if(!node||!a)continue;const b=node.getBoundingClientRect();
+        node.animate([{opacity:0},{opacity:0,offset:.98},{opacity:1}],{duration:FLY});
+        node.animate([{filter:'brightness(2.4) drop-shadow(0 0 14px #fff)'},{filter:'none'}],{duration:420,delay:FLY,easing:'ease-out'});
+        if(calm)continue;
+        const ghost=node.cloneNode(true),dx=a.left+a.width/2-(b.left+b.width/2),dy=a.top+a.height/2-(b.top+b.height/2),sc=a.width/b.width;
+        ghost.style.cssText=`position:fixed;z-index:190;left:${b.left}px;top:${b.top}px;width:${b.width}px;height:${b.height}px;margin:0;translate:none;rotate:none;scale:none;transform:none;pointer-events:none;will-change:transform`;document.body.append(ghost);
+        ghost.animate([{transform:`translate(${dx}px,${dy}px) scale(${sc}) rotate(0deg)`,opacity:.6},{transform:`translate(${dx*.45}px,${dy*.45-40}px) scale(${(1+sc)/2*1.15}) rotate(-200deg)`,opacity:1,offset:.5},{transform:'none',opacity:1}],{duration:FLY,easing:'cubic-bezier(.25,.7,.3,1)'}).onfinish=()=>ghost.remove();
+        const t0=performance.now();let lastDrop=0;const shed=now=>{if(!ghost.isConnected||now-t0>FLY)return;if(now-lastDrop>=30){lastDrop=now;const r=ghost.getBoundingClientRect();trailDust(r.left+r.width/2,r.top+r.height/2,{vx:-dx*3,vy:-dy*3})}requestAnimationFrame(shed)};requestAnimationFrame(shed)}
+      if(release)setTimeout(release,FLY+40)}
     // Monkey calls dip the music for the level's first few pairs only; after that the music holds its level under them.
     const MUSIC_DUCK_PAIRS=3;
     // Clears only buzz once a combo is going (chain x2+), so the haptic means something.
@@ -1849,7 +1873,7 @@
     // NO MOVES, out of shuffles: a watched ad earns a shuffle that re-opens the level and is used at once.
     function shuffleAfterStuck(){const s=state;if(!s.over||s.won||s.failReason!=='stuck'||s.shufflesLeft<=0)return;s.over=false;s.locked=false;s.failReason=null;$('#overlay').classList.remove('show');reshuffle()}
     function reshuffle(){
-      if(state.locked||state.shufflesLeft<=0||state.clearing.size)return;state.history.push(snapshot());startClock();
+      if(state.locked||state.shufflesLeft<=0||state.clearing.size)return;state.history.push(snapshot('shuffle'));startClock();
       // Only the board is re-dealt: cards in the cage stay put, in order, and the deal is built around them.
       // The re-deal keeps the classic rule (at most two unmatched cards waiting) even on levels 11+, where the level itself was dealt
       // with three: a shuffle is a helper, so it hands back a slightly kinder board.
@@ -1936,7 +1960,7 @@
         if(mate)claimed.add(mate.id);bursts.push({slot:slots[i],node:mate&&board.querySelector(`[data-id="${mate.id}"]`)})}
       for(const {slot,node} of bursts)for(const n of [slot,node]){if(!n)continue;const r=n.getBoundingClientRect();explode(n);if(!reduceMotion.matches)fairyDust(r.left+r.width/2,r.top+r.height/2)}
       s.tiles.forEach(t=>{if(claimed.has(t.id)){t.active=false;t.temporaryReveal=false}});s.pairs+=claimed.size;s.tray=[];s.history=[];rebalanceAfterJoker();
-      s.over=false;s.locked=false;s.failReason=null;$('#overlay').classList.remove('show');playSound('match',{volume:.27});haptic('pairCleared');setMessage('Cage cleared — keep going!');startClock();render();finishIfCleared();return true
+      s.over=false;s.locked=false;s.failReason=null;$('#overlay').classList.remove('show');playSound('match',{volume:.27});playSound('resumeGorilla',{volume:.36,delay:.08});haptic('pairCleared');setMessage('Cage cleared — keep going!');startClock();render();finishIfCleared();return true
     }
     // Rewards are kept apart from game logic. requestReward asks the ad provider for one view and grants only on a verified
     // 'completed' result, once per request (nonce); skipped, unavailable or failed views grant nothing. Amounts live in REWARDS.
