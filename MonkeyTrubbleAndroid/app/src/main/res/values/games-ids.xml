@@ -4,8 +4,8 @@
     Until game_services_project_id is filled in, the app runs without Play Games (no sign-in, no scores sent).
 -->
 <resources>
-    <string name="game_services_project_id" translatable="false"></string>
+    <string name="game_services_project_id" translatable="false">662754845258</string>
     <!-- Troop Rating (page ID monkeytrubble.rating) and Highest Level (monkeytrubble.level). -->
-    <string name="leaderboard_troop_rating" translatable="false"></string>
-    <string name="leaderboard_highest_level" translatable="false"></string>
+    <string name="leaderboard_troop_rating" translatable="false">CgkIysSR-qQTEAIQAg</string>
+    <string name="leaderboard_highest_level" translatable="false">CgkIysSR-qQTEAIQAw</string>
 </resources>
