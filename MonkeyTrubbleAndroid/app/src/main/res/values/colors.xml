@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Same near-black green as the iPhone launch screen and the page's loading screen (LaunchBackground). -->
+    <color name="launch_background">#020905</color>
+    <!-- The slate behind the monkey in the app icon, for the adaptive icon's background layer. -->
+    <color name="icon_background">#2E3949</color>
+</resources>

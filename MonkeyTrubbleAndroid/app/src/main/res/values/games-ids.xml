@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Google Play Games IDs, from Play Console → Play Games Services → Setup and management → Configuration.
+    Until game_services_project_id is filled in, the app runs without Play Games (no sign-in, no scores sent).
+-->
+<resources>
+    <string name="game_services_project_id" translatable="false"></string>
+    <!-- Troop Rating (page ID monkeytrubble.rating) and Highest Level (monkeytrubble.level). -->
+    <string name="leaderboard_troop_rating" translatable="false"></string>
+    <string name="leaderboard_highest_level" translatable="false"></string>
+</resources>

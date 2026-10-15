@@ -2416,6 +2416,9 @@
       $('#settingsTierBadge').innerHTML=tierBadge(tier,24);$('#settingsNameText').textContent=player.name
     }
     $('#nameSave').onclick=saveName;$('#nameInput').onkeydown=e=>{if(e.key==='Enter')saveName()};$('#nameCancel').onclick=()=>$('#nameDialog').classList.remove('show');$('#settingsName').onclick=openNameDialog;
+    // Android back gesture: the app calls this and leaves only when it returns false. It closes the top dialog, takes a level home,
+    // and is swallowed while something must be answered (first name, reward prompts) or is mid-animation (expedition map).
+    window.__monkeyBack=()=>{const shown=id=>$(id).classList.contains('show');if(ex.busy)return true;if(lightbox.open){closeLightbox();return true}if(shown('#settings')){closeSettings();return true}if(shown('#reportDialog')){$('#reportDialog').classList.remove('show');return true}if(shown('#nameDialog')){if(progress.player)$('#nameCancel').click();return true}if(shown('#winOverlay')){$('#winHome').click();return true}if(shown('#overlay')){$('#failHome').click();return true}if(document.querySelector('.overlay.show'))return true;if($('#home').classList.contains('hidden')){$('#homeBtn').click();return true}return false};
     // Game Center (iOS app): the app signs the player in at launch (the system banner) and calls __gameCenterReady with their
     // nickname. Scores go to two leaderboards, set up in App Store Connect with these ids. The Game Center button (access point)
     // shows on the home screen only, hidden while Settings is open.
