@@ -812,12 +812,15 @@
     // The classic home track doubles as a calm level track and the Settings music.
     const HOME_TRACK={src:'audio/music/home.mp3'};
     // Home screen music (trial, dev switch HOME MUSIC): own elements, separate from the level playlists that share these files.
-    // homescreen: Paul's 2026-10-13 home screen track (the default); trim levels it to -15.8 LUFS like the rest.
+    // sparse: the home screen default (Paul 2026-10-16): his clean Suno download of Sparse Toms, mastered for phone speakers
+    // (web/tools/master-sparse-toms.sh). It replaced a system-audio capture that had stray terminal sounds in it. SPARSE_TOMS_TRIM
+    // plays it about 3 dB above the other tracks so it sits over the sound effects (Paul asked for it to be more dominant).
+    // homescreen: Paul's 2026-10-13 home screen track (the previous default); trim levels it to -15.8 LUFS like the rest.
     // start (seconds): where a track begins when it starts fresh (cueTrack); homescreen skips its sparse 7.5s intro.
-    const HOME_MUSIC_OPTIONS={homescreen:{src:'audio/music/homescreen.mp3',trim:-.4,start:7.5},sparse:{src:'audio/music/competitive-5-sparse-toms.mp3',trim:-1.9},rhythmic:{src:'audio/music/competitive-4-rhythmic-tension.mp3',trim:-.5},classic:HOME_TRACK};
+    const SPARSE_TOMS_TRIM=3,HOME_MUSIC_OPTIONS={homescreen:{src:'audio/music/homescreen.mp3',trim:-.4,start:7.5},sparse:{src:'audio/music/competitive-5-sparse-toms.mp3',trim:SPARSE_TOMS_TRIM},rhythmic:{src:'audio/music/competitive-4-rhythmic-tension.mp3',trim:-.5},classic:HOME_TRACK};
     const CHRISTMAS_HOME={src:'audio/music/christmas/xmasmonkey2best.mp3',trim:-1.4},CHRISTMAS_SETTINGS={src:'audio/music/christmas/xmasmonkey2better.mp3',trim:-.7};
     const MUSIC={
-      home:[HOME_MUSIC_OPTIONS.homescreen],
+      home:[HOME_MUSIC_OPTIONS.sparse],
       // The classic home track now plays while Settings is open (and stays in the Relaxed level playlist).
       settings:[HOME_TRACK],
       relaxed:[HOME_TRACK,{src:'audio/polyjong-mus1.mp3'},{src:'audio/music/calm-primate.mp3',trim:-.1},{src:'audio/music/calm-2.mp3',trim:-.6},{src:'audio/music/calm-3.mp3',trim:-.3},{src:'audio/music/calm-4.mp3',trim:-.6}],
@@ -836,7 +839,7 @@
       // Combo music (setMusicTension, comboMusic 'swap'): a long combo crossfades into one of these, looping, until the chain ends.
       // Official combo loops (gapless: decoded and looped sample-exactly by BufferLoop); trims level them to -15.8 LUFS.
       combo:[{src:'audio/music/combo-loop-1.mp3',trim:-3.3,gapless:true},{src:'audio/music/combo-loop-2.mp3',trim:-2.9,gapless:true}],
-      competitiveDeep:[{src:'audio/music/competitive-4-rhythmic-tension.mp3',trim:-.5},{src:'audio/music/competitive-5-sparse-toms.mp3',trim:-1.9},{src:'audio/music/competitive-3.mp3',trim:-1.2}],
+      competitiveDeep:[{src:'audio/music/competitive-4-rhythmic-tension.mp3',trim:-.5},{src:'audio/music/competitive-5-sparse-toms.mp3',trim:SPARSE_TOMS_TRIM},{src:'audio/music/competitive-3.mp3',trim:-1.2}],
       halloweenCompetitive:[{src:'audio/music/halloween/halloween-competitive1.mp3',trim:-.7},{src:'audio/music/halloween/halloween-competitive2.mp3',trim:-1.1}],
       // Christmas levels: Paul's 2026-10-13 tracks (xmasmonkey2best is his favourite, xmasmonkey2better second); trims level them to -15.8 LUFS.
       // Competitive plays only the best one; Relaxed shares the rest.
@@ -2121,9 +2124,9 @@
     function cycleVariant(dir){const keys=Object.keys(variants),current=new URLSearchParams(location.search).get('variant')||'A',i=keys.indexOf(current);setVariant(keys[(i+dir+keys.length)%keys.length])}
     // Trials: TRIAL_DEFAULTS holds the approved looks (Depth background, Card Spiral transition, Dimensional menus, Paul's monkey-head badge face,
     // background drift); their alternatives stay in the code but are no longer switchable. DEV_SWITCHES are still picked in dev mode.
-    const TRIALS_KEY='monkeyTrubble.trials',TRIAL_DEFAULTS={bg:'D',transition:'spiral',ui:'dim',avatar:'face',drift:'on',pack:'alternate',scene:'chapter',homeMusic:'homescreen',comboMusic:'swap',theme:'chapter'},DEV_SWITCHES=new Set(['pack','homeMusic','comboMusic','scene','theme']);let trials={...TRIAL_DEFAULTS};try{trials={...TRIAL_DEFAULTS,...JSON.parse(localStorage.getItem(TRIALS_KEY)||'{}')};if(DEBUG_DEFAULTS)trials.pack='alternate';if(trials.homeMusicV!==2){if(trials.homeMusic==='sparse')trials.homeMusic='homescreen';trials.homeMusicV=2}}catch{}
+    const TRIALS_KEY='monkeyTrubble.trials',TRIAL_DEFAULTS={bg:'D',transition:'spiral',ui:'dim',avatar:'face',drift:'on',pack:'alternate',scene:'chapter',homeMusic:'sparse',comboMusic:'swap',theme:'chapter'},DEV_SWITCHES=new Set(['pack','homeMusic','comboMusic','scene','theme']);let trials={...TRIAL_DEFAULTS};try{trials={...TRIAL_DEFAULTS,...JSON.parse(localStorage.getItem(TRIALS_KEY)||'{}')};if(DEBUG_DEFAULTS)trials.pack='alternate';if(trials.homeMusicV!==3){trials.homeMusic='sparse';trials.homeMusicV=3}}catch{}
     const trial=k=>devMode&&DEV_SWITCHES.has(k)?trials[k]:TRIAL_DEFAULTS[k];
-    function applyTrials(){setTimeout(()=>window.__kickSlats?.(),0);syncTheme();MUSIC.settings=[christmasFull()?CHRISTMAS_SETTINGS:HOME_TRACK];{const t=christmasFull()?CHRISTMAS_HOME:HOME_MUSIC_OPTIONS[trial('homeMusic')]||HOME_MUSIC_OPTIONS.homescreen;if(MUSIC.home[0]!==t){MUSIC.home=[t];if(musicList==='home')playMusic('home',true);else if(settingsMusicReturn?.list==='home')settingsMusicReturn.el=musicEl(t)}}const cmp=$('#badgeCompare');if(cmp)cmp.innerHTML=['classic','monkey'].map(f=>`<span>${tierBadge(TIERS[2],44,f)}${f==='classic'?'CLASSIC':'NEW'}</span>`).join('')+`<span>${tierBadge(TIERS[TIERS.length-1],22,'monkey')}22px</span>`;document.body.dataset.bg=trial('bg');document.body.classList.toggle('ui-dim',trial('ui')==='dim');document.body.classList.toggle('bg-drift',trial('drift')==='on');if(trial('bg')==='D')buildCardField();for(const row of document.querySelectorAll('.trial-chips'))for(const b of row.children)b.setAttribute('aria-checked',String(trials[row.dataset.trial]===b.dataset.value))}
+    function applyTrials(){setTimeout(()=>window.__kickSlats?.(),0);syncTheme();MUSIC.settings=[christmasFull()?CHRISTMAS_SETTINGS:HOME_TRACK];{const t=christmasFull()?CHRISTMAS_HOME:HOME_MUSIC_OPTIONS[trial('homeMusic')]||HOME_MUSIC_OPTIONS.sparse;if(MUSIC.home[0]!==t){MUSIC.home=[t];if(musicList==='home')playMusic('home',true);else if(settingsMusicReturn?.list==='home')settingsMusicReturn.el=musicEl(t)}}const cmp=$('#badgeCompare');if(cmp)cmp.innerHTML=['classic','monkey'].map(f=>`<span>${tierBadge(TIERS[2],44,f)}${f==='classic'?'CLASSIC':'NEW'}</span>`).join('')+`<span>${tierBadge(TIERS[TIERS.length-1],22,'monkey')}22px</span>`;document.body.dataset.bg=trial('bg');document.body.classList.toggle('ui-dim',trial('ui')==='dim');document.body.classList.toggle('bg-drift',trial('drift')==='on');if(trial('bg')==='D')buildCardField();for(const row of document.querySelectorAll('.trial-chips'))for(const b of row.children)b.setAttribute('aria-checked',String(trials[row.dataset.trial]===b.dataset.value))}
     // Dev tools (Settings, dev mode only): jump to any level's seeded deal, win instantly without saving, or set up a 3/4 cage.
     let devLevel=1;
     async function devGoTo(level){closeSettings();await artReady(level);progress.mapIntro=true;if(!$('#home').classList.contains('hidden'))playFromHome();startLevel(level)}
