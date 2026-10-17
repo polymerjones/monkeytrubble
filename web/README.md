@@ -22,7 +22,7 @@ The board has four layers placed so the four bottom corners and the four top car
 
 The game opens on a home screen with a big LEVEL button, a rotating featured card and the streak week. Drop `logo.png`, `bg.jpg` or `button.png` into `art/home/` to replace the built-in logo, background or button look.
 
-Testing parameters: `?play` skips the home screen, `?level=N` jumps to a level, `?reset` clears progress, `?today=YYYY-MM-DD` fakes the date for streak testing, and `?soundcheck` lists every card with its calls.
+Testing parameters: `?tutorial` opens the tutorial, `?play` skips the home screen, `?level=N` jumps to a level, `?reset` clears progress, `?today=YYYY-MM-DD` fakes the date for streak testing, and `?soundcheck` lists every card with its calls.
 
 Open `index.html` in a modern browser. No server, install, or internet connection is required.
 
@@ -37,6 +37,10 @@ Three playable visual directions are included:
 - `index.html?variant=C` — Glyph shrine
 
 The deck is built from `../source/art/raw images/` (kept outside the app bundle; run `tools/make-card-images.sh` to rebuild the downsized `cards/thumb` and `cards/hero` copies the game loads). It keeps one portrait per look-alike group (two chimps), plus the Caulin plushie, two Monkey Patriots and the Joker Caulin. Boards repeat some cards as extra pairs to fill all 46 slots. Revealing or selecting a portrait updates the hero bar with the animal’s common name, scientific name, and a short species fact.
+
+## Tutorial
+
+A new player's first PLAY (level 1, tutorial not yet finished) opens a tutorial on a scripted 15-card board, played on the real engine over the home music. Sixteen steps, one line each: cage a face-up card and its match, tap a covered card (it's locked), flip a face-down pair, drag a card into the cage, tap SHUFFLE (a fixed-seed re-deal of ten cards, so it always looks the same), drag a card onto its match, play the Joker, play the chapter's vision card (Owl Monkey, Night Vision flips the hidden cards up), tap OWL EYES and take the pair it finds, fill the cage to 3 of 4, UNDO the last card, read that boosters are limited per level (NEXT), then fill the cage, which ends on a CAGE FULL card and PLAY. Each step rings the cards or booster it uses; a finger shows drags. Steps end on what happened, not how: any normal tap or drag on the ringed cards counts. PLAY or SKIP saves `tutorialDone` and starts the player's level (a new player then gets the expedition map). **Settings → HOW TO PLAY → REPLAY TUTORIAL** replays it without touching progress; **DEV: NEW USER TUTORIAL** (dev tools) plays it as a brand-new player, expedition map included, and saves nothing. The tutorial board is deliberately unsolvable (four singles fill the cage at the end), so Owl Eyes skips its can-this-still-clear check and the Joker skips rebalancing there. The board, seed and steps are `TUT_CELLS`, `TUT_SYMBOLS`, `TUT_SHUFFLE_SEED` and `TUT_STEPS` in `index.html`; `node tools/check-tutorial.mjs` checks the board and the shuffle (`--find-seed` finds a new seed if the board changes).
 
 ## Species database
 

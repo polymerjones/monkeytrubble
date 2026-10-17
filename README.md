@@ -8,7 +8,7 @@ It runs three ways from the same code: as a browser game, as an offline iPhone a
 
 Open `web/index.html` in any modern browser. There's no server, install or internet connection needed.
 
-Handy URL parameters: `?play` skips the home screen, `?level=N` jumps to a level, `?reset` clears progress.
+Handy URL parameters: `?tutorial` opens the tutorial, `?play` skips the home screen, `?level=N` jumps to a level, `?reset` clears progress.
 
 ## Layout
 
