@@ -1,6 +1,6 @@
 // Spanish text (Settings > LANGUAGE > ESPAÑOL). Keys are the exact English the game shows; loc() in index.html looks them up and
 // falls back to English for anything missing, so a new card fact or message shows in English until its line is added here.
-// {0}, {1}… are filled in by loc(text,...values). Praise lines and voiceovers stay English for now (Spanish voice is planned).
+// {0}, {1}… are filled in by loc(text,...values). Praise lines (text and voice) are in PRAISE in index.html, each with its es line.
 window.ES_TEXT={
   "SETTINGS":"AJUSTES",
   "PLAYER":"JUGADOR",

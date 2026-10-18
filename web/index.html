@@ -781,28 +781,31 @@
     let state={level:1,tiles:[],tray:[],pairs:0,shuffles:0,undosLeft:UNDOS_PER_LEVEL,shufflesLeft:SHUFFLES_PER_LEVEL,locked:false,history:[],clearing:new Set(),clock:{elapsed:0,startedAt:null}};
     // GOOD EYE! is now tier 3 of the combo chain (bumpChain). Each one plays a random praise line (never the same line twice running) with its text stamped.
     // Praise voiceovers (audio/praise, catalogued in source/sfx/rec-20261008-1043/CATALOG.md): a line's takes are alternatives.
+    // es: the Spanish line (es-* clips, cut from source/sfx/SpanishpraisesRND1/2 MOD.mp3; take a is RND2, b is RND1). Spanish draws only from lines that have one;
+    // a line with only es (no English text) is Spanish-only. The bien-visto, buena-jugada, sobresaliente and extraordinario clips are from source/sfx/Spanishpraises pickup lines.mp3.
     const PRAISE=[
-      {text:'WAY TO GO!',takes:['way-to-go']},
-      {text:'CLEVER LITTLE MONKEY!',takes:['clever-little-monkey-a','clever-little-monkey-b']},
-      {text:'CLEVER MONKEY!',takes:['clever-monkey-a','clever-monkey-b']},
-      {text:'BRILLIANT!',takes:['brilliant-a','brilliant-b']},
-      {text:'APE-SOLUTELY!',takes:['apesolutely']},
-      {text:'ABSOLUTELY!',takes:['absolutely']},
-      {text:'MONKEY MAGIC!',takes:['monkey-magic-a','monkey-magic-b']},
-      {text:'KING OF THE JUNGLE!',takes:['king-of-the-jungle-a','king-of-the-jungle-b']},
-      {text:'JUNGLE GENIUS!',takes:['jungle-genius-a','jungle-genius-b']},
-      {text:'PRIMATE POWER!',takes:['primate-power']},
-      {text:'WELL SPOTTED!',takes:['well-spotted']},
-      {text:'SMOOTH MOVE!',takes:['smooth-move']},
-      {text:'OUTSTANDING!',takes:['outstanding-a','outstanding-b']},
-      {text:'JUNGLE LEGEND!',takes:['jungle-legend-a','jungle-legend-b']},
-      {text:'6-7 BANANA BREATH!',takes:['six-seven-banana-breath-a','six-seven-banana-breath-b']},
-      {text:'MAGNIFICENT!',takes:['magnificent-a','magnificent-b']},
-      {text:'APE-TASTIC!',takes:['ape-tastic']},
-      {text:'MONKEY TRUBBLE!',takes:['monkey-trubble-a','monkey-trubble-b']}
+      {text:'WAY TO GO!',takes:['way-to-go'],es:{text:'¡BIEN HECHO!',takes:['es-bien-hecho-a','es-bien-hecho-b']}},
+      {text:'CLEVER LITTLE MONKEY!',takes:['clever-little-monkey-a','clever-little-monkey-b'],es:{text:'¡MONITO MUY INTELIGENTE!',takes:['es-monito-muy-inteligente-a','es-monito-muy-inteligente-b']}},
+      {text:'CLEVER MONKEY!',takes:['clever-monkey-a','clever-monkey-b'],es:{text:'¡MONO ASTUTO!',takes:['es-mono-astuto-a','es-mono-astuto-b']}},
+      {text:'BRILLIANT!',takes:['brilliant-a','brilliant-b'],es:{text:'¡BRILLANTE!',takes:['es-brillante-a','es-brillante-b']}},
+      {text:'APE-SOLUTELY!',takes:['apesolutely'],es:{text:'¡ABSOLUTAMENTE SIMIO!',takes:['es-absolutamente-simio-a','es-absolutamente-simio-b']}},
+      {text:'ABSOLUTELY!',takes:['absolutely'],es:{text:'¡ABSOLUTAMENTE!',takes:['es-absolutamente-a','es-absolutamente-b']}},
+      {text:'MONKEY MAGIC!',takes:['monkey-magic-a','monkey-magic-b'],es:{text:'¡MAGIA DE MONO!',takes:['es-magia-de-mono-a','es-magia-de-mono-b']}},
+      {text:'KING OF THE JUNGLE!',takes:['king-of-the-jungle-a','king-of-the-jungle-b'],es:{text:'¡REY DE LA JUNGLA!',takes:['es-rey-de-la-jungla-a','es-rey-de-la-jungla-b']}},
+      {text:'JUNGLE GENIUS!',takes:['jungle-genius-a','jungle-genius-b'],es:{text:'¡GENIO DE LA JUNGLA!',takes:['es-genio-de-la-jungla-a','es-genio-de-la-jungla-b']}},
+      {text:'PRIMATE POWER!',takes:['primate-power'],es:{text:'¡PODER PRIMATE!',takes:['es-poder-primate-a','es-poder-primate-b']}},
+      {text:'WELL SPOTTED!',takes:['well-spotted'],es:{text:'¡BIEN VISTO!',takes:['es-bien-visto']}},
+      {text:'SMOOTH MOVE!',takes:['smooth-move'],es:{text:'¡BUENA JUGADA!',takes:['es-buena-jugada']}},
+      {text:'OUTSTANDING!',takes:['outstanding-a','outstanding-b'],es:{text:'¡SOBRESALIENTE!',takes:['es-sobresaliente']}},
+      {text:'JUNGLE LEGEND!',takes:['jungle-legend-a','jungle-legend-b'],es:{text:'¡LEYENDA DE LA JUNGLA!',takes:['es-leyenda-de-la-jungla-a','es-leyenda-de-la-jungla-b']}},
+      {text:'6-7 BANANA BREATH!',takes:['six-seven-banana-breath-a','six-seven-banana-breath-b'],es:{text:'¡6-7 ALIENTO DE PLÁTANO!',takes:['es-seis-siete-aliento-de-platano-a','es-seis-siete-aliento-de-platano-b']}},
+      {text:'MAGNIFICENT!',takes:['magnificent-a','magnificent-b'],es:{text:'¡MAGNÍFICO!',takes:['es-magnifico-a','es-magnifico-b']}},
+      {text:'APE-TASTIC!',takes:['ape-tastic'],es:{text:'¡FANTÁSTICO SIMIO!',takes:['es-fantastico-simio-a','es-fantastico-simio-b']}},
+      {text:'MONKEY TRUBBLE!',takes:['monkey-trubble-a','monkey-trubble-b'],es:{text:'¡MONOS LÍOS!',takes:['es-monos-lios']}},
+      {es:{text:'¡EXTRAORDINARIO!',takes:['es-extraordinario']}}
     ];let lastPraise=null;
     let goodEyeBusy=false;
-    const SOUND_FILES={...Object.fromEntries(PRAISE.flatMap(p=>p.takes.map(t=>[`praise:${t}`,`audio/praise/${t}.mp3`]))),homeSting:'audio/polyhome.mp3',
+    const SOUND_FILES={...Object.fromEntries(PRAISE.flatMap(p=>[...p.takes||[],...p.es?.takes||[]].map(t=>[`praise:${t}`,`audio/praise/${t}.mp3`]))),homeSting:'audio/polyhome.mp3',
       pickup:'audio/blippage.wav',dragDrop:'audio/sfx/bongo-hit.mp3',match:'audio/success.wav',control:'audio/complete.mp3',win:'audio/sfx/level-complete.mp3',gameOverA:'audio/sfx/game-over-a.mp3',gameOverB:'audio/sfx/game-over-b.mp3',comboSting:'audio/sfx/combo.mp3',owlEyes:'audio/sfx/owl-eyes.mp3',undo:'audio/sfx/undo.mp3',resumeGorilla:'audio/sfx/resume-gorilla.mp3',goldJoker1:'audio/sfx/golden-joker-1.mp3',goldJoker2:'audio/sfx/golden-joker-2.mp3',praiseSting:'audio/sfx/praise-sting.mp3',praiseOrEnd:'audio/sfx/praise-or-end.mp3',levelStart:'audio/japanesevoice.mp3',
       hwGrab1:'audio/halloween/halloween-cardgrab1.wav',hwGrab2:'audio/halloween/halloween-cardgrab2.wav',hwGrab3:'audio/halloween/halloween-cardgrab3.wav',hwCantSelect:'audio/halloween/halloween-cant-select-card.wav',
       hwLevelStart:'audio/halloween/growl-levelstart.wav',hwOwl:'audio/halloween/howl-owleyes.wav',hwShuffle1:'audio/halloween/windupcrank-useshuffle.wav',hwShuffle2:'audio/halloween/windupcrank2-shuffle.wav',
@@ -812,7 +815,7 @@
       callAgile:'audio/video-calls/official-agile-gibbon.mp3',callHowler:'audio/video-calls/HOWLERYELL.wav',callSmallApe:'audio/video-calls/SMALLAPEYELL.wav',
       callGorilla1:'audio/video-calls/GORILLAYELL1.wav',callGorilla2:'audio/video-calls/GORILLAYELL2.wav',
       callLemur1:'audio/video-calls/lemur1.wav',callLemur2:'audio/video-calls/lemur2.wav',callLemur3:'audio/video-calls/lemur3.wav',
-      callChimp:'audio/video-calls/chimpanzee.mp3',callScream:'audio/monkeyscream.mp3',callShout:'audio/monkey-shout.mp3',callYell:'audio/monkeyyell3.mp3',callBaby:'audio/babymonkey.mp3',callJoker:'audio/monkeyscream2.mp3',jokerClear:'audio/video-calls/jokersqueal.wav',kevinClear:'audio/video-calls/kevinkellyclear.mp3',cageRattle1:'audio/sfx/cage-rattle-1.mp3',cageRattle2:'audio/sfx/cage-rattle-2.mp3',cageRattle3:'audio/sfx/cage-rattle-3.mp3',cageRattle4:'audio/sfx/cage-rattle-4.mp3',caulinClear:'audio/video-calls/kaulinannounce2.mp3',
+      callChimp:'audio/video-calls/chimpanzee.mp3',callScream:'audio/monkeyscream.mp3',callShout:'audio/monkey-shout.mp3',callYell:'audio/monkeyyell3.mp3',callBaby:'audio/babymonkey.mp3',callHuhu:'audio/huhu.mp3',callJoker:'audio/monkeyscream2.mp3',jokerClear:'audio/video-calls/jokersqueal.wav',kevinClear:'audio/video-calls/kevinkellyclear.mp3',cageRattle1:'audio/sfx/cage-rattle-1.mp3',cageRattle2:'audio/sfx/cage-rattle-2.mp3',cageRattle3:'audio/sfx/cage-rattle-3.mp3',cageRattle4:'audio/sfx/cage-rattle-4.mp3',caulinClear:'audio/video-calls/kaulinannounce2.mp3',
       cantSelect:'audio/video-calls/card%20cant%20select.wav',warClear1:'audio/video-calls/warmonkeyclear1.wav',warClear2:'audio/video-calls/warmonkeyclear2.wav',warClear3:'audio/video-calls/warmonkeyclear3.wav'
     };
     const soundBuffers={},fallbackAudio={};let soundEnabled=true,audioUnlocked=false,pendingLevelStart=true,audioContext=null,reverbInput,horrorInput=null,callsInput=null,musicGain,featuredSymbol=null,musicDuckTimer;
@@ -835,7 +838,7 @@
     // Per-sound trims in dB, from measured loudness, so each category plays at one level (at the volumes the calls already use):
     // monkey calls about -10.5 LUFS (loudest), praise lines -12, voices -13/-14, stings -15, the pair chime -20, UI blips last.
     // 'praise' covers every praise:* take. A master limiter (setupAudioGraph) keeps the louder mix from clipping.
-    const MIX_DB={cageRattle3:3.5,cageRattle4:.5,owlEyes:0,hwGrab1:7.5,hwGrab2:7,hwGrab3:8,hwCantSelect:12,hwLevelStart:7,hwOwl:8,hwShuffle1:10,hwShuffle2:10,hwGameOver:9,hwJoker:10,hwScream:6,callHamadryas:0,callGuereza:3,callBarbary:0.8,callDeBrazza:0.2,callMandrill:0.9,callCapuchin:1.6,callAgile:-2.3,callHowler:4,callSmallApe:1,callGorilla1:-0.4,callGorilla2:3.7,callLemur1:-0.1,callLemur2:-0.2,callLemur3:0.5,callChimp:-3.9,callScream:0.8,callShout:6.9,callYell:-0.2,callBaby:6.1,caulinClear:4.5,kevinClear:1.6,jokerClear:8.4,warClear1:-3.2,warClear2:7.1,warClear3:2,callJoker:-0.7,praise:1.3,levelStart:2.6,homeSting:0.9,win:2.9,gameOverA:1.4,gameOverB:1.4,comboSting:2.7,praiseSting:2.7,praiseOrEnd:2.1,match:2.3,pickup:4,cantSelect:4.9};
+    const MIX_DB={cageRattle3:3.5,cageRattle4:.5,owlEyes:0,hwGrab1:7.5,hwGrab2:7,hwGrab3:8,hwCantSelect:12,hwLevelStart:7,hwOwl:8,hwShuffle1:10,hwShuffle2:10,hwGameOver:9,hwJoker:10,hwScream:6,callHamadryas:0,callGuereza:3,callBarbary:0.8,callDeBrazza:0.2,callMandrill:0.9,callCapuchin:1.6,callAgile:-2.3,callHowler:4,callSmallApe:1,callGorilla1:-0.4,callGorilla2:3.7,callLemur1:-0.1,callLemur2:-0.2,callLemur3:0.5,callChimp:-3.9,callScream:0.8,callShout:6.9,callYell:-0.2,callBaby:6.1,callHuhu:2.6,caulinClear:4.5,kevinClear:1.6,jokerClear:8.4,warClear1:-3.2,warClear2:7.1,warClear3:2,callJoker:-0.7,praise:1.3,levelStart:2.6,homeSting:0.9,win:2.9,gameOverA:1.4,gameOverB:1.4,comboSting:2.7,praiseSting:2.7,praiseOrEnd:2.1,match:2.3,pickup:4,cantSelect:4.9};
     // Music: the home screen loops its own track; in a level the Music Mode playlist (Settings) shuffles, never the same track twice in a row.
     // trim (dB) evens out loudness: every track is matched to polyjong-mus1 (-15.8 LUFS).
     // The classic home track doubles as a calm level track and the Settings music.
@@ -1835,7 +1838,7 @@
       if(reduceMotion.matches){el.style.opacity=(hi*.75).toFixed(2);return}el.style.opacity='';el.animate([{opacity:hi},{opacity:lo,offset:.5},{opacity:hi}],{duration:1400-500*k,iterations:Infinity,easing:'ease-in-out'})}
     function comboEdgeOff(){const el=$('#edgeGlow'),cur=+getComputedStyle(el).opacity;el.getAnimations().forEach(a=>a.cancel());el.style.opacity='';if(cur>.01)el.animate([{opacity:cur},{opacity:0}],{duration:800,easing:'ease-out'})}
     function showGoodEye(){
-      const pool=PRAISE.filter(p=>p!==lastPraise),line=pool[rand(pool.length)],key=`praise:${line.takes[rand(line.takes.length)]}`;lastPraise=line;
+      const pool=PRAISE.filter(p=>p!==lastPraise&&(lang==='es'?p.es:p.text)),pick=pool[rand(pool.length)],line=lang==='es'?pick.es:pick,key=`praise:${line.takes[rand(line.takes.length)]}`;lastPraise=pick;
       const el=$('#goodEye'),voiced=soundEnabled&&!!(soundBuffers[key]||fallbackAudio[key]),holdMs=Math.max(2500,(voiced?soundLengthMs(key,1400):0)+1600);goodEyeBusy=true;
       // Long lines wrap; a single long word (MAGNIFICENT!) is shrunk until it fits the screen.
       el.textContent=line.text;el.style.fontSize=line.text.length>14?'clamp(1.7rem,8.6vw,2.7rem)':'';fitStamp(el,1.15);
@@ -2531,8 +2534,8 @@
       if(tutorial)startTutorial({sim});
       else if(resumable){if(state.clock.resume){state.clock.resume=false;startClock()}}
       else{startLevel(progress.level,{silent:true});pendingLevelStart=false}
-      // Pressing PLAY announces "MONKEY TRUBBLE!" (in place of the level-start voice), with the praise doubler + echo, over undipped music.
-      const take=`praise:monkey-trubble-${'ab'[rand(2)]}`;
+      // Pressing PLAY announces "MONKEY TRUBBLE!" ("¡MONOS LÍOS!" in Spanish) in place of the level-start voice, with the praise doubler + echo, over undipped music.
+      const take=lang==='es'?'praise:es-monos-lios':`praise:monkey-trubble-${'ab'[rand(2)]}`;
       // Halloween levels: the announcement is pitched down into the horror reverb, then the growl follows.
       if(state.pack==='halloween'){playSound(take,{volume:1,delay:.1,praise:true,rate:PRAISE_HORROR_RATE,horror:true});playSound('hwLevelStart',{volume:.9,delay:.1+soundLengthMs(take,1500)/PRAISE_HORROR_RATE/1000})}
       else playSound(take,{volume:1,delay:.1,praise:true})
@@ -2723,7 +2726,7 @@
     document.querySelectorAll('.dip').forEach(dip=>dip.onclick=e=>{
       const value=e.target.closest('button')?.dataset.value,key=dip.dataset.setting;if(!value)return;
       if(key==='sound'){if((value==='on')!==soundEnabled){$('#sound').click();$('#homeSound').textContent=soundEnabled?'♪':'♩'}}
-      else{if(progress.settings[key]===value)return;progress.settings[key]=value;saveProgress();if(key==='music'&&$('#home').classList.contains('hidden'))playMusic(levelMusic());if(key==='difficulty')renderHome();if(key==='cage')applyCageStyle();if(key==='lang')setLanguage(value)}
+      else{if(progress.settings[key]===value)return;progress.settings[key]=value;saveProgress();if(key==='music'&&$('#home').classList.contains('hidden'))playMusic(levelMusic());if(key==='difficulty')renderHome();if(key==='cage')applyCageStyle();if(key==='lang'){setLanguage(value);playSound('callHuhu',{volume:.8})}}
       playSound('pickup',{volume:.16,rate:value==='on'||value==='competitive'||value==='normal'?1.2:.95});haptic('cardCaged');renderSettings()
     });
     $('#gearBtn').onclick=openSettings;$('#homeGear').onclick=openSettings;$('#settingsDone').onclick=closeSettings;$('#settingsClose').onclick=closeSettings;$('#settings').onclick=e=>{if(e.target===e.currentTarget)closeSettings()};
@@ -2737,7 +2740,8 @@
       for(let n;(n=walk.nextNode());){const v=swap(n.nodeValue);if(v!==n.nodeValue)n.nodeValue=v}
       for(const a of ['aria-label','title','placeholder'])for(const el of document.querySelectorAll(`[${a}]`))if(!el.closest('.dev-only,.variant-switcher')){const v=swap(el.getAttribute(a));if(v!==el.getAttribute(a))el.setAttribute(a,v)}
       for(const el of document.querySelectorAll('[data-loc-html]'))el.innerHTML=loc(el.dataset.locHtml);document.documentElement.lang=lang}
-    // Settings LANGUAGE: switches every screen at once (the hero card and home redraw, page text swaps). Praise voice lines stay English.
+    // Settings LANGUAGE: switches every screen at once (the hero card and home redraw, page text swaps), and praise lines switch to their Spanish voice.
+    // Changing it plays a monkey hu-hu (callHuhu, cut from source/sfx/Spanishpraises pickup lines.mp3).
     function setLanguage(next){lang=next==='es'?'es':'en';localizePage();renderHome();$('#featuredArt').dataset.renderKey='\u0000';renderFeatured()}
     async function bootstrap(){localizePage();document.body.classList.toggle('dev',devMode);setupCageStyle();new ResizeObserver(()=>{if(state.tiles.length)render()}).observe(board);setupFeaturedGloss();setupLightbox();setupTrials();setupMicroSlats();setVariant('D');loadHomeArt();buildHomeTicker();if(isIOSApp&&!params.has('play'))startHomeMusicEarly();await preloadAssets();warmMoteSprites();warmMusic(levelMusic(progress.level,levelPack(progress.level)));startLevel(progress.level,{silent:true});pendingLevelStart=false;if(params.has('tutorial'))playFromHome({tutorial:true});else if(params.has('play'))playFromHome();else showHome();if(!progress.player)openNameDialog();flushSync();playHomeSting();setInterval(()=>{if(!document.hidden)renderClock()},250);if(params.has('soundcheck'))showSoundcheck();if(isIOSApp)unlockAudio()}
     bootstrap();
