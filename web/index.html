@@ -804,8 +804,12 @@
       {text:'MONKEY TRUBBLE!',takes:['monkey-trubble-a','monkey-trubble-b'],es:{text:'¡MONOS LÍOS!',takes:['es-monos-lios']}},
       {es:{text:'¡EXTRAORDINARIO!',takes:['es-extraordinario']}}
     ];let lastPraise=null;
+    // Voiced callouts (also audio/praise; cut from source/sfx/english pickup lines.mp3 and Spanishpraises pickup lines 2.mp3): the combo
+    // stamps (CHAIN_CALLOUTS), CAGE FULL / NO MOVES, and the win screen's promotion. promoted and es-ascendiste end with a monkey call.
+    const CALLOUTS={nice:{en:'combo-nice',es:'es-combo-bien'},monkeyBusiness:{en:'combo-monkey-business',es:'es-combo-cosa-de-monos'},goingBananas:{en:'combo-going-bananas',es:'es-combo-a-lo-loco'},
+      monkeyMayhem:{en:'combo-monkey-mayhem',es:'es-combo-caos-de-monos'},cageFull:{en:'cage-full',es:'es-jaula-llena'},noMoves:{en:'no-moves',es:'es-sin-movimientos'},promoted:{en:'promoted',es:'es-ascendiste'}};
     let goodEyeBusy=false;
-    const SOUND_FILES={...Object.fromEntries(PRAISE.flatMap(p=>[...p.takes||[],...p.es?.takes||[]].map(t=>[`praise:${t}`,`audio/praise/${t}.mp3`]))),homeSting:'audio/polyhome.mp3',
+    const SOUND_FILES={...Object.fromEntries([...PRAISE.flatMap(p=>[...p.takes||[],...p.es?.takes||[]]),...Object.values(CALLOUTS).flatMap(c=>[c.en,c.es])].map(t=>[`praise:${t}`,`audio/praise/${t}.mp3`])),homeSting:'audio/polyhome.mp3',
       pickup:'audio/blippage.wav',dragDrop:'audio/sfx/bongo-hit.mp3',match:'audio/success.wav',control:'audio/complete.mp3',win:'audio/sfx/level-complete.mp3',gameOverA:'audio/sfx/game-over-a.mp3',gameOverB:'audio/sfx/game-over-b.mp3',comboSting:'audio/sfx/combo.mp3',owlEyes:'audio/sfx/owl-eyes.mp3',undo:'audio/sfx/undo.mp3',resumeGorilla:'audio/sfx/resume-gorilla.mp3',goldJoker1:'audio/sfx/golden-joker-1.mp3',goldJoker2:'audio/sfx/golden-joker-2.mp3',praiseSting:'audio/sfx/praise-sting.mp3',praiseOrEnd:'audio/sfx/praise-or-end.mp3',levelStart:'audio/japanesevoice.mp3',
       hwGrab1:'audio/halloween/halloween-cardgrab1.wav',hwGrab2:'audio/halloween/halloween-cardgrab2.wav',hwGrab3:'audio/halloween/halloween-cardgrab3.wav',hwCantSelect:'audio/halloween/halloween-cant-select-card.wav',
       hwLevelStart:'audio/halloween/growl-levelstart.wav',hwOwl:'audio/halloween/howl-owleyes.wav',hwShuffle1:'audio/halloween/windupcrank-useshuffle.wav',hwShuffle2:'audio/halloween/windupcrank2-shuffle.wav',
@@ -1601,6 +1605,7 @@
       if(!isFree(tile)){rejectTap(node);showBlockers(tile);tutorialEvent('blocked');return}
       releaseHint(tile.id);
       if(tile.revealed&&tile.revealedAt&&performance.now()-tile.revealedAt<260)return;
+      if(tile.pairTapAt&&performance.now()-tile.pairTapAt<700)return;
       startClock();featuredSymbol=tile.symbol;renderFeatured();
       if(!tile.revealed){
         const previous=state.tiles.find(t=>t.id!==tile.id&&t.active&&t.temporaryReveal),previousNode=previous?board.querySelector(`[data-id="${previous.id}"]`):null;
@@ -1689,6 +1694,23 @@
       return false
     }
     const activePresses=new Map();
+    // Two-finger tap: two free cards pressed together that pair go to the cage together, face up or face down. A face-down card
+    // only pairs this way with a real match (never the Joker, which waits to be tapped or dragged, as when flipping one up).
+    const pressPair=(a,b)=>a!==b&&a.active&&isFree(a)&&isMate(a.symbol,b.symbol)&&(a.revealed&&b.revealed||a.symbol!==JOKER&&b.symbol!==JOKER);
+    // Face-down cards in the pair turn over first (one undo step puts them back), then both fly in. The finger lifts that follow are
+    // ignored (pairTapAt), so they never send a card on its own. Normal, cage too full: both are shown face up and the cage rattles.
+    function tapPair(a,b){
+      const now=performance.now(),down=[a,b].filter(t=>!t.revealed),msg=loc('PAIR CAGED // {0}',cardName(b.symbol));a.pairTapAt=b.pairTapAt=now;
+      if(!pairFits()){down.forEach(t=>{t.revealed=true;t.temporaryReveal=false;t.revealedAt=now});render();cageRattle();return}
+      state.history.push(snapshot());if(!down.length){cagePair(a,b,msg);return}
+      const release=hold(),s=state,variants=down.map(()=>FLIP_VARIANTS[rand(FLIP_VARIANTS.length)]),faces=down.map(t=>faceReady(t.symbol));
+      playSound('pickup',{volume:.075,rate:1.12+Math.random()*.08});haptic('cardFlip');
+      down.forEach((t,i)=>{const node=board.querySelector(`[data-id="${t.id}"]`);node?.classList.add('on-top');node?.animate(flipFrames(variants[i]),{duration:FLIP_OUT_MS,easing:'cubic-bezier(.38,0,.7,1)',fill:'forwards'})});
+      setTimeout(()=>Promise.all(faces.map(faceOrTimeout)).then(()=>{if(s!==state){release();return}
+        down.forEach(t=>{t.revealed=true;t.temporaryReveal=false;t.revealedAt=performance.now()});render();
+        down.forEach((t,i)=>board.querySelector(`[data-id="${t.id}"]`)?.animate(flipFrames(variants[i],true),{duration:FLIP_IN_MS,easing:'cubic-bezier(.2,.72,.2,1)'}));
+        setTimeout(()=>{release();if(s===state&&a.active&&b.active)cagePair(a,b,msg)},FLIP_IN_MS+10)}),FLIP_OUT_MS-5)
+    }
     // Free cards act on pointerup rather than click: iOS drops the click on a light or slightly rolling tap, which made cards feel sticky.
     // The click that may still follow is ignored for a moment (tapAt), and a peek drag never counts as a tap.
     function enablePeekDrag(node){
@@ -1736,7 +1758,7 @@
         if(settling){const {g,st}=settling;settling=null;g.style.pointerEvents='';g.onpointerdown=null;g.classList.remove('settling');g.classList.add('dragging');
           Object.assign(st,{home:false,landed:false,onSettled:null,tx:st.x,ty:st.y,ts:LIFT_SCALE});ghost=g;anim=st;startX=e.clientX-st.x;startY=e.clientY-st.y;
           dragging=true;pressed=false;peekDragging=true;document.body.classList.add('peek-drag');markWouldFree(node.dataset.id,true);node.setPointerCapture(e.pointerId);playDragSound('lift');haptic('cardFlip');return}
-        const tile=state.tiles.find(t=>t.id===node.dataset.id);if(tile?.revealed){const mate=[...activePresses.values()].find(t=>t!==tile&&isMate(t.symbol,tile.symbol)&&t.active&&t.revealed&&isFree(t));if(mate){activePresses.clear();if(!pairFits()){cageRattle();return}state.history.push(snapshot());cagePair(mate,tile,loc('PAIR CAGED // {0}',cardName(tile.symbol)));return}activePresses.set(e.pointerId,tile)}startX=e.clientX;startY=e.clientY;dragging=false;pressed=true;node.classList.remove('touch-glow');void node.offsetWidth;node.classList.add('touch-glow');setTimeout(()=>node.classList.remove('touch-glow'),560);node.setPointerCapture(e.pointerId)};
+        const tile=state.tiles.find(t=>t.id===node.dataset.id);if(tile?.active&&tile.symbol!==KEVIN){const mate=[...activePresses.values()].find(t=>pressPair(t,tile));if(mate){activePresses.clear();tapPair(mate,tile);return}activePresses.set(e.pointerId,tile)}startX=e.clientX;startY=e.clientY;dragging=false;pressed=true;node.classList.remove('touch-glow');void node.offsetWidth;node.classList.add('touch-glow');setTimeout(()=>node.classList.remove('touch-glow'),560);node.setPointerCapture(e.pointerId)};
       node.onpointermove=e=>{if(!node.hasPointerCapture(e.pointerId))return;const dx=e.clientX-startX,dy=e.clientY-startY;if(!dragging&&Math.hypot(dx,dy)>14){dragging=true;peekDragging=true;document.body.classList.add('peek-drag');lift()}if(dragging&&anim){anim.tx=dx;anim.ty=dy;target=findDropTarget(tileOf(node),origin.x+dx,origin.y+dy,origin);showDropTarget(target)}};
       node.onpointerup=e=>{activePresses.delete(e.pointerId);if(node.hasPointerCapture(e.pointerId))node.releasePointerCapture(e.pointerId);const wasDrag=dragging,wasPressed=pressed;pressed=false;node.dataset.tapAt=performance.now();if(wasDrag){if(resolveDrop(tileOf(node),target,{releaseInto,drop,unflip}))return;setMessage(loc('Peek only — the card underneath stays barricaded until this card is played.'))}drop(unflip);if(wasPressed&&!wasDrag){const tile=state.tiles.find(t=>t.id===node.dataset.id);if(tile)handleTile(tile,node)}};
       node.onpointercancel=e=>{activePresses.delete(e.pointerId);pressed=false;drop(unflip)};
@@ -1788,7 +1810,8 @@
     // first clear, its ring draining to show how long is left to keep it going); if it runs out the chain
     // quietly ends. Opening bonus pairs, Kevin and the Continue burst don't count (they never pass through clearPair's chain hook).
     // Tier 3 is the classic GOOD EYE! (praise line + an Owl Eyes); 4+ add stings, an edge glow, and a small score bonus at the end.
-    const CHAIN_WINDOW_MS=8000,CHAIN_TIERS={2:'NICE!',4:'MONKEY BUSINESS!',5:'GOING BANANAS!',6:'MONKEY MAYHEM!'},CHAIN_BONUS_PER_TIER=.04,CHAIN_BONUS_MAX=.2;
+    const CHAIN_WINDOW_MS=8000,CHAIN_TIERS={2:'NICE!',4:'MONKEY BUSINESS!',5:'GOING BANANAS!',6:'MONKEY MAYHEM!'},CHAIN_CALLOUTS={2:'nice',4:'monkeyBusiness',5:'goingBananas',6:'monkeyMayhem'},MAYHEM_REPEAT_MS=4000,CHAIN_BONUS_PER_TIER=.04,CHAIN_BONUS_MAX=.2;
+    let mayhemSaidAt=0;
     const chainBonus=best=>Math.min(CHAIN_BONUS_MAX,Math.max(0,best-3)*CHAIN_BONUS_PER_TIER);
     let chainTimer=0;
     function chainMeter(){let m=$('#chainMeter');if(!m){m=document.createElement('div');m.className='chain-meter';m.id='chainMeter';m.innerHTML='<i></i><b></b>';$('.tray-panel').append(m)}return m}
@@ -1800,6 +1823,8 @@
       clearTimeout(chainTimer);const s=state;chainTimer=setTimeout(()=>{if(s===state)endChain()},CHAIN_WINDOW_MS);
       const n=c.n;setMusicTension(n);if(n>=2)playComboHit(n);if(n===3){if(!goodEyeBusy)showGoodEye();if(state.hintsLeft<HINTS_MAX){state.hintsLeft++;render();const badge=$('#hintCount');badge.classList.remove('pop');void badge.offsetWidth;badge.classList.add('pop')}return}
       const text=loc(CHAIN_TIERS[Math.min(n,6)]);if(!text)return;chainStamp(n>=6?`${text} ×${n}`:text,n);
+      // The stamp is said too (NICE! a little softer, as it's the most frequent); past ×6 MONKEY MAYHEM! is said at most every MAYHEM_REPEAT_MS.
+      if(n<6)sayCallout(CHAIN_CALLOUTS[n],{delay:.1,volume:n===2?.75:1});else if(now-mayhemSaidAt>MAYHEM_REPEAT_MS&&sayCallout('monkeyMayhem',{delay:.1}))mayhemSaidAt=now;
       if(n===5)playSound('praiseSting',{volume:.45,delay:.15});
       comboEdge(n);
       if(n>=4&&liveDust<40){const r=$('#board').getBoundingClientRect();fairyDust(r.left+r.width/2,r.top+r.height*.35,14)}haptic('pairCleared')}
@@ -1837,6 +1862,13 @@
     function comboEdge(n){if(n<EDGE_FROM)return;const el=$('#edgeGlow'),k=Math.min(n-EDGE_FROM,4)/4,hi=.35+.65*k,lo=hi*.45;el.style.setProperty('--edge-i',k.toFixed(2));el.getAnimations().forEach(a=>a.cancel());
       if(reduceMotion.matches){el.style.opacity=(hi*.75).toFixed(2);return}el.style.opacity='';el.animate([{opacity:hi},{opacity:lo,offset:.5},{opacity:hi}],{duration:1400-500*k,iterations:Infinity,easing:'ease-in-out'})}
     function comboEdgeOff(){const el=$('#edgeGlow'),cur=+getComputedStyle(el).opacity;el.getAnimations().forEach(a=>a.cancel());el.style.opacity='';if(cur>.01)el.animate([{opacity:cur},{opacity:0}],{duration:800,easing:'ease-out'})}
+    // One voice line at a time: a callout waits for the voice before it (up to maxWait seconds) or is skipped, so lines never talk over each other.
+    let voiceFreeAt=0;
+    function sayCallout(id,{delay=0,maxWait=.8,volume=1}={}){
+      const key=`praise:${CALLOUTS[id][lang==='es'?'es':'en']}`;if(!soundEnabled||!(soundBuffers[key]||fallbackAudio[key]))return false;
+      const now=performance.now()/1000,start=Math.max(now+delay,voiceFreeAt);if(start-now-delay>maxWait)return false;
+      const hw=state.pack==='halloween',r=hw?PRAISE_HORROR_RATE:1,d=start-now;voiceFreeAt=start+soundLengthMs(key,1200)/r/1000;
+      duckMusic(duckFor(key,{delay:d,rate:r})+250);playSound(key,{volume,delay:d,praise:true,rate:r,horror:hw});return true}
     function showGoodEye(){
       const pool=PRAISE.filter(p=>p!==lastPraise&&(lang==='es'?p.es:p.text)),pick=pool[rand(pool.length)],line=lang==='es'?pick.es:pick,key=`praise:${line.takes[rand(line.takes.length)]}`;lastPraise=pick;
       const el=$('#goodEye'),voiced=soundEnabled&&!!(soundBuffers[key]||fallbackAudio[key]),holdMs=Math.max(2500,(voiced?soundLengthMs(key,1400):0)+1600);goodEyeBusy=true;
@@ -1845,7 +1877,7 @@
       // The praise sting leads (the chain's own combo hit already played), then the praise line.
       const hw=state.pack==='halloween';if(hw)playSound('hwScream',{volume:.9});else playSound('praiseSting',{volume:.6,delay:.12});
       // On Halloween levels the praise line is pitched down (PRAISE_HORROR_RATE) into the horror reverb.
-      if(voiced){const r=hw?PRAISE_HORROR_RATE:1;duckMusic(duckFor(key,{delay:.4,rate:r})+250);playSound(key,{volume:1,delay:.4,praise:true,rate:r,horror:hw})}
+      if(voiced){const r=hw?PRAISE_HORROR_RATE:1;duckMusic(duckFor(key,{delay:.4,rate:r})+250);playSound(key,{volume:1,delay:.4,praise:true,rate:r,horror:hw});voiceFreeAt=performance.now()/1000+.4+soundLengthMs(key,1400)/r/1000}
       const r=$('#board').getBoundingClientRect();el.style.top=`${r.top+r.height*.42}px`;
       el.getAnimations().forEach(a=>a.cancel());
       // The zoom-in starts big but never wider than the screen.
@@ -2033,7 +2065,7 @@
     function finish(won,reason='overflow'){
       state.over=true;state.locked=true;pauseClock();comboEdgeOff();
       if(state.tutorial){if(won){playSound('win',{volume:.72});tutorialEvent('won')}else{playSound('gameOverA',{volume:.8});haptic('cageOverflow');tutorialCageFull();tutorialEvent('full')}return}
-      if(!won){$('#overlay').classList.remove('tut-mode');playSound(Math.random()<.6?'gameOverA':'gameOverB',{volume:.8});haptic('cageOverflow');const stuck=reason==='stuck';$('#resultTitle').textContent=loc(stuck?'NO MOVES':'CAGE FULL');$('#resultTitle').style.color='var(--danger)';$('#resultText').textContent=loc(stuck?'The cards left in the cage can’t be matched.':'Four unmatched cards filled the Holding Cage.');state.failReason=reason;labelAdButtons();$('#continueLevel').hidden=$('#continuePitch').hidden=stuck||!canReward('continue');const adShuffle=stuck&&state.shufflesLeft<=0&&canReward('shuffle');$('#adShuffle').hidden=!adShuffle;$('#retryLevel').classList.toggle('primary',stuck&&!adShuffle);const canUndo=state.undosLeft>0&&state.history.length>0;$('#overlayUndo').hidden=!canUndo;$('#adUndo').hidden=canUndo||!state.history.length||!canReward('undo');$('#overlayUndo').textContent=loc('Undo last move ({0})',state.undosLeft);$('#overlay').classList.add('show');return}
+      if(!won){$('#overlay').classList.remove('tut-mode');const over=Math.random()<.6?'gameOverA':'gameOverB';playSound(over,{volume:.8});haptic('cageOverflow');const stuck=reason==='stuck';sayCallout(stuck?'noMoves':'cageFull',{delay:soundLengthMs(over,600)/1000*.8,maxWait:1.5});$('#resultTitle').textContent=loc(stuck?'NO MOVES':'CAGE FULL');$('#resultTitle').style.color='var(--danger)';$('#resultText').textContent=loc(stuck?'The cards left in the cage can’t be matched.':'Four unmatched cards filled the Holding Cage.');state.failReason=reason;labelAdButtons();$('#continueLevel').hidden=$('#continuePitch').hidden=stuck||!canReward('continue');const adShuffle=stuck&&state.shufflesLeft<=0&&canReward('shuffle');$('#adShuffle').hidden=!adShuffle;$('#retryLevel').classList.toggle('primary',stuck&&!adShuffle);const canUndo=state.undosLeft>0&&state.history.length>0;$('#overlayUndo').hidden=!canUndo;$('#adUndo').hidden=canUndo||!state.history.length||!canReward('undo');$('#overlayUndo').textContent=loc('Undo last move ({0})',state.undosLeft);$('#overlay').classList.add('show');return}
       state.won=true;playSound('win',{volume:.72});showLevelComplete(recordLevelClear())
     }
     // Continue after CAGE FULL: every caged card bursts together with one matching card from the board (bonus pairs), so the level
@@ -2155,7 +2187,7 @@
       box.animate([{opacity:0,transform:'translateY(12px)'},{opacity:1,transform:'none'}],{duration:320,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'});
       const t0=performance.now();await new Promise(resolve=>{const tick=now=>{const k=Math.min(1,(now-t0)/600),e=1-Math.pow(1-k,3);$('#winPoints').textContent=`+${Math.round(r.points*e)}`;$('#winXp').textContent=`+${Math.round(r.xpGain*e)}`;if(k<1&&s===state)requestAnimationFrame(tick);else resolve()};requestAnimationFrame(tick)});
       if(s!==state)return;playSound('pickup',{volume:.18,rate:1.4});
-      if(!r.easy){fill.animate([{width:`${from*100}%`},{width:`${tierProgress(r.rating)*100}%`}],{duration:700,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'});if(tier!==before&&TIERS.indexOf(tier)>TIERS.indexOf(before)){await wait(500);if(s!==state)return;explode($('#winTierBadge'));playSound('praiseOrEnd',{volume:.75});haptic('pairCleared');$('#winTierText').textContent=loc('PROMOTED TO {0}!',loc(tier.name))}}
+      if(!r.easy){fill.animate([{width:`${from*100}%`},{width:`${tierProgress(r.rating)*100}%`}],{duration:700,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'});if(tier!==before&&TIERS.indexOf(tier)>TIERS.indexOf(before)){await wait(500);if(s!==state)return;explode($('#winTierBadge'));playSound('praiseOrEnd',{volume:.75});sayCallout('promoted',{delay:.35,maxWait:2});haptic('pairCleared');$('#winTierText').textContent=loc('PROMOTED TO {0}!',loc(tier.name))}}
       // Climbed the global board (or joined it): say so, with a way in. The board itself never pops up uninvited.
       const climb=await Promise.race([state.rankSync,wait(2500)]);if(s!==state)return;s.climbScreen=prepareClimb(r,climb);
       $('#winRank').hidden=true;$('#winUnlock').hidden=true;$('#winChapter').hidden=true;
@@ -2472,7 +2504,7 @@
     }
     // The cage filled: the real CAGE FULL dialog, showing only RESUME, which here clears the cage straight away (no ad). The real
     // resume empties the board (the last four cards are the ones caged), so the level clears and the tutorial ends on YOU'RE READY.
-    function tutorialCageFull(){state.failReason='overflow';$('#resultTitle').textContent=loc('CAGE FULL');$('#resultTitle').style.color='var(--danger)';$('#resultText').textContent=loc('Four unmatched cards filled the Holding Cage.');labelAdButtons();
+    function tutorialCageFull(){state.failReason='overflow';sayCallout('cageFull',{delay:.3,maxWait:1.5});$('#resultTitle').textContent=loc('CAGE FULL');$('#resultTitle').style.color='var(--danger)';$('#resultText').textContent=loc('Four unmatched cards filled the Holding Cage.');labelAdButtons();
       $('#tutResumeNote').textContent=loc(adsShown()?'That ends the level. RESUME is optional: watch a short ad and your cage is cleared so you can keep going. In the tutorial it’s free. Tap it.':'That ends the level. RESUME clears your cage so you can keep going, once each level. Tap it.');
       $('#continueLevel').hidden=$('#continuePitch').hidden=false;$('#overlay').classList.add('tut-mode','show');$('#continueLevel').focus()}
     // Every frame: a ring around each card the step uses (from its live position, so resizes, rotation and animations are followed), a

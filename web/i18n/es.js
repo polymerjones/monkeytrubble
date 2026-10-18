@@ -71,7 +71,7 @@ window.ES_TEXT={
   "NICE!":"¡BIEN!",
   "MONKEY BUSINESS!":"¡COSA DE MONOS!",
   "GOING BANANAS!":"¡A LO LOCO!",
-  "MONKEY MAYHEM!":"¡CAOS MONO!",
+  "MONKEY MAYHEM!":"¡CAOS DE MONOS!",
   "Monkey caged. Proceed":"Mono enjaulado. Sigue",
   "The cage needs two open spaces for a new pair.":"La jaula necesita dos huecos libres para una pareja nueva.",
   "No safe match yet — try {0}’s {1}.":"Aún no hay pareja segura: prueba la {1} de {0}.",
