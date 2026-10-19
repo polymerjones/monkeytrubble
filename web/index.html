@@ -838,8 +838,9 @@
       {name:'KINGDOM OF THE CANOPY',ui:'canopy',habitat:'Upper tropical rainforest canopy',shapes:['twinstacks','valley','columns','monkey'],featured:['S2_GIBBON','S2_LTMACAQUE','S2_PIGTAILED','APE_SUMATRAN','APE_SIAMANG'],foods:['F_BANANA'],scene:'canopy',vision:'OWL',ambient:'leaves',music:{competitive:'gorilla'},
         pal:{sky:['#f2c27a','#bfe3d6'],far:'#4f9a6a',mid:'#2e7048',near:'#14452a',accent:'#ffe28a'}},
       // Ice Age (2026-10-19): Paul's battle-ape set (CARD_DATA set:'iceage'), dealt in full; never a Halloween level (noSeason).
+      // cardFill: its full-body art is drawn on bigger cards (1.1 of a grid cell, overlapping neighbours a little; see boardMetrics).
       // altArt: two paintings, alternating by level (art/chapters/11 on the chapter's 1st/3rd/5th level, art/chapters/11b on the others).
-      {name:'ICE AGE BATTLE APES',ui:'iceage',set:'iceage',noSeason:true,altArt:true,habitat:'Ice Age glaciers and mammoth steppe',shapes:['valley','peaks','twinstacks'],featured:['I12','I26','I03'],region:['I01','I02','I03','I04','I05','I06','I07','I08','I09','I10','I11','I12','I13','I14','I15','I16','I17','I18','I19','I20','I21','I22','I23','I24','I25','I26','I27','I28'],scene:'iceage',vision:'OWL',ambient:'snow',music:{competitive:'competitiveDeep'},
+      {name:'ICE AGE BATTLE APES',ui:'iceage',set:'iceage',noSeason:true,altArt:true,cardFill:1.1,habitat:'Ice Age glaciers and mammoth steppe',shapes:['valley','peaks','twinstacks'],featured:['I12','I26','I03'],region:['I01','I02','I03','I04','I05','I06','I07','I08','I09','I10','I11','I12','I13','I14','I15','I16','I17','I18','I19','I20','I21','I22','I23','I24','I25','I26','I27','I28'],scene:'iceage',vision:'OWL',ambient:'snow',music:{competitive:'competitiveDeep'},
         pal:{sky:['#a9c4dc','#eef6fb'],far:'#9fb8cc',mid:'#6d8aa0',near:'#33475a',accent:'#e6f4ff'}}
     ];
     // Boss level (2026-10-14): each chapter's last level deals THE ORIGINAL TROOP (the photo set, Patriots, Caulin Plushie: DECK)
@@ -1554,15 +1555,16 @@
     // smaller than their grid cell so neighbours have a hairline gap.
     // Home backgrounds (see pickHomeBg) are preloaded with the cards so a fresh one never pops in late.
     const HOME_BGS=['A','B','E','3','4'],HOME_BG_FILES=HOME_BGS.map(k=>`art/home/bg-${k}.jpg`);
-    const CARD_RATIO=1.4,LAYER_NUDGE=7,CARD_FILL=.97;
+    const CARD_RATIO=1.4,LAYER_NUDGE=7,CARD_FILL=.97,cardFill=()=>chapterFor(state.level||1).cardFill??CARD_FILL;
     // boardSize: the board's size from its ResizeObserver (FX.renderCache), so a redraw doesn't force a layout to read it.
     let boardSize=null;
     function boardMetrics(){
       const W=FX.renderCache&&boardSize?boardSize.w:board.clientWidth,H=FX.renderCache&&boardSize?boardSize.h:board.clientHeight,tiles=state.tiles;
       let c0=Infinity,c1=-Infinity,r0=Infinity,r1=-Infinity;for(const t of tiles){c0=Math.min(c0,t.c);c1=Math.max(c1,t.c);r0=Math.min(r0,t.r);r1=Math.max(r1,t.r)}
       // The layer nudge shrinks with the cards (at most LAYER_NUDGE px), so small boards keep their stacked look without wasting room.
-      const pad=2,cc=(c0+c1)/2,rc=(r0+r1)/2,nudge=w=>Math.min(LAYER_NUDGE,w*.12),
-        box=w=>{const h=w*CARD_RATIO,n=nudge(w);let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;for(const t of tiles){const x=(t.c-cc)/2*w-t.layer*n,y=(t.r-rc)/2*h-t.layer*n;x0=Math.min(x0,x-w/2);x1=Math.max(x1,x+w/2);y0=Math.min(y0,y-h/2);y1=Math.max(y1,y+h/2)}return{x0,x1,y0,y1}};
+      // Cards drawn bigger than their cell (cardFill > 1) are measured at their drawn size, so they still never run off the board.
+      const pad=2,cc=(c0+c1)/2,rc=(r0+r1)/2,nudge=w=>Math.min(LAYER_NUDGE,w*.12),f=Math.max(1,cardFill()),
+        box=w=>{const h=w*CARD_RATIO,n=nudge(w),hw=w*f/2,hh=h*f/2;let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;for(const t of tiles){const x=(t.c-cc)/2*w-t.layer*n,y=(t.r-rc)/2*h-t.layer*n;x0=Math.min(x0,x-hw);x1=Math.max(x1,x+hw);y0=Math.min(y0,y-hh);y1=Math.max(y1,y+hh)}return{x0,x1,y0,y1}};
       let lo=4,hi=Math.max(4,Math.min(W,H/CARD_RATIO));for(let i=0;i<22;i++){const w=(lo+hi)/2,b=box(w);if(b.x1-b.x0<=W-pad*2&&b.y1-b.y0<=H-pad*2)lo=w;else hi=w}
       const w=lo,h=w*CARD_RATIO,n=nudge(w),b=box(w),ox=W/2-(b.x0+b.x1)/2,oy=H/2-(b.y0+b.y1)/2,
         m={w,h,x:t=>ox+(t.c-cc)/2*w-t.layer*n,y:t=>oy+(t.r-rc)/2*h-t.layer*n};
@@ -1573,7 +1575,7 @@
     const setIf=(node,prop,value)=>{if(!FX.renderCache||node.style[prop]!==value)node.style[prop]=value};
     function isFree(tile,activeIds){return !tile.blockers.some(id=>activeIds?activeIds.has(id):state.tiles.some(t=>t.id===id&&t.active))}
     function render(){renderGen++;syncHints();
-      const m=state.tiles.length?boardMetrics():null;if(m){const tw=`${m.w*CARD_FILL}px`,th=`${m.h*CARD_FILL}px`;if(!FX.renderCache||board.style.getPropertyValue('--tile-w')!==tw)board.style.setProperty('--tile-w',tw);if(!FX.renderCache||board.style.getPropertyValue('--tile-h')!==th)board.style.setProperty('--tile-h',th)}const activeTiles=state.tiles.filter(t=>t.active).sort((a,b)=>a.layer-b.layer),activeIds=new Set(activeTiles.map(t=>t.id));
+      const m=state.tiles.length?boardMetrics():null;if(m){const fill=cardFill(),tw=`${m.w*fill}px`,th=`${m.h*fill}px`;if(!FX.renderCache||board.style.getPropertyValue('--tile-w')!==tw)board.style.setProperty('--tile-w',tw);if(!FX.renderCache||board.style.getPropertyValue('--tile-h')!==th)board.style.setProperty('--tile-h',th)}const activeTiles=state.tiles.filter(t=>t.active).sort((a,b)=>a.layer-b.layer),activeIds=new Set(activeTiles.map(t=>t.id));
       board.querySelectorAll('.board-tile').forEach(node=>{if(!activeIds.has(node.dataset.id)){node.remove();if(node.classList.contains('lifted'))$('#dragLayer').querySelectorAll('.drag-ghost').forEach(g=>{if(!flightFrom.size)g.remove()})}});
       activeTiles.forEach(tile=>{
         const free=isFree(tile,activeIds),hasPhoto=tile.revealed&&Boolean(SYMBOL_IMAGES[tile.symbol]),renderKey=`${tile.symbol}|${tile.revealed}`;

@@ -54,9 +54,49 @@ build_portrait "$HW/whitehandgibbon.png" halloween-20-gibbon
 # Halloween Joker (replaces Caulin on Halloween levels): the framed render is the official card art.
 build_portrait "$HW/jokerhowler-real.png" halloween-joker
 # Ice Age pack (chapter 11, ../source/art/iceage): iceage-NN-slug.jpg plus iceage-joker.jpg, flat 2:3 renders (1152x1728).
-for src in ../source/art/iceage/iceage-*.jpg; do
-  build "$src" "$(basename "$src" .jpg)"
-done
+# The art is small full-body figures, so the board thumb is a zoomed 2:3 window on head and torso (build_zoom); the hero keeps the
+# whole picture. Columns: name, centre x and top of the window (fractions of the picture), zoom. Close-ups stay at zoom 1.
+build_zoom() {
+  W=$(sips -g pixelWidth "$1" | awk '/pixelWidth/{print $2}'); H=$(sips -g pixelHeight "$1" | awk '/pixelHeight/{print $2}')
+  set -- "$1" "$2" $(awk -v W="$W" -v H="$H" -v cx="$3" -v top="$4" -v z="$5" 'BEGIN{w=int(W/z);h=int(H/z);x=int(cx*W-w/2);y=int(top*H);
+    if(x<0)x=0;if(x>W-w)x=W-w;if(y<0)y=0;if(y>H-h)y=H-h;print h,w,y,x}')
+  sips -s format jpeg -c "$3" "$4" --cropOffset "$5" "$6" "$1" --out "$TMP/$2.jpg" >/dev/null
+  sips -s format jpeg -s formatOptions 72 -z 480 320 "$TMP/$2.jpg" --out "cards/thumb/$2.jpg" >/dev/null
+  sips -s format jpeg -s formatOptions 76 -z 768 512 "$1" --out "cards/hero/$2.jpg" >/dev/null
+}
+while read -r name cx top zoom; do
+  build_zoom "../source/art/iceage/$name.jpg" "$name" "$cx" "$top" "$zoom"
+done <<'EOF_ICE'
+iceage-01-ember-cub .5 0 1
+iceage-02-mammoth-stalker .45 0 1.25
+iceage-03-dragon-tooth .5 .1 1.25
+iceage-04-dragon-jaw .5 .1 1.25
+iceage-05-whiteout-assassin .5 .02 1.25
+iceage-06-glacier-warden .5 .06 1.25
+iceage-07-avalanche .5 .08 1.25
+iceage-08-frostbow-hunter .48 0 1.25
+iceage-09-ashfall-chieftain .48 .04 1.25
+iceage-10-snowcloak-lancer .5 .04 1.25
+iceage-11-frostbeard-shaman .45 .04 1.25
+iceage-12-golden-snow-king .5 0 1
+iceage-13-snow-ronin .5 .03 1.25
+iceage-14-atlas-sentinel .48 .02 1.25
+iceage-15-flint-knapper .48 .05 1.25
+iceage-16-black-ice-prowler .5 .1 1.25
+iceage-17-white-mane-warlord .45 .06 1.25
+iceage-18-river-sage .47 .03 1.25
+iceage-19-river-seer .47 .03 1.25
+iceage-20-blood-oath-raider .47 .02 1.25
+iceage-21-blood-oath-ravager .47 .02 1.25
+iceage-22-bonefire-shaman .52 .05 1.25
+iceage-23-spear-runner .5 .07 1.25
+iceage-24-berserker .52 .05 1.25
+iceage-25-skull-taker .45 .06 1.25
+iceage-26-permafrost-titan .5 .05 1.25
+iceage-27-permafrost-tyrant .5 .05 1.25
+iceage-28-first-selfie .5 0 1
+iceage-joker .5 0 1
+EOF_ICE
 # Kevin Kelly: flat 2:3 Grok render (1152x1728), so a plain resize.
 build "$RAW/kevin kelly.jpg" kevin-kelly
 # Expedition set (../source/art/expedition): 2:3 crops of contact-sheet.png, each card only ~200px wide in the sheet, so these are upscales.
