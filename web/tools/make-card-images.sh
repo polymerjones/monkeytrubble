@@ -53,6 +53,10 @@ build_portrait "$HW/orangatuang.png" halloween-19-orangutan
 build_portrait "$HW/whitehandgibbon.png" halloween-20-gibbon
 # Halloween Joker (replaces Caulin on Halloween levels): the framed render is the official card art.
 build_portrait "$HW/jokerhowler-real.png" halloween-joker
+# Ice Age pack (chapter 11, ../source/art/iceage): iceage-NN-slug.jpg plus iceage-joker.jpg, flat 2:3 renders (1152x1728).
+for src in ../source/art/iceage/iceage-*.jpg; do
+  build "$src" "$(basename "$src" .jpg)"
+done
 # Kevin Kelly: flat 2:3 Grok render (1152x1728), so a plain resize.
 build "$RAW/kevin kelly.jpg" kevin-kelly
 # Expedition set (../source/art/expedition): 2:3 crops of contact-sheet.png, each card only ~200px wide in the sheet, so these are upscales.

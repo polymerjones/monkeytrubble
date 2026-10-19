@@ -29,6 +29,8 @@ CHAPTER_UI = {
     'island':  {'panel': (182, .9, 1),   'wood': (36, .55, 1.15), 'accent': (46, 1, 1)},
     'temple':  {'panel': (42, .22, 1.05), 'wood': (30, .35, 1.05), 'accent': (45, 1.1, 1)},
     'canopy':  {'panel': (156, 1.05, .95), 'wood': (32, .95, 1),  'accent': (48, 1.15, 1)},
+    # Ice Age (chapter 11): glacier-blue panels, pale steel frames, a silver-white accent instead of gold.
+    'iceage':  {'panel': (200, .55, .95), 'wood': (215, .12, 1.2), 'accent': (205, .18, 1.12)},
     # Not a chapter: Christmas levels (CHRISTMAS in index.html). Pine-green panels, candy-red frames, gold.
     'christmas': {'panel': (146, 1.0, .9), 'wood': (356, 1.25, 1), 'accent': (46, 1.15, 1)},
 }
