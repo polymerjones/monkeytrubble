@@ -55,7 +55,7 @@
     .board-wrap{isolation:isolate}.tile{--drag-x:0px;--drag-y:0px;padding:0;position:absolute;left:50%;top:50%;width:var(--tile-w);height:var(--tile-h);transform:translate(calc(-50% + var(--drag-x)),calc(-50% + var(--drag-y))) rotateY(0deg);transform-style:preserve-3d;backface-visibility:hidden;border:1px solid #2fc760;border-radius:10px;background:linear-gradient(145deg,#123a20,#06170c 55%,#020804);color:var(--accent-hi);display:grid;place-items:center;font-size:clamp(1.65rem,4vw,2.7rem);font-weight:900;cursor:grab;touch-action:none;user-select:none;transition:transform .14s ease-out,opacity .12s,border-color .12s;box-shadow:0 9px 0 #020c05,0 11px 16px #000b,inset 0 0 20px #1b6f3555;text-shadow:0 0 12px currentColor}
     /* Bottom-right corner is kept for a future card badge: set data-badge on a tile to show one. (data-code = layer, only drives the stack shadows.) */.tile::after{content:none;position:absolute;right:5px;bottom:4px;font-size:.5rem;color:#378f50;letter-spacing:.08em}.tile.face-down{color:transparent;text-shadow:none;background:repeating-linear-gradient(135deg,#07120a 0 7px,#10331b 8px 10px,#061009 11px 17px);border-color:#288e48}.tile[data-badge]::after{content:attr(data-badge)}.tile.face-down::after{content:none}.tile.revealed{background:linear-gradient(145deg,#1b552e,#092113 58%,#030b06);border-color:var(--accent-lift);box-shadow:0 9px 0 #020c05,0 11px 16px #000b,inset 0 0 30px #30d96366,0 0 18px #1eff6840}.tile.free::before{content:"";position:absolute;z-index:3;inset:0;border-radius:inherit;padding:3px;pointer-events:none;opacity:0;background:conic-gradient(from var(--glow-angle),#0a3218,#30ff73,#d8ff7a,#24e6ff,#30ff73,#0a3218);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;transition:opacity .18s}.tile.blocked{cursor:not-allowed;filter:brightness(.48) saturate(.72);border-color:#174926}@media(hover:hover){.tile.free:hover{border-color:#caffd6;filter:brightness(1.2);z-index:500!important}.tile.free:hover::before{opacity:1;animation:gradientOrbit 2.2s linear infinite}}.tile.free:focus-visible::before{opacity:1;animation:gradientOrbit 2.2s linear infinite}.tile.free.touch-glow::before{animation:gradientOrbit 1.1s linear infinite,touchGlow .55s ease-out}.tile.dragging{cursor:grabbing;transition:none;filter:brightness(1.3);z-index:1000!important;box-shadow:0 18px 28px #000d,0 0 28px #36ff7166}.tile.removing{opacity:0;transform:translate(-50%,-50%) scale(.5)}.tile.board-tile.on-top{z-index:2000!important}
     .symbol-image{display:block;width:78%;height:78%;object-fit:contain;pointer-events:none;filter:drop-shadow(0 0 8px #65ff91aa)}.tile.has-photo{overflow:hidden}.tile.has-photo .symbol-image{width:100%;height:100%;object-fit:cover;object-position:var(--photo-position,50% 50%);filter:none}.tile.has-photo::after{z-index:2;padding:2px 4px;border-radius:3px;background:#001b0bcc;color:#8dffa8}.tile.foil-card{border-color:#e8edf3;box-shadow:0 9px 0 #111820,0 11px 18px #000c,inset 0 0 0 2px #fff8,inset 0 0 22px #dceaff88,0 0 18px #d9f5ff55}.tile.foil-card::after{content:"";position:absolute;inset:-12% -55%;z-index:2;padding:0;border-radius:inherit;pointer-events:none;background:linear-gradient(90deg,transparent 32%,#ffffff22 40%,#e8f6ffdd 49%,#ffffff55 56%,#a9c6dc55 61%,transparent 69%);mix-blend-mode:screen;will-change:transform;animation:silverFoil 1.85s linear infinite}.slot>span{position:relative;z-index:1;display:grid;place-items:center;height:calc(100% - 8px);width:auto;aspect-ratio:95/119;overflow:hidden;border-radius:6px;isolation:isolate}.slot.filled>span{background:var(--bg-deep);box-shadow:0 0 0 1px #baffca99,0 3px 8px #000b}.slot .symbol-image{width:100%;height:100%;object-fit:cover;filter:none}
-    .tray-panel{position:fixed;z-index:80;left:50%;bottom:24px;translate:-50% 0;width:min(560px,calc(100% - 24px));padding:12px 16px 16px;border:1px solid #3ad268;border-radius:18px;background:#031008ee;backdrop-filter:blur(14px);box-shadow:0 0 35px #0b8c3440,0 16px 50px #000}.tray-label{display:flex;justify-content:space-between;margin-bottom:8px;font-size:.68rem;letter-spacing:.14em;color:#66aa79}.tray{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.slot{height:80px;border:1px dashed #286a3d;border-radius:9px;background:var(--bg-deep);display:grid;place-items:center;font-size:2rem;font-weight:900;color:#c9ffd5;text-shadow:0 0 14px currentColor;position:relative;overflow:hidden}.slot.filled{border-style:solid;border-color:#5fdc8a;background:#051a0c;box-shadow:0 0 10px #6dffd833}.slot.matching{animation:slotPop .48s ease-in forwards}.slot-num{position:absolute;z-index:3;right:4px;bottom:2px;font-size:.5rem;color:#70ff96;text-shadow:0 1px 3px #001}.particle{position:fixed;z-index:200;width:7px;height:7px;background:var(--bright);pointer-events:none;border-radius:1px}
+    .tray-panel{position:fixed;z-index:80;left:50%;bottom:24px;translate:-50% 0;width:min(560px,calc(100% - 24px));padding:12px 16px 16px;border:1px solid #3ad268;border-radius:18px;background:#031008ee;backdrop-filter:blur(14px);box-shadow:0 0 35px #0b8c3440,0 16px 50px #000}.tray-label{display:flex;justify-content:space-between;margin-bottom:8px;font-size:.68rem;letter-spacing:.14em;color:#66aa79}.tray{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.slot{height:80px;border:1px dashed #286a3d;border-radius:9px;background:var(--bg-deep);display:grid;place-items:center;font-size:2rem;font-weight:900;color:#c9ffd5;text-shadow:0 0 14px currentColor;position:relative;overflow:hidden}.slot.filled{border-style:solid;border-color:#5fdc8a;background:#051a0c;box-shadow:0 0 10px #6dffd833}.slot.matching{animation:slotPop .38s ease-in forwards}.slot-num{position:absolute;z-index:3;right:4px;bottom:2px;font-size:.5rem;color:#70ff96;text-shadow:0 1px 3px #001}.particle{position:fixed;z-index:200;width:7px;height:7px;background:var(--bright);pointer-events:none;border-radius:1px}
     .overlay{position:fixed;inset:0;z-index:120;display:none;place-items:center;background:#000c;backdrop-filter:blur(8px)}.overlay.show{display:grid}.dialog{width:min(440px,calc(100% - 32px));padding:32px;text-align:center;border:1px solid var(--green);border-radius:18px;background:var(--panel-deep);box-shadow:0 0 70px #1eff6844}.dialog h2{font-size:2rem;letter-spacing:.12em;margin:0 0 10px}.dialog p{color:#84ba91;line-height:1.5}.dialog .action{margin-top:12px;padding:12px 22px}
     .variant-switcher{position:fixed;z-index:150;right:14px;bottom:14px;display:flex;align-items:center;gap:7px;padding:6px;border:1px solid #777;background:#111;color:#fff;border-radius:999px;box-shadow:0 8px 30px #000c;font:12px system-ui,sans-serif}.variant-switcher button{width:28px;height:28px;border:0;border-radius:50%;background:#333;color:#fff;cursor:pointer}.variant-switcher span{min-width:116px;text-align:center}
     body.ios-app{height:100dvh;overflow:hidden;overscroll-behavior:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}.ios-app .app{height:100dvh;min-height:0;overflow:hidden}.ios-app .topbar{flex:none;padding:calc(7px + env(safe-area-inset-top)) 12px 7px}.ios-app .status{flex-direction:row;gap:10px;font-size:.58rem}.ios-app .game-shell{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;padding:8px 8px calc(110px + env(safe-area-inset-bottom))}.ios-app .hud{position:relative;flex:none;align-items:flex-start}.ios-app .featured-card{height:208px;min-height:0;overflow:hidden;padding:8px;gap:13px;align-items:flex-start}/* Fixed-height hero: every text line is capped so a long name or fact never resizes the board below. */.ios-app .featured-copy{min-width:0;max-height:100%;overflow:hidden}.ios-app .featured-name{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}.ios-app .featured-latin{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ios-app .featured-fact{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}.ios-app .featured-art{width:136px;height:204px;margin:-6px 0 -6px -2px;border-width:3px;border-radius:12px}.ios-app .featured-copy{flex:1;padding-top:35px}.ios-app .featured-name{font-size:1.32rem;white-space:normal}.ios-app .message{margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25}.ios-app .actions{position:absolute;z-index:4;right:8px;top:8px;gap:5px}.ios-app .action.icon{width:30px;height:30px;font-size:.88rem;background:#031209e8}.ios-app .board-wrap{flex:1;min-height:0;contain:layout paint}.ios-app .tray-panel{bottom:max(6px,env(safe-area-inset-bottom));padding:8px 12px 10px}.ios-app .slot{height:76px}.ios-app .variant-switcher{display:none}.ios-app .topbar,.ios-app .tray-panel,.ios-app.variant-d .tile{backdrop-filter:none}.ios-app .tile.blocked{filter:none;opacity:.56}.ios-app .rain::before{filter:none}.ios-app .rain::before,.ios-app .rain::after{animation:none}
@@ -524,6 +524,16 @@
     @keyframes glowPulse{50%{opacity:1}}
     @keyframes glowPulseAlt{to{opacity:1}}
     html.fx-owlSlow .owl-eyes .lids{animation:owlBlinkSlow 13s infinite}html.fx-owlSlow .hint-eyes .lids{animation:owlBlink 4s infinite}@keyframes owlBlinkSlow{0%,98%,100%{transform:scaleY(1)}98.9%{transform:scaleY(.1)}}
+    .bg-baked{display:none;position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+    html.fx-bakedField body[data-bg="D"]:not([data-scene="chapter"]) .bg-baked{display:block}
+    html.fx-bakedField body[data-bg="D"]:not([data-scene="chapter"]) .bg-far{filter:none;background-image:none}
+    html.fx-clearLite .slot.matching{overflow:visible;animation-name:slotPopLite}@keyframes slotPopLite{45%{transform:scale(1.2)}100%{transform:scale(.25);opacity:0}}
+    html.fx-clearLite .slot.matching::after{content:"";position:absolute;inset:0;z-index:5;border-radius:inherit;pointer-events:none;background:#eaffef88;box-shadow:0 0 40px var(--accent-lift);opacity:0;animation:popGlow .38s ease-in forwards}@keyframes popGlow{45%{opacity:1}100%{opacity:0}}
+    html.fx-edgeLite .edge-glow{box-shadow:none;will-change:opacity}
+    html.fx-edgeLite .edge-glow::before,html.fx-edgeLite .edge-glow::after{content:"";position:absolute;inset:0;will-change:opacity}
+    html.fx-edgeLite .edge-glow::before{background:linear-gradient(90deg,var(--edge-c,#ffd84dcc) 4px,transparent 46px),linear-gradient(270deg,var(--edge-c,#ffd84dcc) 4px,transparent 46px),linear-gradient(180deg,var(--edge-c,#ffd84dcc) 4px,transparent 46px),linear-gradient(0deg,var(--edge-c,#ffd84dcc) 4px,transparent 46px),linear-gradient(90deg,var(--edge-c2,#ff9be855),transparent 120px),linear-gradient(270deg,var(--edge-c2,#ff9be855),transparent 120px),linear-gradient(180deg,var(--edge-c2,#ff9be855),transparent 120px),linear-gradient(0deg,var(--edge-c2,#ff9be855),transparent 120px)}
+    html.fx-edgeLite .edge-glow::after{opacity:var(--edge-i,0);background:linear-gradient(90deg,var(--edge-c,#ffd84dcc) 10px,transparent 72px),linear-gradient(270deg,var(--edge-c,#ffd84dcc) 10px,transparent 72px),linear-gradient(180deg,var(--edge-c,#ffd84dcc) 10px,transparent 72px),linear-gradient(0deg,var(--edge-c,#ffd84dcc) 10px,transparent 72px),linear-gradient(90deg,var(--edge-c2,#ff9be855),transparent 170px),linear-gradient(270deg,var(--edge-c2,#ff9be855),transparent 170px),linear-gradient(180deg,var(--edge-c2,#ff9be855),transparent 170px),linear-gradient(0deg,var(--edge-c2,#ff9be855),transparent 170px)}
+    html.fx-overlayLite .overlay{backdrop-filter:none;-webkit-backdrop-filter:none;background:#000000e0}
   </style>
 </head>
 <body>
@@ -567,7 +577,12 @@
     // of idling at 60fps. audioSleep: the audio engine sleeps while the game is hidden. lightPreload: only the current chapter's card art is
     // decoded at launch (the rest loads as needed). renderCache: board redraws reuse measurements and skip unchanged writes.
     // clockSleep: the timer text is only rewritten when it changes.
-    const FX={shineSleep:true,tiltLite:true,driftLiteral:true,cageShineOnce:true,glowOpacity:true,owlSlow:true,waterSleep:true,audioSleep:true,lightPreload:true,renderCache:true,clockSleep:true};
+    // 2026-10-19, second pass (Halloween dips): bakedField: the Halloween "cards" background (blurred grayscale card field and dimmed far
+    // art) is drawn once into a canvas per layer instead of ~30 CSS-filtered layers the GPU re-filtered every frame. canvasBurst: the
+    // clear/win burst is drawn on the dust canvas instead of 24 DOM particles per card. clearLite: the cage clear pop animates only
+    // scale and opacity (its glow fades on a pre-drawn layer). edgeLite: the combo screen-edge glow is two fixed gradient layers that
+    // only fade, instead of huge blurred shadows redrawn on every pair. overlayLite: dialogs darken the screen instead of blurring it.
+    const FX={shineSleep:true,tiltLite:true,driftLiteral:true,cageShineOnce:true,glowOpacity:true,owlSlow:true,waterSleep:true,audioSleep:true,lightPreload:true,renderCache:true,clockSleep:true,bakedField:true,canvasBurst:true,clearLite:true,edgeLite:true,overlayLite:true};
     // Dev tools can flip any switch for A/B testing on the phone (saved, applied on reload).
     try{const saved=JSON.parse(localStorage.getItem('monkeyFX')||'{}');for(const k in FX)if(typeof saved[k]==='boolean')FX[k]=saved[k]}catch{}
     for(const[k,on]of Object.entries(FX))document.documentElement.classList.toggle(`fx-${k}`,on);
@@ -1474,7 +1489,7 @@
     function showLevelBanner(){if(!$('#home').classList.contains('hidden')||ex.busy||state.tutorial)return;const lv=state.level,ch=chapterFor(lv),el=$('#levelBanner'),first=lv===ch.from&&lv>1;
       $('#bannerChapter').textContent=`${first&&ex.titled!==lv?loc('NEW CHAPTER · '):''}${loc('CHAPTER {0}',`${ch.number}${ch.plus?'+':''}`)} · ${loc(ch.name)}`;{const f=first&&state.pack!=='halloween'?(ch.featured||[]).filter(id=>CARD_DATA[id]).map(cardName):[],t=ch.boss?loc('BOSS LEVEL · THE ORIGINAL TROOP'):f.length?loc('FEATURED: {0}',f.join(' · ')):'';$('#bannerFeatured').textContent=t;$('#bannerFeatured').hidden=!t}
       {const rb=$('#bannerRecord'),show=rec=>{rb.textContent=recordLine(rec);rb.hidden=false};rb.hidden=true;if(!state.easy&&lbReady){const k=recordKey(lv,state.pack);if(worldRecords.has(k))show(worldRecords.get(k));const s=state;fetchWorldRecord(lv,state.pack).then(rec=>{if(rec&&s===state)show(rec)})}}$('#bannerLevel').textContent=`${loc('LEVEL')} ${lv} · ${loc(levelName(lv,state.pack))}`;{const r=$('#board').getBoundingClientRect();el.style.top=`${r.top+28}px`}el.classList.toggle('new-chapter',first);el.style.setProperty('--banner-c',ch.accent);el.style.setProperty('--banner-glow',ch.accent+'44');
-      fitStamp($('#bannerLevel'),1.06);fitStamp($('#bannerChapter'),1.06);el.getAnimations().forEach(a=>a.cancel());el.animate(reduceMotion.matches?[{opacity:0},{opacity:1,offset:.08},{opacity:1,offset:.88},{opacity:0}]:[{opacity:0,scale:.85},{opacity:1,scale:1.04,offset:.08},{opacity:1,scale:1,offset:.14},{opacity:1,scale:1,offset:.88},{opacity:0,scale:.96}],{duration:first?4200:3200,delay:350,easing:'cubic-bezier(.2,.8,.2,1)',fill:'backwards'})}
+      fitStamp($('#bannerLevel'),1.06);fitStamp($('#bannerChapter'),1.06);el.getAnimations().forEach(a=>a.cancel());el.animate(reduceMotion.matches?[{opacity:0},{opacity:1,offset:.08},{opacity:1,offset:.88},{opacity:0}]:[{opacity:0,transform:'scale(.85)'},{opacity:1,transform:'scale(1.04)',offset:.08},{opacity:1,transform:'scale(1)',offset:.14},{opacity:1,transform:'scale(1)',offset:.88},{opacity:0,transform:'scale(.96)'}],{duration:first?4200:3200,delay:350,easing:'cubic-bezier(.2,.8,.2,1)',fill:'backwards'})}
     function startLevel(level,{silent=false,retry=false,tutorial=false}={}){
       if(!tutorial)stopTutorial();closeLightbox({instant:true});featuredSymbol=null;for(const e of hintEyes.values())e.remove();hintEyes.clear();$('#dragLayer').replaceChildren();board.replaceChildren();$('#featuredArt').dataset.renderKey='~';clearDust();clearTimeout(chainTimer);endChain();
       // Difficulty is read here, so a change in Settings applies from the next level start or retry, never mid-board.
@@ -1658,7 +1673,9 @@
         node.classList.add('on-top');node.animate(flipFrames(flipVariant),{duration:FLIP_OUT_MS,easing:'cubic-bezier(.38,0,.7,1)',fill:'forwards'});
         // Edge-on at FLIP_OUT_MS: swap to the face (once it's decoded, at most 120 ms more) and turn it in; the flip ends FLIP_IN_MS later.
         setTimeout(()=>faceOrTimeout(faceIn).then(()=>{if(s===state){if(previous&&!matchingFlip){previous.revealed=false;previous.temporaryReveal=false}tile.revealed=true;tile.temporaryReveal=true;tile.revealedAt=performance.now();render();const fresh=board.querySelector(`[data-id="${tile.id}"]`);fresh?.animate(flipFrames(flipVariant,true),{duration:FLIP_IN_MS,easing:'cubic-bezier(.2,.72,.2,1)'})}
-          setTimeout(()=>{release();if(s!==state)return;render();if(!autoResolveRevealed(tile,previous))setMessage('');tutorialEvent('flipped')},FLIP_IN_MS+10)}),FLIP_OUT_MS-5);return
+          // A flip that will auto-match moves on after a short beat (AUTO_READ_MS) instead of waiting out the whole turn-in.
+          const autoSoon=!state.tutorial&&tile.symbol!==JOKER&&tile.symbol!==KEVIN&&(matchingFlip||state.tray.some(held=>!state.clearing.has(held.id)&&isMate(held.symbol,tile.symbol)));
+          setTimeout(()=>{release();if(s!==state)return;render();if(!autoResolveRevealed(tile,previous,autoSoon))setMessage('');tutorialEvent('flipped')},autoSoon?AUTO_READ_MS:FLIP_IN_MS+10)}),FLIP_OUT_MS-5);return
       }
       if(tile.symbol===KEVIN){state.history.push(snapshot());fireKevin(tile);return}
       selectSparkle(node);
@@ -1672,7 +1689,9 @@
       else if(waitingInCage()>=4){const s=state;s.over=true;s.locked=true;setTimeout(()=>{if(s===state)finish(false)},260)}
       else{setMessage(loc('CAGED // {0} of 4',waitingInCage()));if(waitingInCage()>=3&&state.shufflesLeft<=0)cueAdBooster('shuffle');if(isStuck()){const s=state;s.over=true;s.locked=true;setTimeout(()=>{if(s===state)finish(false,'stuck')},260)}}
     }
-    function autoResolveRevealed(tile,previous){
+    // Auto-match after a flip (fast): the card heads for the cage sooner and quicker, and the pair clears as it lands.
+    const AUTO_READ_MS=90,AUTO_FLIGHT_MS=180,AUTO_CLEAR_MS=190;
+    function autoResolveRevealed(tile,previous,fast=false){
       if(!tile.active||!tile.revealed||!isFree(tile))return false;
       // Flipping Kevin up only shows him; MVP Vision needs a deliberate tap on the revealed card.
       if(tile.symbol===KEVIN){setMessage(loc('{0}’s ready — tap for {1}',visionName(),visionPower()));return true}
@@ -1680,14 +1699,14 @@
       if(tile.symbol===JOKER){setMessage(loc('Joker’s up — tap him or drag him onto a card'));return true}
       if(state.tray.some(held=>!state.clearing.has(held.id)&&isMate(held.symbol,tile.symbol))){
         const node=board.querySelector(`[data-id="${tile.id}"]`),newIndex=state.tray.length;playSound('pickup',{volume:.12,rate:1.04});playJokerPick(tile.symbol);haptic('cardCaged');
-        tile.active=false;tile.temporaryReveal=false;state.tray.push({id:tile.id,symbol:tile.symbol});flyToTray(node,newIndex);render();setMessage(loc('AUTO MATCH // {0}',cardName(tile.symbol)));scheduleClear(tile.symbol);return true
+        tile.active=false;tile.temporaryReveal=false;state.tray.push({id:tile.id,symbol:tile.symbol});flyToTray(node,newIndex,fast?AUTO_FLIGHT_MS:undefined);render();setMessage(loc('AUTO MATCH // {0}',cardName(tile.symbol)));scheduleClear(tile.symbol,undefined,fast?AUTO_CLEAR_MS:undefined);return true
       }
       const mate=previous?.active&&previous.symbol!==JOKER&&isMate(previous.symbol,tile.symbol)&&isFree(previous)?previous:null;
       if(!mate)return false;
       if(!mate.revealed){mate.revealed=true;render()}
       // Normal: a fresh pair needs two open cage slots. Otherwise both cards just stay face up and the cage rattles.
       if(!pairFits()){mate.temporaryReveal=false;tile.temporaryReveal=false;render();cageRattle();return true}
-      cagePair(mate,tile,loc('AUTO MATCH // {0}',cardName(tile.symbol)));return true
+      cagePair(mate,tile,loc('AUTO MATCH // {0}',cardName(tile.symbol)),fast);return true
     }
     // ---- Drag to match. Drop targets use the same rules as tapping (isFree, isMate, pairFits, handleTile); only free cards can be dragged.
     const flightFrom=new Map(),tileOf=node=>state.tiles.find(t=>t.id===node.dataset.id&&t.active);
@@ -1947,9 +1966,9 @@
     function findTrayPair(symbol){const items=state.tray.map((t,i)=>({t,i})).filter(x=>!state.clearing.has(x.t.id)),same=items.filter(x=>x.t.symbol===symbol);if(symbol!==JOKER&&same.length>=2)return same.slice(0,2);const joker=items.find(x=>x.t.symbol===JOKER),other=symbol===JOKER?items.find(x=>x.t.symbol!==JOKER):same[0];return joker&&other?[other,joker]:null}
     // Clearing never locks the board: the pair is reserved at once, leaves the cage after its fly-in, and pops on stand-in copies
     // while play continues.
-    function scheduleClear(symbol,ids){
+    function scheduleClear(symbol,ids,delay=260){
       const pair=ids?state.tray.filter(t=>ids.includes(t.id)):findTrayPair(symbol)?.map(x=>x.t);if(!pair||pair.length<2)return;
-      const s=state,pairIds=pair.map(t=>t.id);pairIds.forEach(id=>s.clearing.add(id));render();setTimeout(()=>{if(s===state)clearPair(pairIds)},260)
+      const s=state,pairIds=pair.map(t=>t.id);pairIds.forEach(id=>s.clearing.add(id));render();setTimeout(()=>{if(s===state)clearPair(pairIds)},delay)
     }
     function clearPair(pairIds){
       const s=state,slots=[...tray.children],pair=state.tray.map((t,i)=>({t,i})).filter(x=>pairIds.includes(x.t.id));pairIds.forEach(id=>s.clearing.delete(id));if(pair.length<2){render();return}
@@ -1957,7 +1976,7 @@
       const copies=[];for(const {t,i} of pair){const slot=slots[i];if(!slot)continue;const r=slot.getBoundingClientRect(),copy=slot.cloneNode(true);copy.removeAttribute('data-tile-id');copy.style.cssText=`position:fixed;left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;margin:0;pointer-events:none`;$('#dragLayer').append(copy);copies.push({t,slot,copy,r})}
       const jokers=copies.filter(c=>c.t.symbol===JOKER);
       if(copies.length===2&&jokers.length===1&&!reduceMotion.matches)jokerSlam(jokers[0],copies.find(c=>c!==jokers[0]));
-      else for(const {slot,copy} of copies){copy.classList.add('matching');setTimeout(()=>copy.remove(),500);explode(slot)}
+      else for(const {slot,copy} of copies){copy.classList.add('matching');setTimeout(()=>copy.remove(),400);explode(slot)}
       state.tray=state.tray.filter(t=>!pairIds.includes(t.id));state.pairs++;if(pair.some(x=>x.t.symbol===JOKER)&&!state.tutorial)rebalanceAfterJoker();render();tutorialEvent('cleared');setTimeout(()=>{if(s===state&&!s.over)finishIfCleared()},470)
     }
     // Joker clear, pogs-and-slammers style: the joker rises off his slot, swells, then slams down onto his partner; on impact the screen
@@ -1968,7 +1987,7 @@
       const fly=J.copy.animate([{transform:'none',easing:'cubic-bezier(.2,.8,.3,1)'},{transform:'translate(0,-30px) scale(1.4) rotate(-7deg)',filter:'drop-shadow(0 22px 14px #000c) brightness(1.15)',offset:.5,easing:'cubic-bezier(.7,0,1,.5)'},{transform:`translate(${dx}px,${dy}px) scale(.94)`,filter:'drop-shadow(0 2px 2px #000c) brightness(1.3)'}],{duration:SLAM_MS,fill:'forwards'});
       setTimeout(()=>{fly.cancel();J.copy.style.left=`${P.r.left}px`;J.copy.style.top=`${P.r.top}px`;for(const c of [J,P])c.copy.classList.add('matching');explode(P.slot);explode(P.slot);haptic('jokerSlam');
         $('.app')?.animate([{translate:'0 0'},{translate:'-8px 6px'},{translate:'7px -5px'},{translate:'-5px 4px'},{translate:'4px -2px'},{translate:'-2px 1px'},{translate:'0 0'}],{duration:380,easing:'ease-out'})},SLAM_MS);
-      setTimeout(()=>{J.copy.remove();P.copy.remove()},SLAM_MS+500)}
+      setTimeout(()=>{J.copy.remove();P.copy.remove()},SLAM_MS+400)}
     // Sends a matching pair from the board into the cage together, where it clears (two-finger tap or an auto match).
     // A matched pair never counts as an overflow, so with three cards held both fly into the last slot.
     // Cage capacity for a fresh pair taken together: Normal needs two open slots (it's two monkeys going in); Easy lets a pair squeeze
@@ -1980,12 +1999,12 @@
       $('#tray').animate([{filter:'none'},{filter:'drop-shadow(0 0 8px #ff5a4f)'},{filter:'none'}],{duration:500});
       playSound('control',{volume:.5,rate:.5});haptic('cageOverflow');setMessage(loc('The cage needs two open spaces for a new pair.'))
     }
-    function cagePair(a,b,message){
+    function cagePair(a,b,message,fast=false){
       const nodes=[a,b].map(t=>board.querySelector(`[data-id="${t.id}"]`)),start=state.tray.length;
       playSound('pickup',{volume:.12,rate:1.04});haptic('cardCaged');
       for(const t of [a,b]){t.active=false;t.temporaryReveal=false}
-      state.tray.push({id:a.id,symbol:a.symbol},{id:b.id,symbol:b.symbol});nodes.forEach((node,i)=>{if(node)flyToTray(node,Math.min(start+i,3))});
-      render();setMessage(message);scheduleClear(a.symbol,[a.id,b.id])
+      state.tray.push({id:a.id,symbol:a.symbol},{id:b.id,symbol:b.symbol});nodes.forEach((node,i)=>{if(node)flyToTray(node,Math.min(start+i,3),fast?AUTO_FLIGHT_MS:undefined)});
+      render();setMessage(message);scheduleClear(a.symbol,[a.id,b.id],fast?AUTO_CLEAR_MS:undefined)
     }
     // Owl Eyes: searches for a line that clears the board from here (cage rules as in play, matches tried first) and shows its
     // first move with that card's partner: a cage slot, or the next card in the line when it's free now. Face-down cards it points
@@ -2079,7 +2098,7 @@
       setTimeout(()=>{if(s!==state)return;const back=state.tiles.filter(t=>t.active&&t.peeking);state.tiles.forEach(t=>{if(t.peeking){t.peeking=false;if(t.active)t.revealed=false}});render();flipIn(back,8)},holdMs)
     }
     let activeCardFlights=0,peekDragging=false;
-    function flyToTray(source,index){source=flightFrom.get(source?.dataset?.id)||source;const target=tray.children[Math.min(index,3)];if(!target)return;const a=source.getBoundingClientRect(),b=target.getBoundingClientRect(),ghost=source.cloneNode(true),dx=b.left-a.left,dy=b.top-a.top,sx=b.width/a.width,sy=b.height/a.height;activeCardFlights++;document.body.classList.add('card-in-flight');ghost.style.cssText=`position:fixed;z-index:190;left:${a.left}px;top:${a.top}px;width:${a.width}px;height:${a.height}px;transform:none;transform-origin:top left;rotate:0deg;transition:transform .24s cubic-bezier(.2,.8,.2,1),opacity .24s ease;pointer-events:none;will-change:transform,opacity`;document.body.append(ghost);requestAnimationFrame(()=>{ghost.style.transform=`translate3d(${dx}px,${dy}px,0) scale(${sx},${sy})`;ghost.style.opacity='.2'});if(!reduceMotion.matches){const t0=performance.now();let lastDrop=0;const shed=now=>{if(!ghost.isConnected||now-t0>240)return;if(now-lastDrop>=30){lastDrop=now;const r=ghost.getBoundingClientRect();trailDust(r.left+r.width/2,r.top+r.height/2,{vx:dx*4,vy:dy*4})}requestAnimationFrame(shed)};requestAnimationFrame(shed)}setTimeout(()=>{ghost.remove();activeCardFlights--;if(!activeCardFlights)document.body.classList.remove('card-in-flight')},260)}
+    function flyToTray(source,index,ms=240){source=flightFrom.get(source?.dataset?.id)||source;const target=tray.children[Math.min(index,3)];if(!target)return;const a=source.getBoundingClientRect(),b=target.getBoundingClientRect(),ghost=source.cloneNode(true),dx=b.left-a.left,dy=b.top-a.top,sx=b.width/a.width,sy=b.height/a.height;activeCardFlights++;document.body.classList.add('card-in-flight');ghost.style.cssText=`position:fixed;z-index:190;left:${a.left}px;top:${a.top}px;width:${a.width}px;height:${a.height}px;transform:none;transform-origin:top left;rotate:0deg;transition:transform ${ms}ms cubic-bezier(.2,.8,.2,1),opacity ${ms}ms ease;pointer-events:none;will-change:transform,opacity`;document.body.append(ghost);requestAnimationFrame(()=>{ghost.style.transform=`translate3d(${dx}px,${dy}px,0) scale(${sx},${sy})`;ghost.style.opacity='.2'});if(!reduceMotion.matches){const t0=performance.now();let lastDrop=0;const shed=now=>{if(!ghost.isConnected||now-t0>ms)return;if(now-lastDrop>=30){lastDrop=now;const r=ghost.getBoundingClientRect();trailDust(r.left+r.width/2,r.top+r.height/2,{vx:dx*4,vy:dy*4})}requestAnimationFrame(shed)};requestAnimationFrame(shed)}setTimeout(()=>{ghost.remove();activeCardFlights--;if(!activeCardFlights)document.body.classList.remove('card-in-flight')},ms+20)}
     // Fairy dust: one shared emitter for the drag-match burst, the tap-to-cage sparkle, the flight and drag trails, combos and the cage.
     // Everything is drawn on one fixed canvas in a single animation loop from pre-rendered glow and star sprites (dozens of DOM
     // sparkles per combo caused frame drops on iPhone). The loop runs only while sparkles are alive. Never takes touches.
@@ -2090,23 +2109,28 @@
       const fit=()=>{dustDpr=isIOSApp?1:Math.min(2,devicePixelRatio||1);dustCv.width=Math.round(innerWidth*dustDpr);dustCv.height=Math.round(innerHeight*dustDpr)};fit();addEventListener('resize',fit);return dustCv}
     // Sprites: a soft glow (white core into the colour) or a ✦ star with a light halo, 64px, cached per colour.
     function dustSprite(color,kind){const key=color+kind;let c=dustSprites.get(key);if(c)return c;c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');
-      if(kind==='star'){x.font='bold 46px system-ui,sans-serif';x.textAlign='center';x.textBaseline='middle';x.shadowColor=color;x.shadowBlur=10;x.fillStyle=color;x.fillText('✦',32,34);x.shadowBlur=0;x.globalAlpha=.6;x.fillStyle='#fff';x.font='bold 22px system-ui,sans-serif';x.fillText('✦',32,34)}
+      if(kind==='chip'){x.fillStyle=color;x.beginPath();x.roundRect?x.roundRect(0,0,64,64,9):x.rect(0,0,64,64);x.fill()}
+      else if(kind==='star'){x.font='bold 46px system-ui,sans-serif';x.textAlign='center';x.textBaseline='middle';x.shadowColor=color;x.shadowBlur=10;x.fillStyle=color;x.fillText('✦',32,34);x.shadowBlur=0;x.globalAlpha=.6;x.fillStyle='#fff';x.font='bold 22px system-ui,sans-serif';x.fillText('✦',32,34)}
       else{const g=x.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,'#fff');g.addColorStop(kind==='flash'?.3:.18,color);g.addColorStop(kind==='flash'?.7:.45,color+(kind==='flash'?'55':'66'));g.addColorStop(1,color+'00');x.fillStyle=g;x.fillRect(0,0,64,64)}
       dustSprites.set(key,c);return c}
     const dustEase=t=>{const u=1-t;return 1-u*u*u};
     function dustLoop(now){dustRaf=0;const cx=dustCx,d=dustDpr;cx.setTransform(1,0,0,1,0,0);cx.clearRect(0,0,dustCv.width,dustCv.height);cx.setTransform(d,0,0,d,0,0);
-      for(let i=dustParts.length-1;i>=0;i--){const p=dustParts[i],t=(now-p.born)/p.life;if(t<0)continue;if(t>=1){dustParts.splice(i,1);if(!p.flash)liveDust--;continue}
+      for(let i=dustParts.length-1;i>=0;i--){const p=dustParts[i],t=(now-p.born)/p.life;if(t<0)continue;if(t>=1){dustParts.splice(i,1);if(!p.flash&&!p.chip)liveDust--;continue}
         const e=dustEase(t);let sc,op,ox,oy,rot;
         if(p.flash){sc=.2+(p.scale-.2)*e;op=p.opacity*(1-e);ox=oy=rot=0}
+        else if(p.chip){const k=1-Math.pow(1-t,2.6);sc=1-.8*k;op=1-t;ox=p.dx*k;oy=p.dy*k;rot=p.spin*k}
         else if(t<.35){const k=dustEase(t/.35);sc=.4+.8*k;op=p.opacity*k;ox=p.dx*.55*k;oy=p.dy*.55*k;rot=p.spin/2*k}
         else{const k=dustEase((t-.35)/.65);sc=1.2-k;op=p.opacity*(1-k);ox=p.dx*(.55+.45*k);oy=p.dy*(.55+.45*k)+p.fall*k;rot=p.spin/2+p.spin/2*k}
-        if(op<=.01)continue;const w=p.size*sc*(p.flash?1:p.star?2.4:2.6);cx.globalAlpha=Math.min(1,op);
+        if(op<=.01)continue;const w=p.size*sc*(p.flash||p.chip?1:p.star?2.4:2.6);cx.globalAlpha=Math.min(1,op);
         if(rot){cx.save();cx.translate(p.x+ox,p.y+oy);cx.rotate(rot*Math.PI/180);cx.drawImage(p.sprite,-w/2,-w/2,w,w);cx.restore()}else cx.drawImage(p.sprite,p.x+ox-w/2,p.y+oy-w/2,w,w)}
       cx.globalAlpha=1;if(dustParts.length)dustRaf=requestAnimationFrame(dustLoop)}
     function dustKick(){dustCanvas();if(!dustRaf)dustRaf=requestAnimationFrame(dustLoop)}
     function spawnDust(x,y,{color,size=4+Math.random()*7,dist=50+Math.random()*120,angle=Math.random()*Math.PI*2,fall=30,life=700+rand(500),delay=rand(90),opacity=1,star=Math.random()<.33}={}){
       if(liveDust>=MAX_DUST)return;liveDust++;const colors=dustColors(),c=color||colors[rand(colors.length)];
       dustParts.push({x,y,dx:Math.cos(angle)*dist,dy:Math.sin(angle)*dist-20,fall,size,life,born:performance.now()+delay,spin:rand(360)-180,opacity,star,sprite:dustSprite(c,star?'star':'glow')});dustKick()}
+    // FX.canvasBurst: explode()'s burst of 24 little square chips (the old DOM particles' look and motion), on the dust canvas.
+    function chipBurst(x,y,count=24){const color=getComputedStyle(document.documentElement).getPropertyValue('--bright').trim()||'#eaffef',sprite=dustSprite(color,'chip'),now=performance.now();
+      for(let i=0;i<count;i++)dustParts.push({chip:true,x,y,dx:(Math.random()-.5)*150,dy:(Math.random()-.6)*150,size:7,life:380+rand(300),born:now,spin:rand(360),opacity:1,sprite});dustKick()}
     function dustFlash(x,y,{size=1,opacity=.95,color=dustColors()[0]}={}){dustParts.push({flash:true,x,y,size:90,scale:2.6*size,life:520,born:performance.now(),opacity,sprite:dustSprite(color,'flash')});dustKick()}
     // Drag match: a soft flash and glowing sparkles that drift out and twinkle away (Halloween: green, violet, pumpkin).
     function fairyDust(x,y,count=24){const colors=dustColors();dustFlash(x,y);dustBurst(()=>{for(let i=0;i<count;i++)spawnDust(x,y,{color:colors[i%colors.length],star:!(i%3)})})}
@@ -2115,7 +2139,7 @@
     // A short drift of sparkles shed behind a moving card (its flight to the cage, or while dragged).
     function trailDust(x,y,{vx=0,vy=0}={}){spawnDust(x,y,{size:2.5+Math.random()*3.5,dist:6+Math.random()*14+Math.min(30,Math.hypot(vx,vy)*.02),angle:Math.atan2(-vy,-vx)+(Math.random()-.5)*1.6,fall:18,life:480+rand(360),delay:0,opacity:.7,star:Math.random()<.4})}
     function clearDust(){dustParts.length=0;liveDust=0;if(dustCx){dustCx.setTransform(1,0,0,1,0,0);dustCx.clearRect(0,0,dustCv.width,dustCv.height)}}
-    function explode(node){if(!node)return;const r=node.getBoundingClientRect();for(let i=0;i<24;i++){const p=document.createElement('i');p.className='particle';p.style.left=`${r.left+r.width/2}px`;p.style.top=`${r.top+r.height/2}px`;document.body.append(p);const x=(Math.random()-.5)*150,y=(Math.random()-.6)*150,rot=rand(360);p.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${x}px,${y}px) rotate(${rot}deg) scale(.2)`,opacity:0}],{duration:380+rand(300),easing:'cubic-bezier(.15,.7,.25,1)'}).onfinish=()=>p.remove()}}
+    function explode(node){if(!node)return;if(FX.canvasBurst){const r=node.getBoundingClientRect();chipBurst(r.left+r.width/2,r.top+r.height/2);return}const r=node.getBoundingClientRect();for(let i=0;i<24;i++){const p=document.createElement('i');p.className='particle';p.style.left=`${r.left+r.width/2}px`;p.style.top=`${r.top+r.height/2}px`;document.body.append(p);const x=(Math.random()-.5)*150,y=(Math.random()-.6)*150,rot=rand(360);p.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${x}px,${y}px) rotate(${rot}deg) scale(.2)`,opacity:0}],{duration:380+rand(300),easing:'cubic-bezier(.15,.7,.25,1)'}).onfinish=()=>p.remove()}}
     function finish(won,reason='overflow'){
       state.over=true;state.locked=true;pauseClock();comboEdgeOff();
       if(state.tutorial){if(won){playSound('win',{volume:.72});tutorialEvent('won')}else{playSound('gameOverA',{volume:.8});haptic('cageOverflow');tutorialCageFull();tutorialEvent('full')}return}
@@ -2292,8 +2316,27 @@
     // Background D: two fields of decorative grayscale cards from the deck (pure decoration, behind the board, never touchable),
     // shifted by phone tilt at different depths so the board seems to sit on a much larger pile of cards.
     let cardFieldBuilt=false,bgTilt={x:0,y:0,cx:0,cy:0,vx:0,vy:0,raf:0};
-    function buildCardField(){if(cardFieldBuilt)return;cardFieldBuilt=true;const rng=mulberry32(4242),pool=Object.values(SYMBOL_IMAGES);
-      for(const [sel,count] of [['.bg-mid',22],['.bg-near',7]]){const layer=$(sel);for(let i=0;i<count;i++){const c=document.createElement('i');c.className='bg-card';c.style.backgroundImage=`url('${pool[Math.floor(rng()*pool.length)]}')`;c.style.left=`${rng()*100-8}%`;c.style.top=`${rng()*100-10}%`;c.style.transform=`rotate(${(rng()-.5)*50}deg)`;layer.append(c)}}}
+    function buildCardField(){if(cardFieldBuilt)return;cardFieldBuilt=true;const rng=mulberry32(4242),pool=Object.values(SYMBOL_IMAGES),spec=[];
+      for(const [sel,count] of [['.bg-mid',22],['.bg-near',7]]){const layer=$(sel);for(let i=0;i<count;i++){const src=pool[Math.floor(rng()*pool.length)],left=rng()*100-8,top=rng()*100-10,rot=(rng()-.5)*50;spec.push({sel,src,left,top,rot});if(FX.bakedField)continue;const c=document.createElement('i');c.className='bg-card';c.style.backgroundImage=`url('${src}')`;c.style.left=`${left}%`;c.style.top=`${top}%`;c.style.transform=`rotate(${rot}deg)`;layer.append(c)}}
+      if(FX.bakedField)bakeCardField(spec)}
+    // FX.bakedField: the same field (and the dimmed far art) drawn once per layer size, with the CSS look baked in: card width 16% (mid)
+    // or 30% (near) of the layer, 2:3, rounded, shadowed, at the CSS opacity and filter. Drawn at 1x: it is blurred, dim decoration.
+    function bakeCardField(spec){
+      const looks={'.bg-far':{filter:'grayscale(1) blur(3px)'},'.bg-mid':{w:.16,alpha:.34,filter:'grayscale(1) brightness(.85) blur(.6px)'},'.bg-near':{w:.3,alpha:.26,filter:'grayscale(1) brightness(.75) blur(4px)'}},imgs=new Map();
+      const load=src=>{if(!imgs.has(src))imgs.set(src,new Promise(res=>{const i=new Image();i.onload=()=>(i.decode?i.decode():Promise.resolve()).catch(()=>{}).then(()=>res(i));i.onerror=()=>res(null);i.src=src}));return imgs.get(src)};
+      const cover=(cx,img,x,y,w,h,py=.5)=>{const s=Math.max(w/img.naturalWidth,h/img.naturalHeight),iw=img.naturalWidth*s,ih=img.naturalHeight*s;cx.drawImage(img,x+(w-iw)/2,y+(h-ih)*py,iw,ih)};
+      const gray=(cx,w,h)=>{const d=cx.getImageData(0,0,w,h),p=d.data;for(let i=0;i<p.length;i+=4){const v=p[i]*.299+p[i+1]*.587+p[i+2]*.114;p[i]=p[i+1]=p[i+2]=v}cx.putImageData(d,0,0)};
+      for(const sel of Object.keys(looks)){const layer=$(sel),look=looks[sel],cards=spec.filter(c=>c.sel===sel),cv=document.createElement('canvas');cv.className='bg-baked';layer.prepend(cv);let drawn='';
+        const draw=async()=>{const W=Math.round(layer.clientWidth),H=Math.round(layer.clientHeight),key=`${W}x${H}`;if(!W||!H||key===drawn)return;drawn=key;
+          const [far,...faces]=await Promise.all([sel==='.bg-far'?load('art/home/bg-B.jpg'):null,...cards.map(c=>load(c.src))]);if(drawn!==key)return;
+          cv.width=W;cv.height=H;const cx=cv.getContext('2d',{willReadFrequently:!canvasFilterWorks});if(canvasFilterWorks)cx.filter=look.filter;
+          if(far)cover(cx,far,0,0,W,H,.6);
+          cards.forEach((c,i)=>{const img=faces[i];if(!img)return;const w=W*look.w,h=w*1.5;cx.save();cx.globalAlpha=look.alpha;cx.translate(W*c.left/100+w/2,H*c.top/100+h/2);cx.rotate(c.rot*Math.PI/180);
+            cx.shadowColor='#000c';cx.shadowBlur=18;cx.shadowOffsetY=8;cx.fillStyle='#111';cx.beginPath();cx.roundRect?cx.roundRect(-w/2,-h/2,w,h,8):cx.rect(-w/2,-h/2,w,h);cx.fill();cx.shadowColor='transparent';cx.clip();cover(cx,img,-w/2,-h/2,w,h);cx.restore()});
+          if(!canvasFilterWorks)gray(cx,W,H)};
+        new ResizeObserver(()=>requestAnimationFrame(draw)).observe(layer)}}
+    // Whether canvas filters actually work here (older Safari has the property but ignores it): grayscale a red pixel and read it back.
+    const canvasFilterWorks=(()=>{try{const c=document.createElement('canvas');c.width=c.height=1;const x=c.getContext('2d',{willReadFrequently:true});x.filter='grayscale(1)';x.fillStyle='#f00';x.fillRect(0,0,1,1);const d=x.getImageData(0,0,1,1).data;return Math.abs(d[0]-d[1])<12}catch{return false}})();
     window.__bgTilt=(turn,lean)=>{if(document.body.dataset.bg!=='D'||reduceMotion.matches)return;bgTilt.x=Math.tanh(turn/.22);bgTilt.y=Math.tanh(lean/.22);if(!bgTilt.raf)bgTilt.raf=requestAnimationFrame(stepBgTilt)};
     // Desktop browsers have no motion sensor, so the mouse stands in for tilt on the background layers: its place across the window
     // (the whole browser window when the game sits in frame.html, which forwards its own mouse moves to __mouseTilt), easing back
