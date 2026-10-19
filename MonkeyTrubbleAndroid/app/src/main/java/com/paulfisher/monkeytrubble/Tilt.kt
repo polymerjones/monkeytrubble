@@ -62,8 +62,8 @@ class Tilt(context: Context, private val send: (turn: Double, lean: Double) -> U
         val dTurn = wrap(turn - base.first)
         val dLean = wrap(lean - base.second)
         neutral = wrap(base.first + dTurn * follow) to wrap(base.second + dLean * follow)
-        // Skip sensor jitter below ~half a pixel of parallax so a resting phone stops waking the web view 30 times a second.
-        lastSent?.let { if (abs(dTurn - it.first) + abs(dLean - it.second) < 0.002) return }
+        // Skip hand tremor (under ~0.35°) so a phone held still stops waking the web view; deliberate tilts still come through.
+        lastSent?.let { if (abs(dTurn - it.first) + abs(dLean - it.second) < 0.006) return }
         lastSent = dTurn to dLean
         send(dTurn, dLean)
     }

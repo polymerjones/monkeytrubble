@@ -119,6 +119,7 @@ struct GameWebView: UIViewRepresentable {
         private let lightImpact = UIImpactFeedbackGenerator(style: .light)
         private let mediumImpact = UIImpactFeedbackGenerator(style: .medium)
         private let rigidImpact = UIImpactFeedbackGenerator(style: .rigid)
+        private let heavyImpact = UIImpactFeedbackGenerator(style: .heavy)
         private let notification = UINotificationFeedbackGenerator()
         private let motionManager = CMMotionManager()
         private var activeObserver: NSObjectProtocol?
@@ -161,7 +162,7 @@ struct GameWebView: UIViewRepresentable {
                   !motionManager.isDeviceMotionActive else { return }
             neutral = nil
             lastSent = nil
-            let interval = 1.0 / 30.0
+            let interval = 1.0 / 24.0
             let follow = 1 - exp(-interval / 3.0)
             motionManager.deviceMotionUpdateInterval = interval
             motionManager.startDeviceMotionUpdates(to: .main) { [weak self] motion, _ in
@@ -178,8 +179,8 @@ struct GameWebView: UIViewRepresentable {
                 base.turn = wrap(base.turn + dTurn * follow)
                 base.lean = wrap(base.lean + dLean * follow)
                 self.neutral = base
-                // Skip sensor jitter below ~half a pixel of parallax so a resting phone stops waking the web view 30 times a second.
-                if let last = self.lastSent, abs(dTurn - last.turn) + abs(dLean - last.lean) < 0.002 { return }
+                // Skip hand tremor (under ~0.35°) so a phone held still stops waking the web view; deliberate tilts still come through.
+                if let last = self.lastSent, abs(dTurn - last.turn) + abs(dLean - last.lean) < 0.006 { return }
                 self.lastSent = (dTurn, dLean)
                 let script = String(
                     format: "window.__setMonkeyTilt?.(%.4f,%.4f)",
@@ -251,6 +252,14 @@ struct GameWebView: UIViewRepresentable {
                     // Leaderboard climb: a tick each time the player's row moves past another player.
                     self.mediumImpact.impactOccurred(intensity: 0.6)
                     self.mediumImpact.prepare()
+                case "jokerSlam":
+                    // The joker slams down on his pair: one heavy thud, then a softer rebound.
+                    self.heavyImpact.impactOccurred(intensity: 1.0)
+                    self.heavyImpact.prepare()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(90)) {
+                        self.rigidImpact.impactOccurred(intensity: 0.5)
+                        self.rigidImpact.prepare()
+                    }
                 case "rankClimb":
                     self.notification.notificationOccurred(.success)
                     self.notification.prepare()

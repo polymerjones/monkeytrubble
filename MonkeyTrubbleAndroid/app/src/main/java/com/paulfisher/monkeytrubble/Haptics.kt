@@ -37,6 +37,8 @@ class Haptics(context: Context, private val view: View) {
             "rankPass" -> click(0.6f)
             "pairCleared", "rankClimb" -> success()
             "cageOverflow" -> error()
+            // The joker slams down on his pair: one full-strength thud, then a softer rebound.
+            "jokerSlam" -> if (rich) compose(listOf(1f to 0, 0.5f to 90)) else standard(HapticFeedbackConstants.LONG_PRESS)
             // A quick triple knock, like bars rattling: three taps 60ms apart, fading slightly.
             "cageRattle", "cageRattleSoft" -> {
                 val base = if (event == "cageRattle") 0.8f else 0.45f
