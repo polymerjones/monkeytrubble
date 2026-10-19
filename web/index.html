@@ -1957,6 +1957,7 @@
       const copies=[];for(const {t,i} of pair){const slot=slots[i];if(!slot)continue;const r=slot.getBoundingClientRect(),copy=slot.cloneNode(true);copy.removeAttribute('data-tile-id');copy.style.cssText=`position:fixed;left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;margin:0;pointer-events:none`;$('#dragLayer').append(copy);copies.push({t,slot,copy,r})}
       const jokers=copies.filter(c=>c.t.symbol===JOKER);
       if(copies.length===2&&jokers.length===1&&!reduceMotion.matches)jokerSlam(jokers[0],copies.find(c=>c!==jokers[0]));
+      else for(const {slot,copy} of copies){copy.classList.add('matching');setTimeout(()=>copy.remove(),500);explode(slot)}
       state.tray=state.tray.filter(t=>!pairIds.includes(t.id));state.pairs++;if(pair.some(x=>x.t.symbol===JOKER)&&!state.tutorial)rebalanceAfterJoker();render();tutorialEvent('cleared');setTimeout(()=>{if(s===state&&!s.over)finishIfCleared()},470)
     }
     // Joker clear, pogs-and-slammers style: the joker rises off his slot, swells, then slams down onto his partner; on impact the screen
