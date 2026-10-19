@@ -76,7 +76,7 @@ for src in ../source/art/regions/ch*-*.*; do
   build "$src" "region-$(basename "${src%.*}")"
 done
 for src in ../source/art/chapters/ch*_*.png; do
-  n=$(basename "$src" | sed -E 's/^ch([0-9]+)_.*/\1/')
+  n=$(basename "$src" | sed -E 's/^ch([0-9]+b?)_.*/\1/')
   rm -rf "art/chapters/$n" && mkdir -p "art/chapters/$n"
   if [ -d "../source/art/chapters/layers/$n" ]; then
     cp "../source/art/chapters/layers/$n"/* "art/chapters/$n/"

@@ -24,6 +24,8 @@ from PIL import Image, ImageFilter
 CHAPTERS = {
     1: {}, 2: {}, 3: dict(ground=.60, water='rows', mid_min=.16), 4: {}, 5: {}, 6: {},
     7: dict(ground=.52, water='color'), 8: {}, 9: {}, 10: {},
+    # Ice Age has two paintings that alternate by level: ch11_*.png -> layers/11, ch11b_*.png -> layers/11b.
+    11: {}, '11b': {},
 }
 # Seasonal scenes: source picture, output folder, and snow (strength of the snowy grade, see snow_grade).
 SEASONS = {
@@ -152,7 +154,7 @@ def split(n, src=None, out=None, cfg=None):
 
 if __name__ == '__main__':
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    for a in sys.argv[1:] or sorted(CHAPTERS):
+    for a in sys.argv[1:] or sorted(CHAPTERS, key=str):
         if a in SEASONS:
             for cfg in SEASONS[a]: split(cfg['out'], cfg['src'], cfg['out'], cfg)
-        else: split(int(a))
+        else: split(int(a) if str(a).isdigit() else a)

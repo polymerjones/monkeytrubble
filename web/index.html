@@ -838,14 +838,15 @@
       {name:'KINGDOM OF THE CANOPY',ui:'canopy',habitat:'Upper tropical rainforest canopy',shapes:['twinstacks','valley','columns','monkey'],featured:['S2_GIBBON','S2_LTMACAQUE','S2_PIGTAILED','APE_SUMATRAN','APE_SIAMANG'],foods:['F_BANANA'],scene:'canopy',vision:'OWL',ambient:'leaves',music:{competitive:'gorilla'},
         pal:{sky:['#f2c27a','#bfe3d6'],far:'#4f9a6a',mid:'#2e7048',near:'#14452a',accent:'#ffe28a'}},
       // Ice Age (2026-10-19): Paul's battle-ape set (CARD_DATA set:'iceage'), dealt in full; never a Halloween level (noSeason).
-      {name:'ICE AGE BATTLE APES',ui:'iceage',set:'iceage',noSeason:true,habitat:'Ice Age glaciers and mammoth steppe',shapes:['valley','peaks','twinstacks'],featured:['I12','I26','I03'],region:['I01','I02','I03','I04','I05','I06','I07','I08','I09','I10','I11','I12','I13','I14','I15','I16','I17','I18','I19','I20','I21','I22','I23','I24','I25','I26','I27','I28'],scene:'iceage',vision:'OWL',ambient:'snow',music:{competitive:'competitiveDeep'},
+      // altArt: two paintings, alternating by level (art/chapters/11 on the chapter's 1st/3rd/5th level, art/chapters/11b on the others).
+      {name:'ICE AGE BATTLE APES',ui:'iceage',set:'iceage',noSeason:true,altArt:true,habitat:'Ice Age glaciers and mammoth steppe',shapes:['valley','peaks','twinstacks'],featured:['I12','I26','I03'],region:['I01','I02','I03','I04','I05','I06','I07','I08','I09','I10','I11','I12','I13','I14','I15','I16','I17','I18','I19','I20','I21','I22','I23','I24','I25','I26','I27','I28'],scene:'iceage',vision:'OWL',ambient:'snow',music:{competitive:'competitiveDeep'},
         pal:{sky:['#a9c4dc','#eef6fb'],far:'#9fb8cc',mid:'#6d8aa0',near:'#33475a',accent:'#e6f4ff'}}
     ];
     // Boss level (2026-10-14): each chapter's last level deals THE ORIGINAL TROOP (the photo set, Patriots, Caulin Plushie: DECK)
     // instead of the illustrated set, and is never a Halloween level.
     // Expedition+ laps (level 51+) repeat the chapters with every board shape; lap shows as "+" in the banner.
     const chapterFor=level=>{const lap=Math.floor((Math.max(1,level)-1)/(CHAPTERS.length*CHAPTER_LEN)),inLap=(Math.max(1,level)-1)%(CHAPTERS.length*CHAPTER_LEN),i=Math.floor(inLap/CHAPTER_LEN),c=CHAPTERS[i],from=lap*CHAPTERS.length*CHAPTER_LEN+i*CHAPTER_LEN+1;
-      const boss=level===from+CHAPTER_LEN-1;return{...c,set:boss?null:c.set||ALL_SET,boss,index:i,number:i+1,lap,plus:lap>0,from,to:from+CHAPTER_LEN-1,shapes:lap>0?LAYOUTS.map(l=>l.id):c.shapes,accent:c.pal.accent}};
+      const boss=level===from+CHAPTER_LEN-1;return{...c,set:boss?null:c.set||ALL_SET,boss,index:i,number:i+1,art:c.altArt&&(level-from)%2?`${i+1}b`:i+1,lap,plus:lap>0,from,to:from+CHAPTER_LEN-1,shapes:lap>0?LAYOUTS.map(l=>l.id):c.shapes,accent:c.pal.accent}};
     // Levels 1-2 use the most open shape; after that a seeded pick from the chapter's pool, so Retry gives the same board.
     // Easy leaves the cascades out (they open too few cards for its three start pairs).
     const layoutFor=(level,easy=false)=>{if(level<=2)return LAYOUTS[0];const pool=chapterFor(level).shapes.map(id=>LAYOUTS.find(l=>l.id===id)).filter(l=>l&&!(easy&&CASCADES.has(l.id)));if(!pool.length)return LAYOUTS[0];return pool[Math.floor(mulberry32(level*131+7)()*pool.length)]};
@@ -1323,10 +1324,8 @@
         case'frozen':far=`<rect width="100" height="130" fill="url(#s)"/>${[[10,58,22],[34,50,26],[62,54,24],[88,52,22]].map(([x,y,w])=>`<polygon points="${x-w},80 ${x},${y-10} ${x+w},80" fill="${P.far}"/><polygon points="${x-w*.32},${y-2} ${x},${y-10} ${x+w*.32},${y-2}" fill="#f4fbff"/>`).join('')}`;
           mid=Array.from({length:9},()=>{const x=rn(0,100),y=rn(78,92),h=rn(12,20);return`<polygon points="${x-h*.35},${y} ${x},${y-h} ${x+h*.35},${y}" fill="${P.mid}"/><polygon points="${x-h*.15},${y-h*.55} ${x},${y-h} ${x+h*.15},${y-h*.55}" fill="#fff"/>`}).join('')+`<rect y="92" width="100" height="38" fill="#eef6fb"/>`;
           near=`<ellipse cx="50" cy="114" rx="28" ry="7" fill="#7fa9bf"/><ellipse cx="50" cy="112" rx="24" ry="4" fill="#fff" opacity=".35"/>`;break;
-        // Ice Age: jagged glacier walls, a white ice sheet with a pale crevasse band, and a few mammoths crossing it.
-        case'iceage':far=`<rect width="100" height="130" fill="url(#s)"/>${ridge(52,10,P.far,9)}${[[8,46],[30,40],[55,44],[80,38],[98,46]].map(([x,y])=>`<polygon points="${x-9},76 ${x-3},${y} ${x+2},${y+6} ${x+8},76" fill="#dcecf7"/><polygon points="${x-3},${y} ${x+2},${y+6} ${x},76 ${x-2},76" fill="#b9d4e6"/>`).join('')}`;
-          mid=`<rect y="80" width="100" height="50" fill="#eef6fb"/><path d="M0 88Q30 84 55 89T100 86" stroke="#b9d4e6" stroke-width="1.6" fill="none"/>${[[18,86,1],[34,85,.8],[72,87,1.15]].map(([x,y,k])=>`<g transform="translate(${x} ${y}) scale(${k})" fill="${P.mid}"><ellipse cx="0" cy="-5" rx="6" ry="4.2"/><circle cx="-6" cy="-6" r="2.8"/><rect x="-4.5" y="-2" width="1.6" height="4"/><rect x="2.6" y="-2" width="1.6" height="4"/><path d="M-8 -5Q-10 -1 -7 1" stroke="#f4fbff" stroke-width=".6" fill="none"/></g>`).join('')}`;
-          near=`${ridge(108,4,'#f6fbff')}<rect y="114" width="100" height="16" fill="#dcecf7"/>`;break;
+        // Ice Age: plain icy sky and soft snow ridges, only seen if the paintings (art/chapters/11, 11b) fail to load.
+        case'iceage':far=`<rect width="100" height="130" fill="url(#s)"/>${ridge(64,6,P.far,7)}`;mid=`${ridge(88,4,'#e6f0f7')}`;break;
         case'island':far=`<rect width="100" height="130" fill="url(#s)"/><circle cx="64" cy="58" r="12" fill="#fff0c0" opacity=".9"/><rect y="84" width="100" height="46" fill="${P.far}"/>`;
           mid=[[18,84,1],[72,86,1.25],[44,88,.7]].map(([x,y,k])=>`<path d="M${x-3*k} ${y}Q${x-4*k} ${y-14*k} ${x-1.6*k} ${y-26*k}H${x+1.6*k}Q${x+4*k} ${y-14*k} ${x+3*k} ${y}Z" fill="${P.mid}"/><ellipse cx="${x}" cy="${y-27*k}" rx="${7*k}" ry="${2.6*k}" fill="${P.near}"/>`).join('');
           near=`${ridge(110,4,P.near,5)}`;break;
@@ -1338,7 +1337,7 @@
       return{far:SV(far,sky),mid:SV(mid),near:SV(near)}}
     const sceneCache=new Map(),sceneArt=new Map();
     // Halloween levels (skin) keep the stylised SVG scene; painted chapter art is for regular levels only.
-    function chapterLayerURL(ch,layer,skin){const n=ch.number,key=`${n}:${layer}`;if(skin){if(!sceneCache.has(n))sceneCache.set(n,sceneSVG(ch.scene,ch.pal));return svgURL(sceneCache.get(n)[layer])}if(sceneArt.get(key))return`url('${sceneArt.get(key)}')`;
+    function chapterLayerURL(ch,layer,skin){const n=ch.art,key=`${n}:${layer}`;if(skin){if(!sceneCache.has(n))sceneCache.set(n,sceneSVG(ch.scene,ch.pal));return svgURL(sceneCache.get(n)[layer])}if(sceneArt.get(key))return`url('${sceneArt.get(key)}')`;
       if(!sceneArt.has(key))prepareChapterArt(n);
       // A painted far layer is a whole scene, so the placeholder SVG mid and near layers stay off over it.
       if(layer!=='far'&&sceneArt.get(`${n}:far`))return'none';
@@ -1350,9 +1349,9 @@
     function prepareChapterArt(n){if(chapterArtLoads.has(n))return chapterArtLoads.get(n);const imgs=[];
       const one=(file,key)=>new Promise(res=>{const src=`art/chapters/${n}/${file}`,img=new Image();if(key)sceneArt.set(key,null);img.onload=async()=>{try{await img.decode?.()}catch{}if(key)sceneArt.set(key,src);imgs.push(img);res()};img.onerror=()=>res();img.src=src});
       const p=Promise.all([one('far.jpg',`${n}:far`),one('mid.webp',`${n}:mid`),one('near.webp',`${n}:near`),one('water.png')]).then(()=>{keptArt.delete(n);keptArt.set(n,imgs);while(keptArt.size>2)keptArt.delete(keptArt.keys().next().value);
-        if(state?.tiles?.length&&chapterFor(state.level||progress.level).number===n)applyChapterLook()});
+        if(state?.tiles?.length&&chapterFor(state.level||progress.level).art===n)applyChapterLook()});
       chapterArtLoads.set(n,p);return p}
-    const artReady=(level,ms=2500)=>Promise.race([levelPack(level)==='christmas'?prepareSeasonArt(christmasScene(level)):prepareChapterArt(chapterFor(level).number),new Promise(r=>setTimeout(r,ms))]);
+    const artReady=(level,ms=2500)=>Promise.race([levelPack(level)==='christmas'?prepareSeasonArt(christmasScene(level)):prepareChapterArt(chapterFor(level).art),new Promise(r=>setTimeout(r,ms))]);
     const timeOfDay=(level,ch,skin)=>{if(skin)return'night';const k=level-ch.from+1;return k<=4?'day':k<=7?'golden':k<=9?'dusk':'night'};
     // Christmas scene: one of the two painted Christmas backgrounds (alternating by level), split into far, mid and near parallax
     // layers with a snowy grade (split-layers.py christmas), loaded and decoded as one set before it shows (prepareSeasonArt,
@@ -1368,7 +1367,7 @@
       b.dataset.scene=on?'chapter':'cards';b.dataset.chapter=ch.number;{const d=on&&!skin?ch.parallax??1:1;b.style.setProperty('--depth',d);setDriftDepth(d);if(bgTilt.depth!==d){bgTilt.depth=d;if(!bgTilt.raf)bgTilt.raf=requestAnimationFrame(stepBgTilt)}}b.classList.toggle('season-skin',skin);b.style.setProperty('--ch-accent',ch.pal.accent);
       if(!on){for(const l of['far','mid','near']){const el=$(`.bg-${l}`);el.style.backgroundImage='';el.style.opacity=''}b.dataset.tod='';ambient.set(null);water.set(null);return}
       // Painted mid and near layers draw fully opaque (the 95% and 90% opacity suits only the placeholder SVG).
-      for(const l of['far','mid','near']){const el=$(`.bg-${l}`);el.style.backgroundImage=chapterLayerURL(ch,l,skin);el.style.opacity=!skin&&sceneArt.get(`${ch.number}:${l}`)?'1':''}
+      for(const l of['far','mid','near']){const el=$(`.bg-${l}`);el.style.backgroundImage=chapterLayerURL(ch,l,skin);el.style.opacity=!skin&&sceneArt.get(`${ch.art}:${l}`)?'1':''}
       const tod=timeOfDay(lv,ch,skin);b.dataset.tod=tod;ambient.set(tod==='night'?(ch.ambient==='snow'?'snow':'fireflies'):ch.ambient,ch,skin);water.set(skin?null:ch)}
     // Water ripple: a chapter with art/chapters/<n>/water.png (an alpha mask of the water on the painted far layer) gets a small
     // canvas inside .bg-far, so it moves with the far layer's tilt and drift. Each frame redraws the water rows of far.jpg shifted
@@ -1390,7 +1389,7 @@
       function band(img){const c=document.createElement('canvas');c.width=32;c.height=256;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(img,0,0,32,256);const d=x.getImageData(0,0,32,256).data;let a=-1,b=-1;
         for(let y=0;y<256;y++)for(let i=0;i<32;i++)if(d[(y*32+i)*4+3]>8){if(a<0)a=y;b=y;break}return a<0?null:[a/256,(b+1)/256]}
       function load(src){return new Promise(res=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>res(null);i.src=src})}
-      return{async set(ch){const k=ch&&!reduceMotion.matches&&sceneArt.get(`${ch.number}:far`)?ch.number:null;if(k===n&&cv)return;stop();if(k==null)return;n=k;
+      return{async set(ch){const k=ch&&!reduceMotion.matches&&sceneArt.get(`${ch.art}:far`)?ch.art:null;if(k===n&&cv)return;stop();if(k==null)return;n=k;
         if(!masks.has(k))masks.set(k,load(`art/chapters/${k}/water.png`).then(i=>{if(i)i.band=band(i);return i?.band?i:null}));
         const [m,f]=await Promise.all([masks.get(k),load(sceneArt.get(`${k}:far`))]);if(n!==k||!m||!f)return;mimg=m;far=f;build();
         ro?.disconnect();ro=new ResizeObserver(()=>{if(n===k)build()});ro.observe($('.bg-far'));if(!raf)raf=requestAnimationFrame(loop)},wake(){if(cv&&n!=null&&!raf)raf=requestAnimationFrame(loop)}}})();
@@ -1544,7 +1543,7 @@
       syncTheme();
       if(silent)pendingLevelStart=true;else playLevelStart();
       // The next chapter's art loads in the background a few seconds in, so the chapter change shows it at once.
-      {const nx=chapterFor(level+1).number;if(nx!==chapterFor(level).number)setTimeout(()=>{prepareChapterArt(nx);prepareExpedition()},4000)}
+      {const a=chapterFor(level),b=chapterFor(level+1);if(b.art!==a.art)setTimeout(()=>{prepareChapterArt(b.art);if(b.number!==a.number)prepareExpedition()},4000)}
       applyChapterLook();syncAmbience();if(!retry&&!tutorial)showLevelBanner()
     }
     // Each pending animation holds the board; it unlocks only when every hold is released (and never after game over or a new game).
@@ -2484,12 +2483,14 @@
     // Drawn on one canvas in a single loop with the dust sprites (individual elements made the lightbox stutter on iPhone).
     const MAX_MOTES=50;let moteTimer=0,liveMotes=0,moteCv=null,moteCx=null,moteRaf=0;const motes=[];
     function moteCanvas(){if(moteCv)return;moteCv=document.createElement('canvas');moteCv.className='mote-canvas';$('#lightboxMotes').append(moteCv);moteCx=moteCv.getContext('2d')}
-    function spawnMote(burst=false){if(liveMotes>=MAX_MOTES)return;moteCanvas();liveMotes++;const colors=dustColors(),star=Math.random()<.3,W=innerWidth,H=innerHeight,side=Math.random(),a=Math.random()*Math.PI*2;
-      const x0=burst?W/2:side<.4?Math.random()*W*.17:side<.8?W*(.83+Math.random()*.17):Math.random()*W,y0=burst?H*.42:H*(.35+Math.random()*.75);
-      motes.push({x0,y0,x1:burst?x0+Math.cos(a)*(170+Math.random()*190):x0+(Math.random()-.5)*90,y1:burst?y0+Math.sin(a)*(240+Math.random()*220):y0-160-Math.random()*260,born:performance.now(),life:burst?1200+rand(700):2600+rand(2200),peak:.7+Math.random()*.3,burst,size:star?13+Math.random()*12:5+Math.random()*9,star,sprite:dustSprite(colors[rand(colors.length)],star?'star':'glow')});if(!moteRaf)moteRaf=requestAnimationFrame(moteLoop)}
+    // Ice Age chapter: the motes are white snow, falling from the top with a gentle sway instead of rising.
+    const snowMotes=()=>!!state?.level&&state.pack!=='halloween'&&chapterFor(state.level).ui==='iceage',SNOW_MOTES=['#ffffff','#eef7ff','#dcecff'];
+    function spawnMote(burst=false){if(liveMotes>=MAX_MOTES)return;moteCanvas();liveMotes++;const snow=snowMotes(),colors=snow?SNOW_MOTES:dustColors(),star=Math.random()<(snow?.15:.3),W=innerWidth,H=innerHeight,side=Math.random(),a=Math.random()*Math.PI*2;
+      const x0=burst?W/2:side<.4?Math.random()*W*.17:side<.8?W*(.83+Math.random()*.17):Math.random()*W,y0=burst?H*.42:snow?H*(-.05+Math.random()*.6):H*(.35+Math.random()*.75);
+      motes.push({x0,y0,x1:burst?x0+Math.cos(a)*(170+Math.random()*190):x0+(Math.random()-.5)*90,y1:burst?y0+Math.sin(a)*(240+Math.random()*220):snow?y0+200+Math.random()*280:y0-160-Math.random()*260,sway:snow&&!burst?8+Math.random()*14:0,ph:Math.random()*6.3,born:performance.now(),life:burst?1200+rand(700):2600+rand(2200),peak:.7+Math.random()*.3,burst,size:star?13+Math.random()*12:5+Math.random()*9,star,sprite:dustSprite(colors[rand(colors.length)],star?'star':'glow')});if(!moteRaf)moteRaf=requestAnimationFrame(moteLoop)}
     function moteLoop(now){moteRaf=0;if(!moteCv)return;const W=innerWidth,H=innerHeight;if(moteCv.width!==W||moteCv.height!==H){moteCv.width=W;moteCv.height=H}moteCx.clearRect(0,0,W,H);
       for(let i=motes.length-1;i>=0;i--){const m=motes[i],t=(now-m.born)/m.life;if(t>=1){motes.splice(i,1);liveMotes--;continue}const e=m.burst?dustEase(t):t,op=t<.25?m.peak*t/.25:t<.6?m.peak*(1-(t-.25)/.35*.6):t<.8?m.peak*(.4+(t-.6)/.2*.6):m.peak*(1-(t-.8)/.2);
-        const x=m.x0+(m.x1-m.x0)*e,y=m.y0+(m.y1-m.y0)*e,w=m.size*(.3+.7*Math.min(1,t*4))*(m.star?1.6:2.4);moteCx.globalAlpha=Math.max(0,Math.min(1,op));moteCx.drawImage(m.sprite,x-w/2,y-w/2,w,w)}
+        const x=m.x0+(m.x1-m.x0)*e+(m.sway&&Math.sin(m.ph+t*7)*m.sway),y=m.y0+(m.y1-m.y0)*e,w=m.size*(.3+.7*Math.min(1,t*4))*(m.star?1.6:2.4);moteCx.globalAlpha=Math.max(0,Math.min(1,op));moteCx.drawImage(m.sprite,x-w/2,y-w/2,w,w)}
       moteCx.globalAlpha=1;if(motes.length)moteRaf=requestAnimationFrame(moteLoop)}
     function startMotes(){stopMotes();if(reduceMotion.matches)return;for(let i=0;i<9;i++)spawnMote(true);for(let i=0;i<5;i++)setTimeout(()=>lightbox.open&&spawnMote(),i*150);moteTimer=setInterval(()=>{if(!document.hidden)spawnMote()},160)}
     function stopMotes(){clearInterval(moteTimer);moteTimer=0}
