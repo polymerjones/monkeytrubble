@@ -24,7 +24,8 @@ import java.util.Locale
 
 /**
  * Hosts the bundled game (assets/web, copied from ../web at build time) in a full-screen WebView, like the iPhone app's
- * GameWebView.swift. Portrait only, offline, edge to edge, with native haptics, card tilt, a saved game and Play Games.
+ * GameWebView.swift. Portrait only, offline, edge to edge, with native haptics, card tilt, a saved game, Play Games and
+ * rewarded ads.
  */
 class MainActivity : ComponentActivity() {
     private lateinit var container: FrameLayout
@@ -32,6 +33,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var store: GameStore
     private lateinit var tilt: Tilt
     private lateinit var playGames: PlayGames
+    private lateinit var ads: Ads
     private var systemBars = Insets.NONE
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -77,7 +79,8 @@ class MainActivity : ComponentActivity() {
         tilt = Tilt(this) { turn, lean ->
             evaluate(String.format(Locale.US, "window.__setMonkeyTilt?.(%.4f,%.4f)", turn, lean))
         }
-        webView.addJavascriptInterface(Bridge(store, Haptics(this, webView), playGames), Bridge.NAME)
+        ads = Ads(this, ::evaluate)
+        webView.addJavascriptInterface(Bridge(store, Haptics(this, webView), playGames, ads), Bridge.NAME)
         webView.webViewClient = GameClient()
 
         // Back closes the top dialog or leaves a level (the page decides); on the home screen it sends the app to the background.
@@ -88,6 +91,7 @@ class MainActivity : ComponentActivity() {
         }
 
         webView.loadUrl("https://${WebViewAssetLoader.DEFAULT_DOMAIN}/web/index.html")
+        ads.gatherConsent()
     }
 
     override fun onResume() {
@@ -120,7 +124,7 @@ class MainActivity : ComponentActivity() {
         // The hidden dev mode (three taps on the home logo) works in debug builds only, never in a Play build.
         val debug = BuildConfig.DEBUG
         val save = store.save?.let { "window.__monkeySave=${it.replace("</", "<\\/")};" } ?: ""
-        return "${Bridge.SHIM}window.__monkeyDebugBuild=$debug;window.__monkeyDevTaps=$debug;$save"
+        return "${Bridge.SHIM}window.__monkeyDebugBuild=$debug;window.__monkeyDevTaps=$debug;window.__monkeyAds=true;$save"
     }
 
     /**

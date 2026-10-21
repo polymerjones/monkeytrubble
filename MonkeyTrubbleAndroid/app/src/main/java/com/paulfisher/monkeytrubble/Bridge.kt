@@ -13,6 +13,7 @@ class Bridge(
     private val store: GameStore,
     private val haptics: Haptics,
     private val playGames: PlayGames,
+    private val ads: Ads,
 ) {
     private val main = Handler(Looper.getMainLooper())
 
@@ -32,6 +33,12 @@ class Bridge(
         main.post { playGames.handle(message) }
     }
 
+    @JavascriptInterface
+    fun ads(json: String) {
+        val message = try { JSONObject(json) } catch (_: Exception) { return }
+        main.post { ads.handle(message) }
+    }
+
     companion object {
         const val NAME = "MonkeyAndroid"
 
@@ -39,6 +46,7 @@ class Bridge(
         const val SHIM = "window.webkit={messageHandlers:{" +
             "haptics:{postMessage:m=>$NAME.haptic(String(m))}," +
             "storage:{postMessage:m=>$NAME.storage(String(m))}," +
-            "gameCenter:{postMessage:m=>$NAME.gameCenter(JSON.stringify(m))}}};"
+            "gameCenter:{postMessage:m=>$NAME.gameCenter(JSON.stringify(m))}," +
+            "ads:{postMessage:m=>$NAME.ads(JSON.stringify(m))}}};"
     }
 }

@@ -50,9 +50,9 @@ Every October a haunted troop creeps into the jungle with spooky cards, sounds a
 A game by Polymer Jones.
 
 ## URLs
-Support URL: https://polymerjones.github.io/monkeytrubble/support.html
-Marketing URL (optional): https://polymerjones.github.io/monkeytrubble/
-Privacy Policy URL: https://polymerjones.github.io/monkeytrubble/privacy.html
+Support URL: https://monkeytrubble.app/support.html
+Marketing URL (optional): https://monkeytrubble.app/
+Privacy Policy URL: https://monkeytrubble.app/privacy.html
 
 ## Copyright
 2026 Paul Fisher

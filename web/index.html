@@ -10,8 +10,8 @@
   <meta property="og:title" content="Monkey Trubble | A Game By Polymer Jones [beta]">
   <meta property="og:description" content="A layered primate card-matching game. Play in your browser or add it to your Home Screen.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://polymerjones.github.io/monkeytrubble/">
-  <meta property="og:image" content="https://polymerjones.github.io/monkeytrubble/icons/icon-512.png">
+  <meta property="og:url" content="https://monkeytrubble.app/">
+  <meta property="og:image" content="https://monkeytrubble.app/icons/icon-512.png">
   <meta name="twitter:card" content="summary">
   <link rel="preload" as="image" href="art/home/logo.png">
   <link rel="manifest" href="manifest.webmanifest">
@@ -2205,9 +2205,10 @@
     // Rewards are kept apart from game logic. requestReward asks the ad provider for one view and grants only on a verified
     // 'completed' result, once per request (nonce); skipped, unavailable or failed views grant nothing. Amounts live in REWARDS.
     const REWARDS={continue:{grant:resumeFromCage},undo:{amount:2,one:'Undo',many:'Undos',grant:n=>{state.undosLeft+=n}},shuffle:{amount:1,one:'Shuffle',many:'Shuffles',grant:n=>{state.shufflesLeft+=n}},hint:{amount:1,one:'Owl Eyes',many:'Owl Eyes',grant:n=>{state.hintsLeft+=n}}};
-    // ADS_LIVE: real rewarded ads. Until an ad SDK is in (1.0 ships without), every reward is free once per level per kind
-    // (FREE_REWARDS_PER_LEVEL) and the buttons say FREE instead of Watch Ad. Dev mode always shows the ad simulator.
-    const ADS_LIVE=false,FREE_REWARDS_PER_LEVEL=1,adsShown=()=>ADS_LIVE||devMode;
+    // ADS_LIVE: real rewarded ads, on when the app has an ad SDK (Android's AdMob sets window.__monkeyAds). Without one (iPhone, the
+    // browser) every reward is free once per level per kind (FREE_REWARDS_PER_LEVEL) and the buttons say FREE instead of Watch Ad.
+    // Dev mode always shows Watch Ad: the ad simulator in a browser or on iPhone, Google's test ads on Android.
+    const ADS_LIVE=window.__monkeyAds===true,FREE_REWARDS_PER_LEVEL=1,adsShown=()=>ADS_LIVE||devMode;
     const canReward=type=>adsShown()||(state.freeRewards?.[type]||0)<FREE_REWARDS_PER_LEVEL;
     function labelAdButtons(){for(const el of document.querySelectorAll('.ad-btn small'))el.textContent=loc(adsShown()?'(Watch Ad)':'(Free)')}
     // Development stand-in for a real rewarded-ad SDK: no network, no third-party content. Normally it completes at once (unlimited
@@ -2215,7 +2216,14 @@
     const mockAdProvider={show(type,nonce,report){if(!devMode){report('completed');return}
       $('#rewardSimType').textContent=`Reward: ${type}`;$('#rewardSim').classList.add('show');
       $('#rewardSim').onclick=e=>{const o=e.target.closest('[data-outcome]')?.dataset.outcome;if(!o)return;$('#rewardSim').classList.remove('show');$('#rewardSim').onclick=null;if(o==='twice'){report('completed');report('completed')}else report(o)}}};
-    let adProvider=mockAdProvider,rewardPending=false,rewardNonce=0;const grantedRewards=new Set();
+    // The app's rewarded ads (Ads.kt): it plays the ad and answers window.__monkeyAdResult(nonce,status). When there's no ad to show
+    // (no fill yet, offline, no consent), the free once-per-level reward stands in so the player isn't left stuck.
+    let nativeAdWaiting=null;
+    const nativeAdProvider={show(type,nonce,report){nativeAdWaiting={type,nonce,report};window.webkit.messageHandlers.ads.postMessage({type,nonce})}};
+    window.__monkeyAdResult=(nonce,status)=>{const w=nativeAdWaiting;if(!w||w.nonce!==nonce)return;nativeAdWaiting=null;
+      if(status==='unavailable'){const f=state.freeRewards??={};if((f[w.type]||0)<FREE_REWARDS_PER_LEVEL){f[w.type]=(f[w.type]||0)+1;status='completed'}}
+      w.report(status)};
+    let adProvider=ADS_LIVE?nativeAdProvider:mockAdProvider,rewardPending=false,rewardNonce=0;const grantedRewards=new Set();
     function requestReward(type){
       const reward=REWARDS[type];if(!reward||rewardPending)return Promise.resolve({status:'unavailable'});rewardPending=true;const nonce=`${type}:${++rewardNonce}`;
       return new Promise(resolve=>{let settled=false;

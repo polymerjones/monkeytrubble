@@ -17,8 +17,13 @@ android {
         applicationId = "com.paulfisher.monkeytrubble"
         minSdk = 26
         targetSdk = 36
-        versionCode = 9
+        versionCode = 10
         versionName = "1.0"
+
+        // AdMob app ID (Android app in the AdMob console). Release builds use the real rewarded unit; debug builds use Google's
+        // sample rewarded unit, so testing never serves or clicks real ads.
+        manifestPlaceholders["admobAppId"] = "ca-app-pub-2053987639996867~1017622010"
+        buildConfigField("String", "ADMOB_REWARDED_ID", "\"ca-app-pub-3940256099942544/5224354917\"")
     }
 
     signingConfigs {
@@ -34,6 +39,7 @@ android {
 
     buildTypes {
         release {
+            buildConfigField("String", "ADMOB_REWARDED_ID", "\"ca-app-pub-2053987639996867/3791572124\"")
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfigs.findByName("upload")?.let { signingConfig = it }
@@ -55,6 +61,8 @@ dependencies {
     implementation("androidx.core:core-ktx:1.19.1")
     implementation("androidx.webkit:webkit:1.17.1")
     implementation("com.google.android.gms:play-services-games-v2:22.1.0")
+    implementation("com.google.android.gms:play-services-ads:25.5.0")
+    implementation("com.google.android.ump:user-messaging-platform:4.0.0")
 }
 
 /** Copies ../web into the app's assets as web/, the same way Xcode bundles it for iPhone, so edits there ship on the next build. */
@@ -74,9 +82,9 @@ abstract class BundleWebTask : DefaultTask() {
         fs.sync {
             from(webDir)
             into(outputDir.dir("web"))
-            // Desktop-only and tooling files: the phone-frame page, the service worker (register-sw.js stays; without sw.js it does
-            // nothing), build scripts, server SQL, concept art.
-            exclude("frame.html", "sw.js", "tools/**", "supabase/**", "dl gfx/**", "**/.DS_Store", "README.md")
+            // Web-only and tooling files: the phone-frame page, AdMob's app-ads.txt (served from monkeytrubble.app), the service
+            // worker (register-sw.js stays; without sw.js it does nothing), build scripts, server SQL, concept art.
+            exclude("frame.html", "sw.js", "app-ads.txt", "tools/**", "supabase/**", "dl gfx/**", "**/.DS_Store", "README.md")
         }
     }
 }
