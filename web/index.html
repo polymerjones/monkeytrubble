@@ -1668,7 +1668,11 @@
       order.forEach(({id},i)=>setTimeout(()=>{if(s!==state)return;s.dealHide.delete(id);render();
         board.querySelector(`[data-id="${id}"]`)?.animate(flipFrames(FLIP_VARIANTS[rand(FLIP_VARIANTS.length)],true),{duration:FLIP_IN_MS,easing:FLIP_EASE});
         if(i%6===0)playSound('pickup',{volume:.07,rate:1.05+i*.01})},120+i*step));
-      setTimeout(release,120+(order.length-1)*step+FLIP_IN_MS)}
+      setTimeout(release,120+(order.length-1)*step+FLIP_IN_MS);warmHeroes(s)}
+    // The featured panel's big portraits aren't part of the deal's decode, so after the deal they load one by one in the background:
+    // the first flip of each card then finds its portrait already here.
+    function warmHeroes(s){const srcs=[...new Set(s.tiles.map(t=>{const v=packVariant(t.symbol);return v?cardImage('hero',v):HERO_IMAGES[t.symbol]}).filter(Boolean))];
+      srcs.forEach((src,i)=>setTimeout(()=>{if(s===state){const img=new Image();img.decoding='async';img.src=src;faceHold.add(img);setTimeout(()=>faceHold.delete(img),8000)}},400+i*150))}
     // Fits the shape to the board: positions straight off the grid (5:7 cards), each layer nudged up-left a little for a stacked look,
     // and the cards made as big as the drawn shape allows: its real outline, nudges included, is measured and centred, so a tall stack
     // no longer gives up a flat margin on every side (2026-10-19: cards were too small to tap reliably). Cards are drawn slightly

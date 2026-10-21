@@ -82,9 +82,9 @@ abstract class BundleWebTask : DefaultTask() {
         fs.sync {
             from(webDir)
             into(outputDir.dir("web"))
-            // Web-only and tooling files: the phone-frame page, AdMob's app-ads.txt (served from monkeytrubble.app), the service
+            // Web-only and tooling files: the phone-frame page, AdMob's app-ads.txt and vercel.json (monkeytrubble.app), the service
             // worker (register-sw.js stays; without sw.js it does nothing), build scripts, server SQL, concept art.
-            exclude("frame.html", "sw.js", "app-ads.txt", "tools/**", "supabase/**", "dl gfx/**", "**/.DS_Store", "README.md")
+            exclude("frame.html", "sw.js", "app-ads.txt", "vercel.json", "tools/**", "supabase/**", "dl gfx/**", "**/.DS_Store", "README.md")
         }
     }
 }
