@@ -113,6 +113,8 @@ window.ES_TEXT={
   "THIS ONE’S ON US!":"¡ESTA VA POR NOSOTROS!",
   "ADS":"ANUNCIOS",
   "AD PRIVACY CHOICES":"PRIVACIDAD DE ANUNCIOS",
+  "CREDITS":"CRÉDITOS",
+  "Gibbon calls are clipped from “Gibbons 1” by ascap and “Gibbons-Kao Yai National Park” by RTB45 (freesound.org), licensed CC BY 4.0, and edited by Polymer Jones.":"Las llamadas de gibón son fragmentos de «Gibbons 1» de ascap y «Gibbons-Kao Yai National Park» de RTB45 (freesound.org), con licencia CC BY 4.0, editados por Polymer Jones.",
   "TAKE IT":"TOMARLO",
   "NOT NOW":"AHORA NO",
   "COMPLETE":"COMPLETADO",
