@@ -178,6 +178,7 @@ class MainActivity : ComponentActivity() {
 
         override fun onPageFinished(view: WebView, url: String) {
             checkSafeArea()
+            ads.announcePrivacyOptions()
         }
     }
 }

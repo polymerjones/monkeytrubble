@@ -10,6 +10,7 @@ import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
+import com.google.android.ump.ConsentInformation
 import com.google.android.ump.ConsentRequestParameters
 import com.google.android.ump.UserMessagingPlatform
 import org.json.JSONObject
@@ -35,10 +36,20 @@ class Ads(private val activity: Activity, private val evaluate: (String) -> Unit
     /** Asks for consent where the law requires it (EEA, UK, some US states), then starts the SDK. Call from onCreate. */
     fun gatherConsent() {
         consent.requestConsentInfoUpdate(activity, ConsentRequestParameters.Builder().build(), {
-            UserMessagingPlatform.loadAndShowConsentFormIfRequired(activity) { start() }
+            UserMessagingPlatform.loadAndShowConsentFormIfRequired(activity) {
+                announcePrivacyOptions()
+                start()
+            }
         }, { start() })
         // A consent answer from an earlier launch is enough to start right away.
         start()
+    }
+
+    /** Tells the page whether Settings needs the "Ad privacy choices" row. Also called when the page (re)loads. */
+    fun announcePrivacyOptions() {
+        val required = consent.privacyOptionsRequirementStatus ==
+            ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED
+        evaluate("window.__monkeyPrivacyOptions?.($required)")
     }
 
     private fun start() {
@@ -63,8 +74,12 @@ class Ads(private val activity: Activity, private val evaluate: (String) -> Unit
         })
     }
 
-    /** The page's "ads" messages: {type, nonce}. */
+    /** The page's "ads" messages: {type, nonce} for a rewarded ad, or {type:'privacy'} to reopen the consent choices. */
     fun handle(message: JSONObject) {
+        if (message.optString("type") == "privacy") {
+            UserMessagingPlatform.showPrivacyOptionsForm(activity) { }
+            return
+        }
         val nonce = message.optString("nonce").takeIf { it.isNotEmpty() } ?: return
         when {
             showing || waiting != null -> report(nonce, "unavailable")
@@ -84,6 +99,11 @@ class Ads(private val activity: Activity, private val evaluate: (String) -> Unit
         showing = true
         var earned = false
         current.fullScreenContentCallback = object : FullScreenContentCallback() {
+            // The page's loading screen comes down as the ad covers it, so it's gone when the ad closes.
+            override fun onAdShowedFullScreenContent() {
+                evaluate("window.__monkeyAdOpening?.()")
+            }
+
             override fun onAdDismissedFullScreenContent() {
                 showing = false
                 report(nonce, if (earned) "completed" else "skipped")
