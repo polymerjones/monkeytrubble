@@ -1636,6 +1636,7 @@
       const easy=progress.settings.difficulty==='easy';
       const pack=levelPack(level);document.body.classList.toggle('pack-halloween',pack==='halloween');document.body.classList.toggle('pack-christmas',pack==='christmas');
       state={level,easy,pack,tutorial,freeRewards:{},tiles:tutorial?buildTutorialBoard():buildLevelBoard(level,easy),tray:[],pairs:0,chain:{n:0,until:0,best:0},shuffles:0,hintsLeft:HINTS_PER_LEVEL,hintsUsed:0,hintIds:null,hintSlot:null,undosLeft:easy?UNDOS_PER_LEVEL_EASY:UNDOS_PER_LEVEL,shufflesLeft:SHUFFLES_PER_LEVEL,locked:false,busy:0,over:false,won:false,history:[],clearing:new Set(),clock:{elapsed:0,startedAt:null}};
+      if(!tutorial)state.dealHide=new Set(state.tiles.filter(t=>t.revealed).map(t=>t.id));
       $('#overlay').classList.remove('show');$('#winOverlay').classList.remove('show');render();renderClock();renderStreak();setMessage(retry?loc('Level {0} reset — same board, new plan.',level):loc('Reveal an exposed card to begin.'));
       // A new level keeps its playlist's track running, unless that track is about to end: then a fresh one starts (no tail-then-restart).
       if($('#home').classList.contains('hidden')&&musicList!=='home'){const l=levelMusic();if(musicList!==l)playMusic(l,false,LEVEL_MUSIC_FADE_S);else if(nearEnd(music))playMusic(l,true,LEVEL_MUSIC_FADE_S)}
@@ -1643,10 +1644,31 @@
       if(silent)pendingLevelStart=true;else playLevelStart();
       // The next chapter's art loads in the background a few seconds in, so the chapter change shows it at once.
       {const a=chapterFor(level),b=chapterFor(level+1);if(b.art!==a.art)setTimeout(()=>{prepareChapterArt(b.art);if(b.number!==a.number)prepareExpedition()},4000)}
-      applyChapterLook();syncAmbience();if(!retry&&!tutorial)showLevelBanner()
+      applyChapterLook();syncAmbience();if(!retry&&!tutorial)showLevelBanner();
+      if(state.dealHide?.size)dealReveal(state,hold())
     }
     // Each pending animation holds the board; it unlocks only when every hold is released (and never after game over or a new game).
     function hold(){const s=state;s.busy++;s.locked=true;let done=false;return()=>{if(done)return;done=true;s.busy--;s.locked=s.busy>0||s.over}}
+    // Level-start deal (2026-10-21): the face-up cards are dealt face down (state.dealHide; game logic still sees tile.revealed), and once
+    // their faces are decoded and the transition has lifted, the board jolts and they flip up top to bottom. A slow image load (desktop
+    // Safari) waits behind the deal instead of popping art onto the board.
+    const shownFace=tile=>tile.revealed&&!state.dealHide?.has(tile.id);
+    const DEAL_WAIT_MS=1800,DEAL_STAGGER_MS=22,DEAL_WAVE_MS=450;
+    async function dealReveal(s,release){
+      const syms=[...new Set(s.tiles.filter(t=>s.dealHide.has(t.id)).map(t=>t.symbol))];
+      await Promise.race([Promise.all(syms.map(faceReady)),new Promise(r=>setTimeout(r,DEAL_WAIT_MS))]);
+      while(s===state&&(levelTransitioning||ex.busy))await new Promise(r=>requestAnimationFrame(r));
+      await new Promise(r=>setTimeout(r,120));
+      if(s!==state){release();return}
+      if(reduceMotion.matches){s.dealHide.clear();render();release();return}
+      $('.board-wrap')?.animate([{translate:'0 0'},{translate:'-6px 4px'},{translate:'5px -3px'},{translate:'-3px 2px'},{translate:'2px -1px'},{translate:'0 0'}],{duration:340,easing:'ease-out'});
+      playSound('dragDrop',{volume:.5,rate:.8});haptic('cardCaged');
+      const pos=id=>board.querySelector(`[data-id="${id}"]`)?.getBoundingClientRect(),order=[...s.dealHide].map(id=>({id,r:pos(id)})).sort((a,b)=>(a.r?.top??0)-(b.r?.top??0)||(a.r?.left??0)-(b.r?.left??0));
+      const step=order.length>1?Math.min(DEAL_STAGGER_MS,DEAL_WAVE_MS/(order.length-1)):0;
+      order.forEach(({id},i)=>setTimeout(()=>{if(s!==state)return;s.dealHide.delete(id);render();
+        board.querySelector(`[data-id="${id}"]`)?.animate(flipFrames(FLIP_VARIANTS[rand(FLIP_VARIANTS.length)],true),{duration:FLIP_IN_MS,easing:FLIP_EASE});
+        if(i%6===0)playSound('pickup',{volume:.07,rate:1.05+i*.01})},120+i*step));
+      setTimeout(release,120+(order.length-1)*step+FLIP_IN_MS)}
     // Fits the shape to the board: positions straight off the grid (5:7 cards), each layer nudged up-left a little for a stacked look,
     // and the cards made as big as the drawn shape allows: its real outline, nudges included, is measured and centred, so a tall stack
     // no longer gives up a flat margin on every side (2026-10-19: cards were too small to tap reliably). Cards are drawn slightly
@@ -1676,11 +1698,11 @@
       const m=state.tiles.length?boardMetrics():null;if(m){const fill=cardFill(),tw=`${m.w*fill}px`,th=`${m.h*fill}px`;if(!FX.renderCache||board.style.getPropertyValue('--tile-w')!==tw)board.style.setProperty('--tile-w',tw);if(!FX.renderCache||board.style.getPropertyValue('--tile-h')!==th)board.style.setProperty('--tile-h',th)}const activeTiles=state.tiles.filter(t=>t.active).sort((a,b)=>a.layer-b.layer),activeIds=new Set(activeTiles.map(t=>t.id));
       board.querySelectorAll('.board-tile').forEach(node=>{if(!activeIds.has(node.dataset.id)){node.remove();if(node.classList.contains('lifted'))$('#dragLayer').querySelectorAll('.drag-ghost').forEach(g=>{if(!flightFrom.size)g.remove()})}});
       activeTiles.forEach(tile=>{
-        const free=isFree(tile,activeIds),hasPhoto=tile.revealed&&Boolean(SYMBOL_IMAGES[tile.symbol]),renderKey=`${tile.symbol}|${tile.revealed}`;
+        const free=isFree(tile,activeIds),up=shownFace(tile),hasPhoto=up&&Boolean(SYMBOL_IMAGES[tile.symbol]),renderKey=`${tile.symbol}|${up}`;
         let node=FX.renderCache?tileNodes.get(tile.id):null;if(node?.parentNode!==board)node=board.querySelector(`[data-id="${tile.id}"]`);
         if(!node){node=document.createElement('button');node.dataset.id=tile.id;node.dataset.code=`L${tile.layer}`;board.append(node)}tileNodes.set(tile.id,node);
-        setIf(node,'left',`${m.x(tile)}px`);setIf(node,'top',`${m.y(tile)}px`);setIf(node,'zIndex',String(tile.layer*100+tile.r+(tile.revealed&&free?1000:0)));const cls=`tile board-tile ${free?'free':'blocked'} ${tile.revealed?'revealed':'face-down'} ${hasPhoto?'has-photo':''} ${tile.temporaryReveal?'on-top':''} ${tile.revealed&&(tile.symbol===JOKER||tile.symbol===KEVIN)?'joker-card':''} ${tile.symbol===JOKER?'joker-thick':''} ${state.hintIds?.has(tile.id)?'hinted':''}${['lifted','drop-match','drop-reveal','peek-show'].filter(c=>node.classList.contains(c)).map(c=>' '+c).join('')}`;if(!FX.renderCache||node.className!==cls)node.className=cls;
-        if(node.dataset.renderKey!==renderKey){node.getAnimations().forEach(animation=>animation.cancel());node.replaceChildren();if(tile.revealed){setSymbolContent(node,tile.symbol,'thumb',tile.id===asyncFace?'async':'sync');if(tile.symbol===KEVIN||tile.symbol===JOKER)node.append(Object.assign(document.createElement('i'),{className:'special-star',textContent:'★'}))}node.dataset.renderKey=renderKey}
+        setIf(node,'left',`${m.x(tile)}px`);setIf(node,'top',`${m.y(tile)}px`);setIf(node,'zIndex',String(tile.layer*100+tile.r+(up&&free?1000:0)));const cls=`tile board-tile ${free?'free':'blocked'} ${up?'revealed':'face-down'} ${hasPhoto?'has-photo':''} ${tile.temporaryReveal?'on-top':''} ${up&&(tile.symbol===JOKER||tile.symbol===KEVIN)?'joker-card':''} ${tile.symbol===JOKER?'joker-thick':''} ${state.hintIds?.has(tile.id)?'hinted':''}${['lifted','drop-match','drop-reveal','peek-show'].filter(c=>node.classList.contains(c)).map(c=>' '+c).join('')}`;if(!FX.renderCache||node.className!==cls)node.className=cls;
+        if(node.dataset.renderKey!==renderKey){node.getAnimations().forEach(animation=>animation.cancel());node.replaceChildren();if(up){setSymbolContent(node,tile.symbol,'thumb',tile.id===asyncFace?'async':'sync');if(tile.symbol===KEVIN||tile.symbol===JOKER)node.append(Object.assign(document.createElement('i'),{className:'special-star',textContent:'★'}))}node.dataset.renderKey=renderKey}
         node.setAttribute('aria-disabled',String(!free||state.locked));node.onclick=e=>{if(performance.now()-(Number(node.dataset.tapAt)||0)<700)return;handleTile(tile,e.currentTarget)};
         if(free&&(!state.tutorial||tut?.allowed.has(tile.id)))enablePeekDrag(node);else{node.peekBound=false;node.onpointerdown=null;node.onpointermove=null;node.onpointerup=null;node.onpointercancel=null;node.onlostpointercapture=null}
       });
