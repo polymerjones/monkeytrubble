@@ -185,7 +185,7 @@
     .leaders-me:empty{display:none}.leaders-me .lb-row{border-color:var(--green)}
     .win-unlock{margin:12px auto 0;padding:8px 14px;width:fit-content;border:2px solid var(--amber);border-radius:12px;background:#0006}.win-unlock[hidden]{display:none}.win-unlock small{display:block;color:var(--text-dim);font:800 .6rem system-ui,sans-serif;letter-spacing:.22em}.win-unlock b{display:block;color:var(--amber);font:950 1.05rem system-ui,sans-serif;letter-spacing:.08em}
     /* Climb screen: the player's leaderboard row rising past the players a clear moved them ahead of. */
-    #climbOverlay{z-index:5200}.climb-dialog{width:min(360px,calc(100% - 32px))}.climb-sub{margin:-2px 0 10px;color:var(--amber);font-weight:800;letter-spacing:.06em}.climb-list{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:6px;text-align:left}.climb-list .lb-row{position:relative}.climb-list .lb-row.me{z-index:1}.climb-more{margin:-6px 0 12px;opacity:.75;font-size:.8rem}.climb-more[hidden]{display:none}#climbContinue{display:block;width:100%}
+    #climbOverlay{z-index:5200}.climb-dialog{width:min(360px,calc(100% - 32px))}.climb-sub{margin:-2px 0 10px;color:var(--amber);font-weight:800;letter-spacing:.06em}.climb-list{list-style:none;margin:0 0 14px;padding:8px 14px;display:grid;gap:6px;text-align:left;max-height:min(56vh,520px);overflow-y:auto;overscroll-behavior:contain}.climb-list .lb-row{position:relative}.climb-list .lb-row.me{z-index:1;transition:scale .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s}.climb-list .lb-row.me.climb-lift{scale:1.12;box-shadow:0 10px 24px #000c,0 0 0 2px var(--amber)}.climb-more{margin:-6px 0 12px;opacity:.75;font-size:.8rem}.climb-more[hidden]{display:none}#climbContinue{display:block;width:100%}
     .win-rank{margin-top:12px}.win-rank[hidden]{display:none}.win-rank b{display:block;color:var(--amber);font:900 .9rem system-ui,sans-serif;letter-spacing:.12em}.win-rank .link-btn{margin-top:6px}
     .lb-row.flash{animation:lbFlash 1.6s ease-out 2}@keyframes lbFlash{0%{box-shadow:inset 0 0 0 2px var(--amber),0 0 26px #ffcf57aa}100%{box-shadow:inset 0 0 0 1px var(--green),0 0 18px #57ff8633}}
     #nameDialog{z-index:6000}.name-dialog h2{color:var(--green);font-size:1.6rem}.name-intro{margin:0 0 16px;color:var(--text-dim);font:600 .85rem/1.4 system-ui,sans-serif}
@@ -526,6 +526,9 @@
     body.board-covered :is(.cage-danger,.tile.hinted)::after{animation-play-state:paused}
     @keyframes glowPulse{50%{opacity:1}}
     @keyframes glowPulseAlt{to{opacity:1}}
+    html.fx-sceneClock body.bg-drift .bg-layer{animation:none!important}body.scene-rest .bg-layer,body.scene-rest .board-wrap::after{animation-play-state:paused!important}
+    html.fx-lighterLayers .tile:not(.removing){transform:translate(calc(-50% + var(--drag-x)),calc(-50% + var(--drag-y)));transform-style:flat;backface-visibility:visible}
+    html.fx-owlOnce .owl-eyes .lids{animation:none!important}html.fx-owlOnce .owl-eyes.blink .lids{animation:owlBlinkOnce .42s ease-in-out!important}@keyframes owlBlinkOnce{0%,100%{transform:scaleY(1)}45%{transform:scaleY(.1)}}
     html.fx-owlSlow .owl-eyes .lids{animation:owlBlinkSlow 13s infinite}html.fx-owlSlow .hint-eyes .lids{animation:owlBlink 4s infinite}@keyframes owlBlinkSlow{0%,98%,100%{transform:scaleY(1)}98.9%{transform:scaleY(.1)}}
     .bg-baked{display:none;position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
     html.fx-bakedField body[data-bg="D"]:not([data-scene="chapter"]) .bg-baked{display:block}
@@ -537,7 +540,37 @@
     html.fx-edgeLite .edge-glow::before{background:linear-gradient(90deg,var(--edge-c,#ffd84dcc) 4px,transparent 46px),linear-gradient(270deg,var(--edge-c,#ffd84dcc) 4px,transparent 46px),linear-gradient(180deg,var(--edge-c,#ffd84dcc) 4px,transparent 46px),linear-gradient(0deg,var(--edge-c,#ffd84dcc) 4px,transparent 46px),linear-gradient(90deg,var(--edge-c2,#ff9be855),transparent 120px),linear-gradient(270deg,var(--edge-c2,#ff9be855),transparent 120px),linear-gradient(180deg,var(--edge-c2,#ff9be855),transparent 120px),linear-gradient(0deg,var(--edge-c2,#ff9be855),transparent 120px)}
     html.fx-edgeLite .edge-glow::after{opacity:var(--edge-i,0);background:linear-gradient(90deg,var(--edge-c,#ffd84dcc) 10px,transparent 72px),linear-gradient(270deg,var(--edge-c,#ffd84dcc) 10px,transparent 72px),linear-gradient(180deg,var(--edge-c,#ffd84dcc) 10px,transparent 72px),linear-gradient(0deg,var(--edge-c,#ffd84dcc) 10px,transparent 72px),linear-gradient(90deg,var(--edge-c2,#ff9be855),transparent 170px),linear-gradient(270deg,var(--edge-c2,#ff9be855),transparent 170px),linear-gradient(180deg,var(--edge-c2,#ff9be855),transparent 170px),linear-gradient(0deg,var(--edge-c2,#ff9be855),transparent 170px)}
     html.fx-overlayLite .overlay{backdrop-filter:none;-webkit-backdrop-filter:none;background:#000000e0}
-  </style>
+  
+    /* Level complete, full screen (mockup D): light rays and a warm glow, the level's monkey on a gold card under a wooden sign, a big
+       time with the NEW BEST! stamp, reward tiles, the rank row (with the streak), and NEXT LEVEL pinned at the bottom. Overrides the
+       generic dialog panel. */
+    #winOverlay{place-items:stretch center;overflow:hidden;background:radial-gradient(ellipse at 50% 28%,#1c1406e6,#020403f7 72%)}
+    #winOverlay .win-rays{position:absolute;left:50%;top:24%;width:160vmax;height:160vmax;translate:-50% -50%;pointer-events:none;background:radial-gradient(circle,#ffcf3a38 0,#ffcf3a00 26%),repeating-conic-gradient(#ffe6801a 0deg 8deg,#0000 8deg 20deg);-webkit-mask-image:radial-gradient(circle,#000 0,#0000 46%);mask-image:radial-gradient(circle,#000 0,#0000 46%)}
+    #winOverlay.show .win-rays{animation:winRays 1.4s cubic-bezier(.2,.8,.2,1) both}@keyframes winRays{from{opacity:0;rotate:-40deg;scale:.6}}
+    #winOverlay .win-dialog{position:relative;width:min(420px,100%);height:100%;max-height:100dvh;box-sizing:border-box;margin:0;padding:calc(env(safe-area-inset-top) + 26px) 20px calc(env(safe-area-inset-bottom) + 16px);display:flex;flex-direction:column;align-items:center;overflow-x:hidden;overflow-y:auto;border:0;border-image:none;border-radius:0;background:none;box-shadow:none;animation:none;text-align:center}
+    #winOverlay .win-dialog::before,#winOverlay .win-dialog::after,#winOverlay .win-level::before,#winOverlay .win-level::after{display:none}
+    #winOverlay .win-hero{position:relative;flex:none;height:min(30vh,252px);aspect-ratio:176/252;margin-top:6px}
+    #winOverlay .win-hero-card{position:absolute;inset:0;rotate:-4deg;border-radius:16px;padding:5px;background:linear-gradient(160deg,#fff1a6,#f6c22e 40%,#c98a12);box-shadow:0 18px 36px #000c,0 0 40px #ffcf3a55}
+    #winOverlay .win-hero-card img{width:100%;height:100%;object-fit:cover;border-radius:12px;display:block}
+    #winOverlay .win-level{position:absolute;left:-34px;right:-34px;bottom:7%;width:auto;margin:0;padding:8px 10px 9px;border:2px solid #4e2e12;border-radius:12px;background:var(--wood-grain,linear-gradient(#0000,#0000)),var(--wood,linear-gradient(135deg,#7a4b22,#b77b3f 30%,#8a5427 55%,#a96f37));box-shadow:0 10px 22px #000c,inset 0 2px 0 #ffd9a066,inset 0 -3px 0 #3b200b88;font:400 clamp(24px,7.4vw,30px)/1 var(--display,'Lilita One',system-ui);letter-spacing:.02em;color:#fff6dc;text-shadow:0 2px 0 #3b200b;white-space:nowrap}
+    #winOverlay .win-time{position:relative;margin:20px 0 0;gap:0}#winOverlay .win-time:has(.win-stamp:not([hidden])){margin-bottom:22px}
+    #winOverlay .win-time>small{color:#d3c08a;font:800 .64rem system-ui,sans-serif;letter-spacing:.3em}
+    #winOverlay .win-time>b{font:400 clamp(72px,13vh,112px)/.92 var(--display,'Lilita One',system-ui);color:#fff6dc;text-shadow:0 4px 0 #0b1d0e,0 8px 0 #0b1d0e99,0 18px 40px #000c}
+    #winOverlay .win-stamp{position:absolute;right:-46px;top:74%;rotate:-12deg;padding:5px 10px 6px;border:4px solid #ffd84d;border-radius:10px;background:#2b1a06e0;box-shadow:0 0 0 2px #2b1a06,0 10px 24px #000c;color:#ffd84d;white-space:nowrap}
+    #winOverlay .win-stamp[hidden]{display:none}#winOverlay .win-stamp b{display:block;color:#ffd84d;text-shadow:none;font:400 22px/1 var(--display,'Lilita One',system-ui);letter-spacing:.04em}#winOverlay .win-stamp small{display:block;margin-top:2px;color:#ffd84d;font:900 .52rem system-ui,sans-serif;letter-spacing:.22em}#winOverlay .win-stamp small:empty{display:none}
+    #winOverlay .win-badge:not(.record){min-height:0;margin-top:10px;padding:0;background:none;box-shadow:none;color:#d3c08a;font:700 .72rem system-ui,sans-serif;letter-spacing:.08em}
+    #winOverlay .win-world:not(.record){margin-top:4px;color:#b09b6a;font-size:.68rem}#winOverlay .win-world.record{margin-top:8px}
+    #winOverlay .win-score{width:100%;margin:16px 0 18px}
+    #winOverlay .win-gain{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px}
+    #winOverlay .win-gain>span{padding:10px 4px;border-radius:14px;background:#0009;box-shadow:inset 0 0 0 1px #ffcf3a44}#winOverlay .win-gain>span[hidden]{display:none}
+    #winOverlay .win-gain b{font:400 1.55rem/1 var(--display,'Lilita One',system-ui);color:#ffd84d}#winOverlay #winXp{color:#8dffb0}#winOverlay #winChainN{color:#ffb31a}
+    #winOverlay .win-gain small{color:#d3c08a;font-size:.56rem}
+    #winOverlay .win-tier{max-width:none;width:100%;margin-top:14px}
+    #winOverlay .win-streak{flex:none;margin:0;gap:3px}#winOverlay .win-streak[hidden]{display:none}#winOverlay .win-streak .flame{font-size:1.05rem}#winOverlay .win-streak b{font:400 1.15rem var(--display,'Lilita One',system-ui);color:#ffb31a}
+    #winOverlay .win-streak small{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+    #winOverlay #nextLevel{flex:none;width:100%;min-height:64px;margin:auto 0 0;font:400 26px var(--display,'Lilita One',system-ui);letter-spacing:.04em}
+    #winOverlay #winHome{flex:none;margin-top:10px}
+</style>
 </head>
 <body>
   <div class="asset-loader" id="assetLoader" role="status" aria-live="polite"><div class="loader-box"><img class="loader-logo" src="art/home/logo.png" alt="Monkey Trubble"><div class="loader-status" id="loaderStatus">LOADING CAGE // 0%</div><div class="loader-track"><div class="loader-fill" id="loaderFill"></div></div></div></div>
@@ -552,7 +585,7 @@
   <aside class="tray-panel bar"><div class="cage-wrap"><div class="tray-label"><span>CAGE</span><span class="build-id" aria-hidden="true">261006.2000</span><span id="bufferStatus">0 / 4</span></div><div class="tray" id="tray"></div></div><div class="boosters"><button class="booster" id="undo" aria-label="Undo"><span class="booster-icon"><svg class="booster-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 4 9l5 5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H9"/></svg></span>UNDO<b class="badge" id="undoCount">2</b></button><button class="booster" id="shuffle" aria-label="Shuffle"><span class="booster-icon"><svg class="booster-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h3.5c4.5 0 6.5 10 11 10H21"/><path d="M3 17h3.5c1.6 0 2.8-1.3 3.8-3M13.7 10c1-1.7 2.2-3 3.8-3H21"/><path d="m18 4 3 3-3 3M18 14l3 3-3 3"/></svg></span>SHUFFLE<b class="badge" id="shuffleCount">1</b></button><button class="booster" id="hint" aria-label="Owl Eyes hint"><span class="booster-icon"><svg class="owl-eyes" viewBox="0 0 44 26" aria-hidden="true"><path d="M3 7Q11 0 19 6M25 6Q33 0 41 7" fill="none" stroke="#fff6dc" stroke-width="2.4" stroke-linecap="round"/><g class="lids"><circle cx="11" cy="15" r="9.6" fill="#2b1a06"/><circle cx="33" cy="15" r="9.6" fill="#2b1a06"/><circle cx="11" cy="15" r="7.6" fill="#ffb31a"/><circle cx="33" cy="15" r="7.6" fill="#ffb31a"/><circle cx="11" cy="15" r="3.9" fill="#120a02"/><circle cx="33" cy="15" r="3.9" fill="#120a02"/><circle cx="9" cy="12.6" r="1.6" fill="#fff"/><circle cx="31" cy="12.6" r="1.6" fill="#fff"/></g></svg></span>EYES<b class="badge" id="hintCount">1</b></button></div></aside>
   <div class="overlay" id="overlay"><div class="dialog"><h2 id="resultTitle">CAGE FULL</h2><p id="resultText"></p><p class="continue-pitch" id="continuePitch" hidden>One more chance? Clear your cage and keep going.</p><p class="tut-resume-note" id="tutResumeNote"></p><button class="action primary ad-btn" id="continueLevel" hidden><svg class="ad-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>RESUME <small>(Watch Ad)</small></button><button class="action primary ad-btn" id="adShuffle" hidden><svg class="ad-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>SHUFFLE <small>(Watch Ad)</small></button><button class="action primary" id="retryLevel">RETRY LEVEL</button><button class="action" id="overlayUndo" hidden>Undo last move</button><button class="action ad-btn" id="adUndo" hidden><svg class="ad-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>UNDO <small>(Watch Ad)</small></button><button class="link-btn" id="failHome">Home</button></div></div>
   <div class="overlay" id="climbOverlay"><div class="dialog climb-dialog" role="dialog" aria-modal="true" aria-labelledby="climbTitle"><h2 id="climbTitle">CLIMBING!</h2><p class="climb-sub" id="climbSub"></p><ol class="climb-list" id="climbList"></ol><p class="climb-more" id="climbMore" hidden></p><button class="action primary" id="climbContinue">CONTINUE</button></div></div>
-  <div class="overlay" id="winOverlay"><div class="dialog win-dialog"><div class="win-level win-step" id="winLevel">LEVEL 1</div><div class="win-complete win-step" id="winComplete">COMPLETE</div><div class="win-time win-step" id="winTimeBox"><small>TIME</small><b id="winTime">0:00</b></div><div class="win-badge win-step" id="winBadge"></div><div class="win-badge win-world win-step" id="winWorld" hidden></div><div class="win-streak win-step" id="winStreak" hidden><span class="flame">🔥</span><b id="winStreakCount">1</b><small id="winStreakLabel" data-loc-html="DAY<br>STREAK">DAY<br>STREAK</small></div><div class="win-score win-step" id="winScore"><div class="win-chain" id="winChain" hidden></div><div class="win-gain"><span><b id="winPoints">+0</b><small id="winPointsLabel">POINTS</small></span><span><b id="winXp">+0</b><small>XP</small></span></div><div class="win-tier" id="winTier"><span id="winTierBadge"></span><div class="tier-track"><div class="tier-bar"><i id="winTierFill"></i></div><small id="winTierText"></small></div></div><div class="win-chapter" id="winChapter" hidden><small id="winChapterDone">CHAPTER COMPLETE</small><b id="winChapterName"></b><em id="winChapterNext"></em></div><div class="win-unlock" id="winUnlock" hidden><small>NEW CARDS UNLOCKED</small><b id="winUnlockName"></b></div><div class="win-rank" id="winRank" hidden><b id="winRankText"></b><button class="link-btn" id="winLeaders">SEE LEADERBOARD</button></div></div><div class="win-next win-step" id="winNext">LEVEL <span class="win-roll"><span id="winRoll"><span id="winFrom">1</span><span id="winTo">2</span></span></span></div><button class="action primary win-step" id="nextLevel">NEXT LEVEL</button><button class="link-btn win-step" id="winHome">Home</button></div></div>
+  <div class="overlay" id="winOverlay"><div class="win-rays" aria-hidden="true"></div><div class="dialog win-dialog"><div class="win-hero win-step" id="winHero"><div class="win-hero-card" id="winHeroCard"></div><div class="win-level" id="winLevel">LEVEL 1 CLEAR!</div></div><div class="win-time win-step" id="winTimeBox"><small>YOUR TIME</small><b id="winTime">0:00</b><div class="win-stamp" id="winStamp" hidden><b>NEW BEST!</b><small id="winStampSub"></small></div></div><div class="win-badge win-step" id="winBadge"></div><div class="win-badge win-world win-step" id="winWorld" hidden></div><div class="win-score win-step" id="winScore"><div class="win-gain"><span><b id="winPoints">+0</b><small id="winPointsLabel">POINTS</small></span><span><b id="winXp">+0</b><small>XP</small></span><span id="winChain" hidden><b id="winChainN">×0</b><small id="winChainLabel">BEST CHAIN</small></span></div><div class="win-tier" id="winTier"><span id="winTierBadge"></span><div class="tier-track"><div class="tier-bar"><i id="winTierFill"></i></div><small id="winTierText"></small></div><div class="win-streak win-step" id="winStreak" hidden><span class="flame" aria-hidden="true">🔥</span><b id="winStreakCount">1</b><small id="winStreakLabel" data-loc-html="DAY<br>STREAK">DAY<br>STREAK</small></div></div><div class="win-chapter" id="winChapter" hidden><small id="winChapterDone">CHAPTER COMPLETE</small><b id="winChapterName"></b><em id="winChapterNext"></em></div><div class="win-unlock" id="winUnlock" hidden><small>NEW CARDS UNLOCKED</small><b id="winUnlockName"></b></div><div class="win-rank" id="winRank" hidden><b id="winRankText"></b></div></div><button class="action primary" id="nextLevel">NEXT LEVEL</button><button class="link-btn" id="winHome">Home</button></div></div>
 <div class="overlay" id="settings"><div class="dialog settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settingsTitle"><div class="settings-art" aria-hidden="true"></div><button class="settings-close" id="settingsClose" aria-label="Close settings">×</button><div class="settings-scroll"><h2 id="settingsTitle">SETTINGS</h2><div class="set-row"><div class="set-label">PLAYER</div><button class="name-chip" id="settingsName"><span id="settingsTierBadge"></span><b id="settingsNameText">—</b><small>EDIT ✎</small></button></div><div class="set-row"><div class="set-label" id="musicLabel">MUSIC</div><div class="dip" data-setting="music" role="radiogroup" aria-labelledby="musicLabel"><button role="radio" data-value="relaxed">RELAXED</button><button role="radio" data-value="competitive">COMPETITIVE</button></div><small class="set-hint" id="musicHint"></small></div><div class="set-row"><div class="set-label" id="difficultyLabel">DIFFICULTY</div><div class="dip" data-setting="difficulty" role="radiogroup" aria-labelledby="difficultyLabel"><button role="radio" data-value="easy">EASY</button><button role="radio" data-value="normal">NORMAL</button></div><small class="set-hint" id="difficultyHint"></small></div><div class="set-row"><div class="set-label" id="cageLabel">CAGE</div><div class="dip" data-setting="cage" role="radiogroup" aria-labelledby="cageLabel"><button role="radio" data-value="hand">CHAINED</button><button role="radio" data-value="classic">CLASSIC</button></div><small class="set-hint" id="cageHint"></small></div><div class="set-row"><div class="set-label" id="soundLabel">SOUND</div><div class="dip" data-setting="sound" role="radiogroup" aria-labelledby="soundLabel"><button role="radio" data-value="on">ON</button><button role="radio" data-value="off">OFF</button></div><small class="set-hint" id="soundHint"></small></div><div class="set-row"><div class="set-label">VOLUME</div><label class="vol-row"><span>MUSIC</span><input type="range" class="vol" id="musicVol" min="0" max="100" step="5" aria-label="Music volume"><b id="musicVolText"></b></label><label class="vol-row"><span>SFX</span><input type="range" class="vol" id="sfxVol" min="0" max="100" step="5" aria-label="Sound effects volume"><b id="sfxVolText"></b></label></div><div class="set-row"><div class="set-label" id="langLabel">LANGUAGE</div><div class="dip" data-setting="lang" role="radiogroup" aria-labelledby="langLabel"><button role="radio" data-value="en">ENGLISH</button><button role="radio" data-value="es">ESPAÑOL</button></div></div><div class="set-row"><div class="set-label">HOW TO PLAY</div><button class="name-chip" id="replayTutorial"><b>REPLAY TUTORIAL</b></button></div><div class="set-row dev-only"><div class="set-label">DEV TOOLS</div><div class="trial-row"><small>JUMP TO LEVEL</small><div class="dev-jump"><button data-step="-10">−10</button><button data-step="-1">−1</button><b id="devLevel">1</b><button data-step="1">+1</button><button data-step="10">+10</button><button class="dev-go" id="devGo">GO</button></div></div><div class="trial-row"><small>TEST (NOTHING IS SAVED OR SCORED)</small><div class="trial-chips"><button id="devWin">INSTANT WIN</button><button id="devCage3">CAGE 3/4</button><button id="devChain">AUTO PAIRS (COMBO)</button><button id="previewTransition">▶ TRANSITION</button><button id="devFps">FPS METER</button></div></div><div class="trial-row"><small>PERF SWITCHES (LIT = NEW CHEAPER VERSION · TAP RELOADS)</small><div class="trial-chips" id="devFx"></div></div><div class="trial-row"><small>COMBO MUSIC</small><div class="trial-chips" data-trial="comboMusic"><button data-value="swap">COMBO TRACK</button><button data-value="both">TEMPO + TONE</button><button data-value="tone">TONE ONLY</button><button data-value="off">OFF</button></div></div><div class="trial-row"><small>THEME</small><div class="trial-chips" data-trial="theme"><button data-value="chapter">CHAPTER</button><button data-value="console">CONSOLE</button><button data-value="jungle">JUNGLE</button><button data-value="halloween">HALLOWEEN</button></div></div><div class="trial-row"><small>HOME MUSIC</small><div class="trial-chips" data-trial="homeMusic"><button data-value="homescreen">HOMESCREEN</button><button data-value="sparse">SPARSE TOMS</button><button data-value="rhythmic">RHYTHMIC TENSION</button><button data-value="classic">CLASSIC</button></div></div><div class="trial-row"><small>CHAPTER</small><div class="trial-chips" id="devChapters"><button data-ch="1">1</button><button data-ch="2">2</button><button data-ch="3">3</button><button data-ch="4">4</button><button data-ch="5">5</button><button data-ch="6">6</button><button data-ch="7">7</button><button data-ch="8">8</button><button data-ch="9">9</button><button data-ch="10">10</button><button data-ch="11">11</button></div></div><div class="trial-row"><small>EXPEDITION MAP</small><div class="trial-chips" id="devExpedition"><button data-leg="0">INTRO</button><button data-leg="1">1→2</button><button data-leg="2">2→3</button><button data-leg="3">3→4</button><button data-leg="4">4→5</button><button data-leg="5">5→6</button><button data-leg="6">6→7</button><button data-leg="7">7→8</button><button data-leg="8">8→9</button><button data-leg="9">9→10</button><button data-leg="10">10→11</button><button data-leg="11">11→1+</button></div></div><div class="trial-row"><small>SCENE</small><div class="trial-chips" data-trial="scene"><button data-value="chapter">CHAPTER SCENES</button><button data-value="cards">DEPTH CARDS</button></div></div><div class="trial-row"><small>SEASON</small><div class="trial-chips" data-trial="pack"><button data-value="christmas">CHRISTMAS (FULL)</button><button data-value="christmasLevels">CHRISTMAS LEVELS</button><button data-value="halloween">HALLOWEEN (FULL)</button><button data-value="skin">HALLOWEEN SKIN</button><button data-value="alternate">EVERY OTHER</button><button data-value="mixed">MIXED</button><button data-value="regular">REGULAR</button></div></div><div class="trial-row"><small>TUTORIAL (SAVES NOTHING)</small><div class="trial-chips"><button id="devTutorial">DEV: NEW USER TUTORIAL</button></div></div><div class="trial-row"><small>PROGRESS (KEEPS NAME + SETTINGS)</small><div class="trial-chips"><button id="devReset">RESET TO NEW PLAYER</button><button id="devUndoReset" hidden>UNDO RESET</button></div></div></div><button class="action primary" id="settingsDone">DONE</button></div></div></div>
   <section class="home" id="home" aria-label="Home"><div class="home-bg" id="homeBg"></div><header class="home-top"><div class="home-top-left"><button class="home-icon" id="homeSound" title="Sound" aria-label="Sound">♪</button><button class="home-icon home-trophy" id="homeLeaders" title="Leaderboard" aria-label="Leaderboard">🏆</button></div><div class="home-top-right"><div class="home-streak"><span>🔥</span><b id="homeStreak">0</b><small data-loc-html="DAY<br>STREAK">DAY<br>STREAK</small></div><button class="gear-btn home-gear" id="homeGear" title="Settings" aria-label="Settings"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13.6" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="3.6 5.95"/><circle cx="16" cy="16" r="11.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path transform="translate(9.2 8.6) scale(.136)" d="M24 106C16 98 10 84 8 72C6 64 12 60 17 64C22 69 26 78 31 80L29 24A5.5 5.5 0 0 1 40 23L43 52Q45.5 56 48 52L49 13A5.5 5.5 0 0 1 60 13L60 53Q62.5 57 65 53L67 17A5.5 5.5 0 0 1 78 18L75 55Q77 59 80 55L83 30A5 5 0 0 1 93 32L84 66C82 80 82 94 82 106L60 106Q54 100 48 106Z" fill="none" stroke="currentColor" stroke-width="11" stroke-linejoin="round"/></svg></button></div></header><div class="home-logo" id="homeLogo"><img src="art/home/logo.png" alt="Monkey Trubble"></div><div class="home-byline" id="homeByline">A GAME BY POLYMER JONES</div><div class="home-card" aria-hidden="true"><div class="ticker-plane"><div class="ticker-track" id="homeTicker"></div></div></div><button class="home-play" id="homePlay"><small id="homeChapter">PLAY</small><span>LEVEL <b id="homeLevel">1</b></span></button><div class="home-best" id="homeBest"></div><div class="home-week" id="homeWeek"></div><button class="home-profile" id="homeProfile" hidden><span id="homeTierBadge"></span><span class="home-profile-text"><b id="homeName"></b><small id="homeTierText"></small></span></button></section>
   <section class="leaders hidden" id="leaders" aria-label="Leaderboard"><header class="leaders-top"><button class="home-icon" id="leadersBack" title="Back" aria-label="Back">‹</button><h2>LEADERBOARD</h2><button class="home-icon" id="leadersRefresh" title="Refresh" aria-label="Refresh">⟳</button></header><div class="leaders-tabs" role="tablist"><button role="tab" aria-selected="true">GLOBAL</button><button role="tab" aria-selected="false" disabled>FRIENDS <small>SOON</small></button></div><div class="tier-legend" id="tierLegend"></div><div class="leaders-status" id="leadersStatus" role="status"></div><ol class="leaders-list" id="leadersList"></ol><div class="leaders-me" id="leadersMe"></div></section>
@@ -585,7 +618,15 @@
     // clear/win burst is drawn on the dust canvas instead of 24 DOM particles per card. clearLite: the cage clear pop animates only
     // scale and opacity (its glow fades on a pre-drawn layer). edgeLite: the combo screen-edge glow is two fixed gradient layers that
     // only fade, instead of huge blurred shadows redrawn on every pair. overlayLite: dialogs darken the screen instead of blurring it.
-    const FX={shineSleep:true,tiltLite:true,driftLiteral:true,cageShineOnce:true,glowOpacity:true,owlSlow:true,waterSleep:true,audioSleep:true,lightPreload:true,renderCache:true,clockSleep:true,bakedField:true,canvasBurst:true,clearLite:true,edgeLite:true,overlayLite:true};
+    // 2026-10-19, third pass (battery, input): instantFlip: a tap turns the card over in the game state at once and the flip is only a
+    // picture (no board lock), so taps during a flip, an undo or a shuffle are never dropped. An auto-match flies from the tap.
+    // sceneClock: background drift, ambient particles and water share one ~30fps timer (drift moved from endless CSS animations into
+    // it) instead of waking at every display frame. idleRest: ~8s after the last touch the scenery eases to a stop and stays still
+    // until the next touch. lighterLayers: cards rest flat (no rotateY/preserve-3d, so no 3D layer each); flips still turn in 3D.
+    // owlOnce: the hint owl blinks on a timer instead of an endless SVG animation. motionGate: the phone's motion sensor runs only
+    // while something on screen reacts to tilt (the board, Settings, the lightbox) and the scenery is awake. audioIdle: the audio
+    // engine sleeps while sound and music are both off.
+    const FX={shineSleep:true,tiltLite:true,driftLiteral:true,cageShineOnce:true,glowOpacity:true,owlSlow:true,waterSleep:true,audioSleep:true,lightPreload:true,renderCache:true,clockSleep:true,bakedField:true,canvasBurst:true,clearLite:true,edgeLite:true,overlayLite:true,instantFlip:true,sceneClock:true,idleRest:true,lighterLayers:true,owlOnce:true,motionGate:true,audioIdle:true};
     // Dev tools can flip any switch for A/B testing on the phone (saved, applied on reload).
     try{const saved=JSON.parse(localStorage.getItem('monkeyFX')||'{}');for(const k in FX)if(typeof saved[k]==='boolean')FX[k]=saved[k]}catch{}
     for(const[k,on]of Object.entries(FX))document.documentElement.classList.toggle(`fx-${k}`,on);
@@ -1078,7 +1119,7 @@
     function setNowPlaying(){if(nowPlayingSet||!('mediaSession' in navigator)||typeof MediaMetadata==='undefined')return;nowPlayingSet=true;
       const art=src=>readArrayBuffer(src).then(buf=>{let bin='';const bytes=new Uint8Array(buf);for(let i=0;i<bytes.length;i+=8192)bin+=String.fromCharCode(...bytes.subarray(i,i+8192));return`data:image/png;base64,${btoa(bin)}`});
       Promise.all([art('icons/icon-512.png'),art('icons/icon-192.png')]).then(([a512,a192])=>{navigator.mediaSession.metadata=new MediaMetadata({title:'Monkey Trubble',artist:'Polymer Jones',artwork:[{src:a512,sizes:'512x512',type:'image/png'},{src:a192,sizes:'192x192',type:'image/png'}]})}).catch(()=>{nowPlayingSet=false})}
-    function resumeMonkeyAudio(){if(audioContext?.state==='suspended')audioContext.resume().catch(()=>{});if(soundEnabled&&audioUnlocked&&document.visibilityState==='visible')music.play().catch(()=>{})}
+    function resumeMonkeyAudio(){if(audioContext?.state==='suspended'&&!(FX.audioIdle&&!soundEnabled))audioContext.resume().catch(()=>{});if(soundEnabled&&audioUnlocked&&document.visibilityState==='visible')music.play().catch(()=>{})}
     window.__resumeMonkeyAudio=resumeMonkeyAudio;document.addEventListener('visibilitychange',()=>{syncAmbience();if(!document.hidden){ambient.wake();homeSnow.wake()}if(document.hidden){music.pause();if(FX.audioSleep&&audioContext?.state==='running')audioContext.suspend().catch(()=>{});if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}}else{resumeMonkeyAudio();if(state.clock.resume){state.clock.resume=false;startClock()}}});
     function setMusicLevel(level,smoothing){if(musicGain)musicGain.gain.setTargetAtTime(level,audioContext.currentTime,smoothing);else music.volume=level}
     // Music dip: fast attack, held for about the length of the sound that caused it, then a short release so the music is back as the sound ends.
@@ -1374,18 +1415,51 @@
     // canvas inside .bg-far, so it moves with the far layer's tilt and drift. Each frame redraws the water rows of far.jpg shifted
     // sideways by a slow sine, stronger toward the viewer, then clips them to the mask. Drawn at 1x over the water's band only (it
     // is soft art), ~30fps, skipped on the home screen, under the lightbox, while dragging, and for reduced motion.
-    const water=(()=>{const masks=new Map();let n=null,cv=null,cx=null,src=null,mk=null,raf=0,last=0,ro=null,far=null,mimg=null;
-      function stop(){n=null;cancelAnimationFrame(raf);raf=0;cv?.remove();cv=null;ro?.disconnect()}
+    // FX.sceneClock: scenery loops wait ~30ms on a timer and then draw in the next animation frame, so they run at ~30fps without
+    // waking at every display frame. sceneScale (FX.idleRest) is their speed: 1 while the player is touching, easing to 0 IDLE_REST_MS
+    // after the last touch (the loops stop there) and back up on the next touch. Each loop runs its own clock at that speed.
+    const IDLE_REST_MS=8000,REST_EASE_MS=1000,WAKE_EASE_MS=600,SCENE_GAP=FX.sceneClock?26:33;
+    const scene={touchAt:performance.now(),from:1,timer:0};
+    function sceneFrame(fn){if(!FX.sceneClock)return requestAnimationFrame(fn);const h={r:0};h.t=setTimeout(()=>{h.t=0;h.r=requestAnimationFrame(fn)},28);return h}
+    function sceneCancel(h){if(!h)return;if(typeof h==='number')cancelAnimationFrame(h);else{clearTimeout(h.t);cancelAnimationFrame(h.r)}}
+    function sceneScale(now=performance.now()){if(!FX.idleRest)return 1;const since=now-scene.touchAt;
+      if(since>IDLE_REST_MS)return Math.max(0,1-(since-IDLE_REST_MS)/REST_EASE_MS);return scene.from+(1-scene.from)*Math.min(1,since/WAKE_EASE_MS)}
+    function sceneTouch(){if(!FX.idleRest)return;const now=performance.now();scene.from=sceneScale(now);scene.touchAt=now;clearTimeout(scene.timer);
+      scene.timer=setTimeout(()=>{document.body.classList.add('scene-rest');syncMotion()},IDLE_REST_MS+REST_EASE_MS);
+      if(document.body.classList.contains('scene-rest')){document.body.classList.remove('scene-rest');syncMotion()}ambient.wake();homeSnow.wake()}
+    addEventListener('pointerdown',sceneTouch,{capture:true,passive:true});
+    // Desktop: moving the mouse counts as being there too (checked at most once a second).
+    addEventListener('pointermove',e=>{if(e.pointerType==='mouse'&&performance.now()-scene.touchAt>1000)sceneTouch()},{passive:true});if(FX.idleRest)scene.timer=setTimeout(()=>{document.body.classList.add('scene-rest');syncMotion()},IDLE_REST_MS+REST_EASE_MS);
+    // Background drift on the scene clock (FX.sceneClock): the same paths and periods as the CSS drift (DRIFT_KEYS), eased per stop,
+    // written to each layer's `translate` (tilt keeps `transform`). Paused while dragging or behind the lightbox, like the CSS was.
+    const drift=(()=>{let raf=0,last=0,vt=0,layers=null;const PERIOD={Far:31,Mid:26,Near:22},ease=k=>k*k*(3-2*k);
+      const at=(stops,p)=>{const ks=[[0,0,0],...stops,[100,0,0]];for(let i=1;i<ks.length;i++)if(p<=ks[i][0]){const a=ks[i-1],b=ks[i],k=ease((p-a[0])/(b[0]-a[0]));return[a[1]+(b[1]-a[1])*k,a[2]+(b[2]-a[2])*k]}return[0,0]};
+      const on=()=>FX.sceneClock&&document.body.classList.contains('bg-drift')&&document.body.dataset.bg==='D'&&!reduceMotion.matches;
+      const clear=()=>{for(const el of layers||[])el.style.translate=''};
+      function loop(t){if(!on()){raf=0;clear();return}if(document.hidden||atHome()||document.body.classList.contains('board-covered')){raf=0;return}
+        const sp=sceneScale(t);if(!sp){raf=0;return}raf=sceneFrame(loop);if(t-last<SCENE_GAP)return;const dt=Math.min(.08,(t-last)/1000);last=t;
+        if(document.body.classList.contains('peek-drag')||lightbox.open||exOn())return;vt+=dt*sp;const d=bgTilt.depth??1;
+        layers=layers||['Far','Mid','Near'].map(k=>$(`.bg-${k.toLowerCase()}`));
+        ['Far','Mid','Near'].forEach((k,i)=>{const el=layers[i];if(!el)return;const [x,y]=at(DRIFT_KEYS[k],(vt%PERIOD[k])/PERIOD[k]*100),v=`${(x*d).toFixed(2)}px ${(y*d).toFixed(2)}px`;if(el.style.translate!==v)el.style.translate=v})}
+      return{wake(){if(!raf&&FX.sceneClock){last=performance.now();raf=sceneFrame(loop)}}}})();
+    // Motion sensor gate (FX.motionGate): tells the app when tilt is worth reading. Off on the home screen, the map, behind other
+    // dialogs, while hidden and while the scenery rests; on for the board, Settings and the lightbox.
+    let motionWanted=null;
+    function syncMotion(){const mh=window.webkit?.messageHandlers?.motion;if(!FX.motionGate||!mh)return;
+      const want=!document.hidden&&!document.body.classList.contains('scene-rest')&&(lightbox.open||$('#settings').classList.contains('show')||!atHome()&&!document.body.classList.contains('board-covered')&&!exOn());
+      if(want!==motionWanted){motionWanted=want;mh.postMessage(want)}}
+    const water=(()=>{const masks=new Map();let n=null,cv=null,cx=null,src=null,mk=null,raf=0,last=0,ro=null,far=null,mimg=null,vt=0;
+      function stop(){n=null;sceneCancel(raf);raf=0;cv?.remove();cv=null;ro?.disconnect()}
       function build(){const host=$('.bg-far'),W=host.offsetWidth,H=host.offsetHeight;if(!W||!H||!far||!mimg)return;
         const iw=far.naturalWidth,ih=far.naturalHeight,s=Math.max(W/iw,H/ih),dx=(W-iw*s)/2,dy=(H-ih*s)/2,[f0,f1]=mimg.band,top=Math.max(0,Math.floor(dy+f0*ih*s)),h=Math.min(H,Math.ceil(dy+f1*ih*s))-top;if(h<4)return;
         if(!cv){cv=document.createElement('canvas');cv.className='water-canvas';cx=cv.getContext('2d')}host.append(cv);
         cv.width=Math.round(W);cv.height=h;cv.style.cssText=`position:absolute;left:0;top:${top}px;width:${W}px;height:${h}px;pointer-events:none`;
         const off=()=>{const c=document.createElement('canvas');c.width=cv.width;c.height=h;return c};
-        src=off();src.getContext('2d').drawImage(far,dx,dy-top,iw*s,ih*s);mk=off();mk.getContext('2d').drawImage(mimg,dx,dy-top,iw*s,ih*s);draw(performance.now())}
+        src=off();src.getContext('2d').drawImage(far,dx,dy-top,iw*s,ih*s);mk=off();mk.getContext('2d').drawImage(mimg,dx,dy-top,iw*s,ih*s);draw(FX.idleRest?vt:performance.now())}
       function draw(t){const w=cv.width,h=cv.height;cx.clearRect(0,0,w,h);
         for(let y=0;y<h;y+=2){const p=y/h,amp=.5+3.5*p,k=.16/(.22+p),x=amp*Math.sin(y*k-t*.0015*(1+p))+amp*.35*Math.sin(y*k*2.3+t*.0011);cx.drawImage(src,0,y,w,2,x,y,w,2)}
         cx.globalCompositeOperation='destination-in';cx.drawImage(mk,0,0);cx.globalCompositeOperation='source-over'}
-      function loop(t){if(FX.waterSleep&&(document.hidden||!cv||!$('#home').classList.contains('hidden')||document.body.classList.contains('board-covered'))){raf=0;return}raf=requestAnimationFrame(loop);if(t-last<33||!cv)return;if(!$('#home').classList.contains('hidden')||lightbox.open||document.body.classList.contains('peek-drag')||document.body.classList.contains('board-covered')||exOn())return;last=t;draw(t)}
+      function loop(t){if(FX.waterSleep&&(document.hidden||!cv||!$('#home').classList.contains('hidden')||document.body.classList.contains('board-covered'))){raf=0;return}const sp=sceneScale(t);if(!sp){raf=0;return}raf=sceneFrame(loop);if(t-last<SCENE_GAP||!cv)return;if(!$('#home').classList.contains('hidden')||lightbox.open||document.body.classList.contains('peek-drag')||document.body.classList.contains('board-covered')||exOn())return;vt+=Math.min(80,t-last)*sp;last=t;draw(FX.idleRest?vt:t)}
       // The water's rows (fractions of the image height), read once from a small copy of the mask.
       function band(img){const c=document.createElement('canvas');c.width=32;c.height=256;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(img,0,0,32,256);const d=x.getImageData(0,0,32,256).data;let a=-1,b=-1;
         for(let y=0;y<256;y++)for(let i=0;i<32;i++)if(d[(y*32+i)*4+3]>8){if(a<0)a=y;b=y;break}return a<0?null:[a/256,(b+1)/256]}
@@ -1393,7 +1467,7 @@
       return{async set(ch){const k=ch&&!reduceMotion.matches&&sceneArt.get(`${ch.art}:far`)?ch.art:null;if(k===n&&cv)return;stop();if(k==null)return;n=k;
         if(!masks.has(k))masks.set(k,load(`art/chapters/${k}/water.png`).then(i=>{if(i)i.band=band(i);return i?.band?i:null}));
         const [m,f]=await Promise.all([masks.get(k),load(sceneArt.get(`${k}:far`))]);if(n!==k||!m||!f)return;mimg=m;far=f;build();
-        ro?.disconnect();ro=new ResizeObserver(()=>{if(n===k)build()});ro.observe($('.bg-far'));if(!raf)raf=requestAnimationFrame(loop)},wake(){if(cv&&n!=null&&!raf)raf=requestAnimationFrame(loop)}}})();
+        ro?.disconnect();ro=new ResizeObserver(()=>{if(n===k)build()});ro.observe($('.bg-far'));if(!raf){last=performance.now();raf=sceneFrame(loop)}},wake(){if(cv&&n!=null&&!raf){last=performance.now();raf=sceneFrame(loop)}}}})();
     // Chapter ambience slot: audio/ambience/ch<n>.mp3 (when Paul adds one) loops quietly under the music on that chapter's levels,
     // through the music bus (music volume applies), about 9 dB under the music. Missing files are simply skipped.
     const ambienceEls=new Map();let ambienceOn=null;
@@ -1410,10 +1484,10 @@
       return flakeSprites[k]=c}
     // makeAmbient(parent, live): one particle canvas in parent that runs while live() is true. ambient is the board's (levels only);
     // homeSnow is the home screen's, which snows in full Christmas (syncHomeSnow).
-    const makeAmbient=(parent,live)=>{let cv=null,cx=null,kind=null,parts=[],raf=0,last=0,colors=[],wind=0,resized=true;
+    const makeAmbient=(parent,live)=>{let cv=null,cx=null,kind=null,parts=[],raf=0,last=0,colors=[],wind=0,resized=true,vt=0;
       const make=()=>{const w=cv.width,h=cv.height,p={x:Math.random()*w,y:Math.random()*h,v:.2+Math.random()*.5,ph:Math.random()*6.28,s:.6+Math.random()*.8};return p};
       function size(){const r=cv.parentElement.getBoundingClientRect();if(cv.width!==Math.round(r.width)||cv.height!==Math.round(r.height)){cv.width=Math.round(r.width);cv.height=Math.round(r.height)}}
-      function loop(t){if(document.hidden||!kind||!live()||document.body.classList.contains('board-covered')){raf=0;return}raf=requestAnimationFrame(loop);if(document.body.classList.contains('peek-drag')||lightbox.open||exOn())return;if(t-last<33)return;const dt=Math.min(.08,(t-last)/1000);last=t;if(resized){resized=false;size()}if(kind==='flakes'){const g=t/1000;wind=26+18*Math.sin(g*.21)+14*Math.sin(g*.57+1.3)+10*Math.max(0,Math.sin(g*1.3))**3}const w=cv.width,h=cv.height;cx.clearRect(0,0,w,h);
+      function loop(t){if(document.hidden||!kind||!live()||document.body.classList.contains('board-covered')){raf=0;return}const sp=sceneScale(t);if(!sp){raf=0;return}raf=sceneFrame(loop);if(document.body.classList.contains('peek-drag')||lightbox.open||exOn())return;if(t-last<SCENE_GAP)return;const dt=Math.min(.08,(t-last)/1000)*sp;last=t;vt+=dt;if(resized){resized=false;size()}if(kind==='flakes'){const g=FX.idleRest?vt:t/1000;wind=26+18*Math.sin(g*.21)+14*Math.sin(g*.57+1.3)+10*Math.max(0,Math.sin(g*1.3))**3}const w=cv.width,h=cv.height;cx.clearRect(0,0,w,h);
         for(const p of parts){p.ph+=dt*2;let a=1,sz=6*p.s;
           if(kind==='leaves'){p.y+=p.v*16*dt;p.x+=Math.sin(p.ph)*10*dt;if(p.y>h+10){p.y=-10;p.x=Math.random()*w}cx.save();cx.translate(p.x,p.y);cx.rotate(Math.sin(p.ph)*.9);cx.globalAlpha=.55;cx.fillStyle=colors[0];cx.beginPath();cx.ellipse(0,0,6*p.s,2.6*p.s,0,0,6.28);cx.fill();cx.restore();continue}
           if(kind==='butterflies'){p.x+=Math.cos(p.ph*.4)*14*dt;p.y+=Math.sin(p.ph*.33)*10*dt;const f=Math.abs(Math.sin(p.ph*6));cx.save();cx.translate((p.x+w)%w,(p.y+h)%h);cx.globalAlpha=.7;cx.fillStyle=colors[Math.floor(p.s*10)%colors.length];cx.beginPath();cx.ellipse(-3*f*p.s,0,3.5*f*p.s+.4,4*p.s,0,0,6.28);cx.ellipse(3*f*p.s,0,3.5*f*p.s+.4,4*p.s,0,0,6.28);cx.fill();cx.restore();continue}
@@ -1428,13 +1502,17 @@
           else{p.y-=p.v*(kind==='spores'?7:5)*dt;p.x+=Math.sin(p.ph*.7)*5*dt;if(p.y<-10){p.y=h+10;p.x=Math.random()*w}a=.5;sz=(kind==='motes'?9:7)*p.s}
           cx.globalAlpha=a;const spr=dustSprite(colors[Math.floor(p.s*10)%colors.length],kind==='mist'?'flash':'glow');cx.drawImage(spr,((p.x%w)+w)%w-sz/2,p.y-sz/2,sz,sz)}
         cx.globalAlpha=1}
-      return{set(k,ch,skin){if(reduceMotion.matches)k=null;if(!cv){cv=document.createElement('canvas');cv.className='ambient-canvas';$(parent).append(cv);cx=cv.getContext('2d');new ResizeObserver(()=>{resized=true}).observe($(parent))}
+      return{set(k,ch,skin){drift.wake();if(reduceMotion.matches)k=null;if(!cv){cv=document.createElement('canvas');cv.className='ambient-canvas';$(parent).append(cv);cx=cv.getContext('2d');new ResizeObserver(()=>{resized=true}).observe($(parent))}
         if(k===kind&&parts.length){this.wake();return}kind=k;if(!k){parts=[];cx.clearRect(0,0,cv.width,cv.height);return}size();
         colors=skin?['#ff8a1f','#b14dff','#5dff3a']:{leaves:['#4f9a3a'],butterflies:['#ffd84d','#7ff3ff','#ff9be8','#ffffff'],fireflies:['#d8ff6a','#fff6a0'],mist:['#ffffff'],dust:['#ffe0a0','#fff2c8'],spores:['#b8ff9a','#e8ffd0'],snow:['#ffffff'],flakes:['#ffffff'],motes:['#fff2b0','#ffe08a']}[k]||['#fff'];
-        parts=Array.from({length:k==='mist'?6:k==='butterflies'?7:k==='flakes'?72:16},make);if(!raf)raf=requestAnimationFrame(loop)},wake(){if(kind&&!raf)raf=requestAnimationFrame(loop);water.wake()}}};
+        parts=Array.from({length:k==='mist'?6:k==='butterflies'?7:k==='flakes'?72:16},make);if(!raf){last=performance.now();raf=sceneFrame(loop)}},wake(){if(kind&&!raf){last=performance.now();raf=sceneFrame(loop)}water.wake();drift.wake()}}};
     const atHome=()=>!$('#home').classList.contains('hidden'),ambient=makeAmbient('#bgTrial',()=>!atHome()),homeSnow=makeAmbient('#home',atHome);
     // Any dialog (Settings, win, etc.) dims and blurs everything behind it, so freeze the scenery there: the blur would otherwise be redrawn every frame.
     {const sync=()=>{const on=!!document.querySelector('.overlay.show');document.body.classList.toggle('board-covered',on);if(!on){ambient.wake();homeSnow.wake()}},mo=new MutationObserver(sync);for(const o of document.querySelectorAll('.overlay'))mo.observe(o,{attributes:true,attributeFilter:['class']})}
+    // Screens that change whether tilt shows anywhere (home, the map, the lightbox, dialogs): re-check the motion sensor gate.
+    if(FX.motionGate){const mo=new MutationObserver(syncMotion);for(const el of [document.body,$('#home'),$('#expedition'),$('.lightbox')].filter(Boolean))mo.observe(el,{attributes:true,attributeFilter:['class']});addEventListener('visibilitychange',syncMotion)}
+    // FX.owlOnce: the hint owl blinks every 13s (as with owlSlow) while the board is awake, as a one-off animation.
+    if(FX.owlOnce)setInterval(()=>{const o=$('#hint .owl-eyes');if(!o||document.hidden||atHome()||document.body.classList.contains('scene-rest'))return;o.classList.remove('blink');void o.getBoundingClientRect();o.classList.add('blink')},13000);
     const syncHomeSnow=()=>homeSnow.set(christmasFull()?'flakes':null);
     // Level start banner: chapter and board shape, for ~1.6s without blocking input. The first level of a chapter gets a bigger card.
     // Level names on the level banner (Paul, 2026-10-13): one per level, five per chapter; chapter 11 (Ice Age) has the last five; after level 55 they repeat with the
@@ -1582,7 +1660,7 @@
         let node=FX.renderCache?tileNodes.get(tile.id):null;if(node?.parentNode!==board)node=board.querySelector(`[data-id="${tile.id}"]`);
         if(!node){node=document.createElement('button');node.dataset.id=tile.id;node.dataset.code=`L${tile.layer}`;board.append(node)}tileNodes.set(tile.id,node);
         setIf(node,'left',`${m.x(tile)}px`);setIf(node,'top',`${m.y(tile)}px`);setIf(node,'zIndex',String(tile.layer*100+tile.r+(tile.revealed&&free?1000:0)));const cls=`tile board-tile ${free?'free':'blocked'} ${tile.revealed?'revealed':'face-down'} ${hasPhoto?'has-photo':''} ${tile.temporaryReveal?'on-top':''} ${tile.revealed&&(tile.symbol===JOKER||tile.symbol===KEVIN)?'joker-card':''} ${tile.symbol===JOKER?'joker-thick':''} ${state.hintIds?.has(tile.id)?'hinted':''}${['lifted','drop-match','drop-reveal','peek-show'].filter(c=>node.classList.contains(c)).map(c=>' '+c).join('')}`;if(!FX.renderCache||node.className!==cls)node.className=cls;
-        if(node.dataset.renderKey!==renderKey){node.getAnimations().forEach(animation=>animation.cancel());node.replaceChildren();if(tile.revealed){setSymbolContent(node,tile.symbol,'thumb','sync');if(tile.symbol===KEVIN||tile.symbol===JOKER)node.append(Object.assign(document.createElement('i'),{className:'special-star',textContent:'★'}))}node.dataset.renderKey=renderKey}
+        if(node.dataset.renderKey!==renderKey){node.getAnimations().forEach(animation=>animation.cancel());node.replaceChildren();if(tile.revealed){setSymbolContent(node,tile.symbol,'thumb',tile.id===asyncFace?'async':'sync');if(tile.symbol===KEVIN||tile.symbol===JOKER)node.append(Object.assign(document.createElement('i'),{className:'special-star',textContent:'★'}))}node.dataset.renderKey=renderKey}
         node.setAttribute('aria-disabled',String(!free||state.locked));node.onclick=e=>{if(performance.now()-(Number(node.dataset.tapAt)||0)<700)return;handleTile(tile,e.currentTarget)};
         if(free&&(!state.tutorial||tut?.allowed.has(tile.id)))enablePeekDrag(node);else{node.peekBound=false;node.onpointerdown=null;node.onpointermove=null;node.onpointerup=null;node.onpointercancel=null;node.onlostpointercapture=null}
       });
@@ -1672,8 +1750,11 @@
     // Flips: a card face is decoded before the flip turns it in, and board faces decode in sync, so the face is on the card for the
     // whole turn. (A fresh async <img> could paint blank for a few frames and pop in mid-flip when the browser had dropped the decoded
     // image since the preload.) The Image is held a moment so the decoded copy isn't discarded before the swap.
-    const faceHold=new Set();
-    function faceReady(symbol){const v=packVariant(symbol),src=v?cardImage('thumb',v):SYMBOL_IMAGES[symbol];if(!src)return Promise.resolve();const img=new Image();img.src=src;faceHold.add(img);setTimeout(()=>faceHold.delete(img),3000);return img.decode?img.decode().catch(()=>{}):Promise.resolve()}
+    // decodedFaces: faces known to be decoded (levelFaces holds the level's decoded Images so the browser keeps them). instantFlip draws a
+    // face that isn't decoded yet with async decoding (asyncFace) and holds the turn edge-on until it is, rather than stalling the frame.
+    const faceHold=new Set(),decodedFaces=new Set(),levelFaces=[];let asyncFace=null;
+    const faceSrc=symbol=>{const v=packVariant(symbol);return v?cardImage('thumb',v):SYMBOL_IMAGES[symbol]};
+    function faceReady(symbol){const src=faceSrc(symbol);if(!src)return Promise.resolve();const img=new Image();img.src=src;faceHold.add(img);setTimeout(()=>faceHold.delete(img),3000);return img.decode?img.decode().then(()=>{decodedFaces.add(src)},()=>{}):Promise.resolve()}
     const faceOrTimeout=ready=>Promise.race([ready,new Promise(resolve=>setTimeout(resolve,120))]);
     const FLIP_OUT_MS=150,FLIP_IN_MS=185;
     const FLIP_VARIANTS=[{axis:'Y',sign:-1,x:-2,y:-1},{axis:'Y',sign:1,x:2,y:-1},{axis:'X',sign:1,x:0,y:-3},{axis:'X',sign:-1,x:0,y:3}];
@@ -1704,12 +1785,13 @@
       if(state.tutorial&&!tut?.allowed.has(tile.id)){rejectTap(node);return}
       if(!isFree(tile)){rejectTap(node);showBlockers(tile);tutorialEvent('blocked');return}
       releaseHint(tile.id);
-      if(tile.revealed&&tile.revealedAt&&performance.now()-tile.revealedAt<260)return;
+      if(tile.revealed&&tile.revealedAt&&performance.now()-tile.revealedAt<(FX.instantFlip?150:260))return;
       if(tile.pairTapAt&&performance.now()-tile.pairTapAt<700)return;
       startClock();featuredSymbol=tile.symbol;renderFeatured();
       if(!tile.revealed){
         const previous=state.tiles.find(t=>t.id!==tile.id&&t.active&&t.temporaryReveal),previousNode=previous?board.querySelector(`[data-id="${previous.id}"]`):null;
         const matchingFlip=Boolean(previous)&&previous.symbol!==JOKER&&tile.symbol!==JOKER&&isMate(previous.symbol,tile.symbol)&&isFree(previous);
+        if(FX.instantFlip){instantFlip(tile,previous,matchingFlip);return}
         state.history.push(snapshot('flip'));const release=hold(),s=state;playSound('pickup',{volume:.075,rate:1.12+Math.random()*.08});haptic('cardFlip');
         const flipVariant=FLIP_VARIANTS[rand(FLIP_VARIANTS.length)],faceIn=faceReady(tile.symbol);
         if(!matchingFlip)previousNode?.animate(flipFrames(FLIP_VARIANTS[rand(FLIP_VARIANTS.length)]),{duration:FLIP_OUT_MS,easing:'cubic-bezier(.38,0,.7,1)',fill:'forwards'});
@@ -1726,6 +1808,20 @@
       if(flippedMate){state.history.push(snapshot());if(autoResolveRevealed(tile,flippedMate))return}
       commitTile(tile,node,true)
     }
+    // instantFlip: the card is face up in the game state the moment it's tapped (so the next tap can follow at once); the turn-over is
+    // played on the fresh node afterwards. An auto-match flies a face-up copy, which opens during the AUTO_READ_MS beat.
+    const FLIP_EASE='cubic-bezier(.2,.72,.2,1)';
+    function instantFlip(tile,previous,matchingFlip){
+      state.history.push(snapshot('flip'));playSound('pickup',{volume:.075,rate:1.12+Math.random()*.08});haptic('cardFlip');
+      const turnBack=previous&&!matchingFlip;if(turnBack){previous.revealed=false;previous.temporaryReveal=false}
+      const src=faceSrc(tile.symbol),faceIn=!src||decodedFaces.has(src)?null:faceReady(tile.symbol);
+      tile.revealed=true;tile.temporaryReveal=true;tile.revealedAt=performance.now();if(faceIn)asyncFace=tile.id;render();asyncFace=null;
+      if(turnBack)board.querySelector(`[data-id="${previous.id}"]`)?.animate(flipFrames(FLIP_VARIANTS[rand(FLIP_VARIANTS.length)],true),{duration:FLIP_IN_MS,easing:FLIP_EASE});
+      const node=board.querySelector(`[data-id="${tile.id}"]`);
+      if(!autoResolveRevealed(tile,previous,true,AUTO_READ_MS))setMessage('');
+      if(tile.active&&node){const turn=node.animate(flipFrames(FLIP_VARIANTS[rand(FLIP_VARIANTS.length)],true),{duration:FLIP_IN_MS,easing:FLIP_EASE});if(faceIn){turn.pause();faceOrTimeout(faceIn).then(()=>turn.play())}}
+      tutorialEvent('flipped')
+    }
     function commitTile(tile,node,recordHistory){
       if(recordHistory)state.history.push(snapshot());playSound('pickup',{volume:.11,rate:.92+Math.random()*.1});playJokerPick(tile.symbol);haptic('cardCaged');tile.active=false;state.tray.push({id:tile.id,symbol:tile.symbol});flyToTray(node,state.tray.length-1);render();tutorialEvent('caged');
       if(findTrayPair(tile.symbol)){setMessage(loc('PAIR ACQUIRED // {0}',cardName(tile.symbol)));scheduleClear(tile.symbol)}
@@ -1734,7 +1830,7 @@
     }
     // Auto-match after a flip (fast): the card heads for the cage sooner and quicker, and the pair clears as it lands.
     const AUTO_READ_MS=90,AUTO_FLIGHT_MS=180,AUTO_CLEAR_MS=190;
-    function autoResolveRevealed(tile,previous,fast=false){
+    function autoResolveRevealed(tile,previous,fast=false,beat=0){
       if(!tile.active||!tile.revealed||!isFree(tile))return false;
       // Flipping Kevin up only shows him; MVP Vision needs a deliberate tap on the revealed card.
       if(tile.symbol===KEVIN){setMessage(loc('{0}’s ready — tap for {1}',visionName(),visionPower()));return true}
@@ -1742,14 +1838,14 @@
       if(tile.symbol===JOKER){setMessage(loc('Joker’s up — tap him or drag him onto a card'));return true}
       if(state.tray.some(held=>!state.clearing.has(held.id)&&isMate(held.symbol,tile.symbol))){
         const node=board.querySelector(`[data-id="${tile.id}"]`),newIndex=state.tray.length;playSound('pickup',{volume:.12,rate:1.04});playJokerPick(tile.symbol);haptic('cardCaged');
-        tile.active=false;tile.temporaryReveal=false;state.tray.push({id:tile.id,symbol:tile.symbol});flyToTray(node,newIndex,fast?AUTO_FLIGHT_MS:undefined);render();setMessage(loc('AUTO MATCH // {0}',cardName(tile.symbol)));scheduleClear(tile.symbol,undefined,fast?AUTO_CLEAR_MS:undefined);return true
+        tile.active=false;tile.temporaryReveal=false;state.tray.push({id:tile.id,symbol:tile.symbol});flyToTray(node,newIndex,fast?AUTO_FLIGHT_MS:undefined,beat,true);render();setMessage(loc('AUTO MATCH // {0}',cardName(tile.symbol)));scheduleClear(tile.symbol,undefined,(fast?AUTO_CLEAR_MS:260)+beat);return true
       }
       const mate=previous?.active&&previous.symbol!==JOKER&&isMate(previous.symbol,tile.symbol)&&isFree(previous)?previous:null;
       if(!mate)return false;
       if(!mate.revealed){mate.revealed=true;render()}
       // Normal: a fresh pair needs two open cage slots. Otherwise both cards just stay face up and the cage rattles.
       if(!pairFits()){mate.temporaryReveal=false;tile.temporaryReveal=false;render();cageRattle();return true}
-      cagePair(mate,tile,loc('AUTO MATCH // {0}',cardName(tile.symbol)),fast);return true
+      cagePair(mate,tile,loc('AUTO MATCH // {0}',cardName(tile.symbol)),fast,beat,[tile.id]);return true
     }
     // ---- Drag to match. Drop targets use the same rules as tapping (isFree, isMate, pairFits, handleTile); only free cards can be dragged.
     const flightFrom=new Map(),tileOf=node=>state.tiles.find(t=>t.id===node.dataset.id&&t.active);
@@ -1807,6 +1903,7 @@
       const now=performance.now(),down=[a,b].filter(t=>!t.revealed),msg=loc('PAIR CAGED // {0}',cardName(b.symbol));a.pairTapAt=b.pairTapAt=now;
       if(!pairFits()){down.forEach(t=>{t.revealed=true;t.temporaryReveal=false;t.revealedAt=now});render();cageRattle();return}
       state.history.push(snapshot());if(!down.length){cagePair(a,b,msg);return}
+      if(FX.instantFlip){down.forEach(t=>{t.revealed=true;t.temporaryReveal=false;t.revealedAt=now});render();playSound('pickup',{volume:.075,rate:1.12+Math.random()*.08});haptic('cardFlip');cagePair(a,b,msg,false,AUTO_READ_MS,down.map(t=>t.id));return}
       const release=hold(),s=state,variants=down.map(()=>FLIP_VARIANTS[rand(FLIP_VARIANTS.length)]),faces=down.map(t=>faceReady(t.symbol));
       playSound('pickup',{volume:.075,rate:1.12+Math.random()*.08});haptic('cardFlip');
       down.forEach((t,i)=>{const node=board.querySelector(`[data-id="${t.id}"]`);node?.classList.add('on-top');node?.animate(flipFrames(variants[i]),{duration:FLIP_OUT_MS,easing:'cubic-bezier(.38,0,.7,1)',fill:'forwards'})});
@@ -1864,7 +1961,7 @@
           dragging=true;pressed=false;peekDragging=true;document.body.classList.add('peek-drag');markWouldFree(node.dataset.id,true);node.setPointerCapture(e.pointerId);playDragSound('lift');haptic('cardFlip');return}
         const tile=state.tiles.find(t=>t.id===node.dataset.id);if(tile?.active&&tile.symbol!==KEVIN){const mate=[...activePresses.values()].find(t=>pressPair(t,tile));if(mate){activePresses.clear();tapPair(mate,tile);return}activePresses.set(e.pointerId,tile)}startX=e.clientX;startY=e.clientY;dragging=false;pressed=true;node.classList.remove('touch-glow');void node.offsetWidth;node.classList.add('touch-glow');setTimeout(()=>node.classList.remove('touch-glow'),560);node.setPointerCapture(e.pointerId)};
       node.onpointermove=e=>{if(!node.hasPointerCapture(e.pointerId))return;const dx=e.clientX-startX,dy=e.clientY-startY;if(!dragging&&Math.hypot(dx,dy)>14){dragging=true;peekDragging=true;document.body.classList.add('peek-drag');lift()}if(dragging&&anim){anim.tx=dx;anim.ty=dy;target=findDropTarget(tileOf(node),origin.x+dx,origin.y+dy,origin);showDropTarget(target)}};
-      node.onpointerup=e=>{activePresses.delete(e.pointerId);if(node.hasPointerCapture(e.pointerId))node.releasePointerCapture(e.pointerId);const wasDrag=dragging,wasPressed=pressed;pressed=false;node.dataset.tapAt=performance.now();if(wasDrag){if(resolveDrop(tileOf(node),target,{releaseInto,drop,unflip}))return;setMessage(loc('Peek only — the card underneath stays barricaded until this card is played.'))}drop(unflip);if(wasPressed&&!wasDrag){const tile=state.tiles.find(t=>t.id===node.dataset.id);if(tile)handleTile(tile,node)}};
+      node.onpointerup=e=>{activePresses.delete(e.pointerId);if(node.hasPointerCapture(e.pointerId))node.releasePointerCapture(e.pointerId);const wasDrag=dragging,wasPressed=pressed;pressed=false;if(wasPressed||wasDrag||!FX.instantFlip)node.dataset.tapAt=performance.now();if(wasDrag){if(resolveDrop(tileOf(node),target,{releaseInto,drop,unflip}))return;setMessage(loc('Peek only — the card underneath stays barricaded until this card is played.'))}drop(unflip);if(wasPressed&&!wasDrag){const tile=state.tiles.find(t=>t.id===node.dataset.id);if(tile)handleTile(tile,node)}};
       node.onpointercancel=e=>{activePresses.delete(e.pointerId);pressed=false;drop(unflip)};
       node.onlostpointercapture=e=>{activePresses.delete(e.pointerId);if(dragging&&ghost){pressed=false;drop(unflip)}}
     }
@@ -1892,7 +1989,7 @@
     function undoFx(ids,from){const calm=reduceMotion.matches,cage=document.querySelector('.tray-panel');
       if(!calm)cage.animate([{transform:'none'},{transform:'translateX(-9px) rotate(-1deg)'},{transform:'translateX(8px) rotate(1deg)'},{transform:'translateX(-5px)'},{transform:'translateX(3px)'},{transform:'none'}],{duration:340,easing:'ease-out'});
       cage.animate([{boxShadow:'0 0 0 2px #fff,0 0 60px 18px #bff0ffcc'},{boxShadow:''}],{duration:520,easing:'ease-out'});
-      const release=ids.length?hold():null,FLY=calm?0:560;
+      const release=ids.length&&!FX.instantFlip?hold():null,FLY=calm?0:560;
       for(const id of ids){const node=board.querySelector(`[data-id="${id}"]`),a=from.get(id);if(!node||!a)continue;const b=node.getBoundingClientRect();
         node.animate([{opacity:0},{opacity:0,offset:.98},{opacity:1}],{duration:FLY});
         node.animate([{filter:'brightness(2.4) drop-shadow(0 0 14px #fff)'},{filter:'none'}],{duration:420,delay:FLY,easing:'ease-out'});
@@ -2042,12 +2139,13 @@
       $('#tray').animate([{filter:'none'},{filter:'drop-shadow(0 0 8px #ff5a4f)'},{filter:'none'}],{duration:500});
       playSound('control',{volume:.5,rate:.5});haptic('cageOverflow');setMessage(loc('The cage needs two open spaces for a new pair.'))
     }
-    function cagePair(a,b,message,fast=false){
+    // beat: the copies wait that long before flying (instantFlip's read beat); opening: ids of cards that were just turned up, whose copies open.
+    function cagePair(a,b,message,fast=false,beat=0,opening=[]){
       const nodes=[a,b].map(t=>board.querySelector(`[data-id="${t.id}"]`)),start=state.tray.length;
       playSound('pickup',{volume:.12,rate:1.04});haptic('cardCaged');
       for(const t of [a,b]){t.active=false;t.temporaryReveal=false}
-      state.tray.push({id:a.id,symbol:a.symbol},{id:b.id,symbol:b.symbol});nodes.forEach((node,i)=>{if(node)flyToTray(node,Math.min(start+i,3),fast?AUTO_FLIGHT_MS:undefined)});
-      render();setMessage(message);scheduleClear(a.symbol,[a.id,b.id],fast?AUTO_CLEAR_MS:undefined)
+      state.tray.push({id:a.id,symbol:a.symbol},{id:b.id,symbol:b.symbol});nodes.forEach((node,i)=>{if(node)flyToTray(node,Math.min(start+i,3),fast?AUTO_FLIGHT_MS:undefined,beat,opening.includes([a,b][i].id))});
+      render();setMessage(message);scheduleClear(a.symbol,[a.id,b.id],(fast?AUTO_CLEAR_MS:260)+beat)
     }
     // Owl Eyes: searches for a line that clears the board from here (cage rules as in play, matches tried first) and shows its
     // first move with that card's partner: a cage slot, or the next card in the line when it's free now. Face-down cards it points
@@ -2116,7 +2214,7 @@
     }
     // Shuffle: every card shakes and swells, the faces swap at the peak, then the cards settle back down.
     function shuffleFx(){
-      const release=hold(),s=state,nodes=[...board.querySelectorAll('.board-tile')],delays=new Map(nodes.map(n=>[n,rand(90)]));
+      const release=FX.instantFlip?()=>{}:hold(),s=state,nodes=[...board.querySelectorAll('.board-tile')],delays=new Map(nodes.map(n=>[n,rand(90)]));
       nodes.forEach(n=>n.animate([{scale:1,translate:'0 0'},{scale:1.04,translate:'-3px 0',offset:.3},{scale:1.08,translate:'3px 0',offset:.65},{scale:1.12,translate:'0 0'}],{duration:200,delay:delays.get(n),easing:'ease-out',fill:'forwards'}));
       setTimeout(()=>{if(s!==state){release();return}render();board.querySelectorAll('.board-tile').forEach(n=>{n.getAnimations().forEach(a=>a.cancel());n.animate([{scale:1.12},{scale:.94,offset:.6},{scale:1}],{duration:240,delay:rand(60),easing:'cubic-bezier(.2,.8,.2,1)'})});setTimeout(release,300)},300);
     }
@@ -2141,7 +2239,7 @@
       setTimeout(()=>{if(s!==state)return;const back=state.tiles.filter(t=>t.active&&t.peeking);state.tiles.forEach(t=>{if(t.peeking){t.peeking=false;if(t.active)t.revealed=false}});render();flipIn(back,8)},holdMs)
     }
     let activeCardFlights=0,peekDragging=false;
-    function flyToTray(source,index,ms=240){source=flightFrom.get(source?.dataset?.id)||source;const target=tray.children[Math.min(index,3)];if(!target)return;const a=source.getBoundingClientRect(),b=target.getBoundingClientRect(),ghost=source.cloneNode(true),dx=b.left-a.left,dy=b.top-a.top,sx=b.width/a.width,sy=b.height/a.height;activeCardFlights++;document.body.classList.add('card-in-flight');ghost.style.cssText=`position:fixed;z-index:190;left:${a.left}px;top:${a.top}px;width:${a.width}px;height:${a.height}px;transform:none;transform-origin:top left;rotate:0deg;transition:transform ${ms}ms cubic-bezier(.2,.8,.2,1),opacity ${ms}ms ease;pointer-events:none;will-change:transform,opacity`;document.body.append(ghost);requestAnimationFrame(()=>{ghost.style.transform=`translate3d(${dx}px,${dy}px,0) scale(${sx},${sy})`;ghost.style.opacity='.2'});if(!reduceMotion.matches){const t0=performance.now();let lastDrop=0;const shed=now=>{if(!ghost.isConnected||now-t0>ms)return;if(now-lastDrop>=30){lastDrop=now;const r=ghost.getBoundingClientRect();trailDust(r.left+r.width/2,r.top+r.height/2,{vx:dx*4,vy:dy*4})}requestAnimationFrame(shed)};requestAnimationFrame(shed)}setTimeout(()=>{ghost.remove();activeCardFlights--;if(!activeCardFlights)document.body.classList.remove('card-in-flight')},ms+20)}
+    function flyToTray(source,index,ms=240,beat=0,opening=false){source=flightFrom.get(source?.dataset?.id)||source;const target=tray.children[Math.min(index,3)];if(!target)return;const a=source.getBoundingClientRect(),b=target.getBoundingClientRect(),ghost=source.cloneNode(true),dx=b.left-a.left,dy=b.top-a.top,sx=b.width/a.width,sy=b.height/a.height;activeCardFlights++;document.body.classList.add('card-in-flight');ghost.style.cssText=`position:fixed;z-index:190;left:${a.left}px;top:${a.top}px;width:${a.width}px;height:${a.height}px;transform:none;transform-origin:top left;rotate:0deg;transition:transform ${ms}ms cubic-bezier(.2,.8,.2,1),opacity ${ms}ms ease;pointer-events:none;will-change:transform,opacity`;document.body.append(ghost);if(opening&&beat)ghost.animate([{rotate:'y 90deg',transformOrigin:'50% 50%'},{rotate:'y 0deg',transformOrigin:'50% 50%'}],{duration:beat,easing:FLIP_EASE});const go=()=>requestAnimationFrame(()=>{ghost.style.transform=`translate3d(${dx}px,${dy}px,0) scale(${sx},${sy})`;ghost.style.opacity='.2'});if(beat)setTimeout(go,beat);else go();if(!reduceMotion.matches){const t0=performance.now()+beat;let lastDrop=0;const shed=now=>{if(!ghost.isConnected||now-t0>ms)return;if(now>=t0&&now-lastDrop>=30){lastDrop=now;const r=ghost.getBoundingClientRect();trailDust(r.left+r.width/2,r.top+r.height/2,{vx:dx*4,vy:dy*4})}requestAnimationFrame(shed)};requestAnimationFrame(shed)}setTimeout(()=>{ghost.remove();activeCardFlights--;if(!activeCardFlights)document.body.classList.remove('card-in-flight')},beat+ms+20)}
     // Fairy dust: one shared emitter for the drag-match burst, the tap-to-cage sparkle, the flight and drag trails, combos and the cage.
     // Everything is drawn on one fixed canvas in a single animation loop from pre-rendered glow and star sprites (dozens of DOM
     // sparkles per combo caused frame drops on iPhone). The loop runs only while sparkles are alive. Never takes touches.
@@ -2284,46 +2382,57 @@
       if(!state.easy){const k=recordKey(level,state.pack);queueRecordTime(level,state.pack,time);state.recordSync=state.rankSync.then(()=>flushTimes()).then(out=>out?.[k]??null,()=>null)}else state.recordSync=null;
       return{level,time,previous,newRecord,best:times[level],firstToday,streak:streak.count,easy:state.easy,reached,points,xpGain,ratingBefore,rating:ratingOf(stats.scores),comboBest}
     }
+    // Level complete (mockup D, 2026-10-19): a random monkey from the board on a gold card under a wooden LEVEL N CLEAR! sign, the time
+    // big with a NEW BEST! stamp slammed onto it, then points / XP / chain tiles and the rank bar. NEXT LEVEL works from the first frame;
+    // a tap anywhere else (or NEXT LEVEL) skips the show to its end, silently. winShow.skip ends the current show.
+    let winShow={skip(){}};
     async function showLevelComplete(r){
-      const s=state,wait=ms=>new Promise(resolve=>setTimeout(resolve,ms)),overlay=$('#winOverlay'),steps=[...overlay.querySelectorAll('.win-step')],badge=$('#winBadge');
-      const fadeUp=node=>node.animate([{opacity:0,transform:'translateY(12px)'},{opacity:1,transform:'none'}],{duration:320,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'});
-      const stamp=node=>node.animate([{opacity:0,transform:'scale(1.9)'},{opacity:1,transform:'scale(.94)',offset:.7},{opacity:1,transform:'scale(1)'}],{duration:440,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'});
-      steps.forEach(node=>{node.getAnimations().forEach(a=>a.cancel());node.style.opacity=0});$('#winTierFill').getAnimations().forEach(a=>a.cancel());$('#winRoll').getAnimations().forEach(a=>a.cancel());
-      $('#winLevel').textContent=`${loc('LEVEL')} ${r.level}`;$('#winTime').textContent='0:00';badge.className='win-badge win-step';badge.replaceChildren();$('#winStreak').hidden=!r.firstToday;$('#winFrom').textContent=r.level;$('#winTo').textContent=r.level+1;$('#nextLevel').disabled=true;
-      overlay.classList.add('show');await wait(120);if(s!==state)return;
-      stamp($('#winLevel'));explode($('#winLevel'));haptic('pairCleared');await wait(420);if(s!==state)return;
-      fadeUp($('#winComplete'));await wait(300);fadeUp($('#winTimeBox'));
-      const t0=performance.now();await new Promise(resolve=>{const tick=now=>{const k=Math.min(1,(now-t0)/700);$('#winTime').textContent=formatTime(r.time*(1-Math.pow(1-k,3)));if(k<1&&s===state)requestAnimationFrame(tick);else resolve()};requestAnimationFrame(tick)});
-      $('#winTime').textContent=formatTime(r.time);await wait(260);if(s!==state)return;
-      if(r.newRecord){badge.classList.add('record');badge.append(loc('NEW RECORD!'),Object.assign(document.createElement('s'),{textContent:formatTime(r.previous)}));stamp(badge);explode(badge);playSound('match',{volume:.3,rate:1.2})}
+      const s=state,overlay=$('#winOverlay'),steps=[...overlay.querySelectorAll('.win-step')],badge=$('#winBadge'),show={on:false,waits:new Set()};
+      show.skip=()=>{if(show.on)return;show.on=true;for(const w of show.waits)w();show.waits.clear();overlay.getAnimations({subtree:true}).forEach(a=>{if(a.effect?.getTiming().iterations!==Infinity)a.finish()});steps.forEach(n=>{if(!n.hidden)n.style.opacity=1})};winShow=show;
+      const live=()=>s===state&&!show.on,wait=ms=>show.on?Promise.resolve():new Promise(res=>{const done=()=>{clearTimeout(t);show.waits.delete(done);res()},t=setTimeout(done,ms);show.waits.add(done)});
+      const fadeUp=node=>{if(show.on){node.style.opacity=1;return}node.animate([{opacity:0,transform:'translateY(12px)'},{opacity:1,transform:'none'}],{duration:320,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'})};
+      const stamp=node=>{if(show.on){node.style.opacity=1;return}node.animate([{opacity:0,transform:'scale(1.9)'},{opacity:1,transform:'scale(.94)',offset:.7},{opacity:1,transform:'scale(1)'}],{duration:440,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'})};
+      const countUp=(ms,set)=>new Promise(resolve=>{const t0=performance.now(),tick=now=>{const k=show.on?1:Math.min(1,(now-t0)/ms);set(1-Math.pow(1-k,3));if(k<1&&s===state)requestAnimationFrame(tick);else resolve()};requestAnimationFrame(tick)});
+      steps.forEach(node=>{node.getAnimations().forEach(a=>a.cancel());node.style.opacity=0});$('#winTierFill').getAnimations().forEach(a=>a.cancel());
+      $('#winLevel').textContent=loc('LEVEL {0} CLEAR!',r.level);$('#winTime').textContent='0:00';badge.className='win-badge win-step';badge.replaceChildren();$('#winStamp').hidden=true;$('#winStreak').hidden=!r.firstToday;$('#nextLevel').disabled=false;
+      {const syms=[...new Set(s.tiles.map(t=>t.symbol))].filter(x=>x!==JOKER&&x!==KEVIN),card=$('#winHeroCard');card.replaceChildren();if(syms.length)setSymbolContent(card,syms[rand(syms.length)],'hero')}
+      overlay.classList.add('show');overlay.scrollTop=0;$('.win-dialog').scrollTop=0;await wait(120);if(s!==state)return;
+      // The card drops in and lands; the sign stamps on.
+      if(!show.on){$('#winHero').style.opacity=1;$('#winHero').animate([{opacity:0,transform:'translateY(-70px) rotate(-10deg) scale(.9)'},{opacity:1,transform:'translateY(6px) rotate(1deg) scale(1.02)',offset:.7},{opacity:1,transform:'none'}],{duration:480,easing:'cubic-bezier(.2,.8,.2,1)'});await wait(260);stamp($('#winLevel'));explode($('#winLevel'));haptic('pairCleared')}else $('#winHero').style.opacity=1;
+      await wait(400);if(s!==state)return;
+      fadeUp($('#winTimeBox'));await countUp(700,e=>{$('#winTime').textContent=formatTime(r.time*e)});
+      $('#winTime').textContent=formatTime(r.time);await wait(200);if(s!==state)return;
+      // A new best slams a stamp onto the time: squash on impact, the screen jolts, the howler (the undo call) and a heavy haptic.
+      if(r.newRecord){const st=$('#winStamp');$('#winStampSub').textContent=r.previous==null?'':loc('WAS {0}',formatTime(r.previous));st.hidden=false;
+        if(live()){st.animate([{opacity:0,transform:'scale(2.4)'},{opacity:1,transform:'scale(.9)',offset:.62},{transform:'scale(1.05)',offset:.8},{transform:'scale(1)'}],{duration:400,easing:'cubic-bezier(.5,0,.75,0)'});await wait(250);if(live()){playSound('undo',{volume:1});haptic('jokerSlam');explode(st);$('.win-dialog').animate([{translate:'0 0'},{translate:'0 9px',offset:.25},{translate:'0 -4px',offset:.55},{translate:'0 2px',offset:.8},{translate:'0 0'}],{duration:340,easing:'ease-out'})}}}
       else{badge.textContent=r.previous==null?loc('BEST TIME SET'):loc('BEST {0}',formatTime(r.best));fadeUp(badge)}
-      await wait(520);if(s!==state)return;
+      await wait(r.newRecord?600:360);if(s!==state)return;
       // World record: the posted result if it lands within a moment, otherwise the cached record (never for Easy or dev clears).
       {const w=$('#winWorld');w.hidden=true;w.className='win-badge win-world win-step';w.replaceChildren();
         if(!r.easy&&!r.dev&&lbReady){const rec=await Promise.race([s.recordSync||Promise.resolve(null),wait(1500).then(()=>null)])||worldRecords.get(recordKey(r.level,s.pack));if(s!==state)return;
-          if(rec?.beat&&rec.holder_id===progress.player?.id){w.hidden=false;w.classList.add('record');w.append(loc('NEW WORLD RECORD!'));if(rec.previous_ms)w.append(Object.assign(document.createElement('s'),{textContent:loc('was {0} · {1}',formatTime(rec.previous_ms),rec.previous_holder)}));stamp(w);explode(w);{const b=w.getBoundingClientRect();fairyDust(b.left+b.width/2,b.top+b.height/2)}playSound('comboSting',{volume:.6});haptic('pairCleared');await wait(900);if(s!==state)return}
-          else if(rec){w.hidden=false;w.textContent=recordLine(rec);fadeUp(w);await wait(420);if(s!==state)return}}}
-      if(r.firstToday){const count=$('#winStreakCount');$('#winStreakLabel').innerHTML=loc(r.streak===1?'STREAK<br>STARTED':'DAY<br>STREAK');count.textContent=Math.max(0,r.streak-1);stamp($('#winStreak'));await wait(420);count.textContent=r.streak;count.animate([{transform:'translateY(60%)',opacity:0},{transform:'none',opacity:1}],{duration:300,easing:'cubic-bezier(.2,.8,.2,1)'});$('#winStreak .flame').animate([{transform:'scale(1)'},{transform:'scale(1.45)'},{transform:'scale(1)'}],{duration:520});playSound('pickup',{volume:.2,rate:1.3});haptic('cardCaged');await wait(700);if(s!==state)return}
-      await showWinScore(r);if(s!==state)return;
-      fadeUp($('#winNext'));await wait(380);$('#winRoll').animate([{transform:'none'},{transform:'translateY(-50%)'}],{duration:460,easing:'cubic-bezier(.5,-.3,.3,1.4)',fill:'forwards'});playSound('pickup',{volume:.16,rate:1.5});await wait(520);if(s!==state)return;
-      fadeUp($('#nextLevel'));$('#nextLevel').disabled=false
+          if(rec?.beat&&rec.holder_id===progress.player?.id){w.hidden=false;w.classList.add('record');w.append(loc('NEW WORLD RECORD!'));if(rec.previous_ms)w.append(Object.assign(document.createElement('s'),{textContent:loc('was {0} · {1}',formatTime(rec.previous_ms),rec.previous_holder)}));stamp(w);if(live()){explode(w);const b=w.getBoundingClientRect();fairyDust(b.left+b.width/2,b.top+b.height/2);playSound('comboSting',{volume:.6});haptic('pairCleared')}await wait(900);if(s!==state)return}
+          else if(rec){w.hidden=false;w.textContent=recordLine(rec);fadeUp(w);await wait(300);if(s!==state)return}}}
+      await showWinScore(r,show);if(s!==state)return;
+      // The streak sits at the end of the rank row: flame and day count.
+      if(r.firstToday){const count=$('#winStreakCount');$('#winStreakLabel').innerHTML=loc(r.streak===1?'STREAK<br>STARTED':'DAY<br>STREAK');count.textContent=r.streak;$('#winStreak').title=$('#winStreakLabel').textContent;stamp($('#winStreak'));if(live()){$('#winStreak .flame').animate([{transform:'scale(1)'},{transform:'scale(1.6)'},{transform:'scale(1)'}],{duration:520});playSound('pickup',{volume:.2,rate:1.3});haptic('cardCaged')}}
     }
-    async function showWinScore(r){
-      const s=state,wait=ms=>new Promise(resolve=>setTimeout(resolve,ms)),box=$('#winScore'),tier=tierFor(r.rating),before=tierFor(r.ratingBefore);
-      $('#winPointsLabel').textContent=loc(r.easy?'EASY · NOT RANKED':'POINTS');{const b=chainBonus(r.comboBest||0),el=$('#winChain');el.hidden=(r.comboBest||0)<2;el.textContent=loc('BEST CHAIN ×{0}',r.comboBest||0)+(b?loc(' · +{0}% COMBO BONUS',Math.round(b*100)):'')}$('#winTier').hidden=r.easy;
+    async function showWinScore(r,show){
+      const s=state,live=()=>s===state&&!show.on,wait=ms=>show.on?Promise.resolve():new Promise(res=>{const done=()=>{clearTimeout(t);show.waits.delete(done);res()},t=setTimeout(done,ms);show.waits.add(done)}),box=$('#winScore'),tier=tierFor(r.rating),before=tierFor(r.ratingBefore);
+      const pop=(node,frames,ms)=>{if(!show.on)node.animate(frames,{duration:ms,easing:'cubic-bezier(.2,.8,.2,1)'})};
+      $('#winPointsLabel').textContent=loc(r.easy?'EASY · NOT RANKED':'POINTS');{const n=r.comboBest||0,b=chainBonus(n);$('#winChain').hidden=n<2;$('#winChainN').textContent=`×${n}`;$('#winChainLabel').textContent=b?loc('+{0}% BONUS',Math.round(b*100)):loc('BEST CHAIN')}$('#winTier').hidden=r.easy;
       $('#winTierBadge').innerHTML=tierBadge(tier,34);$('#winTierText').textContent=r.easy?'':tier.id==='silverback'?loc('SILVERBACK · RATING {0}',r.rating):loc('{0} {1} · {2} AT {3}',loc(tier.name),r.rating,loc(TIERS[TIERS.indexOf(tier)+1].name),TIERS[TIERS.indexOf(tier)+1].min);
-      const fill=$('#winTierFill'),from=tier===before?tierProgress(r.ratingBefore):0;fill.style.width=`${from*100}%`;
-      box.animate([{opacity:0,transform:'translateY(12px)'},{opacity:1,transform:'none'}],{duration:320,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'});
-      const t0=performance.now();await new Promise(resolve=>{const tick=now=>{const k=Math.min(1,(now-t0)/600),e=1-Math.pow(1-k,3);$('#winPoints').textContent=`+${Math.round(r.points*e)}`;$('#winXp').textContent=`+${Math.round(r.xpGain*e)}`;if(k<1&&s===state)requestAnimationFrame(tick);else resolve()};requestAnimationFrame(tick)});
-      if(s!==state)return;playSound('pickup',{volume:.18,rate:1.4});
-      if(!r.easy){fill.animate([{width:`${from*100}%`},{width:`${tierProgress(r.rating)*100}%`}],{duration:700,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'});if(tier!==before&&TIERS.indexOf(tier)>TIERS.indexOf(before)){await wait(500);if(s!==state)return;explode($('#winTierBadge'));playSound('praiseOrEnd',{volume:.75});sayCallout('promoted',{delay:.35,maxWait:2});haptic('pairCleared');$('#winTierText').textContent=loc('PROMOTED TO {0}!',loc(tier.name))}}
-      // Climbed the global board (or joined it): say so, with a way in. The board itself never pops up uninvited.
-      const climb=await Promise.race([state.rankSync,wait(2500)]);if(s!==state)return;s.climbScreen=prepareClimb(r,climb);
+      const fill=$('#winTierFill'),from=tier===before?tierProgress(r.ratingBefore):0,to=tierProgress(r.rating);fill.style.width=`${(show.on?to:from)*100}%`;
+      if(show.on)box.style.opacity=1;else box.animate([{opacity:0,transform:'translateY(12px)'},{opacity:1,transform:'none'}],{duration:320,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'});
+      await new Promise(resolve=>{const t0=performance.now(),tick=now=>{const k=show.on?1:Math.min(1,(now-t0)/600),e=1-Math.pow(1-k,3);$('#winPoints').textContent=`+${Math.round(r.points*e)}`;$('#winXp').textContent=`+${Math.round(r.xpGain*e)}`;if(k<1&&s===state)requestAnimationFrame(tick);else resolve()};requestAnimationFrame(tick)});
+      if(s!==state)return;if(live())playSound('pickup',{volume:.18,rate:1.4});
+      if(!r.easy){if(show.on)fill.style.width=`${to*100}%`;else fill.animate([{width:`${from*100}%`},{width:`${to*100}%`}],{duration:700,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'});
+        if(tier!==before&&TIERS.indexOf(tier)>TIERS.indexOf(before)){await wait(500);if(s!==state)return;$('#winTierText').textContent=loc('PROMOTED TO {0}!',loc(tier.name));if(live()){explode($('#winTierBadge'));playSound('praiseOrEnd',{volume:.75});sayCallout('promoted',{delay:.35,maxWait:2});haptic('pairCleared')}}}
+      // Climbed the global board (or joined it): say so here; the climb screen itself plays after NEXT LEVEL (prepareClimb).
+      const climb=await Promise.race([state.rankSync,new Promise(res=>setTimeout(res,2500))]);if(s!==state)return;s.climbScreen=prepareClimb(r,climb);
       $('#winRank').hidden=true;$('#winUnlock').hidden=true;$('#winChapter').hidden=true;
-      {const ch=chapterFor(r.level);if(r.level===ch.to){const nx=chapterFor(r.level+1);$('#winChapterDone').textContent=loc('CHAPTER {0} COMPLETE',`${ch.number}${ch.plus?'+':''}`);$('#winChapterName').textContent=loc(ch.name);$('#winChapterNext').textContent=loc('NEXT: {0}',loc(nx.name));$('#winChapter').hidden=false;$('#winChapter').animate([{opacity:0,transform:'scale(1.4)'},{opacity:1,transform:'scale(1)'}],{duration:460,easing:'cubic-bezier(.2,1.3,.3,1)'});const b=$('#winChapter').getBoundingClientRect();fairyDust(b.left+b.width/2,b.top+b.height/2);setTimeout(()=>fairyDust(b.left+b.width*.2,b.top),180);setTimeout(()=>fairyDust(b.left+b.width*.8,b.top),340);playSound('comboSting',{volume:.6,rate:.9});haptic('pairCleared');await wait(900);if(s!==state)return}}
-      const unlocked=r.reached&&groupUnlockedAt(r.level+1);if(unlocked){$('#winUnlockName').textContent=loc(unlocked.name);$('#winUnlock').hidden=false;$('#winUnlock').animate([{opacity:0,transform:'scale(1.5)'},{opacity:1,transform:'scale(1)'}],{duration:420,easing:'cubic-bezier(.2,.8,.2,1)'});explode($('#winUnlock'));playSound('match',{volume:.3,rate:1.15});haptic('pairCleared');await wait(700);if(s!==state)return}
-      if(!r.easy&&climb?.after&&(climb.before==null||climb.after<climb.before)){$('#winRankText').textContent=climb.before==null?loc('YOU’RE ON THE BOARD AT #{0}!',climb.after):climb.after===1?loc('▲ #1 ON THE LEADERBOARD!'):loc('▲ UP TO #{0} ON THE LEADERBOARD',climb.after);$('#winRank').hidden=false;$('#winRank').animate([{opacity:0,transform:'scale(1.4)'},{opacity:1,transform:'scale(1)'}],{duration:380,easing:'cubic-bezier(.2,.8,.2,1)'});playSound('pickup',{volume:.2,rate:1.5});haptic('pairCleared');await wait(500)}
-      await wait(560)
+      {const ch=chapterFor(r.level);if(r.level===ch.to){const nx=chapterFor(r.level+1);$('#winChapterDone').textContent=loc('CHAPTER {0} COMPLETE',`${ch.number}${ch.plus?'+':''}`);$('#winChapterName').textContent=loc(ch.name);$('#winChapterNext').textContent=loc('NEXT: {0}',loc(nx.name));$('#winChapter').hidden=false;pop($('#winChapter'),[{opacity:0,transform:'scale(1.4)'},{opacity:1,transform:'scale(1)'}],460);if(live()){const b=$('#winChapter').getBoundingClientRect();fairyDust(b.left+b.width/2,b.top+b.height/2);setTimeout(()=>fairyDust(b.left+b.width*.2,b.top),180);setTimeout(()=>fairyDust(b.left+b.width*.8,b.top),340);playSound('comboSting',{volume:.6,rate:.9});haptic('pairCleared')}await wait(900);if(s!==state)return}}
+      const unlocked=r.reached&&groupUnlockedAt(r.level+1);if(unlocked){$('#winUnlockName').textContent=loc(unlocked.name);$('#winUnlock').hidden=false;pop($('#winUnlock'),[{opacity:0,transform:'scale(1.5)'},{opacity:1,transform:'scale(1)'}],420);if(live()){explode($('#winUnlock'));playSound('match',{volume:.3,rate:1.15});haptic('pairCleared')}await wait(700);if(s!==state)return}
+      if(!r.easy&&climb?.after&&(climb.before==null||climb.after<climb.before)){$('#winRankText').textContent=climb.before==null?loc('YOU’RE ON THE BOARD AT #{0}!',climb.after):climb.after===1?loc('▲ #1 ON THE LEADERBOARD!'):loc('▲ UP TO #{0} ON THE LEADERBOARD',climb.after);$('#winRank').hidden=false;pop($('#winRank'),[{opacity:0,transform:'scale(1.4)'},{opacity:1,transform:'scale(1)'}],380);if(live()){playSound('pickup',{volume:.2,rate:1.5});haptic('pairCleared')}await wait(500)}
     }
     function setMessage(s){$('#message').textContent=s}
     function setVariant(key){if(!variants[key])key='A';document.body.classList.remove('variant-a','variant-b','variant-c');document.body.classList.add(`variant-${key.toLowerCase()}`);$('#variantLabel').textContent=`${key} — ${variants[key]}`;}
@@ -2407,7 +2516,7 @@
     // The card images a level will deal (in its season / card-set look), decoded ahead so the new board appears without a hitch.
     function decodeLevelImages(level){warmMusic(levelMusic(level,levelPack(level)));const art=artReady(level);try{const tiles=buildLevelBoard(level,progress.settings.difficulty==='easy'),pack=levelPack(level),set=chapterFor(level).set;
       const srcs=[...new Set(tiles.map(t=>{const c=CARD_DATA[t.symbol],v=pack==='halloween'?c.halloween:c.sets?.[set];return v?cardImage('thumb',v):SYMBOL_IMAGES[t.symbol]}))];
-      return Promise.all([art,...srcs.map(src=>{const i=new Image();i.src=src;return(i.decode?i.decode():Promise.resolve()).catch(()=>{})})])}catch{return art}}
+      levelFaces.length=0;return Promise.all([art,...srcs.map(src=>{const i=new Image();i.src=src;levelFaces.push(i);return(i.decode?i.decode().then(()=>{decodedFaces.add(src)}):Promise.resolve()).catch(()=>{})})])}catch{return art}}
     // prepare (optional) returns a promise for work to finish before the swap, e.g. decoding the next board's images.
     function playLevelTransition(swap,{prepare}={}){const style=trial('transition');if(style==='off'||levelTransitioning){swap();return}levelTransitioning=true;const layer=document.createElement('div');layer.className='lt-layer';document.body.append(layer);
       const finish=()=>{layer.remove();levelTransitioning=false};
@@ -2627,11 +2736,10 @@
     // cards: tile numbers, or a function giving tile ids (after the shuffle, cards are found by what they are, not where).
     // done: the game state that ends the step; wait: a pause (ms) before the next one. to: where a finger shows the card going
     // ('cage', or a tile id function); any normal move still counts. press: the booster to tap (the only one that works); show:
-    // boosters ringed while the line explains them, with a NEXT button. inPlace: the paw taps the strip of the card that shows above the cards covering it. full: the last step: the cage fills, RESUME clears it, done.
+    // boosters ringed while the line explains them, with a NEXT button. fromTop: the paw slides down from high on the screen to the target (a booster low on the screen). full: the last step: the cage fills, RESUME clears it, done.
     const TUT_STEPS=[
       {line:'Tap a face-up card to put it in the cage.',cards:[0],done:()=>!tutTile(0).active},
       {line:'Now tap its match. A pair in the cage clears.',cards:[4],done:()=>tutGone('tile-0')&&tutGone('tile-4')},
-      {line:'This card is covered, so it’s locked. Tap it.',cards:[5],inPlace:true,done:()=>tut.saw.has('blocked'),wait:1000},
       {line:'Tap a face-down card to flip it.',cards:[6],done:()=>tutTile(6).revealed&&!tutTile(6).dragRevealed||!tutTile(6).active},
       {line:'Flip the other one. Two matching flips clear on their own.',cards:[7],done:()=>tutGone('tile-6')&&tutGone('tile-7')},
       {line:'You can drag cards too. Drag this one into the cage.',cards:[1],to:'cage',done:()=>!tutTile(1).active},
@@ -2639,7 +2747,7 @@
       {line:'Drag a card onto its match and they clear together.',cards:()=>tutIds('R2_UAKARI'),to:()=>tutIds('R2_UAKARI')[1],done:()=>!tutIds('R2_UAKARI').length&&!state.tray.some(t=>t.symbol==='R2_UAKARI')},
       {line:()=>loc('{0} is wild: he matches any card. Tap him.',cardName(JOKER)),cards:()=>tutIds(JOKER),done:()=>!tutIds(JOKER).length&&!state.tray.some(t=>t.symbol===JOKER)},
       {line:()=>loc('{0} has {1}: every face-down card flips up for a moment. Tap it.',visionName(),visionPower()),cards:()=>tutIds(KEVIN),done:()=>!tutIds(KEVIN).length,wait:3800},
-      {line:'Can’t find a match? OWL EYES shows you one. Tap it.',cards:[],press:'hint',done:()=>state.hintsUsed>0,wait:700},
+      {line:'Can’t find a match? OWL EYES shows you one. Tap it.',cards:[],press:'hint',fromTop:true,done:()=>state.hintsUsed>0,wait:700},
       {line:'Owl Eyes found a pair. Take it.',cards:()=>[...state.hintIds||[]],done:()=>tut.ids.every(tutGone)},
       {line:'The cage holds four. Fill it with cards that don’t match.',cards:()=>state.tiles.filter(t=>t.active).map(t=>t.id),done:()=>waitingInCage()>=3},
       {line:'One more unmatched card would fill the cage. UNDO takes back your last card. Tap it.',cards:[],press:'undo',done:()=>tut.saw.has('undo'),wait:900},
@@ -2651,15 +2759,15 @@
     function startTutorial({sim=false}={}){const looping=!!tut;startLevel(1,{silent:true,tutorial:true});pendingLevelStart=false;tut={step:0,allowed:new Set(),ids:[],saw:new Set(),moving:false,sim};document.body.classList.add('tutorial-on');$('#tutorial').hidden=false;$('#tutDone').hidden=true;tutorialStep(0);if(!looping)requestAnimationFrame(tutorialFrame)}
     // The step's line, one span per word, each popping in 75ms after the one before (spaces stay plain text, so it wraps as normal).
     function tutorialLine(text){const el=$('#tutLine');el.replaceChildren(...text.split(/(\s+)/).filter(Boolean).map((w,i,all)=>/^\s+$/.test(w)?w:Object.assign(document.createElement('span'),{className:'w',textContent:w,style:`animation-delay:${all.slice(0,i).filter(x=>!/^\s+$/.test(x)).length*75}ms`})))}
-    function tutorialStep(i){const step=TUT_STEPS[i],ringed=step.press?[step.press]:step.show||[],ids=typeof step.cards==='function'?step.cards():step.cards.map(n=>`tile-${n}`);
+    function tutorialStep(i){if(tut)tut.dirty=true;const step=TUT_STEPS[i],ringed=step.press?[step.press]:step.show||[],ids=typeof step.cards==='function'?step.cards():step.cards.map(n=>`tile-${n}`);
       Object.assign(tut,{auto:false,step:i,ids,allowed:new Set(ids),to:typeof step.to==='function'?step.to():step.to,ringed});
       tutorialLine(typeof step.line==='function'?step.line():loc(step.line));$('#tutNext').hidden=!step.show;$('#tutSkipStep').hidden=!!step.show;
       document.querySelectorAll('.boosters .booster').forEach(b=>{b.classList.toggle('tut-show',ringed.includes(b.id));b.classList.toggle('tut-live',b.id===step.press)});render();tutorialCheck()}
     // The engine calls this on every game event (caged, cleared, flipped, blocked, shuffle, hint, vision, undo, full); NEXT sends 'next'.
-    function tutorialEvent(name){if(!state.tutorial||!tut)return;tut.saw.add(name==='next'?`next@${tut.step}`:name);tutorialCheck()}
+    function tutorialEvent(name){if(!state.tutorial||!tut)return;tut.dirty=true;tut.saw.add(name==='next'?`next@${tut.step}`:name);tutorialCheck()}
     function tutorialCheck(){
       if(!tut||tut.moving)return;const step=TUT_STEPS[tut.step];
-      if(state.over){tut.allowed=new Set();tut.to=null;tut.ringed=[];if(tut.saw.has('won')&&!tut.ending){tut.ending=true;const s=state;setTimeout(()=>{if(s!==state||!tut)return;$('#tutDone').hidden=false;$('#tutPlay').focus()},900)}return}
+      if(state.over){tut.allowed=new Set();tut.to=null;tut.ringed=[];if(tut.saw.has('won')&&!tut.ending){tut.ending=true;const s=state;setTimeout(()=>{if(s!==state||!tut)return;const mapNext=tut.sim||progress.level===1&&!progress.mapIntro;$('#tutPlay').textContent=loc(mapNext?'START EXPEDITION':'PLAY');if(mapNext)prepareExpedition();$('#tutDone').hidden=false;$('#tutPlay').focus()},900)}return}
       if(step.full||!(step.show?tut.saw.has(`next@${tut.step}`):step.done()))return;
       tut.allowed=new Set();tut.to=null;tut.ringed=[];$('#tutNext').hidden=true;$('#tutSkipStep').hidden=true;document.querySelectorAll('.tut-live').forEach(b=>b.classList.remove('tut-live'));
       const s=state;tut.moving=true;setTimeout(()=>{if(s!==state||!tut)return;tut.moving=false;tutorialStep(tut.step+1)},step.wait||0)
@@ -2675,34 +2783,43 @@
     function tutorialFrame(now){
       // The tutorial's CAGE FULL (the real dialog) keeps the layer up with only the paw, which shows the RESUME tap.
       if(!tut)return;const resumeDlg=$('#overlay').classList.contains('tut-mode')&&$('#overlay').classList.contains('show'),away=!$('#home').classList.contains('hidden')||!!document.querySelector('.overlay.show')&&!resumeDlg||ex.busy;$('#tutorial').classList.toggle('away',away);$('#tutorial').classList.toggle('on-resume',resumeDlg);
-      if(!away){const rings=$('#tutRings'),cardAt=id=>board.querySelector(`[data-id="${id}"]`),goal=tut.to==='cage'?tray.children[state.tray.length]:tut.to?cardAt(tut.to):null;
+      // Measuring the rings, the paw's targets and the panel forces a layout, so it happens after a board change (tut.dirty), on a resize
+      // and otherwise at most every 250ms; the paw animates every frame from those numbers, on `translate` (no layout).
+      if(!away&&(tut.dirty||!tut.aim||now-(tut.measuredAt||0)>250)){tut.dirty=false;tut.measuredAt=now;const rings=$('#tutRings'),cardAt=id=>board.querySelector(`[data-id="${id}"]`),goal=tut.to==='cage'?tray.children[state.tray.length]:tut.to?cardAt(tut.to):null;
         const nodes=[...tut.allowed].filter(id=>id!==tut.to&&state.tiles.find(t=>t.id===id)?.active).map(cardAt).filter(Boolean);if(goal)nodes.push(goal);for(const id of tut.ringed)nodes.push($(`#${id}`));
         while(rings.children.length<nodes.length)rings.append(Object.assign(document.createElement('div'),{className:'tut-ring'}));while(rings.children.length>nodes.length)rings.lastChild.remove();
-        nodes.forEach((node,i)=>{const r=node.getBoundingClientRect(),ring=rings.children[i],st=ring.style;ring.classList.toggle('goal',node===goal);ring.classList.toggle('round',node.classList.contains('booster'));st.left=`${r.left-6}px`;st.top=`${r.top-6}px`;st.width=`${r.width+12}px`;st.height=`${r.height+12}px`});
+        const put=(st,k,v)=>{if(st[k]!==v)st[k]=v};
+        nodes.forEach((node,i)=>{const r=node.getBoundingClientRect(),ring=rings.children[i],st=ring.style;ring.classList.toggle('goal',node===goal);ring.classList.toggle('round',node.classList.contains('booster'));put(st,'left',`${r.left-6}px`);put(st,'top',`${r.top-6}px`);put(st,'width',`${r.width+12}px`);put(st,'height',`${r.height+12}px`)});
         // The paw shows every step, on a 2s loop. Drag steps: presses the card, slides to the target, holds, fades. Everything else is a
-        // tap: the paw appears big on the target, shrinks into place, taps (a quick squeeze), fades and starts again. The target is RESUME or PLAY in the closing dialogs, NEXT on a read-and-continue step, else the step's first
-        // card or booster. Reduced motion leaves it resting on the card (drag) or on the target (tap).
-        const hand=$('#tutHand'),tapNode=resumeDlg?$('#continueLevel'):!$('#tutDone').hidden?$('#tutPlay'):!$('#tutNext').hidden?$('#tutNext'):goal?null:nodes[0],toNode=goal&&!resumeDlg?goal:tapNode,inPlace=TUT_STEPS[tut.step]?.inPlace&&tapNode===nodes[0],
-          // Where the paw points: a node's center, or on a covered card the middle of the strip that shows above the cards covering it.
-          aim=node=>{const r=node.getBoundingClientRect(),t=inPlace&&state.tiles.find(o=>o.id===node.dataset.id);let bottom=r.bottom;if(t)for(const id of t.blockers){const b=state.tiles.find(o=>o.id===id)?.active&&cardAt(id);if(b)bottom=Math.min(bottom,Math.max(r.top+8,b.getBoundingClientRect().top))}return{x:r.left+r.width/2,y:(r.top+bottom)/2}},
-          dragFrom=toNode&&toNode===goal&&nodes[0]&&nodes[0]!==goal?nodes[0]:null,to=toNode&&aim(toNode),
-          from=dragFrom?aim(dragFrom):tapNode?to:null;hand.hidden=!from||document.body.classList.contains('peek-drag');
-        // Drags: the slide starts fast and settles onto the target (ease-out), right after the paw fades in. Taps never slide: the paw
-        // appears big right on the target, shrinks into place, then taps (a quick squeeze), holds and fades.
-        if(!hand.hidden){const still=reduceMotion.matches,k=still?0:(now%2000)/2000,m=still||tapNode?0:Math.min(1,Math.max(0,(k-.08)/.47)),e=1-(1-m)**3,
-            shrink=tapNode&&!still?Math.min(1,k/.3):1,press=tapNode&&!still?Math.min(1,Math.max(0,(k-.42)/.12)):0;
-          hand.style.left=`${from.x+(to.x-from.x)*e}px`;hand.style.top=`${from.y+(to.y-from.y)*e}px`;hand.style.opacity=still?1:k<.08?k/.08:k>.85?Math.max(0,(1-k)/.15):1;
-          hand.style.scale=shrink<1?`${1+.7*(1-shrink)**3}`:press?`${1-.18*Math.sin(press*Math.PI)}`:''}
-        const hud=$('.featured-card').getBoundingClientRect(),panel=$('#tutPanel').style;panel.left=`${hud.left}px`;panel.top=`${hud.top-12}px`;panel.width=`${hud.width}px`;panel.height=`${hud.height+12}px`}
+        // tap: the paw appears big on the target, shrinks into place, taps (a quick squeeze), fades and starts again. fromTop steps (Owl
+        // Eyes, low on the screen) slide the paw down from high up onto the target before the tap. The target is RESUME in the cage-full
+        // dialog, NEXT on a read-and-continue step, else the step's first card or booster; the closing dialog's button gets no paw.
+        // Reduced motion leaves it resting on the card (drag) or on the target (tap).
+        const tapNode=resumeDlg?$('#continueLevel'):!$('#tutDone').hidden?null:!$('#tutNext').hidden?$('#tutNext'):goal?null:nodes[0],toNode=goal&&!resumeDlg?goal:tapNode,
+          aim=node=>{const r=node.getBoundingClientRect();return{x:r.left+r.width/2,y:(r.top+r.bottom)/2}},
+          dragFrom=toNode&&toNode===goal&&nodes[0]&&nodes[0]!==goal?nodes[0]:null,to=toNode&&aim(toNode),fromTop=!!(tapNode&&!resumeDlg&&TUT_STEPS[tut.step]?.fromTop),
+          from=dragFrom?aim(dragFrom):fromTop?{x:to.x,y:innerHeight*.15}:tapNode?to:null;
+        tut.aim={from,to,mode:fromTop?'fromTop':tapNode?'tap':'drag'};
+        const hud=$('.featured-card').getBoundingClientRect(),panel=$('#tutPanel').style;put(panel,'left',`${hud.left}px`);put(panel,'top',`${hud.top-12}px`);put(panel,'width',`${hud.width}px`);put(panel,'height',`${hud.height+12}px`)}
+      if(!away&&tut.aim){const hand=$('#tutHand'),{from,to,mode}=tut.aim;hand.hidden=!from||document.body.classList.contains('peek-drag');
+        // Drags slide fast and settle onto the target (ease-out) right after the paw fades in; fromTop slides down the same way, then taps.
+        // Plain taps never slide: the paw appears big on the target, shrinks into place, then taps (a quick squeeze), holds and fades.
+        if(!hand.hidden){const still=reduceMotion.matches,k=still?0:(now%2000)/2000,ramp=(a,len)=>Math.min(1,Math.max(0,(k-a)/len)),
+            m=still||mode==='tap'?0:ramp(.08,mode==='fromTop'?.4:.47),e=1-(1-m)**3,shrink=mode==='tap'&&!still?Math.min(1,k/.3):1,
+            press=still||mode==='drag'?0:ramp(mode==='fromTop'?.56:.42,.12),x=from.x+(to.x-from.x)*e,y=from.y+(to.y-from.y)*e;
+          if(hand.style.left!=='0px'){hand.style.left='0px';hand.style.top='0px'}hand.style.translate=`calc(-54% + ${x.toFixed(1)}px) calc(-4% + ${y.toFixed(1)}px)`;
+          hand.style.opacity=still?1:k<.08?k/.08:k>.85?Math.max(0,(1-k)/.15):1;
+          hand.style.scale=shrink<1?`${1+.7*(1-shrink)**3}`:press?`${1-.18*Math.sin(press*Math.PI)}`:''}}
       requestAnimationFrame(tutorialFrame)
     }
     function stopTutorial(){if(!tut)return;tut=null;document.body.classList.remove('tutorial-on');document.querySelectorAll('.tut-show,.tut-live').forEach(b=>b.classList.remove('tut-show','tut-live'));$('#tutorial').hidden=true;$('#tutRings').replaceChildren()}
     // PLAY or SKIP TUTORIAL: the tutorial counts as done (saved) and the player's own level starts, with its music; a brand-new player then sees
     // the expedition map. The dev simulation shows the map too but saves nothing.
     function finishTutorial(){if(!tut||levelTransitioning)return;const sim=tut.sim,level=progress.level,mapNext=sim||level===1&&!progress.mapIntro;if(!sim){progress.tutorialDone=true;saveProgress()}
-      const go=()=>{startLevel(level);playMusic(levelMusic(),musicList==='home',LEVEL_MUSIC_FADE_S)};stopTutorial();
-      // A first-time player's map is the transition; everyone else goes through the usual card transition into their level.
-      if(mapNext){go();if(sim)playExpedition({to:1});else firstExpedition()}else playLevelTransition(go,{prepare:()=>decodeLevelImages(level)})}
+      const go=(silent=false)=>{startLevel(level,{silent});playMusic(levelMusic(),musicList==='home',LEVEL_MUSIC_FADE_S)};stopTutorial();
+      // A first-time player's map is the transition: the level is dealt behind it (swap), and its start sound and banner come as the map
+      // closes, as on any chapter change. Everyone else goes through the usual card transition into their level.
+      if(mapNext){if(!sim){progress.mapIntro=true;saveProgress()}playExpedition({to:1,swap:()=>go(true),prepare:()=>decodeLevelImages(level)})}else playLevelTransition(()=>go(),{prepare:()=>decodeLevelImages(level)})}
     // The tutorial plays over the home music (the level's own music starts with the level after it).
     function replayTutorial(sim=false){closeSettings();if($('#home').classList.contains('hidden')){playMusic('home');startTutorial({sim})}else playFromHome({tutorial:true,sim})}
     // SKIP STEP: the game plays the step for you (the step's booster, or its cards tapped in order, as a tap does what the drag would),
@@ -2751,7 +2868,7 @@
     $('#homeBtn').onclick=showHome;$('#winHome').onclick=showHome;$('#failHome').onclick=()=>{startLevel(state.level,{silent:true});pendingLevelStart=false;showHome()};$('#homePlay').onclick=playFromHome;$('#homeSound').onclick=()=>{$('#sound').click();$('#homeSound').textContent=soundEnabled?'♪':'♩'};
     // In the tutorial a booster works only when the step asks for it (keyboard and screen readers included, not just pointer taps).
     const tutorialHolds=id=>state.tutorial&&!$(`#${id}`).classList.contains('tut-live');
-    $('#shuffle').onclick=()=>{if(tutorialHolds('shuffle'))return;if(state.shufflesLeft<=0)return offerReward('shuffle');clearHint(true);reshuffle()};$('#hint').onclick=()=>{if(tutorialHolds('hint'))return;if(state.hintsLeft<=0)return offerReward('hint');useHint()};$('#undo').onclick=()=>{if(tutorialHolds('undo'))return;if(state.undosLeft<=0)return offerReward('undo');undo()};$('#continueLevel').onclick=()=>state.tutorial?resumeFromCage():requestReward('continue');$('#overlayUndo').onclick=undo;$('#adShuffle').onclick=()=>requestReward('shuffle').then(({status})=>{if(status==='completed')shuffleAfterStuck()});$('#adUndo').onclick=()=>requestReward('undo').then(({status})=>{if(status==='completed')undo()});$('#retryLevel').onclick=()=>startLevel(state.level,{retry:true});$('#nextLevel').onclick=async()=>{const s=state,next=s.level+1,btn=$('#nextLevel');if(btn.disabled)return;btn.disabled=true;const c=await Promise.race([s.climbScreen,new Promise(r=>setTimeout(r,1500))]);if(s!==state)return;if(c)await showClimb(c);if(s!==state)return;{const a=chapterFor(s.level),b=chapterFor(next);if(a.number!==b.number&&trial('expedition')!=='off')playExpedition({from:a.number,to:b.number,plus:b.plus,swap:()=>startLevel(next,{silent:true}),prepare:()=>decodeLevelImages(next)});else playLevelTransition(()=>startLevel(next),{prepare:()=>decodeLevelImages(next)})}};$('#sound').onclick=()=>{soundEnabled=!soundEnabled;setTimeout(syncAmbience,0);$('#sound').textContent=soundEnabled?'♪':'♩';$('#sound').title=loc(soundEnabled?'Sound on':'Sound off');$('#sound').setAttribute('aria-label',$('#sound').title);$('#sound').classList.toggle('active',soundEnabled);if(soundEnabled){if(audioUnlocked)music.play().catch(()=>{});playSound('control',{volume:.4})}else music.pause()};$('#prevVariant').onclick=()=>cycleVariant(-1);$('#nextVariant').onclick=()=>cycleVariant(1);
+    $('#shuffle').onclick=()=>{if(tutorialHolds('shuffle'))return;if(state.shufflesLeft<=0)return offerReward('shuffle');clearHint(true);reshuffle()};$('#hint').onclick=()=>{if(tutorialHolds('hint'))return;if(state.hintsLeft<=0)return offerReward('hint');useHint()};$('#undo').onclick=()=>{if(tutorialHolds('undo'))return;if(state.undosLeft<=0)return offerReward('undo');undo()};$('#continueLevel').onclick=()=>state.tutorial?resumeFromCage():requestReward('continue');$('#overlayUndo').onclick=undo;$('#adShuffle').onclick=()=>requestReward('shuffle').then(({status})=>{if(status==='completed')shuffleAfterStuck()});$('#adUndo').onclick=()=>requestReward('undo').then(({status})=>{if(status==='completed')undo()});$('#winOverlay').addEventListener('pointerdown',e=>{if(!e.target.closest('button'))winShow.skip()});$('#retryLevel').onclick=()=>startLevel(state.level,{retry:true});$('#nextLevel').onclick=async()=>{const s=state,next=s.level+1,btn=$('#nextLevel');if(btn.disabled)return;btn.disabled=true;winShow.skip();const c=await Promise.race([s.climbScreen,new Promise(r=>setTimeout(r,1500))]);if(s!==state)return;if(c)await showClimb(c);if(s!==state)return;{const a=chapterFor(s.level),b=chapterFor(next);if(a.number!==b.number&&trial('expedition')!=='off')playExpedition({from:a.number,to:b.number,plus:b.plus,swap:()=>startLevel(next,{silent:true}),prepare:()=>decodeLevelImages(next)});else playLevelTransition(()=>startLevel(next),{prepare:()=>decodeLevelImages(next)})}};$('#sound').onclick=()=>{soundEnabled=!soundEnabled;setTimeout(syncAmbience,0);$('#sound').textContent=soundEnabled?'♪':'♩';$('#sound').title=loc(soundEnabled?'Sound on':'Sound off');$('#sound').setAttribute('aria-label',$('#sound').title);$('#sound').classList.toggle('active',soundEnabled);if(soundEnabled){if(FX.audioIdle&&audioUnlocked)audioContext?.resume().catch(()=>{});if(audioUnlocked)music.play().catch(()=>{});playSound('control',{volume:.4})}else{music.pause();if(FX.audioIdle&&audioContext?.state==='running')audioContext.suspend().catch(()=>{})}};$('#prevVariant').onclick=()=>cycleVariant(-1);$('#nextVariant').onclick=()=>cycleVariant(1);
     // Player profile: a display name plus a private id/secret (for posting scores later); no account or password.
     // Name filter (App Store guideline 1.2), the same list and look-alike swaps as name_ok in supabase/leaderboard.sql. "nazi" only
     // counts as a whole word, so names like Nazir pass.
@@ -2839,30 +2956,35 @@
       $('#hidePlayer').onclick=()=>hide(loc('Player hidden on this phone.'));$('#reportCancel').onclick=close;$('#reportDialog').onclick=e=>{if(e.target===e.currentTarget)close()}}
     $('#leadersList').onclick=e=>{const li=e.target.closest('.lb-row');if(li?.dataset.id)openReport(li.dataset.id,li.dataset.name)};
     // Climb screen (between levels): when a clear moves the player past others on the global board, their row rises past each one
-    // with a tick (haptic rankPass), then the new rank lands (rankClimb). It shows at most every CLIMB_EVERY levels, except at a
-    // chapter's end or after a well-played level (a new record or a ×8 chain). Needs players_passed (supabase/leaderboard.sql);
+    // with a tick (haptic rankPass), lifted, then slams into its new rank (jokerSlam, the howler). It shows after every level that
+    // moves the player up (or puts them on the board). Needs players_passed (supabase/leaderboard.sql);
     // without it, offline, or on Easy, nothing shows.
-    const CLIMB_EVERY=5;
+    // Every rank gain (or first time on the board) plays the climb after NEXT LEVEL, showing up to CLIMB_ROWS of the players passed.
+    const CLIMB_ROWS=12;
     async function prepareClimb(r,climb){
-      if(r.easy||r.dev||!climb||climb.before==null||!(climb.after<climb.before)||!progress.player)return null;
-      const special=r.level===chapterFor(r.level).to||r.newRecord||(r.comboBest||0)>=8;if(!special&&r.level-(progress.climbShownAt??-1e9)<CLIMB_EVERY)return null;
-      try{const rows=await Promise.race([lbCall('players_passed',{p_id:progress.player.id,p_limit:5}),new Promise((_,no)=>setTimeout(()=>no(new Error('timeout')),2500))]);return rows.length?{rows,climb,level:r.level}:null}catch{return null}
+      if(r.easy||r.dev||!climb?.after||!(climb.before==null||climb.after<climb.before)||!progress.player)return null;
+      try{const rows=await Promise.race([lbCall('players_passed',{p_id:progress.player.id,p_limit:CLIMB_ROWS}),new Promise((_,no)=>setTimeout(()=>no(new Error('timeout')),2500))]);return rows.length?{rows,climb,level:r.level}:null}catch{return null}
     }
     function showClimb({rows,climb,level}){return new Promise(resolve=>{
       progress.climbShownAt=level;saveProgress();const wait=ms=>new Promise(res=>setTimeout(res,ms)),total=Number(rows[0].passed)||rows.length,list=$('#climbList'),k=rows.length;
       // Before: the passed players hold the places just above the player (nearest at the bottom of the list).
-      const els=rows.map((row,i)=>leaderRow({...row,rank:climb.after+i})),me=leaderRow({...localRow(),rank:climb.before}),rankOf=el=>el.querySelector('.lb-rank');
+      const els=rows.map((row,i)=>leaderRow({...row,rank:climb.after+i})),me=leaderRow({...localRow(),rank:climb.before??climb.after+k}),rankOf=el=>el.querySelector('.lb-rank');
       list.replaceChildren(...els,me);$('#climbSub').textContent=total===1?loc('▲ 1 PLACE'):loc('▲ {0} PLACES',total);$('#climbMore').hidden=total<=k;$('#climbMore').textContent=loc('…and {0} more',total-k);
-      $('#climbContinue').disabled=true;$('#climbOverlay').classList.add('show');
-      const finish=()=>{$('#climbSub').textContent=total===1?loc('▲ 1 PLACE · NOW #{0}',climb.after):loc('▲ {0} PLACES · NOW #{1}',total,climb.after);rankOf(me).textContent=climb.after;me.classList.add('flash');haptic('rankClimb');playSound('praiseOrEnd',{volume:.6});const b=me.getBoundingClientRect();fairyDust(b.left+b.width/2,b.top+b.height/2);$('#climbContinue').disabled=false};
+      $('#climbContinue').disabled=true;$('#climbOverlay').classList.add('show');list.scrollTop=list.scrollHeight;
+      // The landing: the lifted plaque slams down into its new place (squash, rebound), the dialog jolts, and the howler (the undo call) hits.
+      const finish=()=>{$('#climbSub').textContent=total===1?loc('▲ 1 PLACE · NOW #{0}',climb.after):loc('▲ {0} PLACES · NOW #{1}',total,climb.after);rankOf(me).textContent=climb.after;me.classList.add('flash');
+        if(!reduceMotion.matches){me.classList.remove('climb-lift');me.animate([{scale:'1.12'},{scale:'.94',offset:.35},{scale:'1.03',offset:.7},{scale:'1'}],{duration:320,easing:'ease-out'});$('.climb-dialog').animate([{translate:'0 0'},{translate:'0 7px',offset:.3},{translate:'0 -3px',offset:.6},{translate:'0 0'}],{duration:280,delay:90,easing:'ease-out'})}
+        haptic('jokerSlam');playSound('undo',{volume:1});const b=me.getBoundingClientRect();fairyDust(b.left+b.width/2,b.top+b.height/2);$('#climbContinue').disabled=false};
       $('#climbContinue').onclick=()=>{$('#climbOverlay').classList.remove('show');resolve()};
       if(reduceMotion.matches){list.replaceChildren(me,...els);els.forEach((el,i)=>rankOf(el).textContent=climb.after+1+i);finish();return}
-      (async()=>{await wait(650);
+      (async()=>{await wait(500);me.classList.add('climb-lift');await wait(250);
         for(let j=k-1;j>=0;j--){const el=els[j],a=me.getBoundingClientRect().top,b=el.getBoundingClientRect().top;list.insertBefore(me,el);
-          const da=a-me.getBoundingClientRect().top,db=b-el.getBoundingClientRect().top;me.animate([{transform:`translateY(${da}px) scale(1.04)`},{transform:'scale(1.04)',offset:.8},{transform:'none'}],{duration:420,easing:'cubic-bezier(.3,.9,.3,1)'});el.animate([{transform:`translateY(${db}px)`},{transform:'none'}],{duration:420,easing:'cubic-bezier(.3,.9,.3,1)'});
+          // Keep the climbing plaque in view when the list scrolls (measured before the slide, so the slide still starts where it was).
+          {const lr=list.getBoundingClientRect(),mr=me.getBoundingClientRect();if(mr.top<lr.top+10)list.scrollTop-=lr.top+10-mr.top}
+          const da=a-me.getBoundingClientRect().top,db=b-el.getBoundingClientRect().top;me.animate([{transform:`translateY(${da}px)`},{transform:'none'}],{duration:420,easing:'cubic-bezier(.3,.9,.3,1)'});el.animate([{transform:`translateY(${db}px)`},{transform:'none'}],{duration:420,easing:'cubic-bezier(.3,.9,.3,1)'});
           rankOf(me).textContent=climb.after+j;rankOf(el).textContent=climb.after+j+1;haptic('rankPass');playSound('pickup',{volume:.22,rate:1.15+.1*(k-1-j)});await wait(j?520:460)}
         finish()})()})}
-    $('#homeLeaders').onclick=()=>showLeaders();$('#homeProfile').onclick=()=>showLeaders();$('#winLeaders').onclick=()=>showLeaders({findMe:true});$('#leadersBack').onclick=()=>$('#leaders').classList.add('hidden');$('#leadersRefresh').onclick=loadLeaders;
+    $('#homeLeaders').onclick=()=>showLeaders();$('#homeProfile').onclick=()=>showLeaders();$('#leadersBack').onclick=()=>$('#leaders').classList.add('hidden');$('#leadersRefresh').onclick=loadLeaders;
     // Pull down at the top of the list to refresh.
     {let startY=null;const list=$('#leadersList');list.addEventListener('touchstart',e=>{startY=list.scrollTop<=0?e.touches[0].clientY:null},{passive:true});list.addEventListener('touchend',e=>{if(startY!=null&&e.changedTouches[0].clientY-startY>70)loadLeaders();startY=null},{passive:true})}
     // Themes (Settings). Each is a token block in the CSS (html[data-theme]); art lists the files in art/themes/<id>/ that are applied when

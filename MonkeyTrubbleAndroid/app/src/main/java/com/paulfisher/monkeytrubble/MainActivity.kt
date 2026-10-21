@@ -35,6 +35,9 @@ class MainActivity : ComponentActivity() {
     private lateinit var playGames: PlayGames
     private lateinit var ads: Ads
     private var systemBars = Insets.NONE
+    /** Null until the page first says; older pages keep the tilt sensor on. */
+    private var pageWantsMotion: Boolean? = null
+    private var resumed = false
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,7 +83,10 @@ class MainActivity : ComponentActivity() {
             evaluate(String.format(Locale.US, "window.__setMonkeyTilt?.(%.4f,%.4f)", turn, lean))
         }
         ads = Ads(this, ::evaluate)
-        webView.addJavascriptInterface(Bridge(store, Haptics(this, webView), playGames, ads), Bridge.NAME)
+        webView.addJavascriptInterface(Bridge(store, Haptics(this, webView), playGames, ads) { on ->
+            pageWantsMotion = on
+            if (!on) tilt.stop() else if (resumed) tilt.start()
+        }, Bridge.NAME)
         webView.webViewClient = GameClient()
 
         // Back closes the top dialog or leaves a level (the page decides); on the home screen it sends the app to the background.
@@ -98,11 +104,13 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         webView.onResume()
         evaluate("window.__resumeMonkeyAudio?.()")
-        tilt.start()
+        resumed = true
+        if (pageWantsMotion != false) tilt.start()
         playGames.signIn()
     }
 
     override fun onPause() {
+        resumed = false
         tilt.stop()
         webView.onPause()
         super.onPause()

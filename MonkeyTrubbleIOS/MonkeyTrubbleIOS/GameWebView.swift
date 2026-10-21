@@ -16,6 +16,7 @@ struct GameWebView: UIViewRepresentable {
         controller.add(context.coordinator, name: "haptics")
         controller.add(context.coordinator, name: "storage")
         controller.add(context.coordinator, name: "gameCenter")
+        controller.add(context.coordinator, name: "motion")
         // Debug builds (Xcode / ship) keep the page's dev mode on; Release builds (TestFlight, App Store) turn it off.
         #if DEBUG
         let debugBuild = true
@@ -81,6 +82,7 @@ struct GameWebView: UIViewRepresentable {
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "haptics")
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "storage")
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "gameCenter")
+        webView.configuration.userContentController.removeScriptMessageHandler(forName: "motion")
         coordinator.detach()
     }
 
@@ -126,6 +128,8 @@ struct GameWebView: UIViewRepresentable {
         private var inactiveObserver: NSObjectProtocol?
         private var neutral: (turn: Double, lean: Double)?
         private var lastSent: (turn: Double, lean: Double)?
+        /// The page says when tilt shows on screen (the board, Settings, the lightbox); nil until it first says, so older pages keep motion on.
+        private var pageWantsMotion: Bool?
 
         func attach(_ webView: WKWebView) {
             self.webView = webView
@@ -141,7 +145,7 @@ struct GameWebView: UIViewRepresentable {
             ) { [weak self] _ in
                 MainActor.assumeIsolated {
                     self?.webView?.evaluateJavaScript("window.__resumeMonkeyAudio?.()")
-                    self?.startMotionUpdates()
+                    if self?.pageWantsMotion != false { self?.startMotionUpdates() }
                 }
             }
             inactiveObserver = NotificationCenter.default.addObserver(
@@ -215,6 +219,15 @@ struct GameWebView: UIViewRepresentable {
             }
             if message.name == "gameCenter", let body = message.body as? [String: Any] {
                 services.handle(body)
+                return
+            }
+            if message.name == "motion", let on = message.body as? Bool {
+                pageWantsMotion = on
+                if on {
+                    if UIApplication.shared.applicationState == .active { startMotionUpdates() }
+                } else {
+                    motionManager.stopDeviceMotionUpdates()
+                }
                 return
             }
             guard message.name == "haptics", let event = message.body as? String else { return }

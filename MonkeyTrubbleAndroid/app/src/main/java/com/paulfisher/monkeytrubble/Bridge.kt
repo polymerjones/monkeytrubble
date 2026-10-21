@@ -14,6 +14,7 @@ class Bridge(
     private val haptics: Haptics,
     private val playGames: PlayGames,
     private val ads: Ads,
+    private val motion: (Boolean) -> Unit,
 ) {
     private val main = Handler(Looper.getMainLooper())
 
@@ -39,6 +40,12 @@ class Bridge(
         main.post { ads.handle(message) }
     }
 
+    /** The page says when tilt shows on screen (the board, Settings, the lightbox), so the sensor only runs then. */
+    @JavascriptInterface
+    fun motion(on: Boolean) {
+        main.post { motion(on) }
+    }
+
     companion object {
         const val NAME = "MonkeyAndroid"
 
@@ -47,6 +54,7 @@ class Bridge(
             "haptics:{postMessage:m=>$NAME.haptic(String(m))}," +
             "storage:{postMessage:m=>$NAME.storage(String(m))}," +
             "gameCenter:{postMessage:m=>$NAME.gameCenter(JSON.stringify(m))}," +
-            "ads:{postMessage:m=>$NAME.ads(JSON.stringify(m))}}};"
+            "ads:{postMessage:m=>$NAME.ads(JSON.stringify(m))}," +
+            "motion:{postMessage:m=>$NAME.motion(!!m)}}};"
     }
 }
