@@ -108,6 +108,8 @@ done
 build "$EX/gibbon.png" set2-white-handed-gibbon
 build "$EX/macaque.png" set2-long-tailed-macaque
 build "$EX/langur.png" set2-silvered-langur
+# Vision monkeys: the Owl Monkey (Paul, 2026-10-21; replaces the placeholder). Galago, tarsier and aye-aye are still placeholders.
+build "$EX/new owl eyes card.jpg" vision-owl-monkey
 build "$EX/baboon.png" set2-olive-baboon
 # Chapter backgrounds (../source/art/chapters/ch<n>_*.png). When split-layers.py has made layers/<n>/ (far.jpg, mid.webp,
 # near.webp, water.png), those are copied as they are; otherwise the painting becomes a single far layer.
