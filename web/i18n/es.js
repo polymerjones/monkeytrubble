@@ -54,6 +54,8 @@ window.ES_TEXT={
   "UNDER HERE":"AQUÍ DEBAJO",
   "GOOD EYE!":"¡BUEN OJO!",
   "LOADING CAGE // {0}%":"CARGANDO JAULA // {0}%",
+  "TAP OR SPIN THE CARD":"TOCA O GIRA LA CARTA",
+  "Next monkey":"Siguiente mono",
   "CAGE READY":"JAULA LISTA",
   "Level {0} reset — same board, new plan.":"Nivel {0} reiniciado: mismo tablero, nuevo plan.",
   "Covered by 1 card — clear it first.":"La tapa 1 carta: quítala primero.",
