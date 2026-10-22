@@ -2331,8 +2331,8 @@
     // POLY card (Paul, 2026-10-21): a casino payout. Tapped free and face up, it pops off the board with no cage slot, like Kevin. The
     // board dims, Paul's portrait slams onto the middle of the screen (POLY!), then four pairs fly out of the board, buried ones first,
     // and slam together on it one at a time: BOOM, BOOM, BOOM, BOOM, each harder, with gold coins, a rising hit and a counter, then
-    // HEY, HOW ARE YA? with Paul's line. Sound (Paul, 2026-10-21): a golden Joker slam under POLY! on the reveal, each boom a golden Joker clear plus the pair's monkey
-    // call, then combo.mp3 and HEY, HOW ARE YA? on the payout; the voice plays dry. The board stays in view (a light dim, the portrait up top)
+    // HEY, HOW ARE YA? with Paul's line. Sound (Paul, 2026-10-21): a low thump under POLY! on the reveal, each pair a golden Joker clear (only as
+    // it clears, never before) plus the pair's monkey call, then combo.mp3 and HEY, HOW ARE YA? on the payout; the voice plays dry. The board stays in view (a light dim, the portrait up top)
     // so each pair is seen lifting off it. Frozen chapters (polyIce): the ice portrait, ice chips and flakes, and a frost that cracks a little more with each boom and
     // shatters on the payout. Pairs are only taken if the board stays clearable (solveLine). They count as
     // cleared pairs but never toward the combo chain, and the payout is a wall for Undo (like Continue). tile null: a payout with no
@@ -2363,8 +2363,8 @@
       if(tile){tile.active=false;tile.temporaryReveal=false}
       if(node){const r=node.getBoundingClientRect(),copy=node.cloneNode(true);copy.removeAttribute('data-id');copy.classList.remove('board-tile');copy.style.left=`${r.left+r.width/2}px`;copy.style.top=`${r.top+r.height/2}px`;copy.style.zIndex='';$('#dragLayer').append(copy);copy.animate([{scale:1,opacity:1},{scale:1.35,opacity:1,offset:.4},{scale:1.7,opacity:0}],{duration:520,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'}).onfinish=()=>copy.remove();explode(node)}
       const pairs=pickPolyPairs(),st=polyStage(ice);render();
-      duckMusic(POLY_IN_MS+pairs.length*POLY_BEAT_MS+POLY_HOLD_MS);playSound(POLY_BOOMS[0],{volume:.9,delay:.02});sayCallout('poly',{maxWait:1.5,dry:true});haptic('jokerSlam');setMessage(loc('POLY PAYOUT // {0} pairs',pairs.length));
-      setTimeout(()=>{if(s!==state)return;const c=st.card.getBoundingClientRect();screenShake(10);polyBurst(c.left+c.width/2,c.top+c.height/2,ice,26)},300);
+      duckMusic(POLY_IN_MS+pairs.length*POLY_BEAT_MS+POLY_HOLD_MS);sayCallout('poly',{maxWait:1.5,dry:true});haptic('jokerSlam');setMessage(loc('POLY PAYOUT // {0} pairs',pairs.length));
+      setTimeout(()=>{if(s!==state)return;const c=st.card.getBoundingClientRect();screenShake(10);playThump();polyBurst(c.left+c.width/2,c.top+c.height/2,ice,26)},300);
       pairs.forEach((pair,i)=>setTimeout(()=>{if(s===state)polyBoom(pair,i+1,st,ice)},POLY_IN_MS+i*POLY_BEAT_MS));
       const jackpotAt=pairs.length?POLY_IN_MS+(pairs.length-1)*POLY_BEAT_MS+POLY_FLY_MS+90:POLY_IN_MS;
       setTimeout(()=>{if(s===state)polyJackpot(st,ice,pairs.length)},jackpotAt);
@@ -2391,7 +2391,6 @@
       const s=state,c=st.card.getBoundingClientRect(),cx=c.left+c.width/2,cy=c.top+c.height/2,caged=t=>s.tray.includes(t);pair.forEach(t=>{if(!caged(t))t.revealed=true});render();
       const flyers=pair.map((t,k)=>{const node=caged(t)?tray.children[s.tray.indexOf(t)]:board.querySelector(`[data-id="${t.id}"]`);if(!node)return null;const r=node.getBoundingClientRect(),copy=node.cloneNode(true);copy.removeAttribute('data-id');copy.classList.remove('blocked','hinted','on-top');copy.classList.add('free');copy.style.cssText=`position:fixed;left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;margin:0;translate:none;z-index:5;pointer-events:none`;$('#dragLayer').append(copy);return{copy,r,side:k?1:-1}}).filter(Boolean);
       s.tray=s.tray.filter(t=>!pair.includes(t));pair.forEach(t=>{t.active=false;t.temporaryReveal=false});s.pairs++;render();
-      playSound(POLY_BOOMS[(n-1)%POLY_BOOMS.length],{volume:.6,delay:Math.max(0,POLY_FLY_MS-280)/1000});
       for(const {r} of flyers){const x=r.left+r.width/2,y=r.top+r.height/2;dustFlash(x,y,{size:.7,color:ice?'#dff3ff':'#ffd84d'});chipBurst(x,y,14)}
       const glint=ice?' saturate(.55) hue-rotate(-12deg)':'';
       for(const {copy,r,side} of flyers){const tx=cx+side*c.width*.14-(r.left+r.width/2),ty=cy-(r.top+r.height/2),sc=c.width*.46/r.width;
@@ -2400,7 +2399,7 @@
       setTimeout(()=>{for(const {copy} of flyers)copy.animate([{opacity:1,scale:1},{opacity:0,scale:1.35}],{duration:260,easing:'ease-out',fill:'forwards'}).onfinish=()=>copy.remove();if(s===state)polyHit(st,n,ice,cx,cy,pair)},POLY_FLY_MS)
     }
     function polyHit(st,n,ice,x,y,pair){
-      screenShake(4+n*2.5,380+n*30);haptic('jokerSlam');
+      screenShake(4+n*2.5,380+n*30);haptic('jokerSlam');playSound(POLY_BOOMS[(n-1)%POLY_BOOMS.length],{volume:.6});
       {const main=pair.map(t=>t.symbol).find(sym=>sym!==JOKER),calls=CARD_DATA[main]?.sounds||[],call=calls.length?pickCall(main,calls):null;if(call)playSound(call,{volume:.95,horror:state.pack==='halloween'})}
       dustFlash(x,y,{size:1+n*.25,color:ice?'#dff3ff':'#ffd84d'});polyBurst(x,y,ice,16+n*6);
       st.card.animate([{scale:1},{scale:1.1+n*.02},{scale:1}],{duration:280,easing:'cubic-bezier(.2,1.6,.4,1)'});
