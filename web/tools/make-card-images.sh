@@ -129,4 +129,7 @@ done
 for d in ../source/art/seasons/christmas/layers/*/; do
   n=$(basename "$d"); rm -rf "art/seasons/christmas/$n" && mkdir -p "art/seasons/christmas/$n" && cp "$d"* "art/seasons/christmas/$n/"
 done
+# POLY card (../source/art/poly): Paul's 1024x1536 renders, banana swirl plus the ice version for the frozen chapters.
+build ../source/art/poly/poly.png poly
+build ../source/art/poly/poly-ice.png poly-ice
 echo "thumb: $(ls cards/thumb | wc -l | tr -d ' ')  hero: $(ls cards/hero | wc -l | tr -d ' ')"
