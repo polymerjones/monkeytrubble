@@ -1,10 +1,10 @@
 # Monkey calls per card
 
-Picked by Paul on 2026-10-21 with the call picker (~/monkeytrubble_macmini/picker-tools), two rounds. Calls are listed primary first; the game plays the primary most often (weights 4:3:2:1, `pickCall`) and never repeats a card's last call. Paul's own clipped and EQ'd calls live in `web/audio/calls/`, levelled to the -10.5 LUFS call target in MIX_DB (trim = -10.5 - measured LUFS; clips under 0.4 s are matched by mean level instead).
+Picked by Paul on 2026-10-21 with the call picker (~/monkeytrubble_macmini/picker-tools), three rounds (round 3, 2026-10-21 evening: Huhu off the White-faced Capuchin, fuller chimp and bonobo calls; the uncut callChimp clip is gone). Calls are listed primary first; the game plays the primary most often (weights 4:3:2:1, `pickCall`) and never repeats a card's last call. Paul's own clipped and EQ'd calls live in `web/audio/calls/`, levelled to the -10.5 LUFS call target in MIX_DB (trim = -10.5 - measured LUFS; clips under 0.4 s are matched by mean level instead).
 
 | Card | Calls (primary first) |
 |---|---|
-| White-faced Capuchin (`R1_CAPUCHIN`) | callCapuchin, callSmallMonkeyAlt, callHuhu, callMonkeys |
+| White-faced Capuchin (`R1_CAPUCHIN`) | callCapuchin, callSmallMonkeyAlt, callMonkeys |
 | Geoffroy's Spider Monkey (`R1_SPIDER`) | callGeofry, callSpider5, callAnotherAnotherCapuchin |
 | Mantled Howler (`R1_HOWLER`) | callHowler, callBarbary, callAgile, callSmallMonkeyAlt |
 | Central American Squirrel Monkey (`R1_SQUIRREL`) | callNotherCapuchin, callCapuchin, callBarbary, callSpider1 |
@@ -18,6 +18,8 @@ Picked by Paul on 2026-10-21 with the call picker (~/monkeytrubble_macmini/picke
 | Golden Lion Tamarin (`S1_TAMARIN`) | callCapuchin, callSpider1, callBaby, callSpider4 |
 | Golden Lion Tamarin (`S2_TAMARIN`) | callYetNotherSmallMonkey, callBaby, callSmallmonkey, callSpider3 |
 | Black Howler Monkey (`S2_HOWLER`) | callHowler, callNotherHowl, callMedHowl, callNotherHowl2 |
+| Bonobo (`APE_BONOBO`) | callYell, callSmallApe, callShout, callScream |
+| Chimpanzee (`APE_CHIMP`) | callScream, callShout, callYell |
 | Heliconia (`F_HELICONIA`) | callSmallmonkey |
 | Banana (`F_BANANA`) | callGibbon12, callMonkeys |
 | Proboscis Monkey (`S2_PROBOSCIS`) | callLemur2, callLemur1 |
