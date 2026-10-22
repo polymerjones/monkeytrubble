@@ -2334,7 +2334,8 @@
     // POLY card (Paul, 2026-10-21): a casino payout. Tapped free and face up, it pops off the board with no cage slot, like Kevin. The
     // board dims, Paul's portrait slams onto the middle of the screen (POLY!), then four pairs fly out of the board, buried ones first,
     // and slam together on it one at a time: BOOM, BOOM, BOOM, BOOM, each harder, with gold coins, a rising hit and a counter, then
-    // HEY, HOW ARE YA? with Paul's line. Sound (Paul, 2026-10-21): a low thump under POLY! on the reveal, each pair a golden Joker clear (only as
+    // HEY, HOW ARE YA? with Paul's line. Sound (Paul, 2026-10-21): the reveal is the success chime on the tap, a low thump as the
+    // portrait slams in, then POLY! (never first); each pair a golden Joker clear (only as
     // it clears, never before) plus the pair's monkey call, then combo.mp3 and HEY, HOW ARE YA? on the payout; the voice plays dry. The board stays in view (a light dim, the portrait up top)
     // so each pair is seen lifting off it. Frozen chapters (polyIce): the ice portrait, ice chips and flakes, and a frost that cracks a little more with each boom and
     // shatters on the payout. Pairs are only taken if the board stays clearable (solveLine). They count as
@@ -2366,7 +2367,7 @@
       if(tile){tile.active=false;tile.temporaryReveal=false}
       if(node){const r=node.getBoundingClientRect(),copy=node.cloneNode(true);copy.removeAttribute('data-id');copy.classList.remove('board-tile');copy.style.left=`${r.left+r.width/2}px`;copy.style.top=`${r.top+r.height/2}px`;copy.style.zIndex='';$('#dragLayer').append(copy);copy.animate([{scale:1,opacity:1},{scale:1.35,opacity:1,offset:.4},{scale:1.7,opacity:0}],{duration:520,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'}).onfinish=()=>copy.remove();explode(node)}
       const pairs=pickPolyPairs(),st=polyStage(ice);render();
-      duckMusic(POLY_IN_MS+pairs.length*POLY_BEAT_MS+POLY_HOLD_MS);sayCallout('poly',{maxWait:1.5,dry:true});haptic('jokerSlam');setMessage(loc('POLY PAYOUT // {0} pairs',pairs.length));
+      duckMusic(POLY_IN_MS+pairs.length*POLY_BEAT_MS+POLY_HOLD_MS);playSound('match',{volume:.4});sayCallout('poly',{delay:.6,maxWait:2,dry:true});haptic('jokerSlam');setMessage(loc('POLY PAYOUT // {0} pairs',pairs.length));
       setTimeout(()=>{if(s!==state)return;const c=st.card.getBoundingClientRect();screenShake(10);playThump();polyBurst(c.left+c.width/2,c.top+c.height/2,ice,26)},300);
       pairs.forEach((pair,i)=>setTimeout(()=>{if(s===state)polyBoom(pair,i+1,st,ice)},POLY_IN_MS+i*POLY_BEAT_MS));
       const jackpotAt=pairs.length?POLY_IN_MS+(pairs.length-1)*POLY_BEAT_MS+POLY_FLY_MS+90:POLY_IN_MS;
