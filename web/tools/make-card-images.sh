@@ -110,6 +110,17 @@ build "$EX/macaque.png" set2-long-tailed-macaque
 build "$EX/langur.png" set2-silvered-langur
 # Vision monkeys: the Owl Monkey (Paul, 2026-10-21; replaces the placeholder). Galago, tarsier and aye-aye are still placeholders.
 build "$EX/new owl eyes card.jpg" vision-owl-monkey
+# Apes (Paul, 2026-10-21): the illustrated set's ape cards, plus artsy versions shown in chapter 6 (the ape chapter, look:'artsy').
+build "$EX/orangatang rforest.png" set2-bornean-orangutan
+build "$EX/orang lifelike.jpg" set2-sumatran-orangutan
+build "$EX/mt gorrilla illus.png" set2-mountain-gorilla
+build "$EX/low land gorilla illus.png" set2-western-lowland-gorilla
+build "$EX/chimp illus.png" set2-chimpanzee
+build "$EX/bonobo illus.png" set2-bonobo
+build "$EX/siamang artsy.jpg" set2-siamang
+for a in mountain-gorilla western-lowland-gorilla chimpanzee bonobo; do build "$EX/artsy/$a.jpg" "set2-$a-artsy"; done
+# Christmas versions (../source/art/seasons/christmas/cards): xmas-<slug>, shown on Christmas levels (card.christmas).
+for f in ../source/art/seasons/christmas/cards/*.jpg; do build "$f" "xmas-$(basename "$f" .jpg)"; done
 build "$EX/baboon.png" set2-olive-baboon
 # Chapter backgrounds (../source/art/chapters/ch<n>_*.png). When split-layers.py has made layers/<n>/ (far.jpg, mid.webp,
 # near.webp, water.png), those are copied as they are; otherwise the painting becomes a single far layer.
