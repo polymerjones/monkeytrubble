@@ -2338,8 +2338,11 @@
     // cleared pairs but never toward the combo chain, and the payout is a wall for Undo (like Continue). tile null: a payout with no
     // card (the dev button; later the surprise event and the saved pickup).
     const POLY_PAIRS=4,POLY_IN_MS=760,POLY_BEAT_MS=760,POLY_LIFT_MS=200,POLY_FLY_MS=560,POLY_HOLD_MS=1700,POLY_PAYOUT_VO=['polyHeyA','polyHeyB'],POLY_BOOMS=['goldJoker1','goldJoker2'],POLY_COINS=['#ffd84d','#ffe98a','#f5b52a','#fff6c9'],POLY_ICE=['#ffffff','#dff3ff','#a9dcff','#7fc8ff'];
-    // A pick is two cards from the board or the cage: two board twins (buried ones first: cards fly out from under the stack), a board
-    // card and its twin waiting in the cage, or the Joker and its partner (the odd card), so a nearly finished level clears completely.
+    // A pick is two cards from the board or the cage: two board twins, a board card and its twin waiting in the cage, or the Joker and its
+    // partner (the odd card), so a nearly finished level clears completely. POLY paves the way (Paul, 2026-10-21): it empties the cage first
+    // (caged cards with a twin on the board), then takes the pairs that come first in a line that clears the board from here (solveLine),
+    // the moves a stuck player needs next. With no such line (a dead
+    // board) it takes the most exposed pairs; a search that gives up ranks the same way but still checks each pick.
     function pickPolyPairs(n=POLY_PAIRS){
       const active=state.tiles.filter(t=>t.active),held=state.tray.filter(t=>!state.clearing.has(t.id)),plain=t=>t.symbol!==KEVIN&&t.symbol!==POLY&&t.symbol!==JOKER;
       const cover=t=>active.includes(t)?t.blockers.filter(id=>active.some(o=>o.id===id)).length:0,cands=[],bySym=new Map(),counts=new Map();
@@ -2349,9 +2352,10 @@
       for(const h of held.filter(plain)){const t=bySym.get(h.symbol)?.[0];if(t)cands.push([t,h])}
       const joker=active.find(t=>t.symbol===JOKER)||held.find(t=>t.symbol===JOKER),odd=new Set([...counts].filter(([,c])=>c%2).map(([sym])=>sym)),mate=joker&&(active.find(t=>plain(t)&&odd.has(t.symbol))||held.find(t=>plain(t)&&odd.has(t.symbol)));
       if(mate)cands.push([joker,mate]);
-      const scored=cands.map(pair=>({pair,score:cover(pair[0])+cover(pair[1])+Math.random()*1.5})).sort((a,b)=>b.score-a.score),taken=[],out=[];let tries=0;
-      for(const {pair} of scored){if(out.length>=n||tries++>20)break;if(pair.some(x=>taken.includes(x)))continue;const gone=[...taken,...pair];
-        if(state.tutorial||solveLine(active.filter(t=>!gone.includes(t)),held.filter(h=>!gone.includes(h)).map(h=>h.symbol),20000)!==null){taken.push(...pair);out.push(pair)}}
+      const line=state.tutorial?undefined:solveLine(active,held.map(h=>h.symbol),40000),step=t=>held.includes(t)?-1:line?line.indexOf(t):cover(t);
+      const ranked=cands.map(pair=>({pair,rank:(pair.some(x=>held.includes(x))?-1e4:0)+Math.max(step(pair[0]),step(pair[1]))+Math.random()*.01})).sort((a,b)=>a.rank-b.rank),taken=[],out=[];let tries=0;
+      for(const {pair} of ranked){if(out.length>=n||tries++>20)break;if(pair.some(x=>taken.includes(x)))continue;const gone=[...taken,...pair];
+        if(state.tutorial||line===null||solveLine(active.filter(t=>!gone.includes(t)),held.filter(h=>!gone.includes(h)).map(h=>h.symbol),20000)!==null){taken.push(...pair);out.push(pair)}}
       return out
     }
     function firePoly(tile){
