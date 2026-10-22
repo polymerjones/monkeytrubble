@@ -17,13 +17,16 @@ android {
         applicationId = "com.paulfisher.monkeytrubble"
         minSdk = 26
         targetSdk = 36
-        versionCode = 16
+        versionCode = 17
         versionName = "1.0"
 
         // AdMob app ID (Android app in the AdMob console). Release builds use the real rewarded unit; debug builds use Google's
         // sample rewarded unit, so testing never serves or clicks real ads.
         manifestPlaceholders["admobAppId"] = "ca-app-pub-2053987639996867~1017622010"
         buildConfigField("String", "ADMOB_REWARDED_ID", "\"ca-app-pub-3940256099942544/5224354917\"")
+        // Consent testing: `./gradlew assembleDebug -PeeaTest` makes the consent SDK treat the device as being in the EEA, so the
+        // GDPR message and Settings' "Ad privacy choices" row can be checked from outside Europe. Debug builds only; off otherwise.
+        buildConfigField("boolean", "UMP_EEA_TEST", "false")
     }
 
     signingConfigs {
@@ -38,6 +41,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("boolean", "UMP_EEA_TEST", project.hasProperty("eeaTest").toString())
+        }
         release {
             buildConfigField("String", "ADMOB_REWARDED_ID", "\"ca-app-pub-2053987639996867/3791572124\"")
             isMinifyEnabled = true

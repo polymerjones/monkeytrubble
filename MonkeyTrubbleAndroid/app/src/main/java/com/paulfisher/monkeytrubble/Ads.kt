@@ -10,6 +10,7 @@ import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
+import com.google.android.ump.ConsentDebugSettings
 import com.google.android.ump.ConsentInformation
 import com.google.android.ump.ConsentRequestParameters
 import com.google.android.ump.UserMessagingPlatform
@@ -35,7 +36,17 @@ class Ads(private val activity: Activity, private val evaluate: (String) -> Unit
 
     /** Asks for consent where the law requires it (EEA, UK, some US states), then starts the SDK. Call from onCreate. */
     fun gatherConsent() {
-        consent.requestConsentInfoUpdate(activity, ConsentRequestParameters.Builder().build(), {
+        val params = ConsentRequestParameters.Builder()
+        if (BuildConfig.UMP_EEA_TEST) {
+            // Debug builds made with -PeeaTest: start from no answer and pretend to be in the EEA (see build.gradle.kts).
+            consent.reset()
+            params.setConsentDebugSettings(
+                ConsentDebugSettings.Builder(activity)
+                    .setDebugGeography(ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA)
+                    .build()
+            )
+        }
+        consent.requestConsentInfoUpdate(activity, params.build(), {
             UserMessagingPlatform.loadAndShowConsentFormIfRequired(activity) {
                 announcePrivacyOptions()
                 start()
