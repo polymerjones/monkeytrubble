@@ -1143,8 +1143,8 @@
     function levelMusic(level=state?.level,pack=state?.pack){const m=progress.settings.music,season=`${pack}${m[0].toUpperCase()}${m.slice(1)}`;if((pack==='halloween'||pack==='christmas')&&MUSIC[season]?.length)return season;if(pack==='halloween')return m;const ch=level&&chapterFor(level).music?.[m];return ch&&MUSIC[ch]?.length?ch:m}
     // Settings music: opening Settings fades to MUSIC.settings; closing fades back to whatever was playing, resumed where it stopped.
     let settingsMusicReturn=null;
-    function fadeMusicTo(next,{restart=false,list}={}){if(next===music){musicList=list;return}const prev=music;music=next;musicList=list;if(restart||nearEnd(next))cueTrack(next);const gPrev=trackGains.get(prev),gNext=trackGains.get(next);
-      if(gPrev&&gNext){const t=audioContext.currentTime;gNext.gain.cancelScheduledValues(t);gNext.gain.setValueAtTime(gNext.gain.value,t);gNext.gain.linearRampToValueAtTime(trackVolume(next),t+.8);gPrev.gain.cancelScheduledValues(t);gPrev.gain.setValueAtTime(gPrev.gain.value,t);gPrev.gain.linearRampToValueAtTime(0,t+.8);setTimeout(()=>{if(prev!==music)prev.pause()},900)}
+    function fadeMusicTo(next,{restart=false,list,fade=.8}={}){if(next===music){musicList=list;return}const prev=music;music=next;musicList=list;if(restart||nearEnd(next))cueTrack(next);const gPrev=trackGains.get(prev),gNext=trackGains.get(next);
+      if(gPrev&&gNext){const t=audioContext.currentTime;gNext.gain.cancelScheduledValues(t);gNext.gain.setValueAtTime(gNext.gain.value,t);gNext.gain.linearRampToValueAtTime(trackVolume(next),t+fade);gPrev.gain.cancelScheduledValues(t);gPrev.gain.setValueAtTime(gPrev.gain.value,t);gPrev.gain.linearRampToValueAtTime(0,t+fade);setTimeout(()=>{if(prev!==music)prev.pause()},fade*1000+100)}
       else{next.volume=prev.volume;prev.pause()}if(soundEnabled&&audioUnlocked&&!document.hidden)music.play().catch(()=>{})}
     function settingsMusicOn(){if(!audioUnlocked||settingsMusicReturn)return;settingsMusicReturn={el:music,list:musicList};const el=musicEl(MUSIC.settings[0]);el.loop=true;el.playbackRate=1;fadeMusicTo(el,{restart:true,list:'settings'})}
     function settingsMusicOff(){const r=settingsMusicReturn;settingsMusicReturn=null;if(!r)return;fadeMusicTo(r.el,{list:r.list})}
@@ -1679,6 +1679,8 @@
       const easy=progress.settings.difficulty==='easy';
       const pack=levelPack(level);document.body.classList.toggle('pack-halloween',pack==='halloween');document.body.classList.toggle('pack-christmas',pack==='christmas');
       state={level,easy,pack,tutorial,freeRewards:{},tiles:tutorial?buildTutorialBoard():buildLevelBoard(level,easy),tray:[],pairs:0,chain:{n:0,until:0,best:0},shuffles:0,hintsLeft:HINTS_PER_LEVEL,hintsUsed:0,hintIds:null,hintSlot:null,undosLeft:easy?UNDOS_PER_LEVEL_EASY:UNDOS_PER_LEVEL,shufflesLeft:SHUFFLES_PER_LEVEL,locked:false,busy:0,over:false,won:false,history:[],clearing:new Set(),clock:{elapsed:0,startedAt:null}};
+      // A POLY level loads the combo drum loops early, so the payout's switch to them is instant.
+      if(state.tiles.some(t=>t.symbol===POLY))setTimeout(warmComboMusic,1500);
       if(!tutorial)state.dealHide=new Set(state.tiles.filter(t=>t.revealed).map(t=>t.id));
       $('#overlay').classList.remove('show');$('#winOverlay').classList.remove('show');render();renderClock();renderStreak();setMessage(retry?loc('Level {0} reset — same board, new plan.',level):loc('Reveal an exposed card to begin.'));
       // A new level keeps its playlist's track running, unless that track is about to end: then a fresh one starts (no tail-then-restart).
@@ -1797,7 +1799,7 @@
     const CAGE_RATTLES=['cageRattle1','cageRattle2','cageRattle3','cageRattle4'];
     function playCageRattle(strong){const key=CAGE_RATTLES[rand(CAGE_RATTLES.length)];if(!soundBuffers[key]&&!fallbackAudio[key]){playChain(strong?1:.45);return}
       playSound(key,strong?{volume:.95}:{volume:.4,rate:.92+Math.random()*.16});if(strong)playThump()}
-    function playThump(){if(!soundEnabled||!audioContext||!reverbInput)return;try{const ac=audioContext,t=ac.currentTime+.005,o=ac.createOscillator(),g=ac.createGain(),out=ac.createGain();out.gain.value=.9*userSfxGain;out.connect(reverbInput);
+    function playThump(gain=1){if(!soundEnabled||!audioContext||!reverbInput)return;try{const ac=audioContext,t=ac.currentTime+.005,o=ac.createOscillator(),g=ac.createGain(),out=ac.createGain();out.gain.value=.9*gain*userSfxGain;out.connect(reverbInput);
       o.type='sine';o.frequency.setValueAtTime(90,t);o.frequency.exponentialRampToValueAtTime(45,t+.14);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(1,t+.004);g.gain.exponentialRampToValueAtTime(.001,t+.18);o.connect(g).connect(out);o.start(t);o.stop(t+.2);
       if(!chainNoise)return;const n=ac.createBufferSource(),f=ac.createBiquadFilter(),ng=ac.createGain();n.buffer=chainNoise;f.type='lowpass';f.frequency.value=2200;ng.gain.setValueAtTime(.5,t);ng.gain.exponentialRampToValueAtTime(.001,t+.03);n.connect(f).connect(ng).connect(out);n.start(t);n.stop(t+.04)}catch{}}
     // Synthesised chain rattle (fallback while the samples load, and the relief clank): short metallic clinks, filtered noise plus a bright ping, through the
@@ -2144,12 +2146,15 @@
     // tracks are warmed one step early so the switch is instant. Halloween levels keep the tone roll-off instead.
     const COMBO_SWAP_AT=8;let comboMusicReturn=null;
     function warmComboMusic(){for(const t of MUSIC.combo)musicEl(t)}
-    function comboMusicOn(){if(!audioUnlocked||comboMusicReturn||settingsMusicReturn||musicList==='home')return;comboMusicReturn={el:music,list:musicList};
-      const el=musicEl(MUSIC.combo[rand(MUSIC.combo.length)]);el.loop=true;el.playbackRate=1;fadeMusicTo(el,{restart:true,list:'combo'})}
-    function comboMusicOff(){const r=comboMusicReturn;comboMusicReturn=null;if(!r)return;
-      if(settingsMusicReturn?.list==='combo'){settingsMusicReturn=r;return}if(musicList==='combo')fadeMusicTo(r.el,{list:r.list})}
+    // fade: crossfade seconds (the POLY payout cuts in and out almost at once). polyMusic: a POLY payout holds the combo loop, so a chain
+    // ending meanwhile doesn't drop it.
+    let polyMusic=false;
+    function comboMusicOn({fade}={}){if(!audioUnlocked||comboMusicReturn||settingsMusicReturn||musicList==='home')return false;comboMusicReturn={el:music,list:musicList};
+      const el=musicEl(MUSIC.combo[rand(MUSIC.combo.length)]);el.loop=true;el.playbackRate=1;fadeMusicTo(el,{restart:true,list:'combo',fade});return true}
+    function comboMusicOff({fade}={}){const r=comboMusicReturn;comboMusicReturn=null;if(!r)return;
+      if(settingsMusicReturn?.list==='combo'){settingsMusicReturn=r;return}if(musicList==='combo')fadeMusicTo(r.el,{list:r.list,fade})}
     function setMusicTension(n=0){const picked=trial('comboMusic'),mode=picked==='swap'&&(state?.pack==='halloween'||state?.pack==='christmas')?'tone':picked;
-      if(mode==='swap'){if(n>=COMBO_SWAP_AT)comboMusicOn();else if(n===0)comboMusicOff();if(n===COMBO_SWAP_AT-1)warmComboMusic();return}
+      if(mode==='swap'){if(n>=COMBO_SWAP_AT)comboMusicOn();else if(n===0&&!polyMusic)comboMusicOff();if(n===COMBO_SWAP_AT-1)warmComboMusic();return}
       const hit=mode==='off'?null:[...COMBO_MUSIC].reverse().find(s=>n>=s.at),key=hit?hit.at:0;if(key===musicTension.key)return;musicTension.key=key;
       const cutoff=hit?hit.cutoff:MUSIC_TONE_REST,to=hit&&mode==='both'?hit.rate:1,up=key>0,from=musicTension.rate;musicTension.rate=to;musicTension.cutoff=cutoff;clearInterval(musicTension.timer);
       if(musicTone&&audioContext)musicTone.frequency.setTargetAtTime(cutoff,audioContext.currentTime,up?.25:.6);
@@ -2164,12 +2169,12 @@
     function comboEdgeOff(){const el=$('#edgeGlow'),cur=+getComputedStyle(el).opacity;el.getAnimations().forEach(a=>a.cancel());el.style.opacity='';if(cur>.01)el.animate([{opacity:cur},{opacity:0}],{duration:800,easing:'ease-out'})}
     // One voice line at a time: a callout waits for the voice before it (up to maxWait seconds) or is skipped, so lines never talk over each other.
     let voiceFreeAt=0;
-    // dry: no praise doubler/echo (the POLY lines carry their own reverb).
-    function sayCallout(id,{delay=0,maxWait=.8,volume=1,dry=false}={}){
+    // dry: no praise doubler/echo (the POLY lines carry their own reverb). duck:false leaves the music at full level.
+    function sayCallout(id,{delay=0,maxWait=.8,volume=1,dry=false,duck=true}={}){
       const key=`praise:${CALLOUTS[id][lang==='es'?'es':'en']}`;if(!soundEnabled||!(soundBuffers[key]||fallbackAudio[key]))return false;
       const now=performance.now()/1000,start=Math.max(now+delay,voiceFreeAt);if(start-now-delay>maxWait)return false;
       const hw=state.pack==='halloween',r=hw?PRAISE_HORROR_RATE:1,d=start-now;voiceFreeAt=start+soundLengthMs(key,1200)/r/1000;
-      duckMusic(duckFor(key,{delay:d,rate:r})+250);playSound(key,{volume,delay:d,praise:!dry,rate:r,horror:hw});return true}
+      if(duck)duckMusic(duckFor(key,{delay:d,rate:r})+250);playSound(key,{volume,delay:d,praise:!dry,rate:r,horror:hw});return true}
     function showGoodEye(){
       const pool=PRAISE.filter(p=>p!==lastPraise&&(lang==='es'?p.es:p.text)),pick=pool[rand(pool.length)],line=lang==='es'?pick.es:pick,key=`praise:${line.takes[rand(line.takes.length)]}`;lastPraise=pick;
       const el=$('#goodEye'),voiced=soundEnabled&&!!(soundBuffers[key]||fallbackAudio[key]),holdMs=Math.max(2500,(voiced?soundLengthMs(key,1400):0)+1600);goodEyeBusy=true;
@@ -2335,7 +2340,8 @@
     // board dims, Paul's portrait slams onto the middle of the screen (POLY!), then four pairs fly out of the board, buried ones first,
     // and slam together on it one at a time: BOOM, BOOM, BOOM, BOOM, each harder, with gold coins, a rising hit and a counter, then
     // HEY, HOW ARE YA? with Paul's line. Sound (Paul, 2026-10-21): the reveal is the success chime on the tap, a low thump as the
-    // portrait slams in, then POLY! (never first); each pair a golden Joker clear (only as
+    // portrait slams in (2.2x thump), then POLY! (never first). The music never dips: the combo drum loop cuts in for the payout and back out
+    // after (unless a chain earned it), and the voice lines don't duck; each pair a golden Joker clear (only as
     // it clears, never before) plus the pair's monkey call, then combo.mp3 and HEY, HOW ARE YA? on the payout; the voice plays dry. The board stays in view (a light dim, the portrait up top)
     // so each pair is seen lifting off it. Frozen chapters (polyIce): the ice portrait, ice chips and flakes, and a frost that cracks a little more with each boom and
     // shatters on the payout. Pairs are only taken if the board stays clearable (solveLine). They count as
@@ -2367,13 +2373,14 @@
       if(tile){tile.active=false;tile.temporaryReveal=false}
       if(node){const r=node.getBoundingClientRect(),copy=node.cloneNode(true);copy.removeAttribute('data-id');copy.classList.remove('board-tile');copy.style.left=`${r.left+r.width/2}px`;copy.style.top=`${r.top+r.height/2}px`;copy.style.zIndex='';$('#dragLayer').append(copy);copy.animate([{scale:1,opacity:1},{scale:1.35,opacity:1,offset:.4},{scale:1.7,opacity:0}],{duration:520,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'}).onfinish=()=>copy.remove();explode(node)}
       const pairs=pickPolyPairs(),st=polyStage(ice);render();
-      duckMusic(POLY_IN_MS+pairs.length*POLY_BEAT_MS+POLY_HOLD_MS);playSound('match',{volume:.4});sayCallout('poly',{delay:.6,maxWait:2,dry:true});haptic('jokerSlam');setMessage(loc('POLY PAYOUT // {0} pairs',pairs.length));
-      setTimeout(()=>{if(s!==state)return;const c=st.card.getBoundingClientRect();screenShake(10);playThump();polyBurst(c.left+c.width/2,c.top+c.height/2,ice,26)},300);
+      const seasonal=s.pack==='halloween'||s.pack==='christmas',ownLoop=!seasonal&&!comboMusicReturn&&comboMusicOn({fade:.08});if(ownLoop)polyMusic=true;
+      playSound('match',{volume:.4});sayCallout('poly',{delay:.6,maxWait:2,dry:true,duck:false,volume:.7});haptic('jokerSlam');setMessage(loc('POLY PAYOUT // {0} pairs',pairs.length));
+      setTimeout(()=>{if(s!==state)return;const c=st.card.getBoundingClientRect();screenShake(10);playThump(2.2);polyBurst(c.left+c.width/2,c.top+c.height/2,ice,26)},300);
       pairs.forEach((pair,i)=>setTimeout(()=>{if(s===state)polyBoom(pair,i+1,st,ice)},POLY_IN_MS+i*POLY_BEAT_MS));
       const jackpotAt=pairs.length?POLY_IN_MS+(pairs.length-1)*POLY_BEAT_MS+POLY_FLY_MS+90:POLY_IN_MS;
       setTimeout(()=>{if(s===state)polyJackpot(st,ice,pairs.length)},jackpotAt);
       // Only Kevin left (nothing to reveal any more): he pops off too, so the level ends.
-      setTimeout(()=>{st.root.animate([{opacity:1},{opacity:0}],{duration:320,fill:'forwards'}).onfinish=()=>st.root.remove();if(s!==state)return;s.locked=false;s.history=[];
+      setTimeout(()=>{st.root.animate([{opacity:1},{opacity:0}],{duration:320,fill:'forwards'}).onfinish=()=>st.root.remove();if(ownLoop){polyMusic=false;if(s===state&&(s.chain?.n||0)<COMBO_SWAP_AT)comboMusicOff({fade:.15})}if(s!==state)return;s.locked=false;s.history=[];
         const rest=s.tiles.filter(t=>t.active);if(rest.length&&rest.every(t=>t.symbol===KEVIN)&&!s.tray.length)for(const t of rest){explode(board.querySelector(`[data-id="${t.id}"]`));t.active=false}
         render();if(!s.over)finishIfCleared()},jackpotAt+POLY_HOLD_MS)
     }
@@ -2413,7 +2420,7 @@
     // The payout: HEY, HOW ARE YA? with Paul's line, a big jolt, a coin shower (ice: a flake storm) and the frost shatters.
     function polyJackpot(st,ice,paid){
       const c=st.card.getBoundingClientRect(),x=c.left+c.width/2,y=c.top+c.height/2;st.root.classList.add('jackpot');
-      playSound('comboSting',{volume:.6});sayCallout(POLY_PAYOUT_VO[rand(POLY_PAYOUT_VO.length)],{maxWait:1.2,delay:.15,dry:true});haptic('jokerSlam');screenShake(paid?14:8,520);
+      playSound('comboSting',{volume:.6});sayCallout(POLY_PAYOUT_VO[rand(POLY_PAYOUT_VO.length)],{maxWait:1.2,delay:.15,dry:true,duck:false,volume:.75});haptic('jokerSlam');screenShake(paid?14:8,520);
       st.count.textContent=loc('HEY, HOW ARE YA?');st.count.classList.add('line');st.count.animate([{opacity:0,transform:'scale(2.6) rotate(-6deg)'},{opacity:1,transform:'scale(.92)',offset:.6},{opacity:1,transform:'none'}],{duration:380,easing:'cubic-bezier(.2,.8,.3,1)',fill:'forwards'});
       fairyDust(x,y,reduceMotion.matches?14:40);polyBurst(x,y,ice,reduceMotion.matches?14:44);
       if(!reduceMotion.matches)for(let i=0;i<5;i++)setTimeout(()=>polyBurst(innerWidth*(.15+Math.random()*.7),innerHeight*(.08+Math.random()*.25),ice,14),120+i*110);
