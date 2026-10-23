@@ -1013,7 +1013,7 @@
       jokerClear:'audio/video-calls/jokersqueal.wav',kevinClear:'audio/video-calls/kevinkellyclear.mp3',cageRattle1:'audio/sfx/cage-rattle-1.mp3',cageRattle2:'audio/sfx/cage-rattle-2.mp3',cageRattle3:'audio/sfx/cage-rattle-3.mp3',cageRattle4:'audio/sfx/cage-rattle-4.mp3',caulinClear:'audio/video-calls/kaulinannounce2.mp3',
       cantSelect:'audio/video-calls/card%20cant%20select.wav',warClear1:'audio/video-calls/warmonkeyclear1.wav',warClear2:'audio/video-calls/warmonkeyclear2.wav',warClear3:'audio/video-calls/warmonkeyclear3.wav'
     };
-    const soundBuffers={},fallbackAudio={};let soundEnabled=true,audioUnlocked=false,pendingLevelStart=true,audioContext=null,reverbInput,horrorInput=null,callsInput=null,musicGain,featuredSymbol=null,musicDuckTimer;
+    const soundBuffers={},fallbackAudio={};let soundEnabled=true,audioUnlocked=false,pendingLevelStart=true,audioContext=null,outGain=null,quietToken=0,reverbInput,horrorInput=null,callsInput=null,musicGain,featuredSymbol=null,musicDuckTimer;
     // Mix: music sits about 15 dB under the monkey calls and dips 14 dB (not out) while a call plays.
     // Halloween clears play their calls this much slower (about 5.7 semitones down) into the horror reverb.
     const HORROR_RATE=.72,PRAISE_HORROR_RATE=.8;
@@ -1154,8 +1154,9 @@
       const dry=audioContext.createGain(),wet=audioContext.createGain(),convolver=audioContext.createConvolver(),musicFilter=audioContext.createBiquadFilter();reverbInput=audioContext.createGain();musicGain=audioContext.createGain();
       dry.gain.value=.82;wet.gain.value=.22;const length=Math.floor(audioContext.sampleRate*.8),impulse=audioContext.createBuffer(2,length,audioContext.sampleRate);
       for(let channel=0;channel<2;channel++){const data=impulse.getChannelData(channel);for(let i=0;i<length;i++)data[i]=(Math.random()*2-1)*Math.pow(1-i/length,2.8)}
-      // Master limiter: everything ends here, so loud calls on top of the music never clip.
-      const master=audioContext.createDynamicsCompressor();master.threshold.value=-2;master.knee.value=0;master.ratio.value=20;master.attack.value=.003;master.release.value=.15;master.connect(audioContext.destination);
+      // Master limiter: everything ends here, so loud calls on top of the music never clip. outGain after it is the fader
+      // quietMonkeyAudio pulls down before the audio is cut.
+      const master=audioContext.createDynamicsCompressor();master.threshold.value=-2;master.knee.value=0;master.ratio.value=20;master.attack.value=.003;master.release.value=.15;outGain=audioContext.createGain();master.connect(outGain).connect(audioContext.destination);
       convolver.buffer=impulse;reverbInput.connect(dry).connect(master);reverbInput.connect(convolver).connect(wet).connect(master);
       // Calls bus (monkey calls, war-monkey clears, joker squeal): split at 1 kHz (Linkwitz-Riley: two Butterworth stages per band, so the
       // bands sum back flat) and squash only the top band, where the shrieks live. Bodies and grunts below 1 kHz pass untouched.
@@ -1213,11 +1214,18 @@
     // re-checked on every way back (visible again, back/forward cache, focus, the engine's own state change, the apps'
     // __resumeMonkeyAudio) and, if still stuck, on every touch. Our own sleeps (hidden, sound off with audioIdle) are left alone.
     const engineAsleep=()=>audioContext&&audioContext.state!=='running'&&audioContext.state!=='closed'&&!(FX.audioIdle&&!soundEnabled);
-    function resumeMonkeyAudio(){if(document.hidden)return;if(engineAsleep())audioContext.resume().catch(()=>{});if(soundEnabled&&audioUnlocked)music.play().catch(()=>{})}
+    function resumeMonkeyAudio(){if(document.hidden)return;quietToken++;fadeOutput(1,.15);if(engineAsleep())audioContext.resume().catch(()=>{});if(soundEnabled&&audioUnlocked)music.play().catch(()=>{})}
+    // No buzz when the audio stops (2026-10-22). Cutting the engine mid-sound (app closing, an ad taking over the audio) left the
+    // phone repeating the last scrap of output as a loud high buzz. So the output fades to silence first, then the music pauses
+    // and the engine sleeps. The apps call __quietMonkeyAudio as they lose focus or before an ad; coming back fades it up again.
+    function fadeOutput(level,seconds){if(!outGain)return;const t=audioContext.currentTime,g=outGain.gain;g.cancelScheduledValues(t);g.setValueAtTime(g.value,t);g.linearRampToValueAtTime(level,t+seconds)}
+    function quietMonkeyAudio(){const token=++quietToken,sleep=()=>{if(token!==quietToken)return;music.pause();if(FX.audioSleep&&audioContext?.state==='running')audioContext.suspend().catch(()=>{})};
+      if(audioContext?.state!=='running'){sleep();return Promise.resolve()}fadeOutput(0,.06);return new Promise(r=>setTimeout(()=>{sleep();r()},80))}
+    window.__quietMonkeyAudio=quietMonkeyAudio;
     {const retry=()=>{if(audioUnlocked&&!document.hidden&&(engineAsleep()||soundEnabled&&music.paused))resumeMonkeyAudio()};
       for(const type of ['pointerdown','touchend','keydown'])addEventListener(type,retry,{capture:true,passive:true});
       addEventListener('pageshow',retry);addEventListener('focus',retry);audioContext?.addEventListener('statechange',retry)}
-    window.__resumeMonkeyAudio=resumeMonkeyAudio;document.addEventListener('visibilitychange',()=>{syncAmbience();if(!document.hidden){ambient.wake();homeSnow.wake()}if(document.hidden){music.pause();if(FX.audioSleep&&audioContext?.state==='running')audioContext.suspend().catch(()=>{});if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}}else{resumeMonkeyAudio();if(state.clock.resume){state.clock.resume=false;startClock()}}});
+    window.__resumeMonkeyAudio=resumeMonkeyAudio;document.addEventListener('visibilitychange',()=>{syncAmbience();if(!document.hidden){ambient.wake();homeSnow.wake()}if(document.hidden){quietMonkeyAudio();if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}}else{resumeMonkeyAudio();if(state.clock.resume){state.clock.resume=false;startClock()}}});
     function setMusicLevel(level,smoothing){if(musicGain)musicGain.gain.setTargetAtTime(level,audioContext.currentTime,smoothing);else music.volume=level}
     // Music dip: fast attack, held for about the length of the sound that caused it, then a short release so the music is back as the sound ends.
     const DUCK_ATTACK_S=.02,DUCK_RELEASE_S=.06;

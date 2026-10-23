@@ -112,7 +112,9 @@ class MainActivity : ComponentActivity() {
     override fun onPause() {
         resumed = false
         tilt.stop()
-        webView.onPause()
+        // Fade the game's sound out before the WebView pauses (cutting it off mid-sound buzzes), unless the app is back by then.
+        evaluate("window.__quietMonkeyAudio?.()")
+        webView.postDelayed({ if (!resumed) webView.onPause() }, QUIET_MS)
         super.onPause()
     }
 
@@ -180,5 +182,10 @@ class MainActivity : ComponentActivity() {
             checkSafeArea()
             ads.announcePrivacyOptions()
         }
+    }
+
+    companion object {
+        /** How long the page gets to fade its sound out (__quietMonkeyAudio) before the WebView pauses or an ad opens. */
+        const val QUIET_MS = 120L
     }
 }

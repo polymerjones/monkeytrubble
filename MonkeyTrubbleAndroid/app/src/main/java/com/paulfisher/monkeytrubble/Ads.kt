@@ -127,7 +127,9 @@ class Ads(private val activity: Activity, private val evaluate: (String) -> Unit
                 load()
             }
         }
-        current.show(activity) { earned = true }
+        // The game's sound fades out before the ad takes over the audio (a hard cut buzzes); the page's loading cover hides the wait.
+        evaluate("window.__quietMonkeyAudio?.()")
+        main.postDelayed({ current.show(activity) { earned = true } }, MainActivity.QUIET_MS)
     }
 
     private fun report(nonce: String, status: String) {

@@ -17,16 +17,18 @@ struct GameWebView: UIViewRepresentable {
         controller.add(context.coordinator, name: "storage")
         controller.add(context.coordinator, name: "gameCenter")
         controller.add(context.coordinator, name: "motion")
+        controller.add(context.coordinator, name: "ads")
         // Debug builds (Xcode / ship) keep the page's dev mode on; Release builds (TestFlight, App Store) turn it off.
         #if DEBUG
         let debugBuild = true
         #else
         let debugBuild = false
         #endif
+        // __monkeyAds turns on the page's real rewarded ads (Ads.swift).
         // The hidden dev mode (three taps on the home logo) works in Debug builds only. Not in TestFlight either: App Review installs
         // builds the same way TestFlight does, and guideline 2.3.1 forbids hidden features.
         controller.addUserScript(WKUserScript(
-            source: "window.__monkeyDebugBuild = \(debugBuild); window.__monkeyDevTaps = \(debugBuild);",
+            source: "window.__monkeyDebugBuild = \(debugBuild); window.__monkeyDevTaps = \(debugBuild); window.__monkeyAds = true;",
             injectionTime: .atDocumentStart,
             forMainFrameOnly: true
         ))
@@ -83,6 +85,7 @@ struct GameWebView: UIViewRepresentable {
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "storage")
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "gameCenter")
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "motion")
+        webView.configuration.userContentController.removeScriptMessageHandler(forName: "ads")
         coordinator.detach()
     }
 
@@ -117,6 +120,8 @@ struct GameWebView: UIViewRepresentable {
     @MainActor
     final class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
         let services = GameServices()
+        let ads = Ads()
+        private var consentAsked = false
         private weak var webView: WKWebView?
         private let lightImpact = UIImpactFeedbackGenerator(style: .light)
         private let mediumImpact = UIImpactFeedbackGenerator(style: .medium)
@@ -134,6 +139,7 @@ struct GameWebView: UIViewRepresentable {
         func attach(_ webView: WKWebView) {
             self.webView = webView
             services.attach(webView)
+            ads.attach(webView)
             lightImpact.prepare()
             mediumImpact.prepare()
             notification.prepare()
@@ -155,6 +161,8 @@ struct GameWebView: UIViewRepresentable {
             ) { [weak self] _ in
                 MainActor.assumeIsolated {
                     self?.motionManager.stopDeviceMotionUpdates()
+                    // Fade the game's sound out now, while the page still runs; cutting it off mid-sound buzzes.
+                    self?.webView?.evaluateJavaScript("window.__quietMonkeyAudio?.()")
                 }
             }
         }
@@ -204,6 +212,7 @@ struct GameWebView: UIViewRepresentable {
             }
             motionManager.stopDeviceMotionUpdates()
             services.detach()
+            ads.detach()
             activeObserver = nil
             inactiveObserver = nil
             webView = nil
@@ -219,6 +228,10 @@ struct GameWebView: UIViewRepresentable {
             }
             if message.name == "gameCenter", let body = message.body as? [String: Any] {
                 services.handle(body)
+                return
+            }
+            if message.name == "ads", let body = message.body as? [String: Any] {
+                ads.handle(body)
                 return
             }
             if message.name == "motion", let on = message.body as? Bool {
@@ -292,6 +305,17 @@ struct GameWebView: UIViewRepresentable {
                 return
             }
             decisionHandler(.allow)
+        }
+
+        // Consent is asked once the game is on screen (the form needs a window to present from); every page load hears whether
+        // Settings needs the "Ad privacy choices" row.
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            if consentAsked {
+                ads.announcePrivacyOptions()
+            } else {
+                consentAsked = true
+                ads.gatherConsent()
+            }
         }
     }
 }

@@ -2,7 +2,9 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!--
   Monkey Trubble privacy manifest. Keep the App Store Connect privacy answers in line with this file.
-  No tracking, no ads SDK yet (ADS_LIVE is off). Collected: the online leaderboard's random player id, the nickname the player
+  No tracking (no ATT prompt). AdMob rewarded ads (Ads.swift): the Google Mobile Ads and UMP SDKs ship their own privacy manifests,
+  which Xcode merges with this one, so App Store Connect must also declare Google's ad data (see AdMob's "Prepare for Apple's
+  App Store data disclosure requirements"). Collected by the game itself: the online leaderboard's random player id, the nickname the player
   types, and their scores / level / streak (supabase/leaderboard.sql), used only to run the leaderboard.
   Required-reason API: UserDefaults holds the game's own save (CA92.1: data only this app reads).
 -->

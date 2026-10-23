@@ -13,6 +13,9 @@
 		A10000000000000000000004 /* web in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* web */; };
 		A10000000000000000000005 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000006 /* PrivacyInfo.xcprivacy */; };
 		A10000000000000000000006 /* GameServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000009 /* GameServices.swift */; };
+		A10000000000000000000007 /* Ads.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000A /* Ads.swift */; };
+		A10000000000000000000008 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = AC0000000000000000000001 /* GoogleMobileAds */; };
+		A10000000000000000000009 /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = AC0000000000000000000002 /* GoogleUserMessagingPlatform */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,6 +28,7 @@
 		A20000000000000000000007 /* MonkeyTrubbleIOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MonkeyTrubbleIOS.entitlements; sourceTree = "<group>"; };
 		A20000000000000000000008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A20000000000000000000009 /* GameServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameServices.swift; sourceTree = "<group>"; };
+		A2000000000000000000000A /* Ads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ads.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,6 +36,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000000008 /* GoogleMobileAds in Frameworks */,
+				A10000000000000000000009 /* GoogleUserMessagingPlatform in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,6 +59,7 @@
 				A20000000000000000000001 /* MonkeyTrubbleApp.swift */,
 				A20000000000000000000002 /* GameWebView.swift */,
 				A20000000000000000000009 /* GameServices.swift */,
+				A2000000000000000000000A /* Ads.swift */,
 				A20000000000000000000003 /* Assets.xcassets */,
 				A20000000000000000000006 /* PrivacyInfo.xcprivacy */,
 				A20000000000000000000007 /* MonkeyTrubbleIOS.entitlements */,
@@ -85,6 +92,10 @@
 			dependencies = (
 			);
 			name = MonkeyTrubble;
+			packageProductDependencies = (
+				AC0000000000000000000001 /* GoogleMobileAds */,
+				AC0000000000000000000002 /* GoogleUserMessagingPlatform */,
+			);
 			productName = MonkeyTrubble;
 			productReference = A20000000000000000000005 /* MonkeyTrubble.app */;
 			productType = "com.apple.product-type.application";
@@ -112,6 +123,10 @@
 				Base,
 			);
 			mainGroup = A40000000000000000000001;
+			packageReferences = (
+				AB0000000000000000000001 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+				AB0000000000000000000002 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A40000000000000000000003 /* Products */;
 			projectDirPath = "";
@@ -143,6 +158,7 @@
 				A10000000000000000000001 /* MonkeyTrubbleApp.swift in Sources */,
 				A10000000000000000000002 /* GameWebView.swift in Sources */,
 				A10000000000000000000006 /* GameServices.swift in Sources */,
+				A10000000000000000000007 /* Ads.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -184,10 +200,13 @@
 		A70000000000000000000003 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ADMOB_APP_ID = "ca-app-pub-2053987639996867~5454051270";
+				/* Debug: Google's sample rewarded unit, so test taps never touch the real one. */
+				ADMOB_REWARDED_ID = "ca-app-pub-3940256099942544/1712485313";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = MonkeyTrubbleIOS/MonkeyTrubbleIOS.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = 976XKW42U9;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -215,10 +234,12 @@
 		A70000000000000000000004 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ADMOB_APP_ID = "ca-app-pub-2053987639996867~5454051270";
+				ADMOB_REWARDED_ID = "ca-app-pub-2053987639996867/2667483716";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = MonkeyTrubbleIOS/MonkeyTrubbleIOS.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 976XKW42U9;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MonkeyTrubbleIOS/Info.plist;
@@ -264,6 +285,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AB0000000000000000000001 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 13.11.0;
+			};
+		};
+		AB0000000000000000000002 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.1.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AC0000000000000000000001 /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AB0000000000000000000001 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+		AC0000000000000000000002 /* GoogleUserMessagingPlatform */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AB0000000000000000000002 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */;
+			productName = GoogleUserMessagingPlatform;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A60000000000000000000001 /* Project object */;
 }
