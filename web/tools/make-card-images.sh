@@ -145,4 +145,7 @@ done
 # POLY card (../source/art/poly): Paul's 1024x1536 renders, banana swirl plus the ice version for the frozen chapters.
 build ../source/art/poly/poly.png poly
 build ../source/art/poly/poly-ice.png poly-ice
+# Seasonal POLY (Paul, 2026-10-24): zombie on Halloween levels, Santa on Christmas levels.
+build ../source/art/poly/poly-halloween.png poly-halloween
+build ../source/art/poly/poly-christmas.png poly-christmas
 echo "thumb: $(ls cards/thumb | wc -l | tr -d ' ')  hero: $(ls cards/hero | wc -l | tr -d ' ')"
