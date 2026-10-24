@@ -154,8 +154,10 @@ final class Ads: NSObject, FullScreenContentDelegate {
         showing = false
         if let nonce = showingNonce { report(nonce, status) }
         showingNonce = nil
-        // The ad's own sound may have taken over; bring the game's music and effects back.
-        webView?.evaluateJavaScript("window.__resumeMonkeyAudio?.()")
+        // The ad's own sound may have taken over: put the game's audio session back, then restart the page's audio engine
+        // (true: even if it says it is running, since it can come back silent).
+        MonkeyTrubbleApp.activateAudio()
+        webView?.evaluateJavaScript("window.__resumeMonkeyAudio?.(true)")
         load()
     }
 

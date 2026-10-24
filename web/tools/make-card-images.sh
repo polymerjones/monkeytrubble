@@ -110,6 +110,10 @@ build "$EX/macaque.png" set2-long-tailed-macaque
 build "$EX/langur.png" set2-silvered-langur
 # Vision monkeys: the Owl Monkey (Paul, 2026-10-21; replaces the placeholder). Galago, tarsier and aye-aye are still placeholders.
 build "$EX/new owl eyes card.jpg" vision-owl-monkey
+# Madagascar (Paul, 2026-10-24, ../source/art/madagascar): the aye-aye is ch8's vision card and the mouse lemur its joker; the
+# chapter's lemurs are in ../source/art/regions/ch8-*. sifaka.jpg (too close to Coquerel's) and ayeaye.jpg are kept but unused.
+build ../source/art/madagascar/ayeaye2.jpg vision-aye-aye
+build "../source/art/madagascar/Mouse lemur.jpg" mad-mouse-lemur-joker
 # Apes (Paul, 2026-10-21): the illustrated set's ape cards, plus artsy versions shown in chapter 6 (the ape chapter, look:'artsy').
 build "$EX/orangatang rforest.png" set2-bornean-orangutan
 build "$EX/orang lifelike.jpg" set2-sumatran-orangutan

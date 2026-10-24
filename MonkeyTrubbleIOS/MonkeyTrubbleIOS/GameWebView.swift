@@ -2,6 +2,7 @@ import SwiftUI
 import UIKit
 import WebKit
 import CoreMotion
+import AVFoundation
 
 /// Same near-black green as the launch screen and the page's loading screen, so launch → web view → loader shows no black flash.
 let launchBackground = UIColor(named: "LaunchBackground") ?? .black
@@ -51,6 +52,8 @@ struct GameWebView: UIViewRepresentable {
         configuration.mediaTypesRequiringUserActionForPlayback = []
         // Lets the page XHR its bundled sound files so they can be decoded into Web Audio buffers.
         configuration.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
+        // No text selection anywhere in the game: this is what stops the long-press magnifier (the CSS user-select alone doesn't).
+        configuration.preferences.isTextInteractionEnabled = false
 
         URLCache.shared.removeAllCachedResponses()
 
@@ -64,6 +67,7 @@ struct GameWebView: UIViewRepresentable {
         webView.scrollView.alwaysBounceHorizontal = false
         webView.scrollView.contentInsetAdjustmentBehavior = .never
         webView.allowsBackForwardNavigationGestures = false
+        webView.allowsLinkPreview = false
         #if DEBUG
         webView.isInspectable = true
         #endif
@@ -131,6 +135,7 @@ struct GameWebView: UIViewRepresentable {
         private let motionManager = CMMotionManager()
         private var activeObserver: NSObjectProtocol?
         private var inactiveObserver: NSObjectProtocol?
+        private var interruptionObserver: NSObjectProtocol?
         private var neutral: (turn: Double, lean: Double)?
         private var lastSent: (turn: Double, lean: Double)?
         /// The page says when tilt shows on screen (the board, Settings, the lightbox); nil until it first says, so older pages keep motion on.
@@ -150,8 +155,22 @@ struct GameWebView: UIViewRepresentable {
                 queue: .main
             ) { [weak self] _ in
                 MainActor.assumeIsolated {
+                    MonkeyTrubbleApp.activateAudio()
                     self?.webView?.evaluateJavaScript("window.__resumeMonkeyAudio?.()")
                     if self?.pageWantsMotion != false { self?.startMotionUpdates() }
+                }
+            }
+            // A call, Siri or another app's audio interrupted the game: when it ends, take the session back and restart the engine.
+            interruptionObserver = NotificationCenter.default.addObserver(
+                forName: AVAudioSession.interruptionNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] note in
+                let raw = note.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt
+                guard raw == AVAudioSession.InterruptionType.ended.rawValue else { return }
+                MainActor.assumeIsolated {
+                    MonkeyTrubbleApp.activateAudio()
+                    self?.webView?.evaluateJavaScript("window.__resumeMonkeyAudio?.(true)")
                 }
             }
             inactiveObserver = NotificationCenter.default.addObserver(
@@ -210,11 +229,15 @@ struct GameWebView: UIViewRepresentable {
             if let inactiveObserver {
                 NotificationCenter.default.removeObserver(inactiveObserver)
             }
+            if let interruptionObserver {
+                NotificationCenter.default.removeObserver(interruptionObserver)
+            }
             motionManager.stopDeviceMotionUpdates()
             services.detach()
             ads.detach()
             activeObserver = nil
             inactiveObserver = nil
+            interruptionObserver = nil
             webView = nil
         }
 
