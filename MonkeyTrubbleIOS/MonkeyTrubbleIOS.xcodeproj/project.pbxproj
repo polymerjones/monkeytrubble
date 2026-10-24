@@ -214,6 +214,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Monkey Trubble";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				INFOPLIST_KEY_NSMotionUsageDescription = "Monkey Trubble uses device tilt to move the gloss across the featured card.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Monkey Trubble saves your finished jungle puzzles to your photos.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UIRequiresFullScreen = YES;
@@ -246,6 +247,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Monkey Trubble";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				INFOPLIST_KEY_NSMotionUsageDescription = "Monkey Trubble uses device tilt to move the gloss across the featured card.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Monkey Trubble saves your finished jungle puzzles to your photos.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UIRequiresFullScreen = YES;

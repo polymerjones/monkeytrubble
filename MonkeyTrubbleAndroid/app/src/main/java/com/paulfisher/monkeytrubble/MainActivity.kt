@@ -46,7 +46,6 @@ class MainActivity : ComponentActivity() {
             statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
         )
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
 
         val background = ContextCompat.getColor(this, R.color.launch_background)
@@ -83,10 +82,14 @@ class MainActivity : ComponentActivity() {
             evaluate(String.format(Locale.US, "window.__setMonkeyTilt?.(%.4f,%.4f)", turn, lean))
         }
         ads = Ads(this, ::evaluate)
-        webView.addJavascriptInterface(Bridge(store, Haptics(this, webView), playGames, ads) { on ->
+        webView.addJavascriptInterface(Bridge(store, Haptics(this, webView), playGames, ads, motion = { on ->
             pageWantsMotion = on
             if (!on) tilt.stop() else if (resumed) tilt.start()
-        }, Bridge.NAME)
+        }, awake = { on ->
+            // Screen stays awake only during play (2026-10-24 audit); menus and idle levels let it dim.
+            if (on) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }), Bridge.NAME)
         webView.webViewClient = GameClient()
 
         // Back closes the top dialog or leaves a level (the page decides); on the home screen it sends the app to the background.
@@ -103,6 +106,7 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         webView.onResume()
+        webView.resumeTimers()
         evaluate("window.__resumeMonkeyAudio?.()")
         resumed = true
         if (pageWantsMotion != false) tilt.start()
@@ -114,7 +118,8 @@ class MainActivity : ComponentActivity() {
         tilt.stop()
         // Fade the game's sound out before the WebView pauses (cutting it off mid-sound buzzes), unless the app is back by then.
         evaluate("window.__quietMonkeyAudio?.()")
-        webView.postDelayed({ if (!resumed) webView.onPause() }, QUIET_MS)
+        // pauseTimers also stops the page's JS timers while in the background (onPause alone left them firing; 2026-10-24 audit).
+        webView.postDelayed({ if (!resumed) { webView.onPause(); webView.pauseTimers() } }, QUIET_MS)
         super.onPause()
     }
 

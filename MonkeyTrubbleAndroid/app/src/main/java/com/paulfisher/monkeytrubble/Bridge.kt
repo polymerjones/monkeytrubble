@@ -15,6 +15,7 @@ class Bridge(
     private val playGames: PlayGames,
     private val ads: Ads,
     private val motion: (Boolean) -> Unit,
+    private val awake: (Boolean) -> Unit,
 ) {
     private val main = Handler(Looper.getMainLooper())
 
@@ -46,6 +47,12 @@ class Bridge(
         main.post { motion(on) }
     }
 
+    /** The page keeps the screen awake only while a level is being played (syncAwake in index.html). */
+    @JavascriptInterface
+    fun screen(on: Boolean) {
+        main.post { awake(on) }
+    }
+
     companion object {
         const val NAME = "MonkeyAndroid"
 
@@ -55,6 +62,7 @@ class Bridge(
             "storage:{postMessage:m=>$NAME.storage(String(m))}," +
             "gameCenter:{postMessage:m=>$NAME.gameCenter(JSON.stringify(m))}," +
             "ads:{postMessage:m=>$NAME.ads(JSON.stringify(m))}," +
-            "motion:{postMessage:m=>$NAME.motion(!!m)}}};"
+            "motion:{postMessage:m=>$NAME.motion(!!m)}," +
+            "screen:{postMessage:m=>$NAME.screen(!!m)}}};"
     }
 }

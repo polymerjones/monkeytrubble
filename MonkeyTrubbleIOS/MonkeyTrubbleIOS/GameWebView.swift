@@ -19,6 +19,8 @@ struct GameWebView: UIViewRepresentable {
         controller.add(context.coordinator, name: "gameCenter")
         controller.add(context.coordinator, name: "motion")
         controller.add(context.coordinator, name: "ads")
+        controller.add(context.coordinator, name: "share")
+        controller.add(context.coordinator, name: "screen")
         // Debug builds (Xcode / ship) keep the page's dev mode on; Release builds (TestFlight, App Store) turn it off.
         #if DEBUG
         let debugBuild = true
@@ -90,6 +92,8 @@ struct GameWebView: UIViewRepresentable {
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "gameCenter")
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "motion")
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "ads")
+        webView.configuration.userContentController.removeScriptMessageHandler(forName: "share")
+        webView.configuration.userContentController.removeScriptMessageHandler(forName: "screen")
         coordinator.detach()
     }
 
@@ -136,6 +140,7 @@ struct GameWebView: UIViewRepresentable {
         private var activeObserver: NSObjectProtocol?
         private var inactiveObserver: NSObjectProtocol?
         private var interruptionObserver: NSObjectProtocol?
+        private var backgroundObserver: NSObjectProtocol?
         private var neutral: (turn: Double, lean: Double)?
         private var lastSent: (turn: Double, lean: Double)?
         /// The page says when tilt shows on screen (the board, Settings, the lightbox); nil until it first says, so older pages keep motion on.
@@ -156,7 +161,10 @@ struct GameWebView: UIViewRepresentable {
             ) { [weak self] _ in
                 MainActor.assumeIsolated {
                     MonkeyTrubbleApp.activateAudio()
-                    self?.webView?.evaluateJavaScript("window.__resumeMonkeyAudio?.()")
+                    // Undo the background suspend below, then let the page fade its sound back in.
+                    self?.webView?.setAllMediaPlaybackSuspended(false) { [weak self] in
+                        self?.webView?.evaluateJavaScript("window.__resumeMonkeyAudio?.()")
+                    }
                     if self?.pageWantsMotion != false { self?.startMotionUpdates() }
                 }
             }
@@ -171,6 +179,18 @@ struct GameWebView: UIViewRepresentable {
                 MainActor.assumeIsolated {
                     MonkeyTrubbleApp.activateAudio()
                     self?.webView?.evaluateJavaScript("window.__resumeMonkeyAudio?.(true)")
+                }
+            }
+            // In the background nothing of the game should run (2026-10-24 audit): media suspended, the audio session let go, no tilt.
+            backgroundObserver = NotificationCenter.default.addObserver(
+                forName: UIApplication.didEnterBackgroundNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                MainActor.assumeIsolated {
+                    self?.motionManager.stopDeviceMotionUpdates()
+                    self?.webView?.setAllMediaPlaybackSuspended(true, completionHandler: nil)
+                    try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
                 }
             }
             inactiveObserver = NotificationCenter.default.addObserver(
@@ -232,13 +252,31 @@ struct GameWebView: UIViewRepresentable {
             if let interruptionObserver {
                 NotificationCenter.default.removeObserver(interruptionObserver)
             }
+            if let backgroundObserver {
+                NotificationCenter.default.removeObserver(backgroundObserver)
+            }
             motionManager.stopDeviceMotionUpdates()
             services.detach()
             ads.detach()
             activeObserver = nil
             inactiveObserver = nil
             interruptionObserver = nil
+            backgroundObserver = nil
             webView = nil
+        }
+
+        private func presentShare(_ image: UIImage) {
+            var top = UIApplication.shared.connectedScenes
+                .compactMap { ($0 as? UIWindowScene)?.keyWindow?.rootViewController }
+                .first
+            while let presented = top?.presentedViewController { top = presented }
+            guard let top else { return }
+            let sheet = UIActivityViewController(activityItems: [image], applicationActivities: nil)
+            // iPad shows the sheet as a popover; anchor it mid-screen.
+            sheet.popoverPresentationController?.sourceView = top.view
+            sheet.popoverPresentationController?.sourceRect = CGRect(x: top.view.bounds.midX, y: top.view.bounds.midY, width: 1, height: 1)
+            sheet.popoverPresentationController?.permittedArrowDirections = []
+            top.present(sheet, animated: true)
         }
 
         func userContentController(
@@ -255,6 +293,18 @@ struct GameWebView: UIViewRepresentable {
             }
             if message.name == "ads", let body = message.body as? [String: Any] {
                 ads.handle(body)
+                return
+            }
+            // A finished jigsaw (Paul, 2026-10-24): the page sends {image: PNG data URL}; the share sheet offers Save Image, Messages...
+            if message.name == "share", let body = message.body as? [String: Any],
+               let url = body["image"] as? String, let comma = url.firstIndex(of: ","),
+               let data = Data(base64Encoded: String(url[url.index(after: comma)...])), let image = UIImage(data: data) {
+                presentShare(image)
+                return
+            }
+            // The page keeps the screen awake only during play (see syncAwake in index.html).
+            if message.name == "screen", let on = message.body as? Bool {
+                UIApplication.shared.isIdleTimerDisabled = on
                 return
             }
             if message.name == "motion", let on = message.body as? Bool {

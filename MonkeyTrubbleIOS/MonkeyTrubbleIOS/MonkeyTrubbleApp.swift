@@ -5,7 +5,8 @@ import UIKit
 @main
 struct MonkeyTrubbleApp: App {
     init() {
-        UIApplication.shared.isIdleTimerDisabled = true
+        // The screen stays awake only while a level is being played (the page sends 'screen'; GameWebView sets this).
+        UIApplication.shared.isIdleTimerDisabled = false
         Self.activateAudio()
     }
 
