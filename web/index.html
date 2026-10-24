@@ -186,6 +186,22 @@
     .lb-rank{width:28px;flex:none;text-align:center;color:var(--text-dim);font:950 .95rem system-ui,sans-serif;font-variant-numeric:tabular-nums}.lb-row.top .lb-rank{display:grid;place-items:center;height:28px;border-radius:50%;background:var(--medal);color:#1a1000;font-size:.8rem}
     .lb-who{flex:1;min-width:0;display:flex;flex-direction:column}.lb-who b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:900 .95rem system-ui,sans-serif}.lb-who small{color:var(--text-dim);font:700 .62rem system-ui,sans-serif;letter-spacing:.08em}
     .lb-score{flex:none;color:var(--amber);font:950 1.1rem system-ui,sans-serif;font-variant-numeric:tabular-nums}.lb-row.me{box-shadow:inset 0 0 0 1px var(--green),0 0 18px #57ff8633}
+    /* Player cards (2026-10-23): avatars on board rows and the Settings chip, the avatar picker, and the stats grid in the lightbox. */
+    .lb-avatar{flex:none;width:34px;height:34px;border-radius:50%;object-fit:cover;object-position:50% 18%;border:2px solid var(--tier);background:var(--well)}
+    .player-chips{display:flex;gap:10px;align-items:center}.player-chips .name-chip{flex:1;width:auto;min-width:0}
+    .avatar-chip{flex:none;width:50px;height:50px;padding:0;border:2px solid var(--line-soft);border-radius:50%;overflow:hidden;background:var(--well);cursor:pointer}.avatar-chip img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 18%}
+    #avatarDialog{z-index:6000}/* over Settings (5000) and the lightbox (4500), which both open it */
+    .avatar-dialog{padding:24px 16px 18px}.avatar-dialog h2{font-size:1.4rem}.avatar-dialog p{margin:0 0 8px;font-size:.8rem}
+    .avatar-ring{position:relative;height:200px;margin:4px -16px 0;overflow:hidden;touch-action:pan-y;cursor:grab;perspective:1100px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent)}
+    .avatar-ring-cam{position:absolute;left:50%;top:50%;width:0;height:0;transform-style:preserve-3d}
+    .avatar-card{position:absolute;left:-52px;top:-78px;width:104px;height:156px;border:2px solid #b8925a;border-radius:12px;overflow:hidden;background:#000;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 8px 18px #0008}
+    .avatar-card img{display:block;width:100%;height:100%;object-fit:cover;pointer-events:none;-webkit-user-drag:none}.avatar-card::after{content:"";position:absolute;inset:0;background:#000;opacity:var(--shade,0);pointer-events:none}
+    .avatar-card.on{border-color:var(--amber);box-shadow:0 0 18px var(--amber),0 8px 18px #0008}
+    .avatar-caption{display:flex;flex-direction:column;align-items:center;gap:2px;min-height:44px;margin-top:6px}.avatar-caption b{color:#fff;font:950 1.05rem system-ui,sans-serif;text-transform:uppercase;letter-spacing:.04em}.avatar-caption small{color:#adffc0;font:italic .85rem Georgia,serif}
+    .holo-card-canvas{position:absolute;inset:0;z-index:4;width:100%;height:100%;border-radius:inherit;opacity:0;transition:opacity .3s ease;pointer-events:none}.holo-card-canvas.on{opacity:1}
+    .lightbox-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:12px 0 0}.lightbox-stats[hidden]{display:none}.lightbox-stats div{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 3px;border:1px solid #ffffff1a;border-radius:10px;background:#ffffff0d}
+    .lightbox-stats b{color:#fff;font:950 .98rem system-ui,sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}.lightbox-stats small{color:#adffc0;font:800 .5rem system-ui,sans-serif;letter-spacing:.1em;text-align:center}
+    .lightbox-action{display:block;margin:12px auto 0;font-size:.8rem}.lightbox-action[hidden]{display:none}.lightbox-action.report{opacity:.6;font-size:.7rem}.lightbox.player .lightbox-facts{display:none}
     .leaders-me:empty{display:none}.leaders-me .lb-row{border-color:var(--green)}
     .win-unlock{margin:12px auto 0;padding:8px 14px;width:fit-content;border:2px solid var(--amber);border-radius:12px;background:#0006}.win-unlock[hidden]{display:none}.win-unlock small{display:block;color:var(--text-dim);font:800 .6rem system-ui,sans-serif;letter-spacing:.22em}.win-unlock b{display:block;color:var(--amber);font:950 1.05rem system-ui,sans-serif;letter-spacing:.08em}
     /* Climb screen: the player's leaderboard row rising past the players a clear moved them ahead of. */
@@ -633,14 +649,15 @@
   <div class="overlay" id="overlay"><div class="dialog"><h2 id="resultTitle">CAGE FULL</h2><p id="resultText"></p><p class="continue-pitch" id="continuePitch" hidden>One more chance? Clear your cage and keep going.</p><p class="tut-resume-note" id="tutResumeNote"></p><button class="action primary ad-btn" id="continueLevel" hidden><svg class="ad-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>RESUME <small>(Watch Ad)</small></button><button class="action primary ad-btn" id="adShuffle" hidden><svg class="ad-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>SHUFFLE <small>(Watch Ad)</small></button><button class="action primary" id="retryLevel">RETRY LEVEL</button><button class="action" id="overlayUndo" hidden>Undo last move</button><button class="action ad-btn" id="adUndo" hidden><svg class="ad-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>UNDO <small>(Watch Ad)</small></button><button class="link-btn" id="failHome">Home</button></div></div>
   <div class="overlay" id="climbOverlay"><div class="dialog climb-dialog" role="dialog" aria-modal="true" aria-labelledby="climbTitle"><h2 id="climbTitle">CLIMBING!</h2><p class="climb-sub" id="climbSub"></p><ol class="climb-list" id="climbList"></ol><p class="climb-more" id="climbMore" hidden></p><button class="action primary" id="climbContinue">CONTINUE</button></div></div>
   <div class="overlay" id="winOverlay"><div class="win-rays" aria-hidden="true"></div><div class="dialog win-dialog"><div class="win-hero win-step" id="winHero"><div class="win-hero-card" id="winHeroCard"></div><div class="win-level" id="winLevel">LEVEL 1 CLEAR!</div></div><div class="win-time win-step" id="winTimeBox"><small>YOUR TIME</small><b id="winTime">0:00</b><div class="win-stamp" id="winStamp" hidden><b>NEW BEST!</b><small id="winStampSub"></small></div></div><div class="win-badge win-step" id="winBadge"></div><div class="win-badge win-world win-step" id="winWorld" hidden></div><div class="win-score win-step" id="winScore"><div class="win-gain"><span><b id="winPoints">+0</b><small id="winPointsLabel">POINTS</small></span><span><b id="winXp">+0</b><small>XP</small></span><span id="winChain" hidden><b id="winChainN">×0</b><small id="winChainLabel">BEST CHAIN</small></span></div><div class="win-tier" id="winTier"><span id="winTierBadge"></span><div class="tier-track"><div class="tier-bar"><i id="winTierFill"></i></div><small id="winTierText"></small></div><div class="win-streak win-step" id="winStreak" hidden><span class="flame" aria-hidden="true">🔥</span><b id="winStreakCount">1</b><small id="winStreakLabel" data-loc-html="DAY<br>STREAK">DAY<br>STREAK</small></div></div><div class="win-chapter" id="winChapter" hidden><small id="winChapterDone">CHAPTER COMPLETE</small><b id="winChapterName"></b><em id="winChapterNext"></em></div><div class="win-unlock" id="winUnlock" hidden><small>NEW CARDS UNLOCKED</small><b id="winUnlockName"></b></div><div class="win-rank" id="winRank" hidden><b id="winRankText"></b></div></div><button class="action primary" id="nextLevel">NEXT LEVEL</button><button class="link-btn" id="winHome">Home</button></div></div>
-<div class="overlay" id="settings"><div class="dialog settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settingsTitle"><div class="settings-art" aria-hidden="true"></div><button class="settings-close" id="settingsClose" aria-label="Close settings">×</button><div class="settings-scroll"><h2 id="settingsTitle">SETTINGS</h2><div class="set-row"><div class="set-label">PLAYER</div><button class="name-chip" id="settingsName"><span id="settingsTierBadge"></span><b id="settingsNameText">—</b><small>EDIT ✎</small></button></div><div class="set-row"><div class="set-label" id="musicLabel">MUSIC</div><div class="dip" data-setting="music" role="radiogroup" aria-labelledby="musicLabel"><button role="radio" data-value="relaxed">RELAXED</button><button role="radio" data-value="competitive">COMPETITIVE</button></div><small class="set-hint" id="musicHint"></small></div><div class="set-row"><div class="set-label" id="difficultyLabel">DIFFICULTY</div><div class="dip" data-setting="difficulty" role="radiogroup" aria-labelledby="difficultyLabel"><button role="radio" data-value="easy">EASY</button><button role="radio" data-value="normal">NORMAL</button></div><small class="set-hint" id="difficultyHint"></small></div><div class="set-row"><div class="set-label" id="cageLabel">CAGE</div><div class="dip" data-setting="cage" role="radiogroup" aria-labelledby="cageLabel"><button role="radio" data-value="hand">CHAINED</button><button role="radio" data-value="classic">CLASSIC</button></div><small class="set-hint" id="cageHint"></small></div><div class="set-row"><div class="set-label" id="soundLabel">SOUND</div><div class="dip" data-setting="sound" role="radiogroup" aria-labelledby="soundLabel"><button role="radio" data-value="on">ON</button><button role="radio" data-value="off">OFF</button></div><small class="set-hint" id="soundHint"></small></div><div class="set-row"><div class="set-label">VOLUME</div><label class="vol-row"><span>MUSIC</span><input type="range" class="vol" id="musicVol" min="0" max="100" step="5" aria-label="Music volume"><b id="musicVolText"></b></label><label class="vol-row"><span>SFX</span><input type="range" class="vol" id="sfxVol" min="0" max="100" step="5" aria-label="Sound effects volume"><b id="sfxVolText"></b></label></div><div class="set-row"><div class="set-label" id="langLabel">LANGUAGE</div><div class="dip" data-setting="lang" role="radiogroup" aria-labelledby="langLabel"><button role="radio" data-value="en">ENGLISH</button><button role="radio" data-value="es">ESPAÑOL</button></div></div><div class="set-row"><div class="set-label">CREDITS</div><small class="set-hint set-credits">Gibbon calls are clipped from “Gibbons 1” by ascap and “Gibbons-Kao Yai National Park” by RTB45 (freesound.org), licensed CC BY 4.0, and edited by Polymer Jones.</small></div><div class="set-row" id="adPrivacyRow" hidden><div class="set-label">ADS</div><button class="name-chip" id="adPrivacy"><b>AD PRIVACY CHOICES</b></button></div><div class="set-row"><div class="set-label">HOW TO PLAY</div><button class="name-chip" id="replayTutorial"><b>REPLAY TUTORIAL</b></button></div><div class="set-row dev-only"><div class="set-label">DEV TOOLS</div><div class="trial-row"><small>JUMP TO LEVEL</small><div class="dev-jump"><button data-step="-10">−10</button><button data-step="-1">−1</button><b id="devLevel">1</b><button data-step="1">+1</button><button data-step="10">+10</button><button class="dev-go" id="devGo">GO</button></div></div><div class="trial-row"><small>TEST (NOTHING IS SAVED OR SCORED)</small><div class="trial-chips"><button id="devWin">INSTANT WIN</button><button id="devCage3">CAGE 3/4</button><button id="devChain">AUTO PAIRS (COMBO)</button><button id="devPoly">POLY PAYOUT</button><button id="previewTransition">▶ TRANSITION</button><button id="devFps">FPS METER</button></div></div><div class="trial-row"><small>PERF SWITCHES (LIT = NEW CHEAPER VERSION · TAP RELOADS)</small><div class="trial-chips" id="devFx"></div></div><div class="trial-row"><small>COMBO MUSIC</small><div class="trial-chips" data-trial="comboMusic"><button data-value="swap">COMBO TRACK</button><button data-value="both">TEMPO + TONE</button><button data-value="tone">TONE ONLY</button><button data-value="off">OFF</button></div></div><div class="trial-row"><small>THEME</small><div class="trial-chips" data-trial="theme"><button data-value="chapter">CHAPTER</button><button data-value="console">CONSOLE</button><button data-value="jungle">JUNGLE</button><button data-value="halloween">HALLOWEEN</button></div></div><div class="trial-row"><small>HOME MUSIC</small><div class="trial-chips" data-trial="homeMusic"><button data-value="homescreen">HOMESCREEN</button><button data-value="sparse">SPARSE TOMS</button><button data-value="rhythmic">RHYTHMIC TENSION</button><button data-value="classic">CLASSIC</button></div></div><div class="trial-row"><small>CHAPTER</small><div class="trial-chips" id="devChapters"><button data-ch="1">1</button><button data-ch="2">2</button><button data-ch="3">3</button><button data-ch="4">4</button><button data-ch="5">5</button><button data-ch="6">6</button><button data-ch="7">7</button><button data-ch="8">8</button><button data-ch="9">9</button><button data-ch="10">10</button><button data-ch="11">11</button></div></div><div class="trial-row"><small>EXPEDITION MAP</small><div class="trial-chips" id="devExpedition"><button data-leg="0">INTRO</button><button data-leg="1">1→2</button><button data-leg="2">2→3</button><button data-leg="3">3→4</button><button data-leg="4">4→5</button><button data-leg="5">5→6</button><button data-leg="6">6→7</button><button data-leg="7">7→8</button><button data-leg="8">8→9</button><button data-leg="9">9→10</button><button data-leg="10">10→11</button><button data-leg="11">11→1+</button></div></div><div class="trial-row"><small>SCENE</small><div class="trial-chips" data-trial="scene"><button data-value="chapter">CHAPTER SCENES</button><button data-value="cards">DEPTH CARDS</button></div></div><div class="trial-row"><small>SEASON</small><div class="trial-chips" data-trial="pack"><button data-value="christmas">CHRISTMAS (FULL)</button><button data-value="christmasLevels">CHRISTMAS LEVELS</button><button data-value="halloween">HALLOWEEN (FULL)</button><button data-value="skin">HALLOWEEN SKIN</button><button data-value="alternate">EVERY OTHER</button><button data-value="mixed">MIXED</button><button data-value="regular">REGULAR</button></div></div><div class="trial-row"><small>POLY CARD (RESTARTS THE LEVEL)</small><div class="trial-chips" data-trial="poly"><button data-value="every">EVERY LEVEL</button><button data-value="auto">NORMAL (~1 IN 2)</button><button data-value="off">OFF</button></div></div><div class="trial-row"><small>NIGHT VISION LENGTH</small><div class="trial-chips" data-trial="vision"><button data-value="short">4.4s (OLD)</button><button data-value="normal">6.5s</button><button data-value="long">8s</button></div></div><div class="trial-row"><small>TUTORIAL (SAVES NOTHING)</small><div class="trial-chips"><button id="devTutorial">DEV: NEW USER TUTORIAL</button></div></div><div class="trial-row"><small>PROGRESS (KEEPS NAME + SETTINGS)</small><div class="trial-chips"><button id="devReset">RESET TO NEW PLAYER</button><button id="devUndoReset" hidden>UNDO RESET</button></div></div></div><button class="action primary" id="settingsDone">DONE</button></div></div></div>
+<div class="overlay" id="settings"><div class="dialog settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settingsTitle"><div class="settings-art" aria-hidden="true"></div><button class="settings-close" id="settingsClose" aria-label="Close settings">×</button><div class="settings-scroll"><h2 id="settingsTitle">SETTINGS</h2><div class="set-row"><div class="set-label">PLAYER</div><div class="player-chips"><button class="avatar-chip" id="settingsAvatar" aria-label="Pick your avatar"><img id="settingsAvatarImg" alt=""></button><button class="name-chip" id="settingsName"><span id="settingsTierBadge"></span><b id="settingsNameText">—</b><small>EDIT ✎</small></button></div></div><div class="set-row"><div class="set-label" id="musicLabel">MUSIC</div><div class="dip" data-setting="music" role="radiogroup" aria-labelledby="musicLabel"><button role="radio" data-value="relaxed">RELAXED</button><button role="radio" data-value="competitive">COMPETITIVE</button></div><small class="set-hint" id="musicHint"></small></div><div class="set-row"><div class="set-label" id="difficultyLabel">DIFFICULTY</div><div class="dip" data-setting="difficulty" role="radiogroup" aria-labelledby="difficultyLabel"><button role="radio" data-value="easy">EASY</button><button role="radio" data-value="normal">NORMAL</button></div><small class="set-hint" id="difficultyHint"></small></div><div class="set-row"><div class="set-label" id="cageLabel">CAGE</div><div class="dip" data-setting="cage" role="radiogroup" aria-labelledby="cageLabel"><button role="radio" data-value="hand">CHAINED</button><button role="radio" data-value="classic">CLASSIC</button></div><small class="set-hint" id="cageHint"></small></div><div class="set-row"><div class="set-label" id="soundLabel">SOUND</div><div class="dip" data-setting="sound" role="radiogroup" aria-labelledby="soundLabel"><button role="radio" data-value="on">ON</button><button role="radio" data-value="off">OFF</button></div><small class="set-hint" id="soundHint"></small></div><div class="set-row"><div class="set-label">VOLUME</div><label class="vol-row"><span>MUSIC</span><input type="range" class="vol" id="musicVol" min="0" max="100" step="5" aria-label="Music volume"><b id="musicVolText"></b></label><label class="vol-row"><span>SFX</span><input type="range" class="vol" id="sfxVol" min="0" max="100" step="5" aria-label="Sound effects volume"><b id="sfxVolText"></b></label></div><div class="set-row"><div class="set-label" id="langLabel">LANGUAGE</div><div class="dip" data-setting="lang" role="radiogroup" aria-labelledby="langLabel"><button role="radio" data-value="en">ENGLISH</button><button role="radio" data-value="es">ESPAÑOL</button></div></div><div class="set-row"><div class="set-label">CREDITS</div><small class="set-hint set-credits">Gibbon calls are clipped from “Gibbons 1” by ascap and “Gibbons-Kao Yai National Park” by RTB45 (freesound.org), licensed CC BY 4.0, and edited by Polymer Jones.</small></div><div class="set-row" id="adPrivacyRow" hidden><div class="set-label">ADS</div><button class="name-chip" id="adPrivacy"><b>AD PRIVACY CHOICES</b></button></div><div class="set-row"><div class="set-label">HOW TO PLAY</div><button class="name-chip" id="replayTutorial"><b>REPLAY TUTORIAL</b></button></div><div class="set-row dev-only"><div class="set-label">DEV TOOLS</div><div class="trial-row"><small>JUMP TO LEVEL</small><div class="dev-jump"><button data-step="-10">−10</button><button data-step="-1">−1</button><b id="devLevel">1</b><button data-step="1">+1</button><button data-step="10">+10</button><button class="dev-go" id="devGo">GO</button></div></div><div class="trial-row"><small>TEST (NOTHING IS SAVED OR SCORED)</small><div class="trial-chips"><button id="devWin">INSTANT WIN</button><button id="devCage3">CAGE 3/4</button><button id="devChain">AUTO PAIRS (COMBO)</button><button id="devPoly">POLY PAYOUT</button><button id="previewTransition">▶ TRANSITION</button><button id="devFps">FPS METER</button></div></div><div class="trial-row"><small>PERF SWITCHES (LIT = NEW CHEAPER VERSION · TAP RELOADS)</small><div class="trial-chips" id="devFx"></div></div><div class="trial-row"><small>COMBO MUSIC</small><div class="trial-chips" data-trial="comboMusic"><button data-value="swap">COMBO TRACK</button><button data-value="both">TEMPO + TONE</button><button data-value="tone">TONE ONLY</button><button data-value="off">OFF</button></div></div><div class="trial-row"><small>THEME</small><div class="trial-chips" data-trial="theme"><button data-value="chapter">CHAPTER</button><button data-value="console">CONSOLE</button><button data-value="jungle">JUNGLE</button><button data-value="halloween">HALLOWEEN</button></div></div><div class="trial-row"><small>HOME MUSIC</small><div class="trial-chips" data-trial="homeMusic"><button data-value="homescreen">HOMESCREEN</button><button data-value="sparse">SPARSE TOMS</button><button data-value="rhythmic">RHYTHMIC TENSION</button><button data-value="classic">CLASSIC</button></div></div><div class="trial-row"><small>CHAPTER</small><div class="trial-chips" id="devChapters"><button data-ch="1">1</button><button data-ch="2">2</button><button data-ch="3">3</button><button data-ch="4">4</button><button data-ch="5">5</button><button data-ch="6">6</button><button data-ch="7">7</button><button data-ch="8">8</button><button data-ch="9">9</button><button data-ch="10">10</button><button data-ch="11">11</button></div></div><div class="trial-row"><small>EXPEDITION MAP</small><div class="trial-chips" id="devExpedition"><button data-leg="0">INTRO</button><button data-leg="1">1→2</button><button data-leg="2">2→3</button><button data-leg="3">3→4</button><button data-leg="4">4→5</button><button data-leg="5">5→6</button><button data-leg="6">6→7</button><button data-leg="7">7→8</button><button data-leg="8">8→9</button><button data-leg="9">9→10</button><button data-leg="10">10→11</button><button data-leg="11">11→1+</button></div></div><div class="trial-row"><small>SCENE</small><div class="trial-chips" data-trial="scene"><button data-value="chapter">CHAPTER SCENES</button><button data-value="cards">DEPTH CARDS</button></div></div><div class="trial-row"><small>SEASON</small><div class="trial-chips" data-trial="pack"><button data-value="christmas">CHRISTMAS (FULL)</button><button data-value="christmasLevels">CHRISTMAS LEVELS</button><button data-value="halloween">HALLOWEEN (FULL)</button><button data-value="skin">HALLOWEEN SKIN</button><button data-value="alternate">EVERY OTHER</button><button data-value="mixed">MIXED</button><button data-value="regular">REGULAR</button></div></div><div class="trial-row"><small>POLY CARD (RESTARTS THE LEVEL)</small><div class="trial-chips" data-trial="poly"><button data-value="every">EVERY LEVEL</button><button data-value="auto">NORMAL (~1 IN 2)</button><button data-value="off">OFF</button></div></div><div class="trial-row"><small>NIGHT VISION LENGTH</small><div class="trial-chips" data-trial="vision"><button data-value="short">4.4s (OLD)</button><button data-value="normal">6.5s</button><button data-value="long">8s</button></div></div><div class="trial-row"><small>TUTORIAL (SAVES NOTHING)</small><div class="trial-chips"><button id="devTutorial">DEV: NEW USER TUTORIAL</button></div></div><div class="trial-row"><small>PROGRESS (KEEPS NAME + SETTINGS)</small><div class="trial-chips"><button id="devReset">RESET TO NEW PLAYER</button><button id="devUndoReset" hidden>UNDO RESET</button></div></div></div><button class="action primary" id="settingsDone">DONE</button></div></div></div>
   <section class="home" id="home" aria-label="Home"><div class="home-bg" id="homeBg"></div><header class="home-top"><div class="home-top-left"><button class="home-icon" id="homeSound" title="Sound" aria-label="Sound">♪</button><button class="home-icon home-trophy" id="homeLeaders" title="Leaderboard" aria-label="Leaderboard">🏆</button></div><div class="home-top-right"><div class="home-streak"><span>🔥</span><b id="homeStreak">0</b><small data-loc-html="DAY<br>STREAK">DAY<br>STREAK</small></div><button class="gear-btn home-gear" id="homeGear" title="Settings" aria-label="Settings"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13.6" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="3.6 5.95"/><circle cx="16" cy="16" r="11.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path transform="translate(9.2 8.6) scale(.136)" d="M24 106C16 98 10 84 8 72C6 64 12 60 17 64C22 69 26 78 31 80L29 24A5.5 5.5 0 0 1 40 23L43 52Q45.5 56 48 52L49 13A5.5 5.5 0 0 1 60 13L60 53Q62.5 57 65 53L67 17A5.5 5.5 0 0 1 78 18L75 55Q77 59 80 55L83 30A5 5 0 0 1 93 32L84 66C82 80 82 94 82 106L60 106Q54 100 48 106Z" fill="none" stroke="currentColor" stroke-width="11" stroke-linejoin="round"/></svg></button></div></header><div class="home-logo" id="homeLogo"><img src="art/home/logo.png" alt="Monkey Trubble"></div><div class="home-byline-row"><button class="byline-poly-btn" id="bylinePoly" aria-label="What’s new"><img class="byline-poly" src="cards/thumb/poly.jpg" alt=""></button><div class="home-byline" id="homeByline">A GAME BY POLYMER JONES</div></div><div class="home-card" aria-hidden="true"><div class="ticker-plane"><div class="ticker-track" id="homeTicker"></div></div></div><button class="home-play" id="homePlay"><small id="homeChapter">PLAY</small><span>LEVEL <b id="homeLevel">1</b></span></button><div class="home-best" id="homeBest"></div><div class="home-week" id="homeWeek"></div><button class="home-profile" id="homeProfile" hidden><span id="homeTierBadge"></span><span class="home-profile-text"><b id="homeName"></b><small id="homeTierText"></small></span></button></section>
   <section class="leaders hidden" id="leaders" aria-label="Leaderboard"><header class="leaders-top"><button class="home-icon" id="leadersBack" title="Back" aria-label="Back">‹</button><h2>LEADERBOARD</h2><button class="home-icon" id="leadersRefresh" title="Refresh" aria-label="Refresh">⟳</button></header><div class="leaders-tabs" role="tablist"><button role="tab" aria-selected="true">GLOBAL</button><button role="tab" aria-selected="false" disabled>FRIENDS <small>SOON</small></button></div><div class="tier-legend" id="tierLegend"></div><div class="leaders-status" id="leadersStatus" role="status"></div><ol class="leaders-list" id="leadersList"></ol><div class="leaders-me" id="leadersMe"></div></section>
   <div class="overlay" id="reportDialog"><div class="dialog reward-dialog" role="dialog" aria-modal="true" aria-labelledby="reportTitle"><h2 id="reportTitle"></h2><p id="reportText">Report this name as offensive, or hide this player on your phone.</p><button class="action primary" id="reportName">REPORT NAME</button><button class="action" id="hidePlayer">HIDE PLAYER</button><button class="link-btn" id="reportCancel">Cancel</button></div></div>
+  <div class="overlay" id="avatarDialog"><div class="dialog avatar-dialog" role="dialog" aria-modal="true" aria-labelledby="avatarTitle"><h2 id="avatarTitle">PICK YOUR MONKEY</h2><p id="avatarHint"></p><div class="avatar-ring" id="avatarRing"><div class="avatar-ring-cam" id="avatarRingCam"></div></div><div class="avatar-caption"><b id="avatarPickName"></b><small id="avatarPickLatin"></small></div><button class="action primary" id="avatarChoose">CHOOSE</button><button class="link-btn" id="avatarCancel">Cancel</button></div></div>
   <div class="overlay" id="rewardPrompt"><div class="dialog reward-dialog" role="dialog" aria-modal="true" aria-labelledby="rewardTitle"><h2 id="rewardTitle"></h2><p id="rewardText"></p><button class="action primary" id="rewardWatch">WATCH AD</button><button class="link-btn" id="rewardLater">NOT NOW</button></div></div>
   <div class="overlay" id="adLoading" role="status" aria-live="polite"><div class="ad-loading"><div class="ad-ring"><div class="ad-card"><span class="ad-face"></span><span class="ad-back"></span></div></div><b>GETTING YOUR REWARD…</b><div class="ad-dots" aria-hidden="true"><i></i><i></i><i></i></div></div></div>
   <div class="overlay" id="rewardSim"><div class="dialog reward-sim" role="dialog" aria-modal="true" aria-labelledby="rewardSimTitle"><h2 id="rewardSimTitle">YOUR AD HERE</h2><p>Ad placeholder. Pick how the ad ends.</p><p class="reward-sim-type" id="rewardSimType"></p><div class="reward-sim-grid"><button class="action primary" data-outcome="completed">COMPLETE</button><button class="action" data-outcome="skipped">SKIP</button><button class="action" data-outcome="unavailable">UNAVAILABLE</button><button class="action" data-outcome="failed">FAIL</button><button class="action" data-outcome="twice">FIRE TWICE</button></div></div></div>
-  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-labelledby="lightboxName" hidden><div class="lightbox-scrim" id="lightboxScrim"><canvas class="holo-base" id="holoBase" width="36" height="54"></canvas></div><div class="lightbox-motes" id="lightboxMotes" aria-hidden="true"></div><div class="lightbox-stage" id="lightboxStage"><div class="lightbox-card" id="lightboxCard"><div class="featured-art lightbox-back" aria-hidden="true"></div><div class="featured-art has-gloss lightbox-face" id="lightboxArt"></div></div><div class="lightbox-info" id="lightboxInfo"><div class="featured-kicker">CURRENT CARD</div><h2 class="lightbox-name" id="lightboxName"></h2><div class="lightbox-latin" id="lightboxLatin"></div><ul class="lightbox-facts" id="lightboxFacts"></ul></div></div><button class="settings-close lightbox-close" id="lightboxClose" aria-label="Close">×</button></div>
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-labelledby="lightboxName" hidden><div class="lightbox-scrim" id="lightboxScrim"><canvas class="holo-base" id="holoBase" width="36" height="54"></canvas></div><div class="lightbox-motes" id="lightboxMotes" aria-hidden="true"></div><div class="lightbox-stage" id="lightboxStage"><div class="lightbox-card" id="lightboxCard"><div class="featured-art lightbox-back" aria-hidden="true"></div><div class="featured-art has-gloss lightbox-face" id="lightboxArt"></div></div><div class="lightbox-info" id="lightboxInfo"><div class="featured-kicker">CURRENT CARD</div><h2 class="lightbox-name" id="lightboxName"></h2><div class="lightbox-latin" id="lightboxLatin"></div><ul class="lightbox-facts" id="lightboxFacts"></ul><div class="lightbox-stats" id="lightboxStats" hidden></div><button class="link-btn lightbox-action" id="lightboxAction" hidden></button></div></div><button class="settings-close lightbox-close" id="lightboxClose" aria-label="Close">×</button></div>
   <div class="overlay" id="nameDialog"><div class="dialog name-dialog" role="dialog" aria-modal="true" aria-labelledby="nameTitle"><h2 id="nameTitle">ENTER YOUR NAME</h2><p class="name-intro">This is how the troop will see you on the leaderboard.</p><input id="nameInput" maxlength="16" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="done" placeholder="Monkey name" aria-describedby="nameError"><small class="set-hint" id="nameError"></small><button class="action primary" id="nameSave">LET’S GO</button><button class="link-btn" id="nameCancel" hidden>Cancel</button></div></div>
   <div class="expedition" id="expedition" hidden aria-live="polite"><div class="ex-view"><div class="ex-plane"><div class="ex-world" id="exWorld"><img id="exFar" alt=""><img id="exMid" alt="" hidden><svg class="ex-route" id="exRoute" aria-hidden="true"></svg><div id="exMarkers"></div></div></div></div><div class="ex-clouds" id="exClouds" aria-hidden="true"></div><div class="ex-vignette"></div><div class="ex-title" id="exTitle"><img id="exCard" alt=""><small id="exChapter"></small><b id="exName"></b><em id="exHabitat"></em></div><button class="ex-skip" id="exSkip">SKIP ›</button></div>
   <div id="dragLayer" aria-hidden="true"></div>
@@ -674,7 +691,8 @@
     // owlOnce: the hint owl blinks on a timer instead of an endless SVG animation. motionGate: the phone's motion sensor runs only
     // while something on screen reacts to tilt (the board, Settings, the lightbox) and the scenery is awake. audioIdle: the audio
     // engine sleeps while sound and music are both off. restGuard (2026-10-22, input, not perf): a long still press on a card is not a tap.
-    const FX={shineSleep:true,tiltLite:true,driftLiteral:true,cageShineOnce:true,glowOpacity:true,owlSlow:true,waterSleep:true,audioSleep:true,lightPreload:true,renderCache:true,clockSleep:true,bakedField:true,canvasBurst:true,clearLite:true,edgeLite:true,overlayLite:true,instantFlip:true,sceneClock:true,idleRest:true,lighterLayers:true,owlOnce:true,motionGate:true,audioIdle:true,restGuard:true};
+    // holoCard (2026-10-23, a look, not perf): the WebGL holo foil on the special cards in the lightbox (off: their CSS shine only).
+    const FX={shineSleep:true,tiltLite:true,driftLiteral:true,cageShineOnce:true,glowOpacity:true,owlSlow:true,waterSleep:true,audioSleep:true,lightPreload:true,renderCache:true,clockSleep:true,bakedField:true,canvasBurst:true,clearLite:true,edgeLite:true,overlayLite:true,instantFlip:true,sceneClock:true,idleRest:true,lighterLayers:true,owlOnce:true,motionGate:true,audioIdle:true,restGuard:true,holoCard:true};
     // Dev tools can flip any switch for A/B testing on the phone (saved, applied on reload).
     try{const saved=JSON.parse(localStorage.getItem('monkeyFX')||'{}');for(const k in FX)if(typeof saved[k]==='boolean')FX[k]=saved[k]}catch{}
     for(const[k,on]of Object.entries(FX))document.documentElement.classList.toggle(`fx-${k}`,on);
@@ -2863,7 +2881,7 @@
     function lightboxFrame(now){if(!lightbox.open){lightbox.raf=0;return}lightbox.raf=requestAnimationFrame(lightboxFrame);if(document.hidden)return;lightboxSpin(now);holoFrame(now);
       lightbox.ry+=(lightbox.try-lightbox.ry)*.15;lightbox.rx+=(lightbox.trx-lightbox.rx)*.15;const still=reduceMotion.matches,ramp=Math.max(0,Math.min(1,(now-lightbox.t0)/900)),cyc=(((now-lightbox.t0)/LB_SWAY_MS)%1+1)%1,tri=cyc<.5?cyc*2:2-cyc*2,wave=smoother(tri)*2-1,sway=still?0:wave*LB_SWAY_DEG*ramp,swayX=still?0:-wave*2*ramp;
       const ry=lightbox.ry+sway+lightbox.spin,rx=lightbox.rx+swayX,u=lbGlare(ry),art=$('#lightboxArt'),card=$('#lightboxCard');
-      card.style.setProperty('--lb-ry',`${ry.toFixed(2)}deg`);card.style.setProperty('--lb-rx',`${rx.toFixed(2)}deg`);art.style.setProperty('--glare-shift',`${(20-u*48).toFixed(1)}%`);art.style.setProperty('--glare-opacity',(.45+Math.min(1,Math.abs(u))*.55).toFixed(3))}
+      card.style.setProperty('--lb-ry',`${ry.toFixed(2)}deg`);card.style.setProperty('--lb-rx',`${rx.toFixed(2)}deg`);holoCardDraw(rx,ry);art.style.setProperty('--glare-shift',`${(20-u*48).toFixed(1)}%`);art.style.setProperty('--glare-opacity',(.45+Math.min(1,Math.abs(u))*.55).toFixed(3))}
     function lightboxFrames(){
       const card=$('#lightboxCard'),from=(lightbox.from||$('#featuredArt')).getBoundingClientRect(),to=card.getBoundingClientRect(),style=reduceMotion.matches?'fade':lightboxStyle;
       if(style==='fade'||!from.width)return[[{transform:'scale(.82)',opacity:0},{transform:'scale(1)',opacity:1}],{duration:260,easing:'cubic-bezier(.2,.8,.2,1)'}];
@@ -2890,8 +2908,10 @@
     function openLightbox(info=null){
       if(lightbox.open||lightbox.busy||(!info&&!featuredSymbol)||peekDragging||activeCardFlights||!info&&!$('#home').classList.contains('hidden')||document.querySelector('.overlay.show'))return;
       const symbol=info?.symbol||featuredSymbol,card=CARD_DATA[symbol],v=info?null:packVariant(symbol);lightbox.from=info?.from||$('#featuredArt');lightbox.open=lightbox.busy=true;lightbox.symbol=symbol;lightbox.base=null;lightbox.ry=lightbox.rx=lightbox.try=lightbox.trx=lightbox.spin=lightbox.vel=0;lightbox.dir=1;lightbox.edge=0;lightbox.dragging=false;lightbox.last=0;lightbox.t0=performance.now()+400;cancelAnimationFrame(lightbox.raf);lightbox.raf=requestAnimationFrame(lightboxFrame);$('#lightboxCard').style.setProperty('--lb-ry','0deg');$('#lightboxCard').style.setProperty('--lb-rx','0deg');lightbox.resume=state.clock.startedAt!=null;pauseClock();
-      dressHeroArt($('#lightboxArt'),symbol);paintHolo(symbol);$('#lightboxInfo .featured-kicker').textContent=loc(info?.kicker||'CURRENT CARD');$('#lightboxName').textContent=loc(info?.name||v?.name||card.name);$('#lightboxLatin').textContent=info?.latin??(v?.latin||card.latin||'');$('#lightboxFacts').replaceChildren(...(info?.lines||v?.facts||card.facts||[]).map(f=>Object.assign(document.createElement('li'),{textContent:loc(f)})));
-      const lb=$('#lightbox');lb.classList.toggle('notes',!!info);lb.hidden=false;gcAccessPoint();$('#lightboxInfo').scrollTop=0;const [frames,opts]=lightboxFrames();lightbox.from.style.visibility='hidden';
+      dressHeroArt($('#lightboxArt'),symbol);holoCardAttach($('#lightboxArt'),symbol);paintHolo(symbol);$('#lightboxInfo .featured-kicker').textContent=loc(info?.kicker||'CURRENT CARD');$('#lightboxName').textContent=loc(info?.name||v?.name||card.name);$('#lightboxLatin').textContent=info?.latin??(v?.latin||card.latin||'');$('#lightboxFacts').replaceChildren(...(info?.lines||v?.facts||card.facts||[]).map(f=>Object.assign(document.createElement('li'),{textContent:loc(f)})));
+      const lb=$('#lightbox'),pl=info?.player;lb.classList.toggle('notes',!!info);lb.classList.toggle('player',!!pl);$('#lightboxStats').hidden=$('#lightboxAction').hidden=!pl;
+      if(pl){fillPlayerStats(pl.row);const act=$('#lightboxAction');act.textContent=loc(pl.me?'CHANGE AVATAR':'Report or hide player');act.classList.toggle('report',!pl.me);act.onclick=()=>afterLightbox(()=>pl.me?openAvatarPicker():openReport(pl.row.id,pl.row.name))}
+      lb.hidden=false;gcAccessPoint();$('#lightboxInfo').scrollTop=0;const [frames,opts]=lightboxFrames();lightbox.from.style.visibility='hidden';
       $('#lightboxScrim').animate([{opacity:0},{opacity:1}],{duration:300,easing:'ease-out'});$('#lightboxClose').animate([{opacity:0},{opacity:1}],{duration:300,delay:200,fill:'backwards'});
       $('#lightboxInfo').animate([{opacity:0,transform:'translateY(18px)'},{opacity:1,transform:'none'}],{duration:340,delay:opts.duration*.55,easing:'cubic-bezier(.2,.8,.2,1)',fill:'backwards'});
       $('#lightboxCard').animate(frames,opts).onfinish=()=>{lightbox.busy=false};startMotes();playSound('pickup',{volume:.14,rate:.86});haptic('cardFlip')}
@@ -2909,6 +2929,306 @@
       try{const tiny=document.createElement('canvas');tiny.width=6;tiny.height=9;const tx=tiny.getContext('2d',{willReadFrequently:true});tx.drawImage(img,0,0,6,9);
         const d=tx.getImageData(0,0,6,9),p=d.data;for(let i=0;i<p.length;i+=4){const g=(p[i]+p[i+1]+p[i+2])/3;for(let c=0;c<3;c++)p[i+c]=Math.max(0,Math.min(255,(g+(p[i+c]-g)*1.8)*.8))}
         tx.putImageData(d,0,0);holoBases.set(src,tiny);return tiny}catch{return null}}
+    // Holo foil on the special cards (Paul, 2026-10-23), ported from React Bits' HoloCard (MIT + Commons Clause, (c) 2026 David Haz).
+    // A WebGL2 canvas over the lightbox face redraws the card's art with a foil pattern whose rainbow follows the card's turn (the
+    // sway, a drag spin and the phone's tilt), glitter along the frame, and a glare. POLY, the Joker and Kevin (with the vision monkeys
+    // that stand in for him) get it, each with its own pattern (holoLook). Without WebGL2 or with FX.holoCard off they keep the CSS shine.
+    const HOLO_PRESETS=['bursts','stars','shards','cosmos','rainbow','swirl','glitter','gold'],HOLO_VERT=`#version 300 es
+in vec2 position;
+void main() {
+  gl_Position = vec4(position, 0.0, 1.0);
+}
+`,HOLO_FRAG=`#version 300 es
+precision highp float;
+
+uniform sampler2D uArt;
+uniform vec2 uSize;
+uniform float uAspect;
+uniform vec2 uTilt;
+uniform vec2 uLight;
+uniform float uDistance;
+uniform int uPreset;
+uniform float uIntensity;
+uniform float uScale;
+uniform float uEdge;
+uniform float uFrame;
+uniform float uRadius;
+uniform float uGlare;
+uniform vec3 uFoil;
+uniform float uReady;
+
+out vec4 outColor;
+
+const float TAU = 6.28318530718;
+
+struct Foil {
+  float mask;
+  float angle;
+  float jitter;
+  vec2 facet;
+};
+
+float hash(vec2 p) {
+  p = fract(p * vec2(234.34, 435.345));
+  p += dot(p, p + 34.23);
+  return fract(p.x * p.y);
+}
+
+vec2 hash2(vec2 p) {
+  return vec2(hash(p), hash(p + 17.31));
+}
+
+vec3 hue(float t) {
+  t = abs(fract(t * 0.5) * 2.0 - 1.0);
+  vec3 c = mix(vec3(0.1, 0.25, 1.0), vec3(0.0, 0.85, 1.0), smoothstep(0.0, 0.25, t));
+  c = mix(c, vec3(0.25, 1.0, 0.2), smoothstep(0.25, 0.45, t));
+  c = mix(c, vec3(1.0, 0.92, 0.05), smoothstep(0.45, 0.65, t));
+  c = mix(c, vec3(1.0, 0.45, 0.05), smoothstep(0.65, 0.85, t));
+  return mix(c, vec3(0.95, 0.12, 0.3), smoothstep(0.85, 1.0, t));
+}
+
+Foil bursts(vec2 p) {
+  vec2 q = mat2(0.7071068, 0.7071068, -0.7071068, 0.7071068) * (p - vec2(0.5, 0.5 * uAspect)) / (0.283 / uScale);
+  vec2 d = fract(q) - 0.5;
+  float u = length(d) / 0.49;
+  float angle = atan(d.y, d.x);
+  if (u < 0.12) {
+    float ring = min(floor(u / 0.045 + 0.5), 2.0);
+    float count = max(1.0, ring * 6.0);
+    float spot = (floor(angle / TAU * count) + 0.5) / count * TAU;
+    vec2 dot = vec2(cos(spot), sin(spot)) * ring * 0.045;
+    float m = smoothstep(0.024, 0.012, length(d / 0.49 - dot));
+    return Foil(m, angle, 0.5, vec2(0.0));
+  }
+  bool inner = u < 0.66;
+  float slot = angle / TAU * (inner ? 56.0 : 72.0);
+  bool shifted = mod(floor(slot), 2.0) > 0.5;
+  vec2 band = inner ? (shifted ? vec2(0.45, 0.61) : vec2(0.33, 0.49)) : (shifted ? vec2(0.84, 0.99) : vec2(0.7, 0.85));
+  float across = abs(u - (band.x + band.y) * 0.5) / ((band.y - band.x) * 0.5);
+  float along = abs(fract(slot) - 0.5) * 2.0;
+  float width = inner ? 0.72 : 0.6;
+  float m = smoothstep(1.0, 0.78, across) * smoothstep(width, width - 0.2, along);
+  return Foil(m, angle, 0.5, vec2(0.0));
+}
+
+Foil stars(vec2 p) {
+  Foil best = Foil(0.0, 0.0, 0.0, vec2(0.0));
+  vec2 g = p / (0.08 / uScale);
+  vec2 base = floor(g);
+  for (int j = -1; j <= 1; j++) {
+    for (int i = -1; i <= 1; i++) {
+      vec2 id = base + vec2(float(i), float(j));
+      float pick = hash(id + 1.3);
+      vec2 d = g - (id + 0.5 + (hash2(id) - 0.5) * 0.55);
+      float m = smoothstep(0.07, 0.035, length(d));
+      if (pick < 0.62) {
+        float size = mix(0.16, 0.5, pow(hash(id + 9.0), 1.8));
+        float sector = TAU / (pick < 0.3 ? 4.0 : 5.0);
+        float k = abs(fract((atan(d.y, d.x) + hash(id + 4.0) * TAU) / sector) - 0.5) * 2.0;
+        float edge = size * mix(1.0, 0.36, pow(k, 0.6));
+        m = smoothstep(edge, edge * 0.8, length(d));
+      }
+      if (m > best.mask) best = Foil(m, hash(id + 6.0) * TAU, hash(id + 8.0), (hash2(id + 2.0) - 0.5) * 0.6);
+    }
+  }
+  return best;
+}
+
+Foil shards(vec2 p) {
+  vec2 g = p * 19.0 * uScale;
+  vec2 base = floor(g);
+  float best = 9.0;
+  float second = 9.0;
+  vec2 id = base;
+  for (int j = -1; j <= 1; j++) {
+    for (int i = -1; i <= 1; i++) {
+      vec2 cell = base + vec2(float(i), float(j));
+      float d = length(cell + 0.08 + hash2(cell) * 0.84 - g);
+      if (d < best) {
+        second = best;
+        best = d;
+        id = cell;
+      } else if (d < second) {
+        second = d;
+      }
+    }
+  }
+  float crack = smoothstep(0.015, 0.07, second - best);
+  float shine = 0.25 + 0.75 * pow(hash(id + 7.7), 2.0);
+  return Foil((0.2 + 0.8 * crack) * shine, hash(id + 3.17) * TAU, hash(id + 11.73), (hash2(id + 5.0) - 0.5) * 0.5);
+}
+
+Foil cosmos(vec2 p) {
+  Foil best = Foil(0.0, 0.0, 0.0, vec2(0.0));
+  vec2 g = p / (0.16 / uScale);
+  vec2 base = floor(g);
+  for (int j = -1; j <= 1; j++) {
+    for (int i = -1; i <= 1; i++) {
+      vec2 id = base + vec2(float(i), float(j));
+      vec2 d = g - (id + 0.5 + (hash2(id) - 0.5) * 0.7);
+      float size = mix(0.16, 0.52, hash(id + 2.0));
+      float r = length(d);
+      float m = max(smoothstep(0.05, 0.0, abs(r - size)), smoothstep(size, size - 0.04, r) * 0.22);
+      if (m > best.mask) best = Foil(m, hash(id + 6.0) * TAU + atan(d.y, d.x) * 0.5, hash(id + 1.0), (hash2(id + 4.0) - 0.5) * 0.5);
+    }
+  }
+  vec2 fine = p / (0.035 / uScale);
+  vec2 cell = floor(fine);
+  float dots = smoothstep(0.2, 0.1, length(fine - cell - 0.5 - (hash2(cell + 9.0) - 0.5) * 0.6)) * step(0.55, hash(cell + 2.0));
+  if (dots > best.mask) best = Foil(dots, hash(cell) * TAU, hash(cell + 3.0), (hash2(cell + 7.0) - 0.5) * 0.6);
+  return best;
+}
+
+Foil rainbow(vec2 p) {
+  return Foil(0.86 + 0.14 * hash(floor(p * 700.0 * uScale)), 0.2, 0.5, vec2(0.0));
+}
+
+Foil swirl(vec2 p) {
+  vec2 d = p - vec2(0.5, 0.42 * uAspect);
+  float angle = atan(d.y, d.x);
+  float rays = 0.55 + 0.45 * smoothstep(0.3, 0.7, abs(fract(angle / TAU * 60.0 * uScale) - 0.5) * 2.0);
+  return Foil(rays, angle, length(d), vec2(0.0));
+}
+
+Foil glitter(vec2 p) {
+  vec2 g = p * 72.0 * uScale;
+  vec2 cell = floor(g);
+  float size = mix(0.18, 0.4, hash(cell + 3.0));
+  float m = smoothstep(size, size * 0.55, length(fract(g) - 0.5 - (hash2(cell) - 0.5) * 0.5)) * step(0.25, hash(cell + 5.0));
+  return Foil(m, hash(cell + 7.0) * TAU, hash(cell + 9.0), (hash2(cell + 11.0) - 0.5) * 0.9);
+}
+
+Foil gold(vec2 p) {
+  Foil flake = glitter(p * 0.8);
+  if (flake.mask > 0.5) return flake;
+  float etch = 0.55 + 0.45 * smoothstep(0.2, 0.8, abs(fract((p.x * 0.6 + p.y) * 140.0 * uScale) - 0.5) * 2.0);
+  return Foil(etch, 0.9, 0.4, vec2(0.0));
+}
+
+vec3 sparkles(vec2 p, vec3 halfway, vec2 sweep, float awake) {
+  vec2 g = p * 62.0;
+  vec2 cell = floor(g);
+  vec2 d = fract(g) - 0.5 - (hash2(cell) - 0.5) * 0.36;
+  float spin = hash(cell + 3.0) * TAU;
+  d = mat2(cos(spin), -sin(spin), sin(spin), cos(spin)) * d;
+  vec2 a = abs(d);
+  float hexagon = max(a.x * 0.866 + a.y * 0.5, a.y);
+  float size = mix(0.22, 0.38, hash(cell + 2.0));
+  float piece = smoothstep(size, size - 0.07, hexagon) * step(0.42, hash(cell + 4.0));
+  vec3 facet = normalize(vec3((hash2(cell + 6.0) - 0.5) * 0.9, 1.0));
+  float flash = pow(max(dot(facet, halfway), 0.0), 6.0);
+  vec3 tint = hue(dot(sweep, vec2(cos(spin), sin(spin))) * 1.2 + dot(sweep, vec2(0.8, 0.6)) * 0.8 + hash(cell + 8.0) * 0.5);
+  vec3 color = piece * tint * (0.3 + 1.6 * flash) * awake;
+  vec2 fine = p * 210.0;
+  vec2 speckCell = floor(fine);
+  float speck = smoothstep(0.24, 0.0, length(fract(fine) - 0.5 - (hash2(speckCell) - 0.5) * 0.5)) * step(0.72, hash(speckCell + 1.0));
+  float speckFlash = pow(max(dot(normalize(vec3((hash2(speckCell + 2.0) - 0.5) * 0.9, 1.0)), halfway), 0.0), 10.0);
+  return color + vec3(1.2) * speck * speckFlash * (1.0 - piece);
+}
+
+void main() {
+  vec2 uv = vec2(gl_FragCoord.x / uSize.x, 1.0 - gl_FragCoord.y / uSize.y);
+  vec2 p = vec2(uv.x, uv.y * uAspect);
+  vec2 center = vec2(0.5, 0.5 * uAspect);
+  vec2 q = abs(p - center) - center + uRadius;
+  float outside = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - uRadius;
+  float pixel = 1.0 / uSize.x;
+  float alpha = clamp(0.5 - outside / pixel, 0.0, 1.0);
+  vec4 sampled = texture(uArt, uv);
+  if (uReady > 0.5) alpha *= sampled.a;
+  if (alpha <= 0.0) {
+    outColor = vec4(0.0);
+    return;
+  }
+  vec3 art = uReady > 0.5 ? pow(sampled.rgb, vec3(2.2)) : vec3(0.12);
+
+  mat3 rx = mat3(1.0, 0.0, 0.0, 0.0, cos(uTilt.x), sin(uTilt.x), 0.0, -sin(uTilt.x), cos(uTilt.x));
+  mat3 ry = mat3(cos(uTilt.y), 0.0, -sin(uTilt.y), 0.0, 1.0, 0.0, sin(uTilt.y), 0.0, cos(uTilt.y));
+  mat3 turn = rx * ry;
+  vec3 world = turn * vec3(p - center, 0.0);
+  vec3 view = normalize(transpose(turn) * (vec3(0.0, 0.0, uDistance) - world));
+  vec3 lamp = vec3((uLight - 0.5) * vec2(1.1, 1.1 * uAspect), 0.9);
+  vec3 light = normalize(transpose(turn) * (lamp - world));
+  vec3 halfway = normalize(light + view);
+  vec2 sweep = light.xy + view.xy;
+  float sheen = pow(max(halfway.z, 0.0), 10.0);
+  float shine = pow(max(halfway.z, 0.0), 80.0);
+  float frame = 1.0 - smoothstep(uFrame - pixel, uFrame + pixel, -outside);
+
+  Foil f;
+  if (uPreset == 0) f = bursts(p);
+  else if (uPreset == 1) f = stars(p);
+  else if (uPreset == 2) f = shards(p);
+  else if (uPreset == 3) f = cosmos(p);
+  else if (uPreset == 4) f = rainbow(p);
+  else if (uPreset == 5) f = swirl(p);
+  else if (uPreset == 6) f = glitter(p);
+  else f = gold(p);
+
+  vec3 metal = uPreset == 7 ? vec3(1.0, 0.74, 0.38) * dot(uFoil, vec3(0.3333)) * 1.15 : uFoil;
+  vec4 look = uPreset == 0 ? vec4(0.25, 1.9, 0.12, 1.0)
+    : uPreset == 1 ? vec4(0.6, 1.4, 0.3, 1.0)
+    : uPreset == 2 ? vec4(0.9, 0.9, 0.6, 0.5)
+    : uPreset == 3 ? vec4(0.7, 1.2, 0.35, 0.85)
+    : uPreset == 4 ? vec4(0.0, 2.2, 0.0, 0.45)
+    : uPreset == 5 ? vec4(1.6, 0.3, 0.0, 0.4)
+    : uPreset == 6 ? vec4(0.9, 1.0, 0.6, 1.0)
+    : vec4(0.3, 1.0, 0.2, 0.95);
+  vec2 dir = vec2(cos(f.angle), sin(f.angle));
+  float phase = dot(sweep, dir) * look.x + dot(sweep, vec2(0.8, 0.6)) * look.y + f.jitter * look.z;
+  float spoke = 1.0;
+  if (uPreset == 5) {
+    float facing = dot(normalize(sweep + 0.0001), dir);
+    phase = f.jitter * 2.4 + facing * 0.6 + length(sweep) * 0.8;
+    spoke = 0.3 + 0.7 * smoothstep(0.25, 0.95, abs(facing));
+  }
+  vec3 tint = hue(phase);
+  if (uPreset == 7) tint = mix(tint, metal, 0.65);
+  float glint = pow(max(dot(normalize(vec3(f.facet, 1.0)), halfway), 0.0), 24.0) * step(0.001, length(f.facet));
+  bool layered = uPreset == 2 || uPreset == 4 || uPreset == 5 || uPreset == 7;
+  vec3 foil = (layered ? tint : mix(tint, vec3(1.0), 0.12)) * (1.15 + 0.3 * sheen) + metal * glint * 1.2;
+  float tilted = smoothstep(0.02, 0.21, length(sin(uTilt)));
+  float awake = mix(0.2, 1.0, tilted);
+  float strength = uIntensity * f.mask * (1.0 - frame) * awake;
+  float band = uPreset == 5 ? spoke : layered ? 0.25 + 0.75 * smoothstep(0.3, 0.95, 0.5 + 0.5 * cos(phase * TAU * 0.5 + 1.3)) : 1.0;
+  vec3 color = layered
+    ? 1.0 - (1.0 - art) * (1.0 - clamp(foil * look.w * band * strength, 0.0, 1.0))
+    : mix(art, foil, clamp(strength * look.w, 0.0, 1.0));
+  color += sparkles(p, halfway, sweep, mix(0.55, 1.0, tilted)) * uEdge * frame;
+  color += uFoil * sheen * 0.12 * frame;
+  color += vec3(sheen * 0.07 + shine * 0.3) * uGlare;
+  color = pow(clamp(color, 0.0, 1.0), vec3(1.0 / 2.2));
+  outColor = vec4(color * alpha, alpha);
+}
+`;
+    const holoCard={gl:null,prog:null,tex:null,u:{},cv:null,ready:false,dead:false,look:null,radius:12,src:''};
+    const holoFoil=hex=>[1,3,5].map(i=>Math.pow(parseInt(hex.slice(i,i+2),16)/255,2.2));
+    function holoLook(symbol,src){if(symbol===POLY)return/ice/.test(src)?{preset:'shards',foil:'#dff3ff'}:{preset:'bursts',foil:'#ffe9a8'};
+      if(symbol===JOKER)return/gold/.test(src)?{preset:'gold',foil:'#ffd84d'}:/iceage/.test(src)?{preset:'shards',foil:'#dff3ff'}:{preset:'stars',foil:'#e2e6ec'};
+      if(symbol===KEVIN)return{preset:'cosmos',foil:'#cfe3ff'};return null}
+    function holoInit(){if(holoCard.prog||holoCard.dead)return!!holoCard.prog;const cv=document.createElement('canvas');cv.className='holo-card-canvas';cv.setAttribute('aria-hidden','true');
+      const gl=cv.getContext('webgl2',{alpha:true,premultipliedAlpha:true,antialias:false});if(!gl){holoCard.dead=true;return false}
+      const sh=(type,code)=>{const x=gl.createShader(type);gl.shaderSource(x,code);gl.compileShader(x);return gl.getShaderParameter(x,gl.COMPILE_STATUS)?x:null},v=sh(gl.VERTEX_SHADER,HOLO_VERT),f=sh(gl.FRAGMENT_SHADER,HOLO_FRAG);
+      if(!v||!f){holoCard.dead=true;return false}const prog=gl.createProgram();gl.attachShader(prog,v);gl.attachShader(prog,f);gl.bindAttribLocation(prog,0,'position');gl.linkProgram(prog);
+      if(!gl.getProgramParameter(prog,gl.LINK_STATUS)){holoCard.dead=true;return false}
+      gl.bindBuffer(gl.ARRAY_BUFFER,gl.createBuffer());gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
+      const tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+      for(const n of ['uArt','uSize','uAspect','uTilt','uLight','uDistance','uPreset','uIntensity','uScale','uEdge','uFrame','uRadius','uGlare','uFoil','uReady'])holoCard.u[n]=gl.getUniformLocation(prog,n);
+      cv.addEventListener('webglcontextlost',e=>{e.preventDefault();holoCard.ready=false;holoCard.prog=null;holoCard.cv=null;cv.remove()});
+      Object.assign(holoCard,{gl,prog,tex,cv});return true}
+    // Puts the foil on a freshly dressed lightbox face when its card has a look; the canvas fades in once the art is on the GPU.
+    function holoCardAttach(art,symbol){holoCard.ready=false;const img=art.querySelector('img.symbol-image'),look=img&&holoLook(symbol,img.src);if(!FX.holoCard||!look||!holoInit())return;
+      const {gl,cv}=holoCard,src=img.src;holoCard.look={preset:HOLO_PRESETS.indexOf(look.preset),foil:holoFoil(look.foil)};holoCard.src=src;cv.classList.remove('on');art.append(cv);
+      const im=new Image();im.decoding='async';im.onload=()=>{if(holoCard.src!==src||!holoCard.prog)return;try{gl.bindTexture(gl.TEXTURE_2D,holoCard.tex);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,false);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,im);gl.generateMipmap(gl.TEXTURE_2D);holoCard.ready=true;cv.classList.add('on')}catch{}};im.src=src}
+    // Each lightbox frame: the card's total turn (degrees) drives the foil; the light swings opposite the turn so the rainbow sweeps.
+    function holoCardDraw(rx,ry){if(!holoCard.ready||!lightbox.open||!holoCard.cv?.isConnected)return;const {gl,cv,u,look}=holoCard,R=Math.PI/180;if(Math.cos(ry*R)<-.05)return;
+      // Sized here, not on attach: the lightbox is still hidden (0x0) when the face is dressed.
+      const dpr=Math.min(devicePixelRatio||1,2),w=Math.max(1,Math.round(cv.clientWidth*dpr)),h=Math.max(1,Math.round(cv.clientHeight*dpr));if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;holoCard.radius=parseFloat(getComputedStyle(cv.parentElement).borderTopLeftRadius)||12}
+      gl.viewport(0,0,cv.width,cv.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);gl.useProgram(holoCard.prog);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,holoCard.tex);
+      gl.uniform1i(u.uArt,0);gl.uniform2f(u.uSize,cv.width,cv.height);gl.uniform1f(u.uAspect,cv.height/cv.width);gl.uniform2f(u.uTilt,rx*R,ry*R);
+      gl.uniform2f(u.uLight,Math.max(0,Math.min(1,.5-Math.sin(ry*R)*1.6)),Math.max(0,Math.min(1,.38+Math.sin(rx*R)*1.6)));gl.uniform1f(u.uDistance,1100/Math.max(1,cv.clientWidth));
+      gl.uniform1i(u.uPreset,look.preset);gl.uniform1f(u.uIntensity,.85);gl.uniform1f(u.uScale,1);gl.uniform1f(u.uEdge,.8);gl.uniform1f(u.uFrame,.04);gl.uniform1f(u.uRadius,holoCard.radius/Math.max(1,cv.clientWidth));gl.uniform1f(u.uGlare,.5);
+      gl.uniform3f(u.uFoil,...look.foil);gl.uniform1f(u.uReady,1);gl.drawArrays(gl.TRIANGLES,0,3)}
     const heroSrcOf=symbol=>{const v=packVariant(symbol);return v?cardImage('hero',v):HERO_IMAGES[symbol]};
     function prepHolo(symbol){const src=symbol&&heroSrcOf(symbol);if(!src||holoBases.has(src))return;(window.requestIdleCallback||setTimeout)(()=>holoBaseFor(src),{timeout:600})}
     function paintHolo(symbol){const cv=$('#holoBase'),cx=cv.getContext('2d');holoBase=holoBases.get(heroSrcOf(symbol))||null;
@@ -3176,14 +3496,14 @@
     function saveName(){const {name,error}=cleanName($('#nameInput').value);if(error){$('#nameError').textContent=loc(error);$('#nameInput').animate([{translate:'-6px 0'},{translate:'6px 0'},{translate:'0 0'}],{duration:180});return}
       progress.player={id:progress.player?.id||newId(),secret:progress.player?.secret||newId(),name};saveProgress();syncProfile();$('#nameDialog').classList.remove('show');$('#nameInput').blur();renderProfile();renderSettings();playSound('pickup',{volume:.2,rate:1.3});haptic('cardCaged')}
     function renderProfile(){
-      const player=progress.player,rating=ratingOf(progress.stats.scores),tier=tierFor(rating);$('#homeProfile').hidden=!player;if(!player)return;
+      const player=progress.player,rating=ratingOf(progress.stats.scores),tier=tierFor(rating);$('#settingsAvatarImg').src=cardImage('thumb',CARD_DATA[avatarOk(progress.avatar)?progress.avatar:DEFAULT_AVATAR]);$('#homeProfile').hidden=!player;if(!player)return;
       $('#homeTierBadge').innerHTML=tierBadge(tier,30);$('#homeName').textContent=player.name;$('#homeTierText').textContent=loc('{0} · TROOP LV {1}',loc(tier.name),troopLevel(progress.stats.xp));
       $('#settingsTierBadge').innerHTML=tierBadge(tier,24);$('#settingsNameText').textContent=player.name
     }
     $('#nameSave').onclick=saveName;$('#nameInput').onkeydown=e=>{if(e.key==='Enter')saveName()};$('#nameCancel').onclick=()=>$('#nameDialog').classList.remove('show');$('#settingsName').onclick=openNameDialog;
     // Android back gesture: the app calls this and leaves only when it returns false. It closes the top dialog, takes a level home,
     // and is swallowed while something must be answered (first name, reward prompts) or is mid-animation (expedition map).
-    window.__monkeyBack=()=>{const shown=id=>$(id).classList.contains('show');if(ex.busy)return true;if(lightbox.open){closeLightbox();return true}if(shown('#settings')){closeSettings();return true}if(shown('#reportDialog')){$('#reportDialog').classList.remove('show');return true}if(shown('#nameDialog')){if(progress.player)$('#nameCancel').click();return true}if(shown('#winOverlay')){$('#winHome').click();return true}if(shown('#overlay')){$('#failHome').click();return true}if(document.querySelector('.overlay.show'))return true;if($('#home').classList.contains('hidden')){$('#homeBtn').click();return true}return false};
+    window.__monkeyBack=()=>{const shown=id=>$(id).classList.contains('show');if(ex.busy)return true;if(lightbox.open){closeLightbox();return true}if(shown('#settings')){closeSettings();return true}if(shown('#avatarDialog')){$('#avatarDialog').classList.remove('show');return true}if(shown('#reportDialog')){$('#reportDialog').classList.remove('show');return true}if(shown('#nameDialog')){if(progress.player)$('#nameCancel').click();return true}if(shown('#winOverlay')){$('#winHome').click();return true}if(shown('#overlay')){$('#failHome').click();return true}if(document.querySelector('.overlay.show'))return true;if($('#home').classList.contains('hidden')){$('#homeBtn').click();return true}return false};
     // Game Center (iOS app): the app signs the player in at launch (the system banner) and calls __gameCenterReady with their
     // nickname. Scores go to two leaderboards, set up in App Store Connect with these ids. The Game Center button (access point)
     // shows on the home screen only, hidden while Settings is open.
@@ -3203,7 +3523,7 @@
     function flushSync(){
       if(!lbReady||!progress.player||!progress.pendingSync||progress.devReset)return Promise.resolve();if(lbSyncing)return lbSyncing;const p=progress.player;
       lbSyncing=lbCall('submit_score',{p_id:p.id,p_secret:p.secret,p_name:p.name,p_rating:ratingOf(progress.stats.scores),p_xp:progress.stats.xp,p_streak:liveStreak(),p_level:progress.level})
-        .then(rows=>{const before=progress.rank??null,after=rows[0]?.rank??null,oldScore=progress.lbScore??null;progress.pendingSync=false;progress.rank=after;progress.lbScore=rows[0]?.score??oldScore;saveProgress();return{before,after,oldScore}}).catch(()=>{}).finally(()=>{lbSyncing=null});return lbSyncing
+        .then(rows=>{const before=progress.rank??null,after=rows[0]?.rank??null,oldScore=progress.lbScore??null;progress.pendingSync=false;progress.rank=after;progress.lbScore=rows[0]?.score??oldScore;saveProgress();flushAvatar();return{before,after,oldScore}}).catch(()=>{}).finally(()=>{lbSyncing=null});return lbSyncing
     }
     addEventListener('online',()=>flushSync().then(flushTimes));
     // World records (level_records in supabase/leaderboard.sql): the fastest Normal clear of each level, shared by every player since
@@ -3225,13 +3545,16 @@
         catch(e){if(/bad values/.test(e.message)||!deal)delete progress.pendingTimes[k]}}saveProgress();return out})().finally(()=>{timesSyncing=null});return timesSyncing}
     function fetchWorldRecord(level,pack){if(!lbReady)return Promise.resolve(null);const k=recordKey(level,pack);return lbCall('level_record',{p_level:level,p_deal:dealFor(pack,level)}).then(rows=>{const r=rows[0]||{};worldRecords.set(k,r);return r}).catch(()=>worldRecords.get(k)??null)}
     const tierById=id=>TIERS.find(t=>t.id===id)||TIERS[0],MEDALS=['#ffd966','#e6ecf2','#e2a36b'];
-    function localRow(){const rating=ratingOf(progress.stats.scores);return{rank:null,id:progress.player?.id,name:progress.player?.name||loc('You'),score:boardScore(rating),rating,tier:tierFor(rating).id,streak:liveStreak(),xp:progress.stats.xp}}
+    function localRow(){const rating=ratingOf(progress.stats.scores);return{rank:null,id:progress.player?.id,name:progress.player?.name||loc('You'),score:boardScore(rating),rating,tier:tierFor(rating).id,streak:liveStreak(),xp:progress.stats.xp,level:progress.level,avatar:progress.avatar}}
     // Rows are built with textContent: names come from other players.
     function leaderRow(row){
-      const tier=tierById(row.tier),li=document.createElement('li'),me=row.id&&row.id===progress.player?.id,hidden=!me&&progress.hiddenPlayers?.includes(row.id);if(row.id&&!me){li.dataset.id=row.id;li.dataset.name=row.name}li.className=`lb-row${row.rank&&row.rank<=3?' top':''}${me?' me':''}`;li.style.setProperty('--tier',tier.colors[1]);if(row.rank<=3)li.style.setProperty('--medal',MEDALS[row.rank-1]);
+      const tier=tierById(row.tier),li=document.createElement('li'),me=row.id&&row.id===progress.player?.id,hidden=!me&&progress.hiddenPlayers?.includes(row.id);
+      // My own row shows the avatar picked on this phone even before set_avatar has posted it.
+      if(me&&progress.avatar!==undefined)row={...row,avatar:progress.avatar};li.playerRow=row;if(row.id&&!me){li.dataset.id=row.id;li.dataset.name=row.name}li.className=`lb-row${row.rank&&row.rank<=3?' top':''}${me?' me':''}`;li.style.setProperty('--tier',tier.colors[1]);if(row.rank<=3)li.style.setProperty('--medal',MEDALS[row.rank-1]);
       const rank=Object.assign(document.createElement('span'),{className:'lb-rank',textContent:row.rank??'—'}),badge=document.createElement('span');badge.innerHTML=tierBadge(tier,30);
       const who=Object.assign(document.createElement('span'),{className:'lb-who'});who.append(Object.assign(document.createElement('b'),{textContent:me?loc('{0} (you)',row.name):hidden?loc('Hidden player'):row.name}),Object.assign(document.createElement('small'),{textContent:loc('{0} · 🔥 {1} · TROOP LV {2}',loc(tier.name),row.streak,troopLevel(row.xp))}));
-      li.append(rank,badge.firstChild,who,Object.assign(document.createElement('span'),{className:'lb-score',textContent:row.score}));return li
+      const av=avatarOk(row.avatar)&&!hidden?Object.assign(document.createElement('img'),{className:'lb-avatar',src:cardImage('thumb',CARD_DATA[row.avatar]),alt:'',loading:'lazy'}):null;
+      li.append(rank,badge.firstChild,...av?[av]:[],who,Object.assign(document.createElement('span'),{className:'lb-score',textContent:row.score}));return li
     }
     function renderLeaders({top=[],me=null,status=''}={}){
       $('#leadersStatus').textContent=status;$('#leadersList').replaceChildren(...top.map(leaderRow));
@@ -3240,7 +3563,7 @@
     async function loadLeaders(){
       if(!lbReady){renderLeaders({status:loc('The online board isn’t connected yet. Your score and tier are saved and will post once it is.')});return}
       $('#leadersRefresh').classList.add('spin');$('#leadersStatus').textContent=loc('Loading the troop…');
-      try{await flushSync();flushTimes();const [top,me]=await Promise.all([lbCall('top_players',{p_limit:50}),progress.player?lbCall('player_rank',{p_id:progress.player.id}):Promise.resolve([])]);if(!$('#leaders').classList.contains('hidden'))renderLeaders({top,me:me[0],status:loc(top.length?'Normal clears count toward rank · daily streak adds up to +10%':'No scores yet. Clear a level to claim the top spot!')})}
+      try{await flushSync();flushTimes();flushAvatar();const [top,me]=await Promise.all([lbCall('top_players',{p_limit:50}),progress.player?lbCall('player_rank',{p_id:progress.player.id}):Promise.resolve([])]);if(!$('#leaders').classList.contains('hidden'))renderLeaders({top,me:me[0],status:loc(top.length?'Normal clears count toward rank · daily streak adds up to +10%':'No scores yet. Clear a level to claim the top spot!')})}
       catch{renderLeaders({status:loc('Can’t reach the leaderboard right now. Pull down to try again.')})}
       finally{$('#leadersRefresh').classList.remove('spin')}
     }
@@ -3251,7 +3574,63 @@
       const close=()=>$('#reportDialog').classList.remove('show'),hide=msg=>{progress.hiddenPlayers=[...new Set([...(progress.hiddenPlayers||[]),id])];saveProgress();close();loadLeaders().then(()=>{$('#leadersStatus').textContent=msg})};
       $('#reportName').onclick=()=>{if(lbReady&&progress.player)lbCall('report_player',{p_reporter:progress.player.id,p_secret:progress.player.secret,p_player:id}).catch(()=>{});hide(loc('Thanks, that name has been reported and the player is hidden for you.'))};
       $('#hidePlayer').onclick=()=>hide(loc('Player hidden on this phone.'));$('#reportCancel').onclick=close;$('#reportDialog').onclick=e=>{if(e.target===e.currentTarget)close()}}
-    $('#leadersList').onclick=e=>{const li=e.target.closest('.lb-row');if(li?.dataset.id)openReport(li.dataset.id,li.dataset.name)};
+    // Player cards (Paul, 2026-10-23): tapping a board row (yours too) opens that player's card in the lightbox: their avatar monkey,
+    // rank and tier, and a stats grid. The row's numbers show at once; player_profile fills in best streak, best rank, world records
+    // and the join date when it answers. Another player's card has a small link to the report dialog; yours opens the avatar picker.
+    // Hidden players skip the card and go straight to the report dialog, as before.
+    $('#leadersList').onclick=$('#leadersMe').onclick=e=>{const li=e.target.closest('.lb-row');if(li?.playerRow)openPlayerCard(li.playerRow,li)};
+    let playerCardId=null;
+    function openPlayerCard(row,li){
+      const me=!!row.id&&row.id===progress.player?.id;if(!me&&row.id&&progress.hiddenPlayers?.includes(row.id))return openReport(row.id,row.name);
+      const tier=tierById(row.tier);openLightbox({symbol:avatarOk(row.avatar)?row.avatar:DEFAULT_AVATAR,from:li.querySelector('.lb-avatar')||li.querySelector('.tier-badge')||li,kicker:row.rank?loc('#{0} ON THE LEADERBOARD',row.rank):loc('PLAYER CARD'),name:row.name,latin:loc(tier.name),lines:[],player:{row,me}});
+      if(!lightbox.open||!lbReady||!row.id)return;playerCardId=row.id;
+      lbCall('player_profile',{p_id:row.id}).then(([p])=>{if(!p||!lightbox.open||playerCardId!==row.id)return;fillPlayerStats(p);
+        const since=p.joined&&new Date(p.joined).toLocaleDateString(lang==='es'?'es':'en',{month:'short',year:'numeric'});if(since)$('#lightboxLatin').textContent=loc('{0} · SINCE {1}',loc(tier.name),since.toUpperCase())}).catch(()=>{})
+    }
+    function fillPlayerStats(r){const n=v=>v==null?'—':Number(v).toLocaleString();
+      const cells=[['SCORE',n(r.score)],['RANK',r.rank?`#${r.rank}`:'—'],['BEST RANK',r.best_rank?`#${r.best_rank}`:'—'],['TROOP LV',troopLevel(r.xp||0)],
+        ['STREAK',`🔥 ${r.streak??0}`],['BEST STREAK',r.best_streak==null?'—':`🔥 ${r.best_streak}`],['LEVELS CLEARED',r.level?n(Math.max(0,r.level-1)):'—'],['WORLD RECORDS',n(r.records)]];
+      $('#lightboxStats').replaceChildren(...cells.map(([k,v])=>{const d=document.createElement('div');d.append(Object.assign(document.createElement('b'),{textContent:v}),Object.assign(document.createElement('small'),{textContent:loc(k)}));return d}))}
+    // Closes the lightbox, then opens a dialog once it has flown home (at once if it was still opening).
+    function afterLightbox(fn){const quick=lightbox.busy;closeLightbox({instant:quick});setTimeout(fn,quick?0:420)}
+    // Avatars: the player's pick of the monkey cards from every chapter they've reached (its region deck, or its featured monkeys);
+    // the Bridge's five to start. Kept in progress.avatar and posted with set_avatar (avatarSync until it lands, retried after each
+    // profile post). Players with none show their tier badge on the board and DEFAULT_AVATAR on their card.
+    const DEFAULT_AVATAR='R1_CAPUCHIN',avatarOk=id=>!!id&&!!CARD_DATA[id]&&!CARD_DATA[id].food&&![JOKER,KEVIN,POLY].includes(id);
+    function avatarChoices(all=false){const reached=progress.level||1,out=[];CHAPTERS.forEach((c,i)=>{if(!all&&i*CHAPTER_LEN+1>reached)return;for(const id of c.region||c.featured||[])if(avatarOk(id)&&!out.includes(id))out.push(id)});return out}
+    // The picker: a 3D ring of the unlocked cards (after React Bits' CircularCarousel, MIT + Commons Clause, (c) 2026 David Haz). Drag or
+    // flick to turn it; it coasts, then springs onto the nearest card, which is the pick: its name shows below and CHOOSE takes it.
+    // Tapping a side card turns the ring to it; tapping the front card takes it. Cards darken as they turn away; a tick as each passes.
+    const AV_W=104,AV_GAP=18,avRing={ids:[],cards:[],step:0,r:0,angle:0,vel:0,target:0,drag:null,raf:0,last:0,front:-1,tickAt:0};
+    const wrapDeg=d=>((d+180)%360+360)%360-180;
+    function openAvatarPicker(){const ids=avatarChoices(),n=ids.length,cam=$('#avatarRingCam');
+      $('#avatarHint').textContent=loc('{0} of {1} monkeys unlocked · reach new chapters for more',n,avatarChoices(true).length);$('#avatarDialog').classList.add('show');
+      Object.assign(avRing,{ids,step:360/n,r:Math.max(AV_W,n*(AV_W+AV_GAP)/(2*Math.PI)),vel:0,drag:null,front:-1});avRing.angle=avRing.target=Math.max(0,ids.indexOf(progress.avatar))*avRing.step;
+      avRing.cards=ids.map((id,i)=>{const c=Object.assign(document.createElement('div'),{className:'avatar-card'});c.dataset.i=i;c.style.transform=`rotateY(${i*avRing.step}deg) translateZ(${avRing.r}px)`;c.append(Object.assign(document.createElement('img'),{src:cardImage('thumb',CARD_DATA[id]),alt:'',draggable:false}));return c});
+      cam.replaceChildren(...avRing.cards);avRingApply(true);playSound('pickup',{volume:.12,rate:1.1})}
+    function avRingApply(quiet){const {cards,step,angle}=avRing,n=cards.length,reach=n>12?72:100;$('#avatarRingCam').style.transform=`translateZ(${-avRing.r}px) rotateX(-4deg) rotateY(${-angle}deg)`;
+      cards.forEach((c,i)=>{const rel=Math.abs(wrapDeg(i*step-angle));c.style.visibility=rel<reach?'':'hidden';c.style.setProperty('--shade',Math.min(.75,rel/80).toFixed(3))});
+      const front=((Math.round(angle/step)%n)+n)%n;if(front===avRing.front)return;cards[avRing.front]?.classList.remove('on');cards[front].classList.add('on');avRing.front=front;
+      const card=CARD_DATA[avRing.ids[front]];$('#avatarPickName').textContent=cardName(avRing.ids[front]);$('#avatarPickLatin').textContent=card.latin||'';
+      const now=performance.now();if(!quiet&&now-avRing.tickAt>45){avRing.tickAt=now;playSound('pickup',{volume:.05,rate:1.7});haptic('rankPass')}}
+    function avRingTick(now){const dt=Math.min(.033,(now-(avRing.last||now))/1000);avRing.last=now;
+      if(!avRing.drag){const k=110,d=2*Math.sqrt(k);avRing.vel+=((avRing.target-avRing.angle)*k-avRing.vel*d)*dt;avRing.angle+=avRing.vel*dt;
+        if(Math.abs(avRing.target-avRing.angle)<.02&&Math.abs(avRing.vel)<.1){avRing.angle=avRing.target;avRing.vel=0;avRingApply();avRing.raf=avRing.last=0;return}}
+      avRingApply();avRing.raf=requestAnimationFrame(avRingTick)}
+    const avRingWake=()=>{if(!avRing.raf)avRing.raf=requestAnimationFrame(avRingTick)},avRingTurnTo=i=>{avRing.target=avRing.angle+wrapDeg(i*avRing.step-avRing.angle);avRingWake()};
+    {const ring=$('#avatarRing'),perPx=()=>180/(Math.PI*avRing.r);
+      ring.addEventListener('pointerdown',e=>{if(!avRing.cards.length)return;ring.setPointerCapture(e.pointerId);avRing.drag={x:e.clientX,y:e.clientY,a0:avRing.angle,lastX:e.clientX,lastT:e.timeStamp,moved:false};avRing.vel=0;avRingWake()});
+      ring.addEventListener('pointermove',e=>{const g=avRing.drag;if(!g)return;const dx=e.clientX-g.x;if(Math.abs(dx)>5)g.moved=true;if(!g.moved)return;avRing.angle=g.a0-dx*perPx();
+        const dt=Math.max(1,e.timeStamp-g.lastT);avRing.vel=avRing.vel*.4+(-(e.clientX-g.lastX)*perPx()/dt*1000)*.6;g.lastX=e.clientX;g.lastT=e.timeStamp});
+      const end=e=>{const g=avRing.drag;if(!g)return;avRing.drag=null;
+        if(!g.moved&&e.type==='pointerup'){const c=document.elementFromPoint(e.clientX,e.clientY)?.closest('.avatar-card');if(c){const i=+c.dataset.i;if(i===avRing.front)pickAvatar(avRing.ids[i]);else avRingTurnTo(i)}return}
+        if(e.timeStamp-g.lastT>90)avRing.vel=0;const coast=avRing.angle+avRing.vel*.32;avRing.target=Math.round(coast/avRing.step)*avRing.step;avRingWake()};
+      ring.addEventListener('pointerup',end);ring.addEventListener('pointercancel',end)}
+    $('#avatarChoose').onclick=()=>{if(avRing.ids.length)pickAvatar(avRing.ids[avRing.front])};
+    function pickAvatar(id){progress.avatar=id;progress.avatarSync=true;saveProgress();flushAvatar();renderProfile();$('#avatarDialog').classList.remove('show');playSound('pickup',{volume:.2,rate:1.3});haptic('cardFlip');if(!$('#leaders').classList.contains('hidden'))loadLeaders()}
+    function flushAvatar(){if(!lbReady||!progress.player||!progress.avatarSync||progress.devReset)return;
+      lbCall('set_avatar',{p_id:progress.player.id,p_secret:progress.player.secret,p_avatar:progress.avatar||null}).then(()=>{progress.avatarSync=false;saveProgress()}).catch(()=>{})}
+    $('#settingsAvatar').onclick=openAvatarPicker;$('#avatarCancel').onclick=()=>$('#avatarDialog').classList.remove('show');$('#avatarDialog').onclick=e=>{if(e.target===e.currentTarget)$('#avatarDialog').classList.remove('show')};
     // Climb screen (between levels): when a clear moves the player past others on the global board, their row rises past each one
     // with a tick (haptic rankPass), lifted, then slams into its new rank (jokerSlam, the howler). It shows after every level that
     // moves the player up (or puts them on the board). Needs players_passed (supabase/leaderboard.sql);

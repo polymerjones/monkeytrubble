@@ -74,7 +74,7 @@ iceage-04-dragon-jaw .5 .1 1.45
 iceage-05-whiteout-assassin .5 .02 1.45
 iceage-06-glacier-warden .5 .06 1.45
 iceage-07-avalanche .5 .08 1.45
-iceage-08-frostbow-hunter .48 0 1.45
+iceage-08-frostbow-hunter .4 0 1.45
 iceage-09-ashfall-chieftain .48 .04 1.45
 iceage-10-snowcloak-lancer .5 .04 1.45
 iceage-11-frostbeard-shaman .45 .04 1.45

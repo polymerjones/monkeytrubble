@@ -23,6 +23,16 @@ create index if not exists players_score_idx on public.players (score desc, upda
 -- name is hidden after reports (names shown as "Monkey xxxx" until the player picks a new one).
 alter table public.players add column if not exists prev_score int;
 alter table public.players add column if not exists name_hidden boolean not null default false;
+-- Added 2026-10-23 (player cards): the monkey card the player shows as their avatar (a CARD_DATA id, set by set_avatar), their
+-- longest daily streak and their best rank so far (both kept by submit_score).
+alter table public.players add column if not exists avatar text check (avatar ~ '^[A-Z0-9_]{1,24}$');
+alter table public.players add column if not exists best_streak int not null default 0;
+alter table public.players add column if not exists best_rank int;
+update public.players set best_streak = streak where best_streak < streak;
+-- The board functions below gained an avatar column (2026-10-23); a return type can't be changed in place.
+drop function if exists public.top_players(int);
+drop function if exists public.player_rank(uuid);
+drop function if exists public.players_passed(uuid, int);
 
 -- Name filter (App Store guideline 1.2): a name is refused if, lowercased with common look-alikes swapped (0->o, 1->i, 3->e,
 -- 4->a, 5->s, 7->t, @->a, $->s) and everything but letters removed, it contains one of these, or has "nazi" as a whole word (so
@@ -69,6 +79,7 @@ declare
   existing public.players;
   clean_name text := btrim(regexp_replace(coalesce(p_name, ''), '\s+', ' ', 'g'));
   new_score int;
+  new_rank bigint;
 begin
   if char_length(coalesce(p_secret, '')) < 16 then raise exception 'bad secret'; end if;
   if char_length(clean_name) not between 2 and 16 then raise exception 'bad name'; end if;
@@ -79,34 +90,36 @@ begin
 
   select * into existing from public.players where id = p_id;
   if not found then
-    insert into public.players (id, secret_hash, name, rating, score, xp, streak, level, tier)
-    values (p_id, crypt(p_secret, gen_salt('bf')), clean_name, p_rating, new_score, p_xp, p_streak, p_level, tier_for(p_rating));
+    insert into public.players (id, secret_hash, name, rating, score, xp, streak, best_streak, level, tier)
+    values (p_id, crypt(p_secret, gen_salt('bf')), clean_name, p_rating, new_score, p_xp, p_streak, p_streak, p_level, tier_for(p_rating));
   else
     if existing.secret_hash <> crypt(p_secret, existing.secret_hash) then raise exception 'bad secret'; end if;
     update public.players set name = clean_name, rating = p_rating, score = new_score, prev_score = existing.score,
-      xp = greatest(existing.xp, p_xp), streak = p_streak, level = greatest(existing.level, p_level), tier = tier_for(p_rating),
+      xp = greatest(existing.xp, p_xp), streak = p_streak, best_streak = greatest(existing.best_streak, p_streak), level = greatest(existing.level, p_level), tier = tier_for(p_rating),
       name_hidden = existing.name_hidden and existing.name = clean_name, updated_at = now()
     where id = p_id;
     -- A new name starts clean.
     if existing.name <> clean_name then delete from public.name_reports where player = p_id; end if;
   end if;
-  return query select (select count(*) + 1 from public.players p where p.score > new_score), new_score, tier_for(p_rating);
+  new_rank := (select count(*) + 1 from public.players p where p.score > new_score);
+  if new_score > 0 then update public.players set best_rank = least(coalesce(best_rank, new_rank), new_rank) where id = p_id; end if;
+  return query select new_rank, new_score, tier_for(p_rating);
 end $$;
 
 -- Top of the global board.
 create or replace function public.top_players(p_limit int default 50)
-returns table (rank bigint, id uuid, name text, score int, rating int, tier text, streak int, xp int, level int)
+returns table (rank bigint, id uuid, name text, score int, rating int, tier text, streak int, xp int, level int, avatar text)
 language sql stable security definer set search_path = public as $$
   -- Players at 0 (named, but no level cleared yet) aren't listed until they score (added 2026-10-13).
-  select rank() over (order by p.score desc), p.id, shown_name(p), p.score, p.rating, p.tier, p.streak, p.xp, p.level
+  select rank() over (order by p.score desc), p.id, shown_name(p), p.score, p.rating, p.tier, p.streak, p.xp, p.level, p.avatar
   from public.players p where p.score > 0 order by p.score desc, p.updated_at limit least(greatest(p_limit, 1), 200)
 $$;
 
 -- One player's row and rank (for the pinned "you" row).
 create or replace function public.player_rank(p_id uuid)
-returns table (rank bigint, id uuid, name text, score int, rating int, tier text, streak int, xp int, level int)
+returns table (rank bigint, id uuid, name text, score int, rating int, tier text, streak int, xp int, level int, avatar text)
 language sql stable security definer set search_path = public as $$
-  select (select count(*) + 1 from public.players o where o.score > p.score), p.id, shown_name(p), p.score, p.rating, p.tier, p.streak, p.xp, p.level
+  select (select count(*) + 1 from public.players o where o.score > p.score), p.id, shown_name(p), p.score, p.rating, p.tier, p.streak, p.xp, p.level, p.avatar
   from public.players p where p.id = p_id
 $$;
 
@@ -123,11 +136,11 @@ grant execute on function public.player_rank(uuid) to anon, authenticated;
 -- submit_score), so the result is bounded by a real score change. Drives the climb screen between levels.
 drop function if exists public.players_passed(uuid, int, int);
 create or replace function public.players_passed(p_id uuid, p_limit int default 5)
-returns table (rank bigint, id uuid, name text, score int, rating int, tier text, streak int, xp int, level int, passed bigint)
+returns table (rank bigint, id uuid, name text, score int, rating int, tier text, streak int, xp int, level int, avatar text, passed bigint)
 language sql stable security definer set search_path = public as $$
   with me as (select p.score, p.prev_score from public.players p where p.id = p_id and p.prev_score is not null),
   passed as (select p.* from public.players p, me where p.id <> p_id and p.score > me.prev_score and p.score < me.score)
-  select (select count(*) + 1 from public.players o where o.score > q.score), q.id, shown_name(q), q.score, q.rating, q.tier, q.streak, q.xp, q.level,
+  select (select count(*) + 1 from public.players o where o.score > q.score), q.id, shown_name(q), q.score, q.rating, q.tier, q.streak, q.xp, q.level, q.avatar,
     (select count(*) from passed)
   from passed q order by q.score desc, q.updated_at limit least(greatest(p_limit, 1), 20)
 $$;
@@ -205,3 +218,31 @@ revoke all on function public.submit_time(uuid, text, int, int, int) from public
 revoke all on function public.level_record(int, int) from public;
 grant execute on function public.submit_time(uuid, text, int, int, int) to anon, authenticated;
 grant execute on function public.level_record(int, int) to anon, authenticated;
+
+-- Added 2026-10-23: player cards. Tapping a leaderboard row opens that player's card (their avatar monkey and stats).
+-- set_avatar: the player picks one of their unlocked monkey cards (null clears it). The id is only checked for shape; the game
+-- shows the default card for an id it doesn't know.
+create or replace function public.set_avatar(p_id uuid, p_secret text, p_avatar text)
+returns void language plpgsql security definer set search_path = public, extensions as $$
+declare me public.players;
+begin
+  if p_avatar is not null and p_avatar !~ '^[A-Z0-9_]{1,24}$' then raise exception 'bad avatar'; end if;
+  select * into me from public.players where id = p_id;
+  if not found or me.secret_hash <> crypt(coalesce(p_secret, ''), me.secret_hash) then raise exception 'bad secret'; end if;
+  update public.players set avatar = p_avatar where id = p_id;
+end $$;
+
+-- Everything a player card shows: the board row plus best streak, best rank, world records held and when they joined.
+create or replace function public.player_profile(p_id uuid)
+returns table (rank bigint, id uuid, name text, score int, rating int, tier text, streak int, best_streak int, best_rank int, xp int,
+  level int, avatar text, records bigint, joined timestamptz)
+language sql stable security definer set search_path = public as $$
+  select (select count(*) + 1 from public.players o where o.score > p.score), p.id, shown_name(p), p.score, p.rating, p.tier, p.streak,
+    greatest(p.best_streak, p.streak), p.best_rank, p.xp, p.level, p.avatar, (select count(*) from public.level_records r where r.player = p.id), p.created_at
+  from public.players p where p.id = p_id
+$$;
+
+revoke all on function public.set_avatar(uuid, text, text) from public;
+revoke all on function public.player_profile(uuid) from public;
+grant execute on function public.set_avatar(uuid, text, text) to anon, authenticated;
+grant execute on function public.player_profile(uuid) to anon, authenticated;
