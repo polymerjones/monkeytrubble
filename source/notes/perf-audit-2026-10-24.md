@@ -252,3 +252,29 @@ Note: the `Power Profiler` template can't record all processes at once, so recor
 - **Memory peaks.** Each open card or player card temporarily costs ~150–250 MB (likely the lightbox card's 3D layers at 3×: face, foil, foil texture, back, glare).
 - **Baseline.** ~550–590 MB on a fresh launch.
 - **Smaller items:** the card-view sparkles at 30 fps, the audio engine sleeping after silence, the tips loop resting.
+
+---
+
+## 8. Second memory round and final device test (2026-10-24, night)
+
+**Built**, behind the `memLite` perf switch unless noted:
+- **Hidden screens:** the level's scenery (3 layers ~17 MB each at 3×, plus the slat and ambient canvases) is off the page while home is up. Home is off the page once its fade-out ends.
+- **Card view:** the lightbox card's back face exists only while the card is turned past edge-on, and its holo band is narrower.
+- **Sounds:** the Halloween-only sounds (~10 MB decoded) load when a Halloween level is coming.
+- **Small battery items:** sparkles at 30 fps; the audio engine naps after 10 s of silence when no music plays (it wakes on a sound or when music starts); the tips loop rests with the scenery.
+- **Puzzles:** the painting hint is visible again (14%), with no "goes here" outline; the page turn is now one fluid two-board slide.
+- **Win rays:** tapping the win screen no longer stops the rays' turn.
+
+**Final device test** (fresh launch, game's web process):
+
+| Scene | Start of day | Final |
+|---|---|---|
+| Home idle: memory | 547–585 MB | **510 MB** |
+| Home idle: CPU | 32% | **13.9%** |
+| Player cards: peak memory | 945–1,065 MB (stayed up) | **783 MB**, settles ~700 MB |
+| Halloween level with ads, to the win | climbed to 1.55 GB, **killed** | 380–1,020 MB swings, **ends 575 MB**, no crash |
+
+**Still worth doing later:**
+- The peaks during a level (~1 GB) come from the transitions and scenes: the win screen, the POLY show, the streak scene.
+- ~72 MB of decoded sounds load at launch; calls could load per chapter.
+- Remaining idle CPU on home (~14%) is mostly WebKit compositing the home art and the ticker strip with its edge-fade mask.
