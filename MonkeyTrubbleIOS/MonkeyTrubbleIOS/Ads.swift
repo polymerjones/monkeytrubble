@@ -14,6 +14,8 @@ final class Ads: NSObject, FullScreenContentDelegate {
     private let unitID = Bundle.main.object(forInfoDictionaryKey: "AdMobRewardedID") as? String ?? ""
     private var started = false
     private var ad: RewardedAd?
+    // AdMob rewarded ads expire an hour after loading; one kept past maxAge is dropped and a fresh one loaded (a stale one can freeze).
+    private var loadedAt = Date.distantPast
     private var loading = false
     private var showing = false
     private var earned = false
@@ -23,6 +25,7 @@ final class Ads: NSObject, FullScreenContentDelegate {
     private var giveUp: DispatchWorkItem?
     private static let waitSeconds = 8.0
     private static let quietMs = 120
+    private static let maxAge: TimeInterval = 55 * 60
 
     func attach(_ webView: WKWebView) {
         self.webView = webView
@@ -80,6 +83,7 @@ final class Ads: NSObject, FullScreenContentDelegate {
                 guard let self else { return }
                 self.loading = false
                 self.ad = loaded
+                self.loadedAt = Date()
                 guard let nonce = self.waiting else { return }
                 self.waiting = nil
                 self.giveUp?.cancel()
@@ -97,6 +101,7 @@ final class Ads: NSObject, FullScreenContentDelegate {
             return
         }
         guard let nonce = message["nonce"] as? String, !nonce.isEmpty else { return }
+        if ad != nil, Date().timeIntervalSince(loadedAt) > Self.maxAge { ad = nil }
         if showing || waiting != nil {
             report(nonce, "unavailable")
         } else if ad != nil {

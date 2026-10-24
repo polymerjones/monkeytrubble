@@ -55,7 +55,7 @@ build_portrait "$HW/whitehandgibbon.png" halloween-20-gibbon
 build_portrait "$HW/jokerhowler-real.png" halloween-joker
 # Ice Age pack (chapter 11, ../source/art/iceage): iceage-NN-slug.jpg plus iceage-joker.jpg, flat 2:3 renders (1152x1728).
 # The art is small full-body figures, so the board thumb is a zoomed 2:3 window on head and torso (build_zoom); the hero keeps the
-# whole picture. Columns: name, centre x and top of the window (fractions of the picture), zoom. Close-ups stay at zoom 1.
+# whole picture. Columns: name, centre x and top of the window (fractions of the picture), zoom (1.45 since 2026-10-22, was 1.25). Close-ups stay at zoom 1.
 build_zoom() {
   W=$(sips -g pixelWidth "$1" | awk '/pixelWidth/{print $2}'); H=$(sips -g pixelHeight "$1" | awk '/pixelHeight/{print $2}')
   set -- "$1" "$2" $(awk -v W="$W" -v H="$H" -v cx="$3" -v top="$4" -v z="$5" 'BEGIN{w=int(W/z);h=int(H/z);x=int(cx*W-w/2);y=int(top*H);
@@ -68,32 +68,32 @@ while read -r name cx top zoom; do
   build_zoom "../source/art/iceage/$name.jpg" "$name" "$cx" "$top" "$zoom"
 done <<'EOF_ICE'
 iceage-01-ember-cub .5 0 1
-iceage-02-mammoth-stalker .45 0 1.25
-iceage-03-dragon-tooth .5 .1 1.25
-iceage-04-dragon-jaw .5 .1 1.25
-iceage-05-whiteout-assassin .5 .02 1.25
-iceage-06-glacier-warden .5 .06 1.25
-iceage-07-avalanche .5 .08 1.25
-iceage-08-frostbow-hunter .48 0 1.25
-iceage-09-ashfall-chieftain .48 .04 1.25
-iceage-10-snowcloak-lancer .5 .04 1.25
-iceage-11-frostbeard-shaman .45 .04 1.25
+iceage-02-mammoth-stalker .45 0 1.45
+iceage-03-dragon-tooth .5 .1 1.45
+iceage-04-dragon-jaw .5 .1 1.45
+iceage-05-whiteout-assassin .5 .02 1.45
+iceage-06-glacier-warden .5 .06 1.45
+iceage-07-avalanche .5 .08 1.45
+iceage-08-frostbow-hunter .48 0 1.45
+iceage-09-ashfall-chieftain .48 .04 1.45
+iceage-10-snowcloak-lancer .5 .04 1.45
+iceage-11-frostbeard-shaman .45 .04 1.45
 iceage-12-golden-snow-king .5 0 1
-iceage-13-snow-ronin .5 .03 1.25
-iceage-14-atlas-sentinel .48 .02 1.25
-iceage-15-flint-knapper .48 .05 1.25
-iceage-16-black-ice-prowler .5 .1 1.25
-iceage-17-white-mane-warlord .45 .06 1.25
-iceage-18-river-sage .47 .03 1.25
-iceage-19-river-seer .47 .03 1.25
-iceage-20-blood-oath-raider .47 .02 1.25
-iceage-21-blood-oath-ravager .47 .02 1.25
-iceage-22-bonefire-shaman .52 .05 1.25
-iceage-23-spear-runner .5 .07 1.25
-iceage-24-berserker .52 .05 1.25
-iceage-25-skull-taker .45 .06 1.25
-iceage-26-permafrost-titan .5 .05 1.25
-iceage-27-permafrost-tyrant .5 .05 1.25
+iceage-13-snow-ronin .5 .03 1.45
+iceage-14-atlas-sentinel .48 .02 1.45
+iceage-15-flint-knapper .48 .05 1.45
+iceage-16-black-ice-prowler .5 .1 1.45
+iceage-17-white-mane-warlord .45 .06 1.45
+iceage-18-river-sage .47 .03 1.45
+iceage-19-river-seer .47 .03 1.45
+iceage-20-blood-oath-raider .47 .02 1.45
+iceage-21-blood-oath-ravager .47 .02 1.45
+iceage-22-bonefire-shaman .52 .05 1.45
+iceage-23-spear-runner .5 .07 1.45
+iceage-24-berserker .52 .05 1.45
+iceage-25-skull-taker .45 .06 1.45
+iceage-26-permafrost-titan .5 .05 1.45
+iceage-27-permafrost-tyrant .5 .05 1.45
 iceage-28-first-selfie .5 0 1
 iceage-joker .5 0 1
 EOF_ICE

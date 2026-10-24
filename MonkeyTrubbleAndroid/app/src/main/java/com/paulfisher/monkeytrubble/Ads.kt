@@ -3,6 +3,7 @@ package com.paulfisher.monkeytrubble
 import android.app.Activity
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
@@ -28,6 +29,8 @@ class Ads(private val activity: Activity, private val evaluate: (String) -> Unit
     private val consent = UserMessagingPlatform.getConsentInformation(activity)
     private val started = AtomicBoolean(false)
     private var ad: RewardedAd? = null
+    // AdMob rewarded ads expire an hour after loading; one kept past MAX_AGE_MS is dropped and a fresh one loaded (a stale one can freeze).
+    private var loadedAt = 0L
     private var loading = false
     private var showing = false
     // A tap that arrived while the ad was still loading; it plays once the load finishes or gives up after WAIT_MS.
@@ -75,6 +78,7 @@ class Ads(private val activity: Activity, private val evaluate: (String) -> Unit
             override fun onAdLoaded(loaded: RewardedAd) {
                 loading = false
                 ad = loaded
+                loadedAt = SystemClock.elapsedRealtime()
                 waiting?.let { waiting = null; main.removeCallbacks(giveUp); play(it) }
             }
 
@@ -92,6 +96,7 @@ class Ads(private val activity: Activity, private val evaluate: (String) -> Unit
             return
         }
         val nonce = message.optString("nonce").takeIf { it.isNotEmpty() } ?: return
+        if (ad != null && SystemClock.elapsedRealtime() - loadedAt > MAX_AGE_MS) ad = null
         when {
             showing || waiting != null -> report(nonce, "unavailable")
             ad != null -> play(nonce)
@@ -138,5 +143,6 @@ class Ads(private val activity: Activity, private val evaluate: (String) -> Unit
 
     companion object {
         private const val WAIT_MS = 8_000L
+        private const val MAX_AGE_MS = 55 * 60_000L
     }
 }
