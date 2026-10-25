@@ -269,7 +269,9 @@
     .ss-day{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;color:#8fb59a;font:800 .62rem system-ui,sans-serif}
     .ss-day i{width:38px;height:38px;display:grid;place-items:center;border-radius:50%;background:#0006;box-shadow:inset 0 2px 6px #000a;font-style:normal;font-size:1.25rem}
     .ss-day.past i,.ss-day.today.done i{background:radial-gradient(circle,#ffcf5a,#e8891d);box-shadow:0 2px 0 #7a4210}
-    .ss-day .ss-chest{width:150%;height:150%;object-fit:contain;filter:drop-shadow(0 2px 2px #000a)}.ss-day.iced i{background:radial-gradient(circle,#dff7ff,#7fc7ee);box-shadow:0 2px 0 #2f6f99}
+    .ss-day .ss-chest{width:118%;height:118%;margin:-9%;object-fit:contain;filter:drop-shadow(0 1px 1px #000a)}
+    /* Day 7 (Paul's pick, 2026-10-24): the chest sits in its own slot inside a gold ring with a soft glow. */
+    .ss-day.chest-day i{overflow:visible;background:radial-gradient(circle,#3a2a10,#1a1206);box-shadow:0 0 0 2px #ffd84d,0 0 12px #ffd84d88}.ss-day.iced i{background:radial-gradient(circle,#dff7ff,#7fc7ee);box-shadow:0 2px 0 #2f6f99}
     .ss-day.today{color:#fff}
     .ss-day .ring{position:absolute;top:0;left:50%;width:38px;height:38px;margin-left:-19px;border-radius:50%;box-shadow:0 0 0 3px #ffd84d;opacity:0;pointer-events:none}
     .ss-actions{display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;max-width:340px;margin-top:6px;min-height:64px}
@@ -4209,7 +4211,7 @@ void main() {
         // This week's row (the streak in 7-day rounds; the 7th day is a gift): past days lit (thawed ones iced), a banana coin lands on today.
         {const pos=(to-1)%7,week=$('#ssWeek'),iced=progress.streak.iced||[];let today=null;
           for(let k=0;k<7;k++){const date=localDate(k-pos),d=new Date(`${date}T12:00`),day=document.createElement('div'),dot=document.createElement('i');
-            day.className=`ss-day${k<pos?iced.includes(date)?' past iced':' past':''}${k===pos?' today':''}`;dot.textContent=k<pos?iced.includes(date)?'🧊':'🔥':'';if(k===6&&k>=pos)dot.append(chestIcon());
+            day.className=`ss-day${k<pos?iced.includes(date)?' past iced':' past':''}${k===pos?' today':''}${k===6?' chest-day':''}`;dot.textContent=k<pos?iced.includes(date)?'🧊':'🔥':'';if(k===6&&k>=pos)dot.append(chestIcon());
             day.append(dot,loc('SMTWTFS')[d.getDay()]);if(k===pos){today=day;const ring=document.createElement('span');ring.className='ring';day.append(ring)}week.append(day)}
           anim(week,[{opacity:0,transform:'translateY(12px)'},{opacity:1,transform:'none'}],{duration:320,easing:'cubic-bezier(.2,.8,.2,1)'});await nap(380);
           const dot=today.querySelector('i');dot.textContent='🍌';anim(dot,[{transform:'translateY(-70px) rotateY(0deg) scale(1.3)',opacity:0},{transform:'translateY(-30px) rotateY(540deg) scale(1.2)',opacity:1,offset:.5},{transform:'none'}],{duration:620,easing:'cubic-bezier(.3,.8,.3,1)'});
