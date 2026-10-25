@@ -32,7 +32,7 @@
     .rain::after{content:"010101  ZXM  ##  ╬╬  █▓█  AEF  <=>  010101  ZXM  ##  ╬╬  █▓█  AEF  <=>";position:absolute;inset:-20%;color:#35ef70;font-size:15px;line-height:3.5;letter-spacing:11px;opacity:.12;transform:rotate(4deg);animation:drift 11s linear infinite reverse}
     @property --glow-angle{syntax:'<angle>';initial-value:0deg;inherits:false}@keyframes drift{to{translate:0 220px}}@keyframes slotPop{45%{transform:scale(1.2);background:#eaffef;color:#001b08;box-shadow:0 0 40px var(--accent-lift)}100%{transform:scale(.25);opacity:0}}@keyframes gradientOrbit{to{--glow-angle:360deg}}@keyframes touchGlow{0%,100%{opacity:0}25%,70%{opacity:1}}@keyframes silverFoil{from{transform:translate3d(-135%,0,0) skewX(-13deg)}to{transform:translate3d(235%,0,0) skewX(-13deg)}}@keyframes holoShift{0%{background-position:0% 45%,0 0,30% 20%}50%{background-position:100% 55%,16px 22px,70% 80%}100%{background-position:0% 45%,32px 44px,30% 20%}}
     .app{min-height:100vh;display:flex;flex-direction:column}.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 24px;border-bottom:1px solid var(--line-deep);background:#020905dc;backdrop-filter:blur(12px)}
-    .asset-loader{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:28px;background:radial-gradient(circle at 50% 42%,#092615 0,var(--bg-deep) 45%,#000 82%);transition:opacity .32s ease,visibility .32s ease}.asset-loader.ready{opacity:0;visibility:hidden;pointer-events:none}.loader-box{width:min(390px,88vw);text-align:center}.loader-logo{display:block;width:min(74vw,340px);margin:0 auto;filter:drop-shadow(0 3px 8px #000d)}.loader-status{margin:16px 0 9px;color:var(--text-soft);font-size:.7rem;letter-spacing:.14em}.loader-track{height:6px;overflow:hidden;border:1px solid #216f3a;border-radius:999px;background:var(--bg-ink);box-shadow:0 0 20px #1eff6830}.loader-fill{width:0;height:100%;background:linear-gradient(90deg,#16833c,#65ff91,var(--text-pale));box-shadow:0 0 13px var(--green);transition:width .12s ease}
+    .asset-loader{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:28px;background:radial-gradient(circle at 50% 42%,#092615 0,var(--bg-deep) 45%,#000 82%);transition:opacity .32s ease,visibility .32s ease}.asset-loader.ready{opacity:0;visibility:hidden;pointer-events:none}.asset-loader[hidden]{display:none}.loader-box{width:min(390px,88vw);text-align:center}.loader-logo{display:block;width:min(74vw,340px);margin:0 auto;filter:drop-shadow(0 3px 8px #000d)}.loader-status{margin:16px 0 9px;color:var(--text-soft);font-size:.7rem;letter-spacing:.14em}.loader-track{height:6px;overflow:hidden;border:1px solid #216f3a;border-radius:999px;background:var(--bg-ink);box-shadow:0 0 20px #1eff6830}.loader-fill{width:0;height:100%;background:linear-gradient(90deg,#16833c,#65ff91,var(--text-pale));box-shadow:0 0 13px var(--green);transition:width .12s ease}
     .asset-loader.fun .loader-logo{width:min(54vw,250px)}.loader-fun{display:grid;justify-items:center;gap:6px;margin-top:22px;animation:loaderFunIn .5s ease both}.loader-fun[hidden]{display:none}@keyframes loaderFunIn{from{opacity:0;translate:0 10px}}
     .loader-card{width:min(36vw,150px);aspect-ratio:2/3;perspective:700px;touch-action:none;cursor:grab;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}.loader-card:active{cursor:grabbing}
     .loader-card-inner{width:100%;height:100%;border-radius:10px;overflow:hidden;background:var(--bg-ink);box-shadow:0 10px 26px #000c,0 0 0 2px #216f3a,0 0 22px #1eff6830;will-change:transform}.loader-card-inner{background:linear-gradient(110deg,#0b2414 30%,#164a28 50%,#0b2414 70%) 0 0/250% 100%;animation:loaderShimmer 1.4s linear infinite}@keyframes loaderShimmer{to{background-position:-250% 0}}.loader-card img{display:block;width:100%;height:100%;object-fit:cover;pointer-events:none;-webkit-user-drag:none;opacity:0;transition:opacity .3s ease}.loader-card img.in{opacity:1}
@@ -87,8 +87,16 @@
     .byline-poly-btn.fresh .byline-poly{animation:bylinePulse 2.6s ease-in-out infinite}html.fx-homeRest .byline-poly-btn.fresh .byline-poly{animation-name:playPulse}
     html.fx-homeRest body.scene-rest #home *,html.fx-homeRest body.home-covered #home *{animation-play-state:paused!important}html.fx-homeRest body.home-covered #home .home-card{visibility:hidden}
     html.fx-memLite body.at-home .bg-trial,html.fx-memLite body.at-home #microSlats,html.fx-memLite body.at-home .ambient-canvas,html.fx-memLite body.at-home .bg-baked,html.fx-memLite body.home-gone #home{display:none!important}
-    html.fx-memLite #lightboxCard:not(.show-back) .lightbox-back{display:none}html.fx-memLite .back-holo{inset:0 -60%}
-    html.fx-homeRest body.scene-rest .board-piece,html.fx-homeRest body.at-home .board-piece{animation-play-state:paused}@keyframes bylinePulse{0%,100%{scale:1;box-shadow:1px 1px 0 #b0822d,2px 2px 0 #614214,0 2px 6px #000c}50%{scale:1.14;box-shadow:1px 1px 0 #b0822d,2px 2px 0 #614214,0 0 12px 3px #ffd84dcc}}@media (prefers-reduced-motion:reduce){.byline-poly-btn.fresh .byline-poly{animation:none;box-shadow:1px 1px 0 #b0822d,2px 2px 0 #614214,0 0 10px 2px #ffd84dcc}}.byline-poly{width:22px;height:33px;object-fit:cover;border-radius:3px;border:1.5px solid #ffd84d;box-shadow:1px 1px 0 #b0822d,2px 2px 0 #614214,0 2px 6px #000c;rotate:-8deg;flex:none}.home-byline{color:#bfffd0;font:800 .66rem system-ui,sans-serif;letter-spacing:.3em;text-align:center;text-shadow:0 1px 3px #000,0 0 10px #000c}.home-logo img{display:block;width:min(74vw,340px);max-height:16vh;object-fit:contain;filter:drop-shadow(0 3px 8px #000d)}
+    html.fx-memLite #lightboxCard:not(.show-back) .lightbox-back{display:none}html.fx-memLite .lt-card{box-shadow:0 0 0 1px #0008;will-change:auto}html.fx-memLite .back-holo{inset:0 -60%}
+    html.fx-homeRest body.scene-rest .board-piece,html.fx-homeRest body.at-home .board-piece{animation-play-state:paused}
+    /* Device profile, 2026-10-24: on the phone WebKit kept ticking CSS animations on a resting home screen (13% CPU) while desktop
+       Chrome showed none (touch-only states). So: with home up, nothing behind it animates; at rest, no CSS animation runs anywhere. */
+    html.fx-homeRest body.at-home :is(.game-shell,.tray-panel,.board-wrap) :is(*,*::before,*::after),
+    html.fx-homeRest body.scene-rest :is(*,*::before,*::after){animation-play-state:paused!important}
+    /* Device test, 2026-10-24: a paused CSS animation still kept iOS's compositor (backboardd) redrawing at ~48% on the idle home screen;
+       removed, it fell to ~6%. So at rest every CSS animation is frozen (its current look held inline) and removed; freezeAnimations. */
+    html.fx-homeRest body.anim-frozen :not(#adLoading,#adLoading *),html.fx-homeRest body.anim-frozen :not(#adLoading,#adLoading *)::before,html.fx-homeRest body.anim-frozen :not(#adLoading,#adLoading *)::after{animation:none!important}
+    html.fx-homeRest body.scene-rest #adLoading :is(*,*::before,*::after),html.fx-homeRest body.scene-rest #adLoading{animation-play-state:running!important}@keyframes bylinePulse{0%,100%{scale:1;box-shadow:1px 1px 0 #b0822d,2px 2px 0 #614214,0 2px 6px #000c}50%{scale:1.14;box-shadow:1px 1px 0 #b0822d,2px 2px 0 #614214,0 0 12px 3px #ffd84dcc}}@media (prefers-reduced-motion:reduce){.byline-poly-btn.fresh .byline-poly{animation:none;box-shadow:1px 1px 0 #b0822d,2px 2px 0 #614214,0 0 10px 2px #ffd84dcc}}.byline-poly{width:22px;height:33px;object-fit:cover;border-radius:3px;border:1.5px solid #ffd84d;box-shadow:1px 1px 0 #b0822d,2px 2px 0 #614214,0 2px 6px #000c;rotate:-8deg;flex:none}.home-byline{color:#bfffd0;font:800 .66rem system-ui,sans-serif;letter-spacing:.3em;text-align:center;text-shadow:0 1px 3px #000,0 0 10px #000c}.home-logo img{display:block;width:min(74vw,340px);max-height:16vh;object-fit:contain;filter:drop-shadow(0 3px 8px #000d)}
     /* 3D ticker: a strip of cards, tipped back, scrolls left forever (no rotateZ on the strip: it is thousands of px wide, so its ends would swing off screen); each card has its own angle and depth and slowly turns. */.home-card{flex:1;min-height:0;width:calc(100% + 40px);margin:50px -20px 0;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;perspective:900px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent)}.ticker-plane{width:100%;transform:rotateX(12deg);transform-style:preserve-3d}.ticker-track{display:flex;width:max-content;padding:26px 0;transform-style:preserve-3d;animation:tickerScroll var(--ticker-dur,80s) linear infinite}.ticker-card{flex:none;width:clamp(62px,18vw,88px);aspect-ratio:2/3;margin-right:14px;overflow:hidden;border:1.5px solid var(--accent-hi);border-radius:8px;background:var(--panel);box-shadow:0 8px 16px #000c,0 0 12px #57ff8640;transform:rotateY(var(--ry)) rotateZ(var(--rz)) translateZ(var(--tz)) translateY(var(--ty));animation:tickerTurn var(--turn) ease-in-out var(--delay) infinite alternate;backface-visibility:hidden}.ticker-card .symbol-image{display:block;width:100%;height:100%;object-fit:cover}.ticker-tap{cursor:pointer;-webkit-tap-highlight-color:transparent}@keyframes tickerScroll{to{transform:translateX(-50%)}}@keyframes tickerTurn{to{transform:rotateY(calc(var(--ry) * -1)) rotateZ(calc(var(--rz) * -.5)) translateZ(var(--tz)) translateY(calc(var(--ty) * -1))}}.home.hidden .ticker-track,.home.hidden .ticker-card{animation-play-state:paused}body.board-covered :is(.rain,.slot>span,.board-wrap)::before,body.board-covered :is(.rain,.slot>span,.board-wrap)::after,body.board-covered :is(.bg-far,.bg-mid,.bg-near,.lids,.hinted,.cage-danger,.home-play,.ticker-track,.ticker-card){animation-play-state:paused}
     .home-play{width:min(320px,86vw);padding:14px 0 16px;display:flex;flex-direction:column;align-items:center;gap:3px;border:2px solid var(--accent-hi);border-radius:22px;background:linear-gradient(180deg,#6dff9a,#1c9a45 70%,#137a35) center/cover;color:#002a0e;box-shadow:0 6px 0 var(--accent-shadow),0 0 40px #57ff8666;cursor:pointer;animation:playPulse 2.2s ease-in-out infinite;-webkit-tap-highlight-color:transparent}.home-play small{font:900 .7rem system-ui,sans-serif;letter-spacing:.32em;opacity:.75}.home-play span{font:950 2.05rem/1 system-ui,sans-serif;letter-spacing:.08em}.home-play:active{translate:0 4px;box-shadow:0 2px 0 var(--accent-shadow)}@keyframes playPulse{0%,100%{scale:1}50%{scale:1.035}}
     .home-best{min-height:18px;color:var(--text-dim);font:700 .76rem system-ui,sans-serif;letter-spacing:.14em}.home-week{display:flex;gap:10px;padding:10px 16px;border:1px solid var(--line-deep);border-radius:16px;background:#031008cc}.home-day{display:flex;flex-direction:column;align-items:center;gap:3px;color:#5c8f6a;font:800 .6rem system-ui,sans-serif}.home-day span{font-size:1.15rem;filter:grayscale(1);opacity:.32}.home-day.lit span{filter:none;opacity:1}.home-day.today{color:#fff}
@@ -261,7 +269,7 @@
     .ss-day{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;color:#8fb59a;font:800 .62rem system-ui,sans-serif}
     .ss-day i{width:38px;height:38px;display:grid;place-items:center;border-radius:50%;background:#0006;box-shadow:inset 0 2px 6px #000a;font-style:normal;font-size:1.25rem}
     .ss-day.past i,.ss-day.today.done i{background:radial-gradient(circle,#ffcf5a,#e8891d);box-shadow:0 2px 0 #7a4210}
-    .ss-day.iced i{background:radial-gradient(circle,#dff7ff,#7fc7ee);box-shadow:0 2px 0 #2f6f99}
+    .ss-day .ss-chest{width:150%;height:150%;object-fit:contain;filter:drop-shadow(0 2px 2px #000a)}.ss-day.iced i{background:radial-gradient(circle,#dff7ff,#7fc7ee);box-shadow:0 2px 0 #2f6f99}
     .ss-day.today{color:#fff}
     .ss-day .ring{position:absolute;top:0;left:50%;width:38px;height:38px;margin-left:-19px;border-radius:50%;box-shadow:0 0 0 3px #ffd84d;opacity:0;pointer-events:none}
     .ss-actions{display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;max-width:340px;margin-top:6px;min-height:64px}
@@ -723,7 +731,11 @@
     .poly-show{position:fixed;inset:0;z-index:2900;pointer-events:none;overflow:hidden}
     .poly-dim{position:absolute;inset:0;background:linear-gradient(#000000b8 0,#00000066 34%,#0000002e 60%,#00000040);transition:box-shadow .3s}
     .poly-show.ice .poly-dim{background:linear-gradient(#04182cbf 0,#04182c66 34%,#04182c2e 60%,#04182c40)}
-    .poly-show.jackpot .poly-dim{box-shadow:inset 0 0 90px 26px #ffd84dcc}.poly-show.ice.jackpot .poly-dim{box-shadow:inset 0 0 90px 26px #bfe8ffcc}
+    .poly-show.jackpot .poly-dim{box-shadow:inset 0 0 90px 26px #ffd84dcc}
+    /* memLite: the jackpot glow is a pre-drawn edge gradient that fades in (the inset box-shadow repainted the whole screen as it grew). */
+    html.fx-memLite .poly-show .poly-dim{transition:none}html.fx-memLite .poly-show.jackpot .poly-dim{box-shadow:none!important}
+    html.fx-memLite .poly-dim::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,transparent 58%,var(--jack-glow,#ffd84dcc) 100%);opacity:0;transition:opacity .3s}
+    html.fx-memLite .poly-show.jackpot .poly-dim::after{opacity:1}html.fx-memLite .poly-show.ice{--jack-glow:#bfe8ffcc}html.fx-memLite .poly-show.platinum{--jack-glow:#eef4ffcc}.poly-show.ice.jackpot .poly-dim{box-shadow:inset 0 0 90px 26px #bfe8ffcc}
     .poly-rays{position:absolute;left:50%;top:22%;width:120vmax;height:120vmax;translate:-50% -50%;background:repeating-conic-gradient(#ffd84d40 0 7deg,transparent 7deg 18deg);-webkit-mask:radial-gradient(circle,#000 6%,transparent 30%);mask:radial-gradient(circle,#000 6%,transparent 30%);animation:polySpin 9s linear infinite}
     .poly-show.ice .poly-rays{background:repeating-conic-gradient(#cfeeff44 0 7deg,transparent 7deg 18deg)}
     @keyframes polySpin{to{rotate:360deg}}
@@ -1371,18 +1383,27 @@
       img.onload=()=>img.classList.add('in');show();setTimeout(()=>{if(live){$('#assetLoader').classList.add('fun');$('#loaderFun').hidden=false}},afterMs);
       return()=>{live=false;clearInterval(factTimer);cancelAnimationFrame(raf)}}
     // The card back's emblem is a CSS background, so it would otherwise load on the first face-down card (Paul saw logo-less backs in Safari).
-    const CARD_BACK_ART=['art/card-back-emblem.png','art/home/logo.png'];
-    // memLite: the Halloween-only sounds (hw*, ~10MB decoded) load when a Halloween level is coming (decodeLevelImages), not at launch.
-    const lateSound=k=>FX.memLite&&/^hw[A-Z]/.test(k);
-    function loadLateSounds(){for(const k of Object.keys(SOUND_FILES))if(lateSound(k)&&!soundBuffers[k]&&!fallbackAudio[k]){soundBuffers[k]=null;readArrayBuffer(SOUND_FILES[k]).then(decodeSound).then(b=>{soundBuffers[k]=b}).catch(()=>{delete soundBuffers[k]})}}
+    const CARD_BACK_ART=['art/card-back-emblem.png','art/home/logo.png','art/chest-icon.png'];
+    // memLite: sounds load when they can be needed, not all at launch (72MB decoded): the Halloween-only sounds (hw*) before a
+    // Halloween level, a card's monkey calls before a level that deals it, and the voice lines of the language in use (the other
+    // language's load on a switch). Calls the menus use (huhu on the language switch, the joker's) stay at launch.
+    const ALWAYS_CALLS=new Set(['callHuhu','callJoker']),EN_VO=new Set([...PRAISE.flatMap(p=>p.takes||[]),...Object.values(CALLOUTS).map(c=>c.en)]),ES_VO=new Set([...PRAISE.flatMap(p=>p.es?.takes||[]),...Object.values(CALLOUTS).map(c=>c.es)]);
+    const voLang=k=>{if(!k.startsWith('praise:'))return null;const n=k.slice(7);return n.startsWith('es-')||ES_VO.has(n)&&!EN_VO.has(n)?'es':EN_VO.has(n)&&!ES_VO.has(n)?'en':null};
+    const lateSound=k=>FX.memLite&&(/^hw[A-Z]/.test(k)||/^call/.test(k)&&!ALWAYS_CALLS.has(k)||!!voLang(k)&&voLang(k)!==lang);
+    function loadSounds(keys){for(const k of keys)if(SOUND_FILES[k]&&!(k in soundBuffers)&&!fallbackAudio[k]){soundBuffers[k]=null;readArrayBuffer(SOUND_FILES[k]).then(decodeSound).then(b=>{soundBuffers[k]=b}).catch(()=>{delete soundBuffers[k]})}}
+    const cardSoundKeys=(syms,pack)=>[...new Set([...syms].flatMap(s=>{const c=CARD_DATA[s];return c?[...(c.sounds||[]),...(c.clearSounds||[])]:[]})),...pack==='halloween'?Object.keys(SOUND_FILES).filter(k=>/^hw[A-Z]/.test(k)):[]];
+    function loadLevelSounds(syms,pack){if(FX.memLite)loadSounds(cardSoundKeys(syms,pack))}
     async function preloadAssets(){
       const stopFun=startLoaderFun(1200);
-      const started=performance.now(),images=FX.lightPreload?[`art/home/bg-B.jpg`,BADGE_FACE_SRC,...CARD_BACK_ART]:[...new Set([...Object.values(SYMBOL_IMAGES),...Object.values(HERO_IMAGES),...Object.values(CARD_DATA).flatMap(c=>[c.halloween,c.ice,c.christmas,c.artsy,...Object.values(c.sets||{})].filter(Boolean)).flatMap(v=>[cardImage('thumb',v),cardImage('hero',v)]),...Object.values(VISION_CARDS).flatMap(v=>[cardImage('thumb',v),cardImage('hero',v)]),...HOME_BG_FILES,BADGE_FACE_SRC])],sounds=Object.entries(SOUND_FILES).filter(([k])=>!lateSound(k)||levelPack(progress.level)==='halloween'),total=images.length+sounds.length+2;let loaded=0;
+      const started=performance.now(),images=FX.lightPreload?[`art/home/bg-B.jpg`,BADGE_FACE_SRC,...CARD_BACK_ART]:[...new Set([...Object.values(SYMBOL_IMAGES),...Object.values(HERO_IMAGES),...Object.values(CARD_DATA).flatMap(c=>[c.halloween,c.ice,c.christmas,c.artsy,...Object.values(c.sets||{})].filter(Boolean)).flatMap(v=>[cardImage('thumb',v),cardImage('hero',v)]),...Object.values(VISION_CARDS).flatMap(v=>[cardImage('thumb',v),cardImage('hero',v)]),...HOME_BG_FILES,BADGE_FACE_SRC])],launchSounds=FX.memLite?new Set(cardSoundKeys([...(()=>{try{return buildLevelBoard(progress.level).map(t=>t.symbol)}catch{return[]}})(),...MONKEY_SYMBOLS.filter(id=>CARD_DATA[id].homeTap)],levelPack(progress.level))):null,sounds=Object.entries(SOUND_FILES).filter(([k])=>!lateSound(k)||launchSounds?.has(k)),total=images.length+sounds.length+2;let loaded=0;
       const update=()=>{loaded++;const pct=Math.round(loaded/total*100);$('#loaderFill').style.width=`${pct}%`;$('#loaderStatus').textContent=loc('LOADING CAGE // {0}%',pct)};
       const loadImage=src=>new Promise(resolve=>{const image=new Image(),finish=()=>{update();resolve()};let done=false;const once=()=>{if(done)return;done=true;finish()};image.onload=async()=>{try{if(image.decode)await image.decode()}catch{}once()};image.onerror=once;image.src=src;if(image.complete)image.onload()});
       const loadAudio=element=>new Promise(resolve=>{let done=false;const finish=()=>{if(done)return;done=true;clearTimeout(timer);element.removeEventListener('loadeddata',finish);element.removeEventListener('canplaythrough',finish);element.removeEventListener('error',finish);resolve()};const timer=setTimeout(finish,4500);if(element.readyState>=2)finish();else{element.addEventListener('loadeddata',finish,{once:true});element.addEventListener('canplaythrough',finish,{once:true});element.addEventListener('error',finish,{once:true});element.load()}});
       const loadSound=async([name,src])=>{try{soundBuffers[name]=await decodeSound(await readArrayBuffer(src))}catch{const a=new Audio(src);a.preload='auto';fallbackAudio[name]=a;await loadAudio(a)}update()};
-      await Promise.all([...images.map(loadImage),...sounds.map(loadSound),loadAudio(music).then(update),artReady(progress.level,8000).then(update),FX.lightPreload?decodeLevelImages(progress.level):null]);await new Promise(resolve=>setTimeout(resolve,Math.max(0,520-(performance.now()-started))));$('#loaderStatus').textContent=loc('CAGE READY');$('#loaderFill').style.width='100%';await new Promise(resolve=>setTimeout(resolve,120));$('#assetLoader').classList.add('ready');stopFun()
+      await Promise.all([...images.map(loadImage),...sounds.map(loadSound),loadAudio(music).then(update),artReady(progress.level,8000).then(update),FX.lightPreload?decodeLevelImages(progress.level):null]);await new Promise(resolve=>setTimeout(resolve,Math.max(0,520-(performance.now()-started))));$('#loaderStatus').textContent=loc('CAGE READY');$('#loaderFill').style.width='100%';await new Promise(resolve=>setTimeout(resolve,120));$('#assetLoader').classList.add('ready');stopFun();
+      // Device profile, 2026-10-24: 'ready' only hid the loader, so its card shimmer (a background-position animation, repainted every
+      // frame) kept running invisibly for the whole session, ~13% CPU on the home screen. It leaves the page once it has faded out.
+      setTimeout(()=>{$('#assetLoader').hidden=true},700)
     }
     // XHR rather than fetch: WKWebView only permits file:// reads through XHR (allowFileAccessFromFileURLs).
     function readArrayBuffer(src){return new Promise((resolve,reject)=>{const xhr=new XMLHttpRequest();xhr.open('GET',src);xhr.responseType='arraybuffer';xhr.onload=()=>(xhr.status===200||xhr.status===0)&&xhr.response?.byteLength?resolve(xhr.response):reject(new Error(src));xhr.onerror=()=>reject(new Error(src));xhr.send()})}
@@ -1821,12 +1842,21 @@
     function sceneCancel(h){if(!h)return;if(typeof h==='number')cancelAnimationFrame(h);else if(h.shared)sceneQueue.delete(h);else{clearTimeout(h.t);cancelAnimationFrame(h.r)}}
     function sceneScale(now=performance.now()){if(!FX.idleRest)return 1;const since=now-scene.touchAt;
       if(since>IDLE_REST_MS)return Math.max(0,1-(since-IDLE_REST_MS)/REST_EASE_MS);return scene.from+(1-scene.from)*Math.min(1,since/WAKE_EASE_MS)}
+    // At rest every running CSS animation is held exactly where it is: its animated values are written inline, the animation is
+    // removed (body.anim-frozen), and on the next touch it comes back at the same moment (currentTime), so nothing jumps.
+    const FROZEN_PROPS=['transform','scale','rotate','translate','opacity'],frozen=[];
+    function freezeAnimations(){if(!FX.homeRest||document.body.classList.contains('anim-frozen'))return;frozen.length=0;
+      for(const a of document.getAnimations()){if(!a.animationName||a.effect?.pseudoElement)continue;const el=a.effect?.target;if(!el||el.closest?.('#adLoading'))continue;
+        const cs=getComputedStyle(el);frozen.push({el,name:a.animationName,t:a.currentTime,keep:FROZEN_PROPS.map(k=>[k,el.style.getPropertyValue(k)]),now:FROZEN_PROPS.map(k=>[k,cs.getPropertyValue(k)])})}
+      for(const f of frozen)for(const [k,v] of f.now)f.el.style.setProperty(k,v);document.body.classList.add('anim-frozen')}
+    function thawAnimations(){if(!document.body.classList.contains('anim-frozen'))return;document.body.classList.remove('anim-frozen');
+      for(const f of frozen){for(const [k,v] of f.keep)v?f.el.style.setProperty(k,v):f.el.style.removeProperty(k);if(f.t==null)continue;const a=f.el.getAnimations().find(x=>x.animationName===f.name);if(a)try{a.currentTime=f.t}catch{}}frozen.length=0}
     function sceneTouch(){if(!FX.idleRest)return;const now=performance.now();scene.from=sceneScale(now);scene.touchAt=now;clearTimeout(scene.timer);
-      scene.timer=setTimeout(()=>{document.body.classList.add('scene-rest');syncMotion()},IDLE_REST_MS+REST_EASE_MS);
-      if(document.body.classList.contains('scene-rest')){document.body.classList.remove('scene-rest');syncMotion()}ambient.wake();homeSnow.wake()}
+      scene.timer=setTimeout(()=>{document.body.classList.add('scene-rest');syncMotion();gcAccessPoint();freezeAnimations()},IDLE_REST_MS+REST_EASE_MS);
+      if(document.body.classList.contains('scene-rest')){thawAnimations();document.body.classList.remove('scene-rest');syncMotion();gcAccessPoint()}ambient.wake();homeSnow.wake()}
     addEventListener('pointerdown',sceneTouch,{capture:true,passive:true});
     // Desktop: moving the mouse counts as being there too (checked at most once a second).
-    addEventListener('pointermove',e=>{if(e.pointerType==='mouse'&&performance.now()-scene.touchAt>1000)sceneTouch()},{passive:true});if(FX.idleRest)scene.timer=setTimeout(()=>{document.body.classList.add('scene-rest');syncMotion()},IDLE_REST_MS+REST_EASE_MS);
+    addEventListener('pointermove',e=>{if(e.pointerType==='mouse'&&performance.now()-scene.touchAt>1000)sceneTouch()},{passive:true});if(FX.idleRest)scene.timer=setTimeout(()=>{document.body.classList.add('scene-rest');syncMotion();gcAccessPoint();freezeAnimations()},IDLE_REST_MS+REST_EASE_MS);
     // Background drift on the scene clock (FX.sceneClock): the same paths and periods as the CSS drift (DRIFT_KEYS), eased per stop,
     // written to each layer's `translate` (tilt keeps `transform`). Paused while dragging or behind the lightbox, like the CSS was.
     const drift=(()=>{let raf=0,last=0,vt=0,layers=null;const PERIOD={Far:31,Mid:26,Near:22},ease=k=>k*k*(3-2*k);
@@ -2009,7 +2039,7 @@
       $('#bannerChapter').textContent=`${first&&ex.titled!==lv?loc('NEW CHAPTER · '):''}${loc('CHAPTER {0}',`${ch.number}${ch.plus?'+':''}`)} · ${loc(ch.name)}`;{const f=first&&state.pack!=='halloween'?(ch.featured||[]).filter(id=>CARD_DATA[id]).map(cardName):[],t=ch.boss?loc('BOSS LEVEL · THE ORIGINAL TROOP'):f.length?loc('FEATURED: {0}',f.join(' · ')):'';$('#bannerFeatured').textContent=t;$('#bannerFeatured').hidden=!t}
       {const rb=$('#bannerRecord'),show=rec=>{rb.textContent=recordLine(rec);rb.hidden=false};rb.hidden=true;if(!state.easy&&lbReady){const k=recordKey(lv,state.pack);if(worldRecords.has(k))show(worldRecords.get(k));const s=state;fetchWorldRecord(lv,state.pack).then(rec=>{if(rec&&s===state)show(rec)})}}$('#bannerLevel').textContent=`${loc('LEVEL')} ${lv} · ${loc(levelName(lv,state.pack))}`;{const r=$('#board').getBoundingClientRect();el.style.top=`${r.top+28}px`}el.classList.toggle('new-chapter',first);el.style.setProperty('--banner-c',ch.accent);el.style.setProperty('--banner-glow',ch.accent+'44');
       fitStamp($('#bannerLevel'),1.06);fitStamp($('#bannerChapter'),1.06);el.getAnimations().forEach(a=>a.cancel());el.animate(reduceMotion.matches?[{opacity:0},{opacity:1,offset:.08},{opacity:1,offset:.88},{opacity:0}]:[{opacity:0,transform:'scale(.85)'},{opacity:1,transform:'scale(1.04)',offset:.08},{opacity:1,transform:'scale(1)',offset:.14},{opacity:1,transform:'scale(1)',offset:.88},{opacity:0,transform:'scale(.96)'}],{duration:first?4200:3200,delay:350,easing:'cubic-bezier(.2,.8,.2,1)',fill:'backwards'})}
-    function startLevel(level,{silent=false,retry=false,tutorial=false}={}){if(levelPack(level)==='halloween')loadLateSounds();
+    function startLevel(level,{silent=false,retry=false,tutorial=false}={}){queueMicrotask(()=>{if(state.level===level)loadLevelSounds(state.tiles.map(t=>t.symbol),state.pack)});
       if(!tutorial)stopTutorial();closeLightbox({instant:true});featuredSymbol=null;for(const e of hintEyes.values())e.remove();hintEyes.clear();$('#dragLayer').replaceChildren();board.replaceChildren();$('#featuredArt').dataset.renderKey='~';clearDust();clearTimeout(chainTimer);endChain();
       // Difficulty is read here, so a change in Settings applies from the next level start or retry, never mid-board.
       const easy=progress.settings.difficulty==='easy';
@@ -2122,13 +2152,22 @@
     // cage glows red and the screen gives a small shake; every few seconds one card twitches again (with a smaller shake). Clearing back under 3 plays a relieved clank and a little sparkle.
     // Nothing here changes the rules; it's feedback only.
     let cageDanger=false,dangerState=null,dangerTimer=0;
-    function updateCageDanger(){const on=!!state.tiles.length&&!state.over&&waitingInCage()>=3;if(on===cageDanger)return;cageDanger=on;$('.tray-panel').classList.toggle('cage-danger',on);clearInterval(dangerTimer);
-      if(on){dangerState=state;setTimeout(()=>{if(cageDanger)cageShake(true)},280);dangerTimer=setInterval(()=>{if(cageDanger&&!document.hidden&&!state.locked&&state===dangerState)cageShake(false)},3800);return}
+    // Cage warning (Paul, 2026-10-24): a soft rattle every 3.8s while you play. Leave the phone alone and the cage begs ("hey, pick up
+    // your phone, buddy!"): from 8s untouched each rattle comes sooner and harder (3.8s down to ~0.9s, soft to strong, bigger shakes),
+    // and after ~30s of being ignored one last big rattle, then quiet until the next touch. Never on the home screen.
+    const CAGE_BEG_MS=30000;let dangerGaveUp=false;
+    function dangerTick(){dangerTimer=0;if(!cageDanger||state!==dangerState||state.over||atHome())return;
+      if(document.hidden||state.locked){dangerTimer=setTimeout(dangerTick,3800);return}
+      const idle=performance.now()-lastTouchAt;if(idle>CAGE_BEG_MS){if(!dangerGaveUp){dangerGaveUp=true;cageShake(true,1.7)}return}
+      const k=Math.max(0,Math.min(1,(idle-8000)/(CAGE_BEG_MS-8000)));cageShake(k>.45,1+k*.7);dangerTimer=setTimeout(dangerTick,3800*Math.pow(.24,k))}
+    addEventListener('pointerdown',()=>{if(cageDanger&&!dangerTimer&&state===dangerState&&!state.over){dangerGaveUp=false;dangerTimer=setTimeout(dangerTick,3800)}},{capture:true,passive:true});
+    function updateCageDanger(){const on=!!state.tiles.length&&!state.over&&waitingInCage()>=3;if(on===cageDanger)return;cageDanger=on;$('.tray-panel').classList.toggle('cage-danger',on);clearTimeout(dangerTimer);dangerTimer=0;
+      if(on){dangerState=state;dangerGaveUp=false;setTimeout(()=>{if(cageDanger)cageShake(true)},280);dangerTimer=setTimeout(dangerTick,3800);return}
       if(dangerState===state&&!state.over)cageRelief();dangerState=null}
-    function cageShake(strong){const held=[...tray.children].filter((slot,i)=>state.tray[i]&&!state.clearing.has(state.tray[i].id)).map(slot=>slot.querySelector('span')).filter(Boolean);if(!held.length)return;
-      const pick=strong?held:[held[rand(held.length)]],d=strong?1:.6;
+    function cageShake(strong,boost=1){const held=[...tray.children].filter((slot,i)=>state.tray[i]&&!state.clearing.has(state.tray[i].id)).map(slot=>slot.querySelector('span')).filter(Boolean);if(!held.length)return;
+      const pick=strong?held:[held[rand(held.length)]],d=(strong?1:.6)*boost;
       if(!reduceMotion.matches)pick.forEach((el,i)=>el.animate([{rotate:'0deg',translate:'0 0'},{rotate:`${-4*d}deg`,translate:`${-3*d}px 0`},{rotate:`${3.5*d}deg`,translate:`${3*d}px -1px`},{rotate:`${-2.5*d}deg`,translate:`${-2*d}px 0`},{rotate:`${1.5*d}deg`,translate:'1px 0'},{rotate:'0deg',translate:'0 0'}],{duration:strong?520:380,delay:i*55,easing:'ease-out'}));
-      rattleChain(strong);playCageRattle(strong);haptic(strong?'cageRattle':'cageRattleSoft');screenShake(strong?2.5:1.2,strong?420:300)}
+      rattleChain(strong);playCageRattle(strong);haptic(strong?'cageRattle':'cageRattleSoft');screenShake((strong?2.5:1.2)*boost,strong?420:300)}
     function cageRelief(){playChain(.6,{clank:true});haptic('cardSettle');if(reduceMotion.matches)return;const r=$('#tray').getBoundingClientRect();dustBurst(()=>{for(let i=0;i<10;i++)spawnDust(r.left+r.width/2,r.top+r.height/2,{size:3+Math.random()*4,dist:30+Math.random()*60,life:500+rand(400),opacity:.8})})}
     // Paul's cage rattles (two takes, one picked at random each time; processed offline for a harder, punchier hit). The big shake
     // adds a synthesised low thump underneath; the quiet twitch plays a take softly at a slightly varied speed.
@@ -3050,8 +3089,10 @@
       $('#devFrozen').onclick=()=>{closeSettings();setTimeout(()=>playStreakScene({frozen:{count:Math.max(6,progress.streak.count||0),lastDate:localDate(-2)},preview:true}),300)};show()}
     // Dev FPS meter: frames in the last second and the slowest frame (ms). Its own loop runs only while it is shown.
     let fpsMeter=null;
-    function toggleFpsMeter(){if(fpsMeter){fpsMeter.stop();fpsMeter=null;return}const el=Object.assign(document.createElement('div'),{className:'fps-meter'});el.style.cssText='position:fixed;z-index:99999;left:6px;top:calc(env(safe-area-inset-top) + 4px);padding:3px 7px;border-radius:6px;background:#000c;color:#7dff9a;font:700 11px ui-monospace,monospace;pointer-events:none';document.body.append(el);
-      let raf=0,frames=[],last=performance.now(),shownAt=0;const tick=now=>{frames.push(now-last);last=now;let sum=0,i=frames.length;while(i-->0&&sum<1000)sum+=frames[i];frames=frames.slice(i+1);if(now-shownAt>=250){shownAt=now;const worst=Math.max(...frames);el.textContent=`${frames.length} fps · worst ${worst.toFixed(0)}ms`;el.style.color=frames.length>=50?'#7dff9a':frames.length>=30?'#ffd84d':'#ff6a5a'}raf=requestAnimationFrame(tick)};raf=requestAnimationFrame(tick);
+    function toggleFpsMeter(){if(fpsMeter){fpsMeter.stop();fpsMeter=null;return}const el=Object.assign(document.createElement('div'),{className:'fps-meter'});el.style.cssText='position:fixed;z-index:99999;left:6px;top:calc(env(safe-area-inset-top) + 4px);padding:3px 7px;border-radius:6px;background:#000c;color:#7dff9a;font:700 11px ui-monospace,monospace;pointer-events:none;white-space:pre;max-width:92vw';document.body.append(el);
+      // Dev diagnosis (2026-10-24): under the fps, whether the scene is resting and every animation still running (name @ element).
+      const running=()=>{const m={};for(const a of document.getAnimations()){if(a.playState!=='running')continue;const tg=a.effect?.target,k=`${a.animationName||a.transitionProperty||'js'} @ ${tg?.id?'#'+tg.id:(tg?.className?.baseVal??tg?.className??'?').toString().split(' ')[0]}${a.effect?.pseudoElement||''}`;m[k]=(m[k]||0)+1}return Object.entries(m).map(([k,n])=>n>1?`${k} ×${n}`:k)};let diag='',diagAt=0;
+      let raf=0,frames=[],last=performance.now(),shownAt=0;const tick=now=>{frames.push(now-last);last=now;let sum=0,i=frames.length;while(i-->0&&sum<1000)sum+=frames[i];frames=frames.slice(i+1);if(now-shownAt>=250){shownAt=now;const worst=Math.max(...frames);if(now-diagAt>1000){diagAt=now;const r=running();diag=`\n${document.body.classList.contains('scene-rest')?'RESTING':'awake'} · ${r.length?r.length+' running':'nothing running'}${r.length?'\n'+r.slice(0,8).join('\n'):''}`}el.textContent=`${frames.length} fps · worst ${worst.toFixed(0)}ms${diag}`;el.style.color=frames.length>=50?'#7dff9a':frames.length>=30?'#ffd84d':'#ff6a5a'}raf=requestAnimationFrame(tick)};raf=requestAnimationFrame(tick);
       fpsMeter={stop(){cancelAnimationFrame(raf);el.remove()}}}
     function setupTrials(){setupDevTools();$('#previewTransition').onclick=()=>{closeSettings();setTimeout(()=>playLevelTransition(()=>{}),150)};for(const row of document.querySelectorAll('.trial-chips[data-trial]'))row.onclick=e=>{const v=e.target.closest('button')?.dataset.value;if(!v)return;trials[row.dataset.trial]=v;try{localStorage.setItem(TRIALS_KEY,JSON.stringify(trials))}catch{}applyTrials();if(row.dataset.trial==='scene')applyChapterLook();if(row.dataset.trial==='poly'){if($('#home').classList.contains('hidden')){closeSettings();startLevel(state.level,{retry:true})}else{startLevel(progress.level,{silent:true});pendingLevelStart=false}}if(row.dataset.trial==='pack'){pickHomeBg(homeBgKey||undefined);syncHomeSnow();if($('#home').classList.contains('hidden')){closeSettings();startLevel(state.level,{retry:true})}else{startLevel(progress.level,{silent:true});pendingLevelStart=false}}playSound('control',{volume:.3})};applyTrials()}
     // Background D: two fields of decorative grayscale cards from the deck (pure decoration, behind the board, never touchable),
@@ -3095,7 +3136,7 @@
     // Level transitions (trial). swap() runs while the screen is fully covered, so the next level is dealt out of sight.
     let levelTransitioning=false;
     // The card images a level will deal (in its season / card-set look), decoded ahead so the new board appears without a hitch.
-    function decodeLevelImages(level){warmMusic(levelMusic(level,levelPack(level)));if(levelPack(level)==='halloween')loadLateSounds();const art=artReady(level);try{const tiles=buildLevelBoard(level,progress.settings.difficulty==='easy'),pack=levelPack(level);
+    function decodeLevelImages(level){warmMusic(levelMusic(level,levelPack(level)));const art=artReady(level);try{const tiles=buildLevelBoard(level,progress.settings.difficulty==='easy'),pack=levelPack(level);loadLevelSounds(tiles.map(t=>t.symbol),pack);
       const at={level,pack},srcs=[...new Set(tiles.map(t=>{const v=packVariant(t.symbol,at);return v?cardImage('thumb',v):SYMBOL_IMAGES[t.symbol]}))];
       levelFaces.length=0;return Promise.all([art,...srcs.map(src=>{const i=new Image();i.src=src;levelFaces.push(i);return(i.decode?i.decode().then(()=>{decodedFaces.add(src)}):Promise.resolve()).catch(()=>{})})])}catch{return art}}
     // prepare (optional) returns a promise for work to finish before the swap, e.g. decoding the next board's images.
@@ -3105,7 +3146,7 @@
       (style==='cage'?cageDoorTransition:cardSpiralTransition)(layer,swap,finish,prepare)}
     // Card spiral: the level's own cards whirl in from the edges and pile up over the screen, then fling back out on the new board.
     function cardSpiralTransition(layer,swap,finish,prepare){const ready=prepare?Promise.race([prepare(),new Promise(r=>setTimeout(r,2500))]):Promise.resolve();
-      const syms=[...new Set(state.tiles.map(t=>t.symbol))],N=24,R=Math.hypot(innerWidth,innerHeight)/2+160,IN=560,STAG=12,OUT=480,scrim=layer.appendChild(Object.assign(document.createElement('i'),{className:'lt-scrim'})),cards=[];
+      const syms=[...new Set(state.tiles.map(t=>t.symbol))],N=FX.memLite?16:24,R=Math.hypot(innerWidth,innerHeight)/2+160,IN=560,STAG=12,OUT=480,scrim=layer.appendChild(Object.assign(document.createElement('i'),{className:'lt-scrim'})),cards=[];
       scrim.animate([{opacity:0},{opacity:1}],{duration:IN+N*STAG,easing:'ease-in',fill:'forwards'});
       for(let i=0;i<N;i++){const c=document.createElement('div');c.className='lt-card';setSymbolContent(c,syms[i%syms.length],'thumb');layer.append(c);const a0=i/N*Math.PI*2,a1=a0+Math.PI*1.4,r=(1-i/N)*Math.min(innerWidth,innerHeight)*.34,rot=a1*180/Math.PI+90;
         const at=(a,rr,deg,sc)=>`translate(-50%,-50%) translate3d(${(Math.cos(a)*rr).toFixed(1)}px,${(Math.sin(a)*rr).toFixed(1)}px,0) rotate(${deg.toFixed(1)}deg) scale(${sc})`;
@@ -3570,6 +3611,10 @@ void main() {
         holoBaseFor(HERO_IMAGES[KEVIN])},{timeout:2000})}
     // Release notes (the home screen's POLY card): what's new for players in the next build. Update for every release.
     const RELEASE_NOTES={version:'1.0.1',lines:[
+      'Much better battery life: the game goes almost completely still when you’re not touching it.',
+      'Leave a level with a nearly full cage and it starts begging you to come back!',
+      'Hidden puzzle pieces now tuck neatly under their card.',
+      'Day 7 of your streak now shows the jungle treasure chest.',
       'Puzzles: smoother page turns with a paper flick, and the pictures stay a surprise until you find the pieces.',
       'NEW: Puzzles show the pieces you still need as ghosts, spill your found pieces out on the table, and let you save or share a finished painting.',
       'Level 3 is a POLY party: three POLY cards.',
@@ -3867,7 +3912,7 @@ void main() {
     $('#adPrivacy').onclick=()=>window.webkit?.messageHandlers?.ads?.postMessage({type:'privacy'});$('#replayTutorial').onclick=()=>replayTutorial();$('#devTutorial').onclick=()=>replayTutorial(true);
     // The home byline picks one of these at random on each visit.
     const BYLINES=['A GAME BY POLYMER JONES','DEVELOPED BY POLYMER JONES'];
-    function showHome(){setMusicTension(0);setTimeout(syncAmbience,0);playMusic('home');clearDust();closeLightbox({instant:true});$('#homeByline').textContent=loc(BYLINES[rand(BYLINES.length)]);if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}$('#overlay').classList.remove('show');$('#winOverlay').classList.remove('show');renderHome();pickHomeBg();clearTimeout(homeGoneTimer);document.body.classList.remove('home-gone');$('#home').classList.remove('hidden');syncHomeSnow();syncTheme();gcAccessPoint();buildHomeTicker()}
+    function showHome(){setMusicTension(0);comboEdgeOff();setTimeout(syncAmbience,0);playMusic('home');clearDust();closeLightbox({instant:true});$('#homeByline').textContent=loc(BYLINES[rand(BYLINES.length)]);if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}$('#overlay').classList.remove('show');$('#winOverlay').classList.remove('show');renderHome();pickHomeBg();clearTimeout(homeGoneTimer);document.body.classList.remove('home-gone');$('#home').classList.remove('hidden');syncHomeSnow();syncTheme();gcAccessPoint();buildHomeTicker()}
     function playFromHome({tutorial=false,sim=false}={}){
         // FX.lightPreload: let go of the home ticker's 24 big card images while playing (it is rebuilt, freshly shuffled, on the way home).
       $('#home').classList.add('hidden');if(FX.lightPreload)$('#homeTicker').replaceChildren();gcAccessPoint();homeStingPending=false;setTimeout(showLevelBanner,250);setTimeout(syncAmbience,300);setTimeout(()=>ambient.wake(),350);unlockAudio();syncTheme();
@@ -3944,12 +3989,17 @@ void main() {
         top=r?-H[r-1][c]:0,right=c<PZ_COLS-1?V[r][c]:0,bottom=r<PZ_ROWS-1?H[r][c]:0,left=c?-V[r][c-1]:0;
       return`M${ox} ${oy}`+pzEdge(ox,oy,ox+w,oy,0,-1,top,d)+pzEdge(ox+w,oy,ox+w,oy+h,1,0,right,d)+pzEdge(ox+w,oy+h,ox,oy+h,0,1,bottom,d)+pzEdge(ox,oy+h,ox,oy,-1,0,left,d)+'Z'}
     const PIECE_ICON=`<svg viewBox="-10 -10 120 120"><defs><linearGradient id="pcGold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff4b8"/><stop offset=".45" stop-color="#ffcf3f"/><stop offset="1" stop-color="#c47a12"/></linearGradient></defs><path d="M10 10L38 10C42 10 34 -6 50 -6C66 -6 58 10 62 10L90 10L90 38C90 42 106 34 106 50C106 66 90 58 90 62L90 90L62 90C58 90 66 74 50 74C34 74 42 90 38 90L10 90Z" fill="url(#pcGold)" stroke="#7a4210" stroke-width="4"/><path d="M22 22L44 22" stroke="#fffbe0" stroke-width="5" stroke-linecap="round" opacity=".7"/></svg>`;
-    // Board: the piece sits just under its card's lower right corner (below it in the stack), so its edge shows.
+    // Board: the piece is tucked under its card and peeks out below the middle of its bottom edge, one step under the card in the
+    // stack (Paul, 2026-10-24: it had the card's own stacking order, so it drew on top and looked loose and tappable). A card lying
+    // over that edge can hide it, so it shows when its card sticks out.
     function renderBoardPiece(m,activeIds){if(state.piece===undefined)state.piece=pieceForLevel();const pc=state.piece;let el=board.querySelector('.board-piece');
       if(!pc||pc.got||!m){el?.remove();return}const t=state.tiles.find(x=>x.id===pc.tile);if(!t){state.piece=null;el?.remove();return}
       if(!activeIds.has(t.id)){const r=el?.getBoundingClientRect();el?.remove();collectBoardPiece(r);return}
       if(!el){el=document.createElement('div');el.className='board-piece';el.innerHTML=PIECE_ICON;board.append(el)}const f=cardFill();
-      setIf(el,'left',`${m.x(t)+m.w*f*.56}px`);setIf(el,'top',`${m.y(t)+m.h*f*.68}px`);setIf(el,'zIndex',String(t.layer*100+t.r))}
+      // Where the card is drawn (its stacked-look offset included), in the board's own coordinates.
+      const host=board.querySelector(`[data-id="${t.id}"]`),B=board.getBoundingClientRect(),k=board.offsetWidth?B.width/board.offsetWidth:1,H=host?.getBoundingClientRect(),
+        hx=H?(H.left-B.left)/k:m.x(t),hy=H?(H.top-B.top)/k:m.y(t),hw=H?H.width/k:m.w*f,hh=H?H.height/k:m.h*f,s=hw*.46;
+      setIf(el,'width',`${s}px`);setIf(el,'left',`${hx+(hw-s)/2+hw*.12}px`);setIf(el,'top',`${hy+hh-s*.5}px`);setIf(el,'zIndex',String(t.layer*100+t.r-1))}
     function collectBoardPiece(r){const pc=state.piece;pc.got=true;const p=puzzleSave();if(!p.levels.includes(state.level))p.levels.push(state.level);const got=awardPiece();saveProgress();learnTip('piece');if(!got)return;
       const b=r&&r.width?r:$('#board').getBoundingClientRect(),x=b.left+b.width/2,y=b.top+b.height/2,fly=document.createElement('div');fly.className='piece-fly';fly.innerHTML=PIECE_ICON;const size=Math.max(40,b.width||40);
       Object.assign(fly.style,{left:`${x-size/2}px`,top:`${y-size/2}px`,width:`${size}px`,height:`${size}px`});document.body.append(fly);
@@ -4101,6 +4151,8 @@ void main() {
       const g=x.createRadialGradient(0,0,0,0,0,n*.707);g.addColorStop(.18,'#000');g.addColorStop(.62,'#0000');x.globalCompositeOperation='destination-in';x.fillStyle=g;x.fillRect(-n/2,-n/2,n,n);
       document.documentElement.style.setProperty('--ss-rays',`url(${c.toDataURL()})`)}
     // The thaw offer's button looks like every other rewarded-ad button: the play triangle, THAW IT, and (Watch Ad) or (Free).
+    // The 7th day of the streak week shows Paul's jungle chest (was 🎁).
+    const chestIcon=()=>Object.assign(document.createElement('img'),{className:'ss-chest',src:'art/chest-icon.png',alt:''});
     function thawButton(){const b=document.createElement('button');b.className='action primary ad-btn';b.innerHTML=`<svg class="ad-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>${loc('THAW IT')} <small>${loc(adsShown()?'(Watch Ad)':'(Free)')}</small>`;return b}
     function playStreakScene({from,to,frozen=null,welcome=false,preview=false,next=false}){if(FX.streakLite)bakeStreakRays();return new Promise(resolve=>{
       const scene=$('#streakScene'),flame=$('#ssFlame'),num=$('#ssNum'),ice=$('#ssIce'),glow=$('#ssGlow'),emblem=$('#ssEmblem'),actions=$('#ssActions'),still=reduceMotion.matches;
@@ -4157,11 +4209,11 @@ void main() {
         // This week's row (the streak in 7-day rounds; the 7th day is a gift): past days lit (thawed ones iced), a banana coin lands on today.
         {const pos=(to-1)%7,week=$('#ssWeek'),iced=progress.streak.iced||[];let today=null;
           for(let k=0;k<7;k++){const date=localDate(k-pos),d=new Date(`${date}T12:00`),day=document.createElement('div'),dot=document.createElement('i');
-            day.className=`ss-day${k<pos?iced.includes(date)?' past iced':' past':''}${k===pos?' today':''}`;dot.textContent=k<pos?iced.includes(date)?'🧊':'🔥':k===6?'🎁':'';
+            day.className=`ss-day${k<pos?iced.includes(date)?' past iced':' past':''}${k===pos?' today':''}`;dot.textContent=k<pos?iced.includes(date)?'🧊':'🔥':'';if(k===6&&k>=pos)dot.append(chestIcon());
             day.append(dot,loc('SMTWTFS')[d.getDay()]);if(k===pos){today=day;const ring=document.createElement('span');ring.className='ring';day.append(ring)}week.append(day)}
           anim(week,[{opacity:0,transform:'translateY(12px)'},{opacity:1,transform:'none'}],{duration:320,easing:'cubic-bezier(.2,.8,.2,1)'});await nap(380);
           const dot=today.querySelector('i');dot.textContent='🍌';anim(dot,[{transform:'translateY(-70px) rotateY(0deg) scale(1.3)',opacity:0},{transform:'translateY(-30px) rotateY(540deg) scale(1.2)',opacity:1,offset:.5},{transform:'none'}],{duration:620,easing:'cubic-bezier(.3,.8,.3,1)'});
-          await nap(600);today.classList.add('done');dot.textContent=to%7===0?'🎁':'🔥';anim(today.querySelector('.ring'),[{opacity:1,transform:'scale(.8)'},{opacity:0,transform:'scale(1.8)'}],{duration:480,easing:'ease-out'});playSound('pickup',{volume:.22,rate:1.5});haptic('pairCleared')}
+          await nap(600);today.classList.add('done');dot.textContent=to%7===0?'':'🔥';if(to%7===0)dot.append(chestIcon());anim(today.querySelector('.ring'),[{opacity:1,transform:'scale(.8)'},{opacity:0,transform:'scale(1.8)'}],{duration:480,easing:'ease-out'});playSound('pickup',{volume:.22,rate:1.5});haptic('pairCleared')}
         // next (inside the win, Paul 2026-10-24): the scene's own button is NEXT LEVEL (and a Home link), since the win screen's are behind it.
         await nap(250);if(next){const go=btn(loc('NEXT LEVEL')),home=btn(loc('Home'),'link-btn');actions.append(go,home);cta(go);go.onclick=()=>done('next');home.onclick=()=>done('home');return}
         const ok=btn(loc('OK'));actions.append(ok);cta(ok);ok.onclick=()=>done()})()})}
@@ -4246,7 +4298,9 @@ void main() {
     let homeGoneTimer=0;
     const GC_COVERS=['#leaders','#welcome','#streakScene','#puzzleScreen','#lightbox'];let gcTimer=0;
     const homeOnTop=()=>!$('#home').classList.contains('hidden')&&!lightbox.open&&!document.querySelector('.overlay.show')&&GC_COVERS.every(s=>{const e=$(s);return!e||e.hidden||e.classList.contains('hidden')});
-    function gcAccessPoint(){clearTimeout(gcTimer);if(!homeOnTop()){gameCenter({type:'accessPoint',show:false});return}gcTimer=setTimeout(()=>{if(homeOnTop())gameCenter({type:'accessPoint',show:true})},600)}
+    // Device test, 2026-10-24: with the game idle at 2% the system compositor still ran at ~48% on the home screen, and the native
+    // Game Center button is the one thing there the game doesn't draw; it also hides while home rests and returns on the next touch.
+    function gcAccessPoint(){clearTimeout(gcTimer);if(!homeOnTop()||FX.homeRest&&document.body.classList.contains('scene-rest')){gameCenter({type:'accessPoint',show:false});return}gcTimer=setTimeout(()=>{if(homeOnTop())gameCenter({type:'accessPoint',show:true})},600)}
     // body.home-covered (FX.homeRest): home is showing but something is over it, so its animations pause and the ticker hides.
     {let queued=false;const mo=new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;gcAccessPoint();syncAwake();const home=!$('#home').classList.contains('hidden');document.body.classList.toggle('at-home',home);
         // memLite: home leaves the page once its 0.32s fade-out is over (showHome puts it back before un-hiding it).
@@ -4500,7 +4554,7 @@ void main() {
       for(const el of document.querySelectorAll('[data-loc-html]'))el.innerHTML=loc(el.dataset.locHtml);document.documentElement.lang=lang}
     // Settings LANGUAGE: switches every screen at once (the hero card and home redraw, page text swaps), and praise lines switch to their Spanish voice.
     // Changing it plays a monkey hu-hu (callHuhu, cut from source/sfx/Spanishpraises pickup lines.mp3).
-    function setLanguage(next){lang=next==='es'?'es':'en';localizePage();renderHome();$('#featuredArt').dataset.renderKey='\u0000';renderFeatured()}
+    function setLanguage(next){lang=next==='es'?'es':'en';if(FX.memLite)loadSounds(Object.keys(SOUND_FILES).filter(k=>voLang(k)===lang));localizePage();renderHome();$('#featuredArt').dataset.renderKey='\u0000';renderFeatured()}
     async function bootstrap(){localizePage();document.body.classList.toggle('dev',devMode);setupCageStyle();new ResizeObserver(([e])=>{boardSize={w:e.contentRect.width,h:e.contentRect.height};if(state.tiles.length)render()}).observe(board);setupFeaturedGloss();setupLightbox();setupTrials();setupMicroSlats();setVariant('D');loadHomeArt();buildHomeTicker();if(isIOSApp&&!params.has('play'))startHomeMusicEarly();await preloadAssets();warmMoteSprites();warmMusic(levelMusic(progress.level,levelPack(progress.level)));startLevel(progress.level,{silent:true});pendingLevelStart=false;if(params.has('tutorial'))playFromHome({tutorial:true});else if(params.has('play'))playFromHome();else showHome();if(!progress.player)openNameDialog();else if(!params.has('play')&&!params.has('tutorial')&&welcomeDue())openWelcome();flushSync();playHomeSting();if(params.has('soundcheck'))showSoundcheck();if(isIOSApp)unlockAudio()}
     bootstrap();
     // Anything a past session couldn't post (profile, world-record times) goes once the game has settled.

@@ -1009,4 +1009,8 @@ window.ES_TEXT={
   "Tips no longer pop up as a level ends.":"Los consejos ya no aparecen cuando el nivel está terminando.",
   "The Game Center button only shows on the home screen.":"El botón de Game Center solo aparece en la pantalla de inicio.",
   "Puzzles: smoother page turns with a paper flick, and the pictures stay a surprise until you find the pieces.":"Rompecabezas: cambios de página más suaves con un sonido de papel, y las imágenes son una sorpresa hasta que encuentras las piezas.",
+  "Much better battery life: the game goes almost completely still when you’re not touching it.":"Mucha mejor batería: el juego se queda casi totalmente quieto cuando no lo tocas.",
+  "Leave a level with a nearly full cage and it starts begging you to come back!":"Si dejas un nivel con la jaula casi llena, ¡empieza a rogarte que vuelvas!",
+  "Hidden puzzle pieces now tuck neatly under their card.":"Las piezas de rompecabezas escondidas ahora quedan bien metidas debajo de su carta.",
+  "Day 7 of your streak now shows the jungle treasure chest.":"El día 7 de tu racha ahora muestra el cofre del tesoro de la selva.",
 };

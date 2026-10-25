@@ -278,3 +278,20 @@ Note: the `Power Profiler` template can't record all processes at once, so recor
 - The peaks during a level (~1 GB) come from the transitions and scenes: the win screen, the POLY show, the streak scene.
 - ~72 MB of decoded sounds load at launch; calls could load per chapter.
 - Remaining idle CPU on home (~14%) is mostly WebKit compositing the home art and the ticker strip with its edge-fade mask.
+
+---
+
+## 9. Idle hunt and third round (2026-10-24, late)
+
+**Fixes:**
+- **Sounds load on demand.** Monkey calls load per level, voice lines only for the current language (the other loads on a switch), and Halloween sounds before Halloween levels. Decoded audio at launch: **72 → 39 MB**.
+- **Cage warning.** It no longer runs on the home screen. In a level left alone, it escalates for ~30 s, then gives up until a touch (Paul's "pick up your phone, buddy" idea).
+- **Hidden loading screen (the big CPU win).** A Time Profiler run with the 27.2 symbols showed WebKit resolving CSS animations every frame on a resting home screen. A dev FPS-meter diagnostic (running animations by name) found the cause: **the loading screen's `loaderShimmer`**. The loader was only made invisible after launch, so it repainted forever. It now leaves the page. Home idle web CPU: **13% → 2%**.
+- **Paused vs removed animations.** iOS's compositor (backboardd) stayed at ~48% because paused CSS animations still keep it busy. At rest, every CSS animation is now frozen in place (values held inline) and removed, then resumed at the same `currentTime` on the next touch. backboardd at home idle: **48% → ~6%**.
+- **Puzzle piece position.** The piece is now one step under its card and peeks out below the card's bottom edge, positioned from the card's drawn rectangle.
+- **Lighter scenes.** The POLY jackpot glow is a pre-drawn gradient fade, not an inset box-shadow, and the level-end spiral uses 16 cards with no big shadows.
+- **Game Center.** The button hides while home rests. This didn't change backboardd, but it does no harm.
+
+**Device timeline with POLY show and streak preview:** home 395 MB → level 581 MB → POLY peak 778 MB → streak peak 704 MB → end 476 MB. No ~1 GB peaks.
+
+**Final home idle on device:** web process ~2%, app ~1%, backboardd ~6%. This morning it was 32% / 9% / 48%.
