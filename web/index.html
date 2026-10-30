@@ -2891,7 +2891,7 @@
       const jackpotAt=pairs.length?POLY_IN_MS+(pairs.length-1)*beat+POLY_FLY_MS+90:POLY_IN_MS;
       setTimeout(()=>{if(s===state)polyJackpot(st,ice,pairs.length)},jackpotAt);
       // Only Kevin left (nothing to reveal any more): he pops off too, so the level ends.
-      setTimeout(()=>{st.root.animate([{opacity:1},{opacity:0}],{duration:320,fill:'forwards'}).onfinish=()=>{st.root.remove();perf.end(span)};if(ownLoop){polyMusic=false;if(s===state&&(s.chain?.n||0)<COMBO_SWAP_AT)comboMusicOff({fade:1.2})}  // 1.2s: a .15s hand-back sounded like the music dying (Paul 2026-10-30)if(s!==state)return;s.locked=false;s.history=[];
+      setTimeout(()=>{st.root.animate([{opacity:1},{opacity:0}],{duration:320,fill:'forwards'}).onfinish=()=>{st.root.remove();perf.end(span)};if(ownLoop){polyMusic=false;if(s===state&&(s.chain?.n||0)<COMBO_SWAP_AT)comboMusicOff({fade:1.2})}  /* 1.2s: a .15s hand-back sounded like the music dying (Paul 2026-10-30) */if(s!==state)return;s.locked=false;s.history=[];
         const rest=s.tiles.filter(t=>t.active);if(rest.length&&rest.every(t=>t.symbol===KEVIN)&&!s.tray.length)for(const t of rest){explode(board.querySelector(`[data-id="${t.id}"]`));t.active=false}
         render();if(!s.over)finishIfCleared()},jackpotAt+POLY_HOLD_MS)
     }
