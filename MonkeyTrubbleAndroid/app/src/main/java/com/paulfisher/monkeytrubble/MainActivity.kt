@@ -2,6 +2,7 @@ package com.paulfisher.monkeytrubble
 
 import android.annotation.SuppressLint
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
@@ -21,6 +22,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.webkit.WebViewAssetLoader
 import java.io.ByteArrayInputStream
 import java.util.Locale
+import kotlin.math.abs
 
 /**
  * Hosts the bundled game (assets/web, copied from ../web at build time) in a full-screen WebView, like the iPhone app's
@@ -71,6 +73,7 @@ class MainActivity : ComponentActivity() {
             addView(webView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
         }
         setContentView(container)
+        if (PREFER_60HZ) preferSixtyHz()
         ViewCompat.setOnApplyWindowInsetsListener(container) { _, insets ->
             systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
             insets
@@ -82,7 +85,7 @@ class MainActivity : ComponentActivity() {
             evaluate(String.format(Locale.US, "window.__setMonkeyTilt?.(%.4f,%.4f)", turn, lean))
         }
         ads = Ads(this, ::evaluate)
-        webView.addJavascriptInterface(Bridge(store, Haptics(this, webView), playGames, ads, motion = { on ->
+        webView.addJavascriptInterface(Bridge(store, Haptics(this, webView), playGames, ads, Perf(this, ::evaluate), motion = { on ->
             pageWantsMotion = on
             if (!on) tilt.stop() else if (resumed) tilt.start()
         }, awake = { on ->
@@ -128,6 +131,23 @@ class MainActivity : ComponentActivity() {
         webView.removeJavascriptInterface(Bridge.NAME)
         webView.destroy()
         super.onDestroy()
+    }
+
+    /**
+     * On iPhone the page draws at about 60 fps; Android's WebView follows the screen, so 120 Hz phones drew every animation twice as
+     * often for the same picture (Apple's perf talk: frame rate is the biggest power dial). Asks for the screen's 60 Hz mode where it
+     * has one, and on Android 15+ also tells the system the game view wants 60.
+     */
+    private fun preferSixtyHz() {
+        val display = ContextCompat.getDisplayOrDefault(this)
+        val current = display.mode
+        val mode = display.supportedModes
+            .filter { it.physicalWidth == current.physicalWidth && it.physicalHeight == current.physicalHeight }
+            .minByOrNull { abs(it.refreshRate - 60f) }
+        if (mode != null && mode.modeId != current.modeId) {
+            window.attributes = window.attributes.apply { preferredDisplayModeId = mode.modeId }
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) webView.requestedFrameRate = 60f
     }
 
     private fun evaluate(script: String) {
@@ -192,5 +212,8 @@ class MainActivity : ComponentActivity() {
     companion object {
         /** How long the page gets to fade its sound out (__quietMonkeyAudio) before the WebView pauses or an ad opens. */
         const val QUIET_MS = 120L
+
+        /** Perf switch: false lets the game run at the screen's full refresh rate again (preferSixtyHz). */
+        const val PREFER_60HZ = true
     }
 }

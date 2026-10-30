@@ -21,6 +21,7 @@ struct GameWebView: UIViewRepresentable {
         controller.add(context.coordinator, name: "ads")
         controller.add(context.coordinator, name: "share")
         controller.add(context.coordinator, name: "screen")
+        controller.add(context.coordinator, name: "perf")
         // Debug builds (Xcode / ship) keep the page's dev mode on; Release builds (TestFlight, App Store) turn it off.
         #if DEBUG
         let debugBuild = true
@@ -94,6 +95,7 @@ struct GameWebView: UIViewRepresentable {
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "ads")
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "share")
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "screen")
+        webView.configuration.userContentController.removeScriptMessageHandler(forName: "perf")
         coordinator.detach()
     }
 
@@ -300,6 +302,15 @@ struct GameWebView: UIViewRepresentable {
                let url = body["image"] as? String, let comma = url.firstIndex(of: ","),
                let data = Data(base64Encoded: String(url[url.index(after: comma)...])), let image = UIImage(data: data) {
                 presentShare(image)
+                return
+            }
+            // Signposts, game states and the MetricKit reports for dev tools (Perf.swift).
+            if message.name == "perf", let body = message.body as? [String: Any] {
+                if body["op"] as? String == "metrics" {
+                    webView?.evaluateJavaScript("window.perfMetrics?.(\(MetricsStore.shared.latestJSON()))")
+                } else {
+                    PerfBridge.shared.handle(body)
+                }
                 return
             }
             // The page keeps the screen awake only during play (see syncAwake in index.html).

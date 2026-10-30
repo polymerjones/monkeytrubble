@@ -14,6 +14,7 @@
 		A10000000000000000000005 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000006 /* PrivacyInfo.xcprivacy */; };
 		A10000000000000000000006 /* GameServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000009 /* GameServices.swift */; };
 		A10000000000000000000007 /* Ads.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000A /* Ads.swift */; };
+		A1000000000000000000000A /* Perf.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000B /* Perf.swift */; };
 		A10000000000000000000008 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = AC0000000000000000000001 /* GoogleMobileAds */; };
 		A10000000000000000000009 /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = AC0000000000000000000002 /* GoogleUserMessagingPlatform */; };
 /* End PBXBuildFile section */
@@ -29,6 +30,7 @@
 		A20000000000000000000008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A20000000000000000000009 /* GameServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameServices.swift; sourceTree = "<group>"; };
 		A2000000000000000000000A /* Ads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ads.swift; sourceTree = "<group>"; };
+		A2000000000000000000000B /* Perf.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Perf.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +62,7 @@
 				A20000000000000000000002 /* GameWebView.swift */,
 				A20000000000000000000009 /* GameServices.swift */,
 				A2000000000000000000000A /* Ads.swift */,
+				A2000000000000000000000B /* Perf.swift */,
 				A20000000000000000000003 /* Assets.xcassets */,
 				A20000000000000000000006 /* PrivacyInfo.xcprivacy */,
 				A20000000000000000000007 /* MonkeyTrubbleIOS.entitlements */,
@@ -159,6 +162,7 @@
 				A10000000000000000000002 /* GameWebView.swift in Sources */,
 				A10000000000000000000006 /* GameServices.swift in Sources */,
 				A10000000000000000000007 /* Ads.swift in Sources */,
+				A1000000000000000000000A /* Perf.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

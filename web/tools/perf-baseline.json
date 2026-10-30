@@ -1,0 +1,21 @@
+{
+ "saved": "2026-10-29T18:53:26.713Z",
+ "machine": "darwin arm64",
+ "throttle": 6,
+ "runs": 3,
+ "metrics": {
+  "L1 slow frames": 3,
+  "L1 startLevel": 183,
+  "L1 winScore": 621,
+  "L22 halloween slow frames": 2,
+  "L22 halloween startLevel": 331,
+  "L22 halloween winScore": 606,
+  "L22 slow frames": 1,
+  "L22 startLevel": 256,
+  "L22 winScore": 605,
+  "L51 slow frames": 1,
+  "L51 startLevel": 389,
+  "L51 winScore": 606,
+  "launch preloadAssets": 643.3
+ }
+}

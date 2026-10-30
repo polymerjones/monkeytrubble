@@ -6,8 +6,10 @@
     <!-- Haptics (a normal permission, granted at install). -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
+    <!-- appCategory="game": Android 16 (targetSdk 36) ignores the portrait lock on tablets and foldables, but not for games. -->
     <application
         android:name=".MonkeyApp"
+        android:appCategory="game"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"

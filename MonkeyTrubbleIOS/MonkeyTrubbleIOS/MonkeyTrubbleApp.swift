@@ -8,6 +8,8 @@ struct MonkeyTrubbleApp: App {
         // The screen stays awake only while a level is being played (the page sends 'screen'; GameWebView sets this).
         UIApplication.shared.isIdleTimerDisabled = false
         Self.activateAudio()
+        // MetricKit reports, saved on this device for dev tools (Perf.swift).
+        MetricsStore.shared.start()
     }
 
     // The game's audio session: ambient, mixing with other apps. Re-applied after an ad, an interruption or a return to the app,

@@ -1,0 +1,1242 @@
+And it helps you too! Instead of relying on memory and intuition, you can find these points of interest right in Instruments.
+Here are some tips on how to create data-rich traces that coding agents can meaningfully analyze.
+First, profile your app on real devices. Simulators have different performance characteristics and aren't the best source of data.
+When you want to measure and track specific periods of time in your app, use the logging system to emit signposts.
+First, create an OS signposter with the Points of Interest category.
+Then, when the work starts, call BeginInterval and give it a name.
+When the work is done, call EndInterval with the same name along with the state that BeginInterval returned so the signpost events are matched correctly.
+Now, these intervals will be available in the Points of Interest track in an Instruments trace for you and your coding agent to reference.
+Intervals like these are great for measuring specific tasks, but sometimes you want to capture something else, like the state your app is in.
+That could be any period of time when your app is in a particular mode or a feature is turned on.
+For that, consider using the state reporting framework.
+It lets you describe the states your app is in and the transitions between these states.
+First, get a reporter for your feature using a reverse DNS domain name.
+Then, whenever the mode changes, report a transition to the new state with the descriptive label.
+States are recorded by the logging system too, so they show up in your trace whenever signposts are captured.
+Finally, profile your app under a variety of conditions.
+Don't stop at one trace. Capture many. The more traces you take, the better sample set you'll have to work with.
+Perform actions in different orders or work with different sets of data and try different device conditions.
+For example, the Network Link Conditioner lets you simulate a poor network connection so you can find issues that don't show up when everything is running smoothly.
+Now let's see how all of this comes together. I'll use Instruments and a coding agent to find and fix a performance problem in my app.
+I have a Notes app I've been working on and I want to make it easy to identify when a hang occurs.
+Xctrace and Instruments can help debug and solve these performance issues.
+To get started, I'll enable on-device hang detection, which will give me real-time alerts at the top of my screen when a hang occurs.
+To enable hang detection, I'll go to Settings and scroll down to the Developer pane.
+Then I'll tap on Hang Detection and enable the Hang Detection toggle.
+I'll leave the hang threshold at 500 milliseconds to learn about even the briefest UI stalls.
+If I encounter any hangs, I'll want to make sure they're captured in a trace, so I'll preemptively start an Instruments capture of this debug session.
+The Run destination for my project is already configured to my test iPad, so I'll start profiling in Instruments by using the Command-I keyboard shortcut from within my project.
+The Command-I shortcut will build my app and install my app.
+install it on my test device, and then launch instruments.
+The last time I was using my app, I encountered a hang when saving a note.
+I want to reproduce that today, so I'm going to use the Time Profiler template.
+The Time Profiler template already includes the Hangs instrument and Points of Interest
+instrument, which will be useful for visualizing the earmarked sections of my project.
+Now that my instrument's run is configured, I can start recording.
+I'll click the red record button in the top left corner of this window.
+This will launch my app on my target test device.
+I want to test the save path in my app, so I'll start by opening the first note in the
+list, titled "Dragon Curve."
+Now I'll make a simple edit and tap save.
+I know that hang detection worked because as soon as I tapped save, a notification appeared
+at the top of my screen informing me of the hang.
+This particular hang was about three seconds.
+Now that I've found a hang, I'll stop the trace by clicking the stop button in the top left
+corner of the instrument's window.
+I'll save the trace to an easy-to-access location on my Mac and call it "trace_save_hang."
+I'll also name this run.
+I'll call it "baseline."
+Now that my trace is saved, I'll confirm the hang was captured.
+Trace has a lot of data so the first thing I'll do is focus the trace to the hang duration.
+There's a severe hang for about three seconds in the hangs track. I'll focus on that.
+Next I'll click on the bar that says severe hang and select set inspection range and zoom.
+Instruments zoomed in to remove all the other noise so that my trace is focused.
+And now that my trace is focused, I can inspect a couple more things.
+The first thing that stands out to me is that the Points of Interest track shows that this hang occurred during the rendering preview part of my app.
+This is where I convert a note into a PNG to use as the preview in the notes source list in my app.
+A hang in my app means that the main thread was blocked, so I'll also check what work is happening in my app during this hang.
+I'll click on the hang time profiler track and navigate to the detail view in the bottom half of the window.
+The call tree view shows that 95% of the hang time was spent doing work in this background thread.
+For more context, I'll option click to expand the call stack.
+The expanded call stack shows time being spent in note preview exporter render PMG, which is where I generate the note preview.
+This seems a little suspicious but provides me with a good starting point for my investigation.
+Let's have an agent do a deeper dive.
+Like I mentioned before, the agent will be able to use xctrace to review this trace just
+like a human engineer would. I'll start this investigation by navigating back to my Xcode
+project and switching to the coding assistant. Now I'll start a new conversation by clicking
+new conversation in the sidebar. I want the agent to analyze the trace I just took so
+I'll drag it from finder into the conversation I just started. I'll tell the agent to investigate
+the hangs in my app and describe the solution and it'll use the attached trace for context.
+I'll click Submit to start the conversation and watch as the agent goes to work. Hangs generally
+occur when non-UI work is done on the main thread or the main thread is blocked waiting on other
+work to finish. There are a few common anti-patterns that lead to hangs. One of the most
+prevalent are priority inversions. This is when a high priority task such as main thread updates
+are blocked waiting on low priority tasks to finish. This can be mitigated by avoiding shared
+locks and using the correct quality of service or QoS level. If your app uses structured concurrency,
+some best practices are making sure not to execute work on the main actor. Instead,
+wrap the long running work in a non-isolated async function.
+It looks like the agent is done and provided a summary of its findings.
+Let's go through the transcript.
+The agent started by calling xctrace triage to identify a hang.
+It then analyzed the trace and found the root cause of the hang.
+It attributed this to a priority inversion in the preview renderer.
+Then the agent provided suggestions on how to resolve the issue.
+These optimizations sound reasonable.
+I'll tell the agent to make the recommended changes.
+Today we're discussing how the agent handles hangs, but xctrace can work for a variety of
+performance issues that I encourage you to play around with.
+The xctrace skills exist to find the needle in the haystack and help you pinpoint the root
+cause of a performance issue so you can make a decision on how you want to resolve it.
+These skills that are used in Xcode can be exported from the command line, so they can be used by
+any agent of your choice.
+The agent is done, so it's time to double check its work by capturing a new trace and confirming
+the hang is no longer there.
+I'll build the changes and profile in instruments with the CMD+I keyboard shortcut just like before.
+to start a new run in the same trace file, I'll click next recording in the top left corner. Doing this will preserve the configuration of my previous run and my baseline trace will be just a click away in case I need to reference it. I'll click the record button in the top left corner of the instruments window and now it's time to test the save feature again.
+I'll make a small edit and tap save. Hang detection didn't call anything out, which seems promising. I'll stop the trace by clicking the stop button in the top left corner of the instruments window and manually inspect the trace.
+A quick scan along the timeline view doesn't show a hang during rendering preview, which is also much faster now.
+I'll commit these changes and put up a PR for the rest of my team to review after this presentation.
+Using agents is incredibly convenient. While it enables quick iteration, it's also a good idea to validate that the changes made by the agent actually do what they're expected to do.
+In this specific example, the hang was resolved and my app's functionality was preserved in the process. Using instruments, points of interest, and agents made it really quick and easy to identify and fix the hangs in my app.
+So that's how you can find and fix a performance issue today. Now let's look ahead to how performance data and agentic coding can play a role as you grow your app's capabilities.
+When agents become a bigger part of your work, you may want to enrich the performance data you collect, just like I showed you how to do when collecting traces. Say you want insights on hangs in one specific part of your app, or how long launch takes when a certain feature is turned on. For that, you need data that has context built in, data that you can aggregate and analyze with your agent. You may also want to analyze data from different audiences, like your internal users or beta testers.
+These challenges are exactly what the MetricKit framework is designed to solve.
+MetricKit delivers a daily report of your app's performance metrics, as well as diagnostics whenever a performance issue happens, like a hang, a crash, or a memory issue.
+This gives you the raw data to build your own custom dashboards, reports, or even a pipeline like the one I showed you earlier, where your agent makes performance work, part of every release.
+MetricKit works for all audiences of your app, from internal users and beta testers, to people who download your app from the app store.
+If you send this data off the device, it will be subject to your own privacy and data collection policies.
+Earlier, I showed you how you can use state reporting to annotate your instrument's trace.
+It helps both you and your agent understand what state your app was in over time.
+In the 27 releases, state reporting works with MetricKit, too.
+By default, MetricKit gives you metrics for the previous day of usage, like showing a hang time of 6.7 seconds across all app usage.
+But when your app reports its state, MetricKit can break down those metrics by each state.
+So instead of one hang time for all
+usage across your app, you get a separate one for each state. For example, when someone was actively using feature one, feature two, or feature three. MetricKit is a cornerstone of a fully agentic performance workflow, one built on real performance data. As you aggregate metric data, you get an even richer picture of the performance problems that matter most to the people using your app. This can feed directly into your agentic workflow, so you're
+agent can propose fixes as pull requests, release after release. Another key way to identify early is with automated tests. You can take parts of your code, break them into smaller pieces, and write performance tests around them with xctest. With agents, writing tests is easier than ever. Instead of writing every test manually, your agent can make sure all the new code you write has comprehensive test coverage to prevent performance regressions.
+You can use the measure API in xctest to gather performance metrics for a block of code. Compare your runs against your baseline to catch regressions and investigate further with your coding agent.
+So where do you go from here? Harness the power of your app's performance data to make meaningful improvements. Gather metrics and diagnostics from every source available to you: the Xcode Organizer, the Xcode MCP Server, MetricKit, and your tests.
+Then put your agent to work on your app's top performance issues. Use instruments and the new XCTrace commands so your agent can work through traces efficiently. And adopt MetricKit and state reporting to get the most data-rich insights for your app.
+I hope you're all excited about how agents
+and performance data can work with you
+as you expand your apps capabilities over time.
+Thank you.
+- Awesome.
+Thanks, Rafali.
+I'm sure none of you are gonna have any more bugs
+in your apps anymore.
+Now, we'll have a short break.
+We'll pick it up right back here at 11:30 AM.
+Yeah, live Q and A, nice.
+You are good.
+- I'm sure you're good.
+- I'm sure you're good.
+- I'm sure you're good.
+- I'm sure you're good.
+- I'm sure you're good.
+- I'm sure you're good.
+- I'm sure you're good.
+- I'm sure you're good.
+- I'm sure you're good.
+- I'm sure you're good.
+- I'm sure you're good.
+- I'm sure you're good.
+- I'm sure you're good.
+- I'm sure you're good.
+- I'm sure you're good.
+- I'm sure you're good.
+- I'm sure you're good.
+- I'm sure you're good.
+indicates that your app is using more battery than your peers.
+Or perhaps you're looking to ensure that your app supports the widest possible mix of devices.
+Maybe users are giving you feedback that your app causes their devices to heat up or use a lot of battery.
+These are all great reasons to focus on power.
+Fortunately, this is a solvable problem.
+You have a lot of levers to improve the efficiency of your app.
+There's two different types of problems you should focus on: thermals and battery usage.
+Thermals are the temperature of the device.
+If someone's device gets warm while using your app, that can be unexpected,
+making your app's experience less appealing.
+And if the device gets too warm, the system will throttle performance in order to control temperature.
+That reduces the speed of your app.
+And in some extreme cases, it can even shut off non-essential functions until the device cools.
+Battery usage, on the other hand, is different.
+When your app uses a lot of battery, it leaves people with less time to use it.
+And an overly large amount of battery usage can be a shock to users, reflecting poorly on your app and leaving a bad taste in their mouth.
+People can see the amount of battery your app uses day to day in battery settings, and may respond to outsized usage by using your app less often.
+Your app using battery or making the device warm are actually two sides of the same coin.
+They're the types of problems which can occur when power is not managed efficiently in your app.
+Power is the rate at which energy is used and work is done.
+A thermal issue can occur when an app uses a lot of power, even over a relatively short period of time.
+Think of thermals as being the product of your app's maximum power draw.
+On the other hand, battery usage comes from using excess power over time.
+Even a relatively small amount of excess power can make a big difference if it's sustained for a long time. The cumulative energy impact can add up to a meaningful change on battery life. Battery usage is primarily driven by your app's average and floor power use. The worst case scenario is when your app has high power draw over an extended period of time. The high power creates thermal issues and the time involved can create high battery usage.
+So there are two goals: reduce peak power to decrease the likelihood of thermal issues, and reduce average power draw over time to decrease battery usage.
+A lot of the times, this work in practice means finding a balance between theoretical quality and power.
+So, what uses power? Literally everything. Nothing your app does is free.
+When an app uses device capabilities, such as storage, audio, or graphics, it requires support through a network of other software on the system,
+all of which have to ultimately run on hardware. And all hardware inherently draws power.
+Even seemingly trivial APIs may result in the system spinning up processes or using hardware, costing more power.
+For example, I want to load an image and display it to a user. This is one single line of Swift code.
+And yet, it drives many different processes and system components.
+It needs to use radios to fetch the image. It needs to decode that image, send it to the GPU using metal, and render it to the display.
+This uses a lot of hardware and software, and it's still a relatively simple example.
+Rendering a map using MapKit requires even more of the device. It needs to discover location using sensors and graphics.
+and radios, fetch data about what's nearby from the network, and it'll drive all the same rendering technology and more because it needs to render the map, its icons, and text.
+It's a whole lot, all of this from one single line of code.
+The system is actually able to account for this web of distributed power consumption.
+It keeps track of which app needs the work it's doing and attributes the power used to that app.
+This means that when people view the battery life impact of your app in settings, that includes the power used by the system on behalf of your app.
+When thinking about what a workload is doing, it's often useful to break it down into subsystems.
+Subsystems include hardware, such as the CPU or memory, as well as Apple frameworks, such as Core Location or SwiftUI.
+Different scenarios exercise different subsystems.
+Complex metal effects drive the GPU and display, but not so much storage.
+Xcode and instruments have tools which let you deeply inspect each individual subsystem.
+And the first step to breaking down power problems is to know what subsystems a workload exercises, so you can use the right tools for the job.
+So now I'll talk about what some of these subsystems actually are.
+Today I'll touch on a few key ones for power, the CPU, GPU, display, and location services.
+Starting with the CPU, enormous parts of your app's power use comes from the CPU.
+It's a subsystem which can often cause thermal issues, because it's really easy to create bursts of expensive work.
+And that work can also occur at high frequency levels.
+frequency, such as every frame, which can raise the power floor of your app, increasing battery usage.
+For CPU issues, a great place to start is to check out the Xcode organizer. When an app exceeds
+a reasonable amount of CPU time over a short period, a backtrace and other details are collected.
+These get delivered to you as aggregated energy reports in the organizer. Since these represent
+spikes in energy, they're possible sources of thermal issues from your app. But they can
+also be sources of excess battery life impact when they occur too frequently. This should be your first
+stop if you're looking to optimize your app's battery or thermals. And the same MCP tools Shefali
+demoed earlier also work for energy logs. The CPU runs your code, so some general principles of efficiency
+apply. When you hit salmon CPU issues, first, consider if the work needs to be done at all.
+You can cache or defer expensive computations. Avoid work which isn't relevant to the current app
+experience and do work less often if the user can't actually notice a difference.
+You can consider more efficient algorithms or operate on smaller sets of data. This makes work cheaper.
+When you can, prefer high level frameworks which suit your needs. For example, AVKit is really heavily
+optimized for rendering video. And you should probably prefer it over re-implementing video playback in
+Metal. The CPU is also a useful subsystem to examine because it provides you hints about what the device is
+doing at a given time. Since the CPU manages and responds to all other subsystems, requests for work
+will often be reflected in call stacks.
+This can give you really valuable hints. In Instruments, the Time Profiler track gives you insight into what your app is doing in a given scenario. Even if the CPU isn't ultimately the primary source of excess power usage, often enough it provides really valuable hints to what actually is. Next, I'll discuss on the GPU. For those of you who use Metal directly in your app, you have a lot of optimization opportunities.
+Metal gives you so much control around the app.
+And optimizing for the GPU work is a little bit different than optimizing CPU work.
+Often, the concern isn't just about reducing power. Your app or game also has to meet its frame deadlines.
+Fortunately, in most other cases, performance and power are really aligned on the CPU.
+So by making your experience faster and able to run on more devices, you'll usually also be using less power in the process.
+When doing advanced rendering or GPU compute work in your app, there's a lot of tools and techniques to optimize. Too many to cover in this session, unfortunately.
+A great starting place would be to check out the documentation on improving your game's graphics performance and settings and the Metal debugger.
+Now, I'll talk about the display. On iPhone, ProMotion displays vary power consumption based on what's actually being put on screen.
+ProMotion displays are capable of dynamically switching between frame rates. Up to 120 frames per second on supported devices.
+When content updates less frequently, iPhone adapts to a lower frame rate which uses less power.
+This also lets your app skip expensive render work on the CPU, GPU, and other subsystems.
+If you're using UIKit, SwiftUI, or other Apple frameworks, you mostly don't have to worry about this at all. The system will handle it for you. But in some cases, your app can over-specify its frame rate. This causes the system to update the display more often than it needs to, with no benefit to the user. I've created an animation for my app. It has several constituent parts: a haze, pulse, and some particles. But none of these effects are actually moving that quickly.
+For an animation like this, a lower frame rate could be just as effective as a higher frame rate. So, by reducing the frame rate, I can save a lot of power without any perceived quality loss. This is really dependent on the effect itself, and even the environment around it. For example, on this huge screen, it might genuinely need to run at a higher frame rate. So, not all animations will be able to take advantage of this without compromising visual quality. So you should evaluate what makes it possible.
+It doesn't make sense in your app on a case-by-case basis. The API you can use to specify frame rate is CA Frame Rate Range. This API lets you specify a minimum, maximum, and preferred frame rate for a given effect. And the system will choose a real frame rate based on it and the other things happening on the system.
+In most cases, you don't need to specify a frame rate at all. You can use CA Frame Rate Range.Default or otherwise defer to normal behavior. In these cases, the system will automatically detect an appropriate frame rate. For cases where the animation is slower or smaller, you can consider a lower frame rate, such as 24, 30, or 48 frames per second, if that meets your visual quality goals. Reserve 120 frames per second
+for large and high impact animations. Even if the animation is really cheap to render, reducing the frame rate can save a ton of power due to how much work the system is able to skip.
+Another source of power consumption in the display is luminance, or how bright the screen is. Generally speaking, darker pixels are cheaper to display than brighter pixels, especially in HDR content.
+An easy way to get a power win is to support dark mode. It's an important accessibility option, and for some, it will use slightly less power.
+For those of you that render your own content, make sure you're only using HDR backing surfaces for content that's actually HDR.
+MetricKit can also give you data about this. You can estimate the impact of the display's luminance through the average pixel luminance metric.
+And you can use the display and frame Lifetime's instruments tracks to understand how often the app is updating the display.
+Finally, I'll discuss how discovering location impacts power.
+Location can be one of the most important subsystems to examine for power.
+When your app uses location, the device may have to turn on many different sensors, radios, and software systems.
+Starting all of this up and keeping it running costs power.
+In addition, the system and your app both need to run to create and respond to location updates.
+This runtime and processing work adds to your power floor.
+Even if you've optimized your codes really well, there are baseline costs to continuously discovering location, which can result in really large battery life impact.
+When using location services, there's a few things which can help Power. First, reduce how much location work is needed by avoiding continuous location tracking. This is the most critical thing you can do for Power. Where possible, you can instead use region monitoring. If you just need to know when someone enters or exits a region, you can use the CL Monitor API. This lets the system automatically avoid location updates when the device is far away from a boundary.
+But some devices or some features really do need continuous location tracking. For example, turn-by-turn navigation. A good technique in these scenarios is to defer updates when the device is stationary. If you're using the CL LocationUpdate API, the stationary flag indicates that the user isn't moving right now and you can safely defer updates.
+These techniques let you build mini location-based features without paying the cost of continuous monitoring and processing.
+Background location features should be a specific point of focus because they can very quickly use a ton of power.
+To get a better understanding of the cost of the location subsystem, you can use the Location Energy Model Instrument, which is automatically loaded in the Power Profiler.
+To measure power in the background, you can also use the Power Profiler in instruments or on-device.
+Earlier, Cole discussed taking on-device traces for performance analysis, and you can do the same for power.
+To profile your app's power on-device, first, enable Developer Mode, and navigate to Developer Settings, then Performance Trace.
+Make sure your app is in the list of monitored apps, and choose the Power Profiler Tracing Mode.
+Then, use Control Center to start and stop recording a trace. Power Profiler traces can be left running for several hours, really useful for tracking down those hard to find power problems. The resulting file can be opened in instruments, just like any other trace.
+So far, I've discussed how to break down and introspect some of the subsystems apps rely on to understand their power consumption.
+Now I'll walk through what this kind of analysis actually looks like in practice, using an int sample from an app I'm working on.
+I make an app which is social media for cats.
+It lets people upload videos and pictures of their babies being cute, customize their cat avatar, and comment in character of their cats.
+On today, National Cat Day, people will obviously spend a lot of time on this app.
+But I've noticed that long sessions use more battery life than I would really hope they would.
+As a first step, I'll check Xcode Organizer.
+In this case, on my latest app version, 6.7, the organizer doesn't have any energy reports.
+This is a great hint.
+It could indicate that the problem isn't due to short bursts of power, but instead, long-running power elevation.
+So my next step is to profile my app's power directly.
+In this case, I want to understand system power.
+So I'll start with the Power Profiler Instruments template.
+In addition to power, it includes some instruments to get a broad view of system activity.
+I'll adjust the instruments to be more tailored to the subsystems my app actually uses in the scenario I'm profiling.
+In the video rendering scenario, the main task is video rendering.
+This involves UI work and the display.
+I'll add the display instrument to get an idea of how often the content is rendered on screen.
+I'll also keep the network connections instrument, since the content is fetched over the network.
+My app uses AVKit to render video, and I'm not doing any custom metal post-processing, so I'll remove the metal performance overview.
+Finally, nothing in my app uses location at all, so I can remove the location energy model.
+Using that set of instruments, I'll record a trace and investigate what's happening step-by-step.
+First, looking at the Power Profiler overview, the average CPU impact is 2.2, GPU impact is 1, and display impact is 4.
+These numbers really don't mean much to me right now, but they're really important for comparison after I've made a change.
+We need to make sure it was actually a good one.
+Next, in the Time Profiler track, instruments indicates that the app's CPU usage is pretty reasonable, around 10% to 30%.
+So, the issue is probably coming from a different subsystem.
+In the network connections instrument, there isn't much activity from my app.
+This is a hint that the networking also isn't the cause of my elevated power.
+In the display instrument, it indicates that the duration of swapped surfaces hovers around 8.3 milliseconds.
+That indicates that the display is updating at 120 frames per second.
+That's a bit spooky.
+I know my apps' videos actually run at 30 frames per second.
+So, I'll focus on what's actually updating the screen.
+Xcode has a debugging tool called Flash Updated Regions, which colors the parts of the screen which are updating yellow.
+You can access it by going to Debug, View Debugging, Rendering,
+In this app, yellow regions appear over and around the cat avatar's tail.
+Note that right now, video is paused, and Liquid Glass would only update if the content under and around it change, so the tail animation must be causing the high frame rate.
+Reviewing my code, this is because I've set my CADisplayLink.PreferredFrameRateRange to request 120 frames per second.
+The fix here is to make the animation's frame rate and match the videos.
+So I'll go ahead and create a new helper method, GetVideoFrameRateRange.
+This method gets the frame rate of the video and returns an appropriate CAFrameRateRange based on it.
+It corrects the current issue, and it makes it forward compatible if I ever change the video frame rate in the future.
+Now, when I collect a new trace with this fix, the display instrument no longer indicates that the display is running at 120 frames per second.
+Instead, it shows it updating around about 30.
+The power profiler track also indicates that total power is lower, with the average CPU impact falling from 2.2 to 1.3, GPU impact falling from 1 to 0.1, and display impact falling from 4 to 2.
+There are a few takeaways from this example.
+First, breaking down the problem into subsystems allowed me to select the right tools, narrow down the problem, and make an important power improvement.
+Second, this is an example of the balance between theoretical quality and power.
+For some animations, reducing frame rate would be an unacceptable visual compromise.
+But for a small animation like this, which is already placed on top of low frame rate video, it's just as effective
+at a lower frame rate. The viewer, when done right, cannot tell a difference if the frame rate
+is high or low. These kinds of optimizations, which reduce theoretical quality with no experience
+impact, are often the most valuable for power. I've covered a lot today. Moving forward, please
+think deeply about all the different workloads in your app. Break them down into the subsystems
+they're driving. And think about which parts are core to your app's user experience and which
+ones really aren't pulling their weight power-wise. Approaching problems like this will make you
+more effective at optimizing your app's efficiency and power. Thank you.
+Amazing. Thanks, Adanim. National Cat Day. I had no idea. One of the best ways to get the best performance
+out of your app for SwiftUI and other UI frameworks is to follow those frameworks' best practices and
+techniques. And occasionally, those are a bit nebulous or hard to find. So, please help me welcome
+Luca from the SwiftUI team, who's going to talk to you about these best practices in the context of
+agentic coding. Thank you.
+Hi, and welcome. My name is Luca, and I work on UI frameworks. Xcode 27 ships with a set of agent
+skills to support you in building the best app. A skill is a set of instruction, reference material,
+example, that provides an AI agent with specialized knowledge.
+Skills can be automatically loaded if they are considered relevant for your prompt.
+But you can also explicitly invoke them by name.
+In this talk, I want to focus on the SwiftUI specialist skill.
+SwiftUI is designed to provide a delightful developer experience, leveraging the SwiftUI
+language and abstracting away complexity to let you build great app. And this skill is a natural extension of this goal. I love SwiftUI, but do you know what I really love? Well, that's croissant. I know, I know. San Francisco has some amazing pastry, so I recently took my team on a testing tour to try the best one. But obviously, every time we leave the office to do something fun, there is one extra thing that always ends up happening.
+Someone on the team has to make an app for it. This time, it was my colleague Steven, Time to Shine, and he has been working on an app to track and rate all the best pastries we tried. But I'm not sure if the app is done yet. He just sent me a video voicemail, and I wonder what that says.
+Hey Luca, so I've been working on the app, and I have a couple of updates to share with you. First, I was doing some performance profiling on the list of pastries,
+and I noticed that the cells seem to be updating more often than they should. Second, I had a great idea to add an entirely new tab to the app. It has a map view, and it shows where all of the bakeries are located.
+I know, I know, I know, scope creep. But I got it done really quickly. The only thing is, I was in a hurry, so I may have cut a few corners. Anyway, I would love to be able to look at these things, but I'm going on vacation now. So I was wondering, could you please do me a favor and take a look at them? I promise to bring you back a souvenir. I don't want to spoil anything, but I hope you like magnets. Anyway, thanks. Gotta go. Bye.
+Oh, boy. I know, it's good. It looks like I have my work cut out for me, but let's take this one step at a time. There's three things I need to do.
+I need to understand this code base first, then I'll dig in and fix the update issue that Steven wants my help with, and then review the new tab with the maps.
+I'll start by opening Xcode and explore the project that he sent me.
+Okay, so pastry tracker app is the main entry point for the app, and on the right hand side you can observe a preview of the app main screen.
+It shows two tabs, but let's focus on the first one for now, where we have a list of tasting with the pastry I've tried, where and when I tried, and a rating for each pastry.
+Finally, up top in the navigation bar, I have a button to add a new tasting.
+Now, I want to start by familiarizing myself with the code.
+An agent are a great way to start exploring a new code base.
+I'm going to show you how I usually use them for this purpose.
+In Xcode, I'm going to start a conversation with the agent by selecting the coding assistant button in the toolbar and clicking on new conversation.
+In the prompt field, I'm going to ask the agent to help me understand the project.
+So I'm just going to type that I want to understand this project.
+And I'm going to ask you to make a table with the data layer.
+And also to add a very brief overview.
+This is actually how I generally like to start understanding an app.
+I always prefer starting from the data layer, because in my head, I start picturing the data, relationship, and operations that are possible.
+And from that, I can start with the data layer.
+I can build up how the UI looks like and how it connects to data This is very powerful to me because especially in SwiftUI apps understanding a view input and how they cause it to update is fundamental to working with the framework. I'm choosing to have the output as a table because it makes it easy for me to scan the output. Okay, I think we're having a little bit of a problem here with Xcode. Well, you know that this is live.
+So, let me try to kill, close Xcode for a second and see if something works out. One second.
+But that's a fun of it.
+Okay, let's see. We should be back. Let me try again. One more time. So, yeah. So, I'm going to go back one second and just like run you through the prompt again that I want in this project and I'm going to ask you to make a table.
+And again, ask you to make a brief overview.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Okay, let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see.
+Now it's working. Yeah, it seems like now it is. Yeah, you can see on screen that he's finally writing the file. Yeah, and all right, cool. We have our table right here. Okay, so the agent finally finished. We needed to, you know, try again. And in the transcript, you can see a summary of the data type in this project. So let me walk you through the most important one. We have testing, and this is the type that represents a testing for a specific
+pastry at a location. This is the data type that is baking a single row. And this testing has a couple of nested type for coordinate and rating. But the more interesting type here seems to be testing store. This is the observable type which holds on to the list of testing and exposes that to the view. So now I want to learn how testing store is being used and understand how the data flow through the UI. This gives me a starting point to investigate issue with view updates. So I'll navigate to that
+file in Xcode. I'm going to use the command shift or keyboard shortcut to quickly open a file. And I'm just going to type in the symbol. So testing store. And here we have the store type. It's okay. Now stick with me as I do some keyboard yoga. I'm going to use the keyboard shortcut command option control shift H. Yeah, I have to practice this many times. Yes. And this opens a new conversation in a side pane. And I'll type in my
+to ask how to ask how the store is being used. So I'm just going to ask it to tell me how this is being used in a view. And what view is observing this data. All right. So when I make this
+this more specific prompt. I like to keep the code editor and the agent side-by-side so I can glance at the source while the agent is working. And then I can look at the responses and navigate around the code.
+While the agent is working, let me point out to the testing array. That's the data that the app is going to display in the list. The agent is finished and there's quite a lot of context. Let me actually scroll up a little bit to see the beginning of it.
+So let me just highlight the most important point. So TastingList is the view that observes the store. And that seems like a good next step for our investigation.
+So I quickly take a look at TastingList. I'm going to use again the quick open keyboard shortcut and navigate to TastingList.
+So the view iterates over the Tasting coming from the store, generate a list where each row gets a tasting.
+And Steven told me that he noticed that the cell row was updating more than it should be.
+So I'll use the agent to figure out why this is happening and if there is anything I can do about it.
+So I'm going to continue this conversation and just state the problem.
+The cell row is updating too frequently and just look into a fix for it.
+All right.
+So this prompt asks if there's any improvement to either Tasting or TastingStore because updates are caused by changes in the input to the view.
+And I'm also explicitly asking the agent to focus on view updates.
+Making sure that Observable notifies the view only when something has changed is a good first step for this investigation.
+Not also how in the transcript it shows that the SwiftUI specialist keeps the view updates.
+skill is being activated. Using the agent with this skill is like sitting with a UI framework
+engineer, working together to build up the follow modern practices. The agent has finished
+producing the answer, so let me highlight the most important part. And I need to scroll
+up a little bit again. There we are. So the agent is telling me that the main issue is
+that testing is not equitable. An observable type does not constrain its property to be
+equitable. But if you make the type of your property equitable, observable will avoid updating
+a view if a new value of a property is equal to the previous one. And the agent is also
+suggesting a fix for these. All of the property are already equitable, so you can just add a
+conformance to it. I'm going to ask that fix, just asking to add the conformance for that
+fix. So yeah, I'm just going to type in. Yes, add the conformance to equitable. Cool. In the
+transcript, there is a rich representation of what the model is doing. And it really helps
+me get a sense of what's happening when it's reading the file, then making an edit, and finally
+compiling the project. I also really like that when the agent produces some edit, it shows the
+diff in a new panel. And also, a little tip, I can over any line number to leave any line
+comment if I want some additional changes or just clarification. So I just made the testing
+type equitable. This is the type that has been used by one of the properties of my observable
+type. But this skill is great for asking clarifying questions about your code or how SIFTI works.
+For example, if I wanted to know whether there is any benefit to making the model object
+equitable, I could just ask that. So let me ask that again to the agent. I'm just going to
+give myself a little bit more space right here.
+ask if I should make TestingStore equitable.
+And I'm going to also ask if this helps reducing the number of your data.
+So the skill is designed to provide explanation for all the recommendation
+and guideline present in the skill.
+And you can use it as a tool to support you in learning and understanding.
+Even when most of the code is written by AI,
+understanding is fundamental to collaborating with the agent
+and verifying its work.
+The agent has finished.
+I'm going to scroll up a little bit again.
+And it's telling us that there is no need
+to make the observable type equitable,
+because the viewer update is not driven by the quality check,
+but instead by the signal sent by the observable conformance.
+Now, this investigation was fairly targeted to a specific type,
+where I knew that something was not quite working.
+But this skill is also great for doing broader analysis and review
+of your code base.
+The second thing that Steven told me about is this new map view.
+And Steven didn't seem very confident about the way it turned out,
+so that seems like a great opportunity to use the coding assistant
+to check it out.
+And I'm going to start a new conversation,
+so I can give the agent a fresh new context.
+And I'm going to ask you to take a look at all the view related to map view.
+I'm going to ask you to review for best practices
+and opportunities to modernize.
+and finally, I'm going to ask you to propose a list of all the improvements and work through them one by one.
+All right. So not in my prompt, I'm explicitly asking the agent to focus on the MapView of the app.
+And in general, I will not recommend using a single prompt to review the whole codebase.
+For larger codebases, these can quickly fill up the agent context window and this degrade its capabilities.
+But more importantly, it can become too overwhelming on you.
+And another tip is that I really like to ask the agent to also work on suggestion one at a time.
+I do find it intimidating to stare at a big wall of text with a laundry list of issues that I need to act on.
+Instead, I prefer to get a summary first to ground myself and then work through all the suggestion one by one in order of importance.
+This is a great way for me to better understand and trust the changes that the agent makes to my code.
+And honestly, making some changes and verify that it works as I expected is a very fun and effective way to learn more about new area of a codebase.
+Okay, the agent is finished. I'm going to scroll back up again to see the beginning of all the proposed improvement.
+And we can see here a list of improvement. And they're all grouped into multiple categories like localization, best practices, accessibility, and more.
+I like this because it makes it easy for me to understand their priority and importance.
+And I also think it's great that the agent has a sense of what are the most important areas in a specific area.
+in SwiftUI apps and the highest impact changes. And as you might guess from my accent, having an app that is well-behaved across locale is important to me. So I'll ask the agent to implement the first fix, which is a change to better support localization. I'll come back to this later in review. So I'm just going to type in, yes.
+Okay, so I just demonstrated how you can use the SwiftUI Specialist skill for targeted fix to your code, building a better understanding of how SwiftUI works so that you maximize your leverage with this very powerful agent.
+And finally, how you can use the skill as your own personal SwiftUI engineer continuously supporting you in evolving and improving your app.
+But this is just one of the several skills available in Xcode for working with UI frameworks.
+There is also a great app-recisibility skill that allow you to easily get your app layout ready for iPhone Duo.
+We have a what's new in SwiftUI 27 that describes new API, behavior, and application in the framework.
+This skill is a great way to bridge the gap between model training and the current SwiftUI APIs.
+But it's also a great way for you to learn what's new.
+Also, there is a skill to help you build document-based app, which contains information about all the new API,
+like reference file document, and how to adopt that in your app.
+And beyond the skill for UI frameworks, we also have skills covering other area, like app intent, security, and testing.
+Throughout the talk, I've used the coding assistant feature in Xcode, which comes with this skill prepackage.
+but we built them to be used with any coding agent of your choice. You can run this xcrun command to export all the available skill and add them to your agent.
+So this is an overview of the SwiftUI specialist skill. It's available in Xcode 27, so go try it out on your project. Let it review specific area of your codebase for best practices and recommendation.
+As you write new code, this skill will work with you to build high quality SwiftUI apps.
+This skill synthesizes our experience working with all of you, so please send us feedback so that we can continue improving it
+and make it another important part of the way you build apps. Thank you very much.
+Thank you, Luca. That was great.
+Okay, before we break for lunch, I want to talk about this afternoon's activities.
+For those of you online, join us back here at 1:30 PM Pacific on the stream.
+We'll have a panel to discuss many of the performance questions you've been asking over the course of the day.
+For those of us in person, you can pick up what you'd like to do from now.
+From 1:30 to 2:30 PM, you can come back here to Big Sur and join the audience for a live Q&A with a panel of engineers.
+But if you're here in person, you can also take advantage of the engineering labs that we're going to be having going on the rest of the afternoon.
+In person, there are 40 Apple engineers who specialize in different areas of power, performance, and other topics to answer your questions.
+There will be three lab areas in the building. Follow the signs right outside to find the ones that work for you.
+On both floor, there are going to be general labs for performance topics.
+You can think of these as a catch-all bucket for any performance questions you might have that might not be specific to you.
+slash forums. If you also have a bug or a feature request, you can also submit that to us through the feedback assistant at feedbackassistant.apple.com. So now, I'd like to welcome to the stage Phil, Shefali, Abneen, Luca, and Steven.
+Hey.
+Hey, folks. Welcome to the stage.
+How are we doing?
+Thank you.
+All right. Maybe we can start off with just a round of introductions. I know many of you were on stage earlier. Hey, Steven, nice to see you.
+Yeah, let's just start with some interest.
+So I'm Steven. I work on the UI Frameworks team.
+I'm Luca. I also work on UI Frameworks.
+My name is Abneen. I work on Power.
+I'm Shefali. I work on third-party performance tools.
+And I'm Phil. I work on performance engineering.
+Great. So thanks for spending some time with us today. Steven, it's nice to see you. You weren't here with us on stage, but we kind of saw you deliver a video voicemail to Luca earlier. How was your vacation?
+Actually, I didn't forget my promise.
+All right.
+There we go.
+It was very good. Thank you for asking.
+That's awesome.
+So maybe, Steven and Luca, let's just start. I see some questions here about the SwiftUI skill. I'm wondering, maybe we can just start with some background about kind of what motivated the SwiftUI team, you folks in particular, to build the skill? And what are your goals in kind of putting this out into the world and in Xcode with the skill?
+So, yeah. So I think, like, I would say the main goal was kind of giving all developers this feeling of having a UI framework engineer sitting next to them when they're working on their code, writing new code, or reviewing their existing code.
+So having an expert sitting next to them, helping them, like, writing correct code. And also, they still have a lot of experience. So having an expert sitting next to them, helping them, like, writing correct code. And also, they still have a lot of experience.
+There's this interesting gap between the training of the model and what actually is the latest API, the latest recommendation we will give. One example that comes to mind is that in iOS 27, Align released, we made state a macro instead of a property wrapper. So there's some small sourcing compatibility with that. And as part of what's used in SwiftUI 27, we have instruction for the agent of some compiler error they might encounter and how to fix that.
+So there's these, like, they function as these, like, bleeding edge knowledge of SwiftUI, of both practices and the latest API that we are releasing and how to use them.
+Yeah, I really like getting to come to these events and sit one on one in labs with all of you. Lots of little, like, hidden gem type things come up all the time, especially when looking at things like performance, that are sort of like very specific things for specific situations. And so if you actually go and read the skill content, there's a lot of, like, stuff that I
+I would call, like, deep cuts. And I get really excited about that. And so I really wanted the experience to feel a little bit like getting to sit down with us and kind of have that lab experience, even if you can't be here.
+And I actually recommend export the skill. Go read that skill. There's, like, a lot of interesting tidbits. We try to explain every recommendation that we give, what is the motivation. And you can really learn a lot from just reading the skill.
+Yeah, I also noticed, Luca, you kind of mentioned that the skill can activate on its own. But you can also ask for it explicitly. What is your expectation of, like, what people should expect? Like, is that something that they should do? Or is the expectation that it should automatically activate if you're giving it a relevant task? Like, what's your kind of intent there?
+Yeah, so I think the expectation is that it should activate by itself, especially that it's based
+The activation is based on the prompt and so if you're asking specifically about best practices, reviewing the code, or writing modern SwiftUI code, it should automatically be running. But you can also simply invoke that. If you know that's what you need from the agent, you can just invoke the skill and ask directly to work with you.
+I will also say that some models are more confident than others and occasionally they'll think like, "I'm the new thing, I don't need to activate the skill."
+And so thankfully in Xcode and actually a lot of the agent harnesses, like it tells you when a skill gets activated.
+And so if you want to make sure that best practices are being followed for new SwiftUI code that's being generated, you know, just asking your agent to use the skill to check the best practices can also be really helpful.
+Totally. I'm going to pivot to a bit of a different topic. This one might be for maybe Phil and Shefali.
+Earlier this morning, Phil, you actually had some quotes from Notion and Tinder about some of the work that they've done.
+And what I thought was interesting is the things that the developers are pointing out is that, you know, it doesn't just make a better product and that it feels better to use, but it has like business outcomes that they're starting to measure.
+And there's a question here. I'll kind of paraphrase it. But what they're kind of interested in is, first of all, does Apple have anything that can help developers kind of tie -- like draw a line between this kind of performance improvement to dollars or some sort of business outcome?
+So does Apple provide anything like that? And on top of that, like, if you need to build something to do that, what does that look like?
+Yeah. I think that's a -- it's an interesting thing because I think a lot of us, when we think about performance engineering as a sort of vertical of software engineering,
+about like a quality area and really the apps quality is something that dictates at least what we've seen from the data that we've captured that like app quality and retention are really closely tied together. And I think when you try to figure out or when you try to plan for how do I measure whether a performance change or a performance improvement is worth the squeeze, one of the areas that you might reach for is, oh, you know, can I check my like, you know, retention metrics or my engagement metrics, how long people spend on certain screens.
+or how long they spend in certain features. Apple does provide direct business metrics in App Store Connect. You can actually look at some of the direct, like, how much money did I make from this thing or, you know, what's my churn or other kinds of metrics within App Store Connect. And we also provide facilities for you to like compare them against apps that are your peers. They're called peer group benchmarks. And fundamentally, those metrics, while they're not necessarily tied to app versions, you can really easily draw the line between, hey, I had a major architectural change.
+It was an app version that I released, and I saw a big shift in my sort of what I'll call business metrics. And it's the first thing that I, if I were to recommend to anybody now in the age of AI to think about performance, the first thing I would think about is how do you use and leverage AI to make your performance as good as possible, make your quality as good as possible, so you can really just focus on tracking metrics like retention, engagement, you know, churn, things that are really like more customer and product centric versus how do I make the hang rate go down, or how do I make the battery usage go down, as sort of like the indicator of quality.
+And that's what I think.
+And, um, and, um, Shefali also mentioned, uh, like in Metric Kit, for example, like if you're collecting your, the raw data from Metric Kit, you can kind of use state reporting to break metrics into different EV feature areas or like different areas of responsibility among the development team, like however.
+How does MetricKit fall into this? If you're starting to figure out how to do the data science and draw the line to business outcomes, you might turn to MetricKit to get some of that data. How should you get started with that? What's the right way to think about that data and your business outcomes?
+Yeah, I mean, like Phil said, we have the peer group benchmarks in the App Store Connect API that tracks all of these business metrics and you can use things like state reporting to track new features that you're adding or just like how people are using your app overall to figure out if that usage then somehow correlates with these business metrics, especially if you're releasing new functionality or new features within your app.
+And so MetricKit provides you with that ability to slice and dice in different verticals and different directions so that you can get that holistic picture of did I do something that has moved the needle recently?
+To the point on peer group benchmarks, we also, through the Xcode Organizer, provide these recommendations around app metrics for developers to look at where they can see their app metrics and if people who are part of this similar app group have exceeded or done better than that.
+In a given metric. And so it gives them something to strive towards.
+So I want to talk a bit about those goals because I find this concept really interesting. Like, you know, from one lens, it's like if you have hangs in your app, that's bad, right?
+Yeah.
+But the organizer doesn't say you should have no hangs in your app. It says, like, you know, based on similar apps, you should have this hang rate. Can you just talk about kind of the philosophy there?
+Like, why, why is it giving a goal that is not perfect? But what's the thinking there?
+I think that given everything else that's happening on your device, and I think I alluded to this.
+during my talk as well. Given everything that happens on the device, it's really hard to achieve that zero hang mark. And there's always going to be something that inadvertently blocked the main thread for a period of time and caused a hang. But these peer group or peer-based recommendations tell you, based on other apps that are similar to yours, how are they doing with hang? So what's actually achievable given the functionality of your app and the app category it falls into?
+So you're not striving for perfect, you're striving for the norm.
+The audio. Whisper was late again, by 7 frames. You cut the same 17 frames worth of sound as Josh, but 7 frames earlier, where a pile of really is. That's the third time Whisper's timing has run late. 7, 10 to 13, now 7 frames. So it's consistently late, not random, which is great news for Josh. He can correct for it automatically.
+A five-frame crossfade at zero decibels across the scene. So the two sides of the cut blend without a dip in volume. The rest of the show slid six frames earlier to close the gap and keep sync. The timeline is now 139,120 frames. The picture.
+Jeff's cutaway starts five frames before the audio cut, exactly like at number 156. That's becoming your rule. It holds 56 frames after Josh had 49. So Jeff's on screen for about two seconds as one continuous shot. Greg and Laurie come back at 44,235, right in step with the shifted audio.
+I think it's better to help your teams and your agents focus on getting to a place where the performance feels like it's good enough. And then you can shift focus to things like, uh,
+building the next innovative feature that will bring more people to your app or helping
+people find time to go and re-architect things that maybe weren't architected the right way
+to begin with.
+Because really the worst thing is if you're -- and we'll use hangs in this example -- if
+your hangs are so prominent that someone stops using your app and that will then directly
+result in your retention metrics.
+So making sure that your app performs in a way that's smooth is really the goal.
+Yeah.
+Phil and Chavali, you both mentioned AI, and I see some questions here coming in
+about the skills and the tools like XETrace that you talked about earlier.
+I think I see a couple questions that are all around the same lines.
+But it seems like people are interested in knowing if the tools and the skills that we talked about
+today -- we, of course, showed them in Xcode because we think that's the best place to use
+coding agents.
+But is there anything that folks might be missing out on that we talked about today or, you know,
+doing performance work if they're maybe using external agents or not using Xcode?
+I don't -- is that just directed to the group?
+That's directed to the group.
+Anyone that wants to answer that one?
+Practically, no.
+Yeah.
+I think, like, realistically, all the -- especially, like, the skills bundles, for example,
+can be exported and the tools and, like, generate recommendations are accessible via MCP.
+And, you know, the XETrace is a CLI.
+I think practically, no.
+I think you could -- you know, obviously, like, we would love for you to use Xcode.
+And we think it's the best place to use agents on -- for Apple platform development.
+But I do think that, like, realistically, we know everybody's going to be using a lot of things.
+So we put a lot of intention in making sure that the tools that we build can be used outside of the context of Xcode.
+I am a big fan of some of the little UI things inside the Coding Assistant, actually.
+Like, I didn't realize -- I think Luca mentioned in his talk that you can add, like, inline comments.
+And when I saw him rehearsing that, I had no idea that that was a thing that you could do.
+And I thought that that was a thing that you could do.
+that was really cool. I also really like the way that our transcript kind of explains to you all of the things that it's doing with color coding. I think it probably varies from agent harness to agent harness, like how much of that information you get. And I think one of the other things that I like in Xcode is it's relatively easy to switch back and forth between models from different providers without switching harnesses. I know there are tools that let you do that externally, but there's something nice about that integration when comparing results that I really like.
+And there's also just a question about xctrace specifically. It sounds like, of course, today you showed us how xctrace triage and xctrace show solved your hang, which was awesome. Do these tools work for more than just hangs?
+Yeah, so triage is -- we saw, obviously, the example with hangs, but show really works for everything else. You can throw it at a performance issue that you're seeing, and I encourage you to do that,
+because it really should be able to take a trace that you have and really be able to understand what is going on from a performance perspective.
+Awesome. Just looking at some questions here. Please keep them coming in. I can see them popping in here as you folks submit them.
+I think one of the other areas that we're getting questions about is around automated testing, I think. One of the questions that we had was, you know, if -- you know, let's say you're using
+xctrace triage, like you showed. You want to put the agent in a loop to verify its own fix. You probably don't want to do that in the simulator, but you do kind of maybe want to have some sort of automated testing for performance and maybe use tools like that as part of that.
+Do you folks have any kind of just thoughts or best practices on how you go about automated testing for performance?
+if you're not going to use the simulator like you suggested?
+I mean, I think the key is a physical device. It's making sure that you have functionally heavy pieces of your code configured in a way where you can write and run performance tests around them. And I said this during my talk, too, but a model can greatly help with that. An agent can help with that. And making sure that you're taking that extra step to test those individual areas in conditions that are not just at your desk,
+near your modem, where the throughput's going to be the highest.
+I mean, I think -- I know that, like, we've talked a little bit about simulators not being the best place to do this, but I think, you know, practically speaking, you know, a lot of us don't have the ability to set up device farms and have tons of physical devices with, you know, cables and people that manage those and restart them and whatever. And I think simulators are a great step when you're looking for directional guidance, right? And, you know, a simulator may not tell you, "Oh, this is
+this is the physical amount of, let's say, energy that you've drained," or, you know, "This is the physical amount of storage
+you've used," or something like that. But the simulator will tell you, like, "Hey, the -- you know, from A to B, the -- maybe you did -- you did objectively absolutely more work," right?
+And that sometimes is a really good starting point for most of these agent tools and harnesses to be able to kind of go and start finding things to optimize on their own.
+And when we talk about loops, really, that's what we're looking for, right? It's like self-iteration, finding things on its own, and then eventually converging a feature to a point where it's, like, good enough.
+So I wouldn't say don't use simulators, but I would say that use them in a way that first leverages XCTrace and some sort of instruments, which is designed around measuring performance on our platforms.
+But then also use it as a way to find directionality, not, like, accuracy and sort of absolute physical reality.
+I'm going to switch gears a little bit. I see some questions about power, so I'm going to turn it over to you, Admin. I think there's actually a whole bunch of questions that I think kind of come in the same area. It has to do with GPU debugging. I think the questions kind of come down to, you know, Shefali talked about how agents might be able to inspect a trace for things like hangs on the CPU, but today we didn't talk too much about how an agent might be able to inspect a trace for things like hangings on the CPU, but today we didn't talk too much about how an agent might be able to inspect a trace for things like hangings on the CPU, but today we didn't talk too much about how an agent might be able to inspect a trace for things like hangings on the CPU, but today we didn't talk too much about how an agent might be able to inspect a trace for things like hangings on the CPU.
+Yeah, definitely. So whenever you're collecting an instrument's trace, there is the Metal Performance Overview as well as in the Power Profiler, the average GPU impact, and those can be good starting places, but a lot of the time they're like potentially less information than you really need to really drill down on GPU issues, particularly if you're
+You're having agents who maybe doesn't have all of the context you have around the problem. And so you as a human might turn to the GPU debugger, which is extremely powerful, able to play back frames and gives you an absolute ton of information.
+So you're going to have to do a lot of information on GPU introspects these GPU debugger files. And this lets it understand all the same things that you would understand out of using the GPU debugger UI. Yeah. It's really cool, actually. I had my own project using compositor services on Vision OS.
+and I just captured a metal frame using the debugger, handed it to my agent and it came
+up with all of the things that someone smarter than me that is actually doing something about
+GPU debugging, found some great stuff, so definitely a cool tool to check out.
+Okay.
+Taking a look here, we have -- just since we're talking about xctrace triage and some other
+things, there's a question here, and I apologize if I'm mischaracterizing the question here,
+but I think what they're asking is, they're asking about the security and privacy guarantees
+of xctrace triage.
+I think what the question may be kind of getting at is, like, does this triage command, like,
+send the trace out to a server and provide results, or, like, what should be people concerned
+about in terms of privacy when running that tool?
+Honestly, I -- actually, trace triage runs locally on your device with a local trace, so
+there aren't really concerns around the data being synced off-device or sent to a server
+somewhere, so, I mean, I think the amount of trust that you put into whatever agent you're
+using is really what applies here.
+Totally.
+Yeah.
+Yeah, just to add on to that, I think there's a distinction between what you provide to the
+agent for inference, what you provide to the model for inference, and then what you actually,
+you know, what, like, for example, like, a Python script extracts out of the trace on-device.
+And I think, you know, you -- if you're using an API subscription or a model subscription
+or if you're using, you know, tokens, you know, the data retention of the data that you put
+into that inference is kind of between you and the model provider.
+And so the triage script itself is definitely -- is happening on-device.
+It's, like, kind of extracting features of the trace locally.
+Phil, I have a question for you that I think you're going to love.
+Great.
+So Phil worked a lot of Metric Kits. I'm going to give him this Metric Kit question. So the question is, this developer is using Firebase Crashlytics. Maybe some of you folks are using other tools, like Century. And the question is, does Metric Kit overlap or conflict with SDKs like this? And would you run Metric Kit alongside them, or would you pick one?
+Yeah, we get this question a lot. You have to think of it like this. Let's use a contrived example, like Century. Century offers a lot more on top of just power and performance data diagnostics than, for example, Metric Kit does. Metric Kit, you can think of it like a data source for something like Century or Firebase.
+If you're going and tapping a tree for syrup, Metric Kit is the tree, essentially. You're getting what you need from it, and then you can use that syrup any way you want. That's a terrible analogy. I'm kind of hungry.
+So Metric Kit's more of a data source, like a primary data source for these tools and systems.
+I don't think it, you know, the way that Metric Kit works fundamentally is that like, you know, you can, you have this concept of subscribers in the framework where you kind of like register for data.
+And there's only like one set of data that's really provided to an app, and that's just shared among all the subscribers.
+So you can envision that like something like Century, which is a higher level system and sort of like a more full-featured, like actual product, would be one of those subscribers.
+So you would collect data to kind of avoid having to do a lot of in-process work for things like maybe, I don't know, like animation monitoring or error monitoring or crashes or something like that.
+So I wouldn't say that they, that they're duplicating work. I think Metric Kit just provides a way for tools and products like this to avoid doing a lot of the work themselves in process, which again, actually,
+It adds observability overhead to the app, and it adds all sorts of other emergent problems that maybe app developers wouldn't know unless they kind of like looked at the data themselves. Yeah, I think you could definitely use them in tandem if you want. Like, you know, like I said, Sentry and Firebase, they offer other types of things that are really valuable for developers, and MetricKit doesn't. So yeah, totally. And many of those frameworks use MetricKit as a data source. Yeah, definitely. I have a question for admin.
+This is actually a question about something that came up in your talk. You kind of mentioned you were breaking down the different subsystems. You talked about CPU, GPU, display, and location. And in the GPU section, I know we didn't have time to talk in depth about metal optimization. That's okay. But you mentioned something that was, like, power and performance are usually aligned, because if you want to meet your frame deadlines, you got to do less work, and so that's going to cut power. I'm really interested in that word usually.
+Are there, like, are there cases where that's actually not true, and that power is something kind of to look at differently?
+Mm-hmm. Yeah. So kind of taking a step back from just the GPU, power and performance are a lot of the time on all of the subsystems aligned. And the reason for that, just intuitively, is that if you're taking less time to do something, typically, it means you're doing less work, and so you're having to burn less power to do that work.
+Mm-hmm. And so, like, you're having to work. Power is the rate at which work is done. The real sticking point there is usually because there are all sorts of exceptions that are really, like, a case-by-case basis for the different subsystems. And so, like, for example, right, let's say you have two threads,
+So one thread is waiting on something from another thread. Well, on that one thread, you could be spinning, constantly checking it. So you know right when the other thread finishes. And that would be good for performance. But because that one thread is spinning, it's going to be worse for power. Then conversely, if you're, you know, potentially doing, like, a messaging system, then, like, that would be probably around about as good for performance.
+But better for power because you're not spinning. And that's just, like, a very sort of simple example. But it does get to, like, there are these misalignments. So on GPU specifically, then, it's interesting because, like, GPU is very much just, like, go do the compute. Go fetch the data. Go -- you know, it gives you a ton of really low-level control because if you're using Metal, like, you need that performance.
+And so the biggest place where power and performance are misaligned on the GPU is actually frame rates. And so, like, that, again, comes back to, well, if you're doing more frames, you're doing more work, you're using more power. And so, in other cases, it's more aligned than other subsystems. Yeah. I don't know.
+No, that makes total sense.
+That's a little bit of a wrangle.
+Yeah. No, no. Thanks for elaborating on that. I'm going to switch gears a little bit back to our SwiftUI friends. So this is a question about Luca, something that you talked a little bit about where you, you know, Stephen helpfully dumped this project on you, and then you used the agent to just understand the code base.
+When it comes to, like, using the specialist for something like this, which is an
+existing project. Are there any differences between how you approach problems or use the skill for something like that versus like, I'm going to make a brand new app and I want the specialist to come in and help with that?
+Well, yeah. So first of all, like, in the beginning when I was using, like, the system to just discover the app, like, we generally don't expect in that case for the SwiftUI specialist to, like, be activated. It's more kind of like you use that to understand.
+I think there's, like, to me the main difference is that, especially when I'm trying to understand a code base or a certain decision, I can actually, again, use the skill to prompt for decisions. Like, okay, is this a good decision and why? Like, again, a lot of emphasis on trying to explain the recommendation that we give.
+I think, like, perhaps when you're generating new code, like, it's just like you're fine. You get the new code and hopefully it's, like, it's with the right design, it's with the right best practices.
+So I think, like, it's just like, I would say it can match your frame of mind. Whenever I go and, like, try and, there's an existing project, I need to understand it.
+I need to create this mental model of what's happening. And that's in that frame of mind of, like, asking questions. And if anything, I sometimes like to, you know, ask the agent to make a change.
+And, like, I validate that. It's like, oh, does this actually produce the change that I was expecting? Like, if I change these, like, call to happen at a later time or something like that, is that what I'm expecting to happen?
+Versus, like, you know, in generating new code. So, yeah. I think that, to me, is, like, the difference.
+I think for new code, I think it's important to remember that the models are a snapshot in time. And that they know certain things about SwiftUI, but, you know, we've observed things that they maybe don't know about SwiftUI.
+And so, a lot of the content in the skill is designed to be able to tell an agent how to do a good job at writing.
+writing SwiftUI based on the things that are important that that you know we tell people out in the world and also that we tell engineers you know inside of Apple who are building apps in SwiftUI and so a good way to not run into any trouble with your new code is to just integrate the specialist as a part of that process of creating a new app so that you don't end up in a situation where you know the agent did the best job that it could but maybe it didn't consult the guidance that we've given it for best practices because the models training says you know like I think it's fine to put a closure in the environment.
+and you know it doesn't know why you shouldn't do that but if you read the skill content like we're specific to explain like what is the actual reason that we're giving this guidance and models seem to be like fairly convinced by that because they want to understand the same way that we do I feel like when you know looking at code.
+I want to add something that's like more you know not related to the SwiftUI but like I think like what you just touched on is really important because you know the longer you are on the frontier the more that these models inherit and capture stuff like these emergent skills
+that we're building and so in a lot of ways it's just like kind of like getting a new version of iOS where it has like this cool new feature that like when it comes out it's like oh this is new is interesting I'm learning to use this and then over time that becomes more of like second nature to us you know I'm thinking like oh the control center when we first introduced it was like this big you know innovative thing but you know now it's like we couldn't imagine iOS without it and the models kind of learn very similarly where you know over time the stuff that we're sharing in these skills will become second nature and they'll do these things by default.
+But the skills you know iterate and represent a way for us to kind of continue to share some of these like things that maybe a UI performance engineer would only know or like this things that like a power engineer would only know as they evolve as the as the sort of the context and the knowledge evolves working on them and at Apple.
+So I think there's like a, there's never not a good reason to pull in like the latest set of these skills, right? It's like a, it's like basically like free context in some ways.
+And also don't sleep on the what's new skill. I know we talked a lot about this with UI specialists, but one of the things before DubDub that we were really interested in was like, what's going to happen when somebody talks to an agent and they, you know, they watch the talk about the great new APIs, like, you know, reorderable or, you know, the new swipe action stuff, like, will an agent be able to answer those questions? And the answer was no. And so we wanted to, you know, make sure that we could
+steer them in the right direction so that you can get started with the new stuff right away.
+Totally. Totally. Um, I see some questions here about, um, some very specific SwiftUI, uh, kind of performance challenges and, and I don't want to make you try to compile some SwiftUI code in your head live on stage with a bunch of eyeballs on you, but, um, I am curious, like, um, can you, can you kind of walk us through of an example of like, this is, you know, um, maybe
+something that, uh, you know, folks in the past have struggled with for performance in SwiftUI,
+but like the skill actually knows how to handle this and can do it well. Like, is there any kind
+of like code pattern in SwiftUI that you think the skill will be able to help with?
+The, the environment stuff, the environment stuff in particular is, is an area that I think
+we're, we're particularly proud of, um, because, uh, and, and I've given some talks about this in the past,
+like, it's easy to end up sometimes in a situation where you're, uh, putting frequently updating geometry
+into the environment, uh, uh, which is causing your view bodies to invalidate more than you
+would want them to, um, or putting things. Your presentation from a couple years ago was on
+that, right? From, actually, from last year. From last year, yes. Yeah, it's the, it's the year
+anniversary. Time flies through. Um, remember I said closures are spooky, that was. Yes, yes. So, so, uh,
+yeah, so one of the things that the, that the skill does a really good job of is identifying scenarios like that, um, and,
+And actually presenting you with options for what to do. Because a lot of times these things are tied into the architecture of your app. And it's not as easy as just like changing a couple of lines of code. There might be considerations about how your model objects are structured or like where should the closure live? Like how often is the closure going to be updated? And we have some sort of like A/B options that you can read in the skill of like when you hit this scenario, like what are some things to present to the user? And it can be really good at that. It also pairs really well with instruments as well.
+The SwiftUI instrument, if you, you know, go and look through it and see that you have something that's updating too much. If you go back to an agent and you say like, you know, hey, I think that, you know, this particular view is updating frequently. It's pretty good at using the skill to go and look at the code and try to help you triage what actually might be happening there. Totally.
+So like a lot of the recommendation on the on change and kind of avoiding kind of things on change to trigger like massive update to view that like reading every possible property and kind of trying to break that down.
+So even just like the way you structure your code as an effect and we try to kind of like nudge the agent over that.
+Totally. I want to come back to Phil and Shefali. I think you'll have some thoughts on this, although this is open to everyone, of course.
+Shefali, in your talk, you kind of mentioned this idea of a pipeline where like even like without your intervention, something could go grab data from the MCP or from metric kits and then kind of generate fixes for you that you review and merge in.
+And the questions here, can you talk more about that? Like what would that entail? What would that look like if a developer was interested in building something like that?
+Yeah. I mean, so we talked about three different data sources, right? We said there was metric kit. We said there was the organic MCP tools or the performance MCP tools that
+that fetch data from the Xcode Organizer. And then there are the App Store Connect APIs, which are also a programmatic way to get access to your power and performance data.
+And so if you have access to your data coming from your user population, and all of these tools kind of give it to you with different user populations,
+you're able to then use the, let's say, performance MCP tools to analyze that data. And what it'll do is take the data, assess it in the context of your code base,
+and tell you exactly why that research occurred, and start to make recommendations.
+You can then take that recommendation, ask a model to, let's say, or an agent to assess the impact of each of the recommendations that were made,
+or decide for itself which one is the best, and create implementations of each, and then you can go test it yourself,
+or have a model, perhaps a star on your behalf so that you can view it, test it, see if you want to do something different with it,
+and then come back to your project. And it's kind of that loop that we've talked about of taking the data, operating on it to get to a point where you're able to resolve it,
+and then test it, right? Use XETest to actually test the performance impact of it, see if it's gotten better by testing before and after a fix was made.
+And then if you're comfortable with the changes that were made to your project, and the functionality is still kept the same for whatever feature this agent has touched,
+you can put that into your project. And now you fix the performance issue really quickly, and gone from data to fix much faster than you could have ever done before.
+Do you have anything to add on that, Phil? I'm sure you have thoughts on the future of performance work.
+We have seen a lot of anecdotal success. Okay, operative term everybody, anecdotal. Like, I have no numbers.
+But we've seen a lot of anecdotal success around using simulations,
+I think you guys can sue me later. Using simulators for doing things like taking performance data from production, like basically saying, "Oh, this is a signature of a hang issue." Spinning up a simulator to try to reproduce that issue using something like an XE UI test with measure blocks and all those things and instruments in the background. And then basically telling an agent very directly, "Reproduce this issue that is happening in the field, and do not pass fix until you are able to reproduce it." And then write a fix and make sure that the reproduction is
+no longer occurs before you put up VR. We've seen a lot of success doing stuff like that. And I think the bottom line is, when you add these kinds of constraints around these workflows, I'm not going to call it a loop, because at some point it terminates. But when you have--
+Hopefully.
+Yeah, hopefully. I haven't looked at the bill yet at the end of the month. But when you have loops like this or workflows like this that have really hard constraints around reproduction, especially with performance issues and crashes and anything that represents in this sort of quality vector, reproduction gates are really key.
+Because it not only tells the agent, like, this is when you're done, but it also makes sure that the agent stays on track for trying to solve that particular problem.
+A lot of times when I see-- when we do this without the sort of-- we'll call them repro gates. When we do this without the sort of reproduction gates, a lot of the times we see the agent's like, "I found these three other bugs, too." And then it goes off and tries to fix those, which is great.
+But that's not the point of that exercise. And what you might end up with is a large PR or a large set of PRs that need to be reviewed and, you know, kind of negotiated in that scope.
+And so, you know, everything Trafali said is perfectly right. It's just, you know, adding the hard requirement of, like, you need to reproduce this problem and use the available tools to detect and validate that reproduction before you move forward is, like, really key in getting a lot more success out of the workflow.
+Gotcha. I see some other questions. A lot of these were actually submitted earlier this morning.
+You know, we talked a bit about peer benchmarks and goals and kind of, like, figuring out, like, where do you shoot for.
+It's kind of a more general question, which is, like, are there any industry benchmarks or for Hang's scroll performance, crash rate, launch time?
+Like, how do you know when good is good enough kind of thing, I think is the question.
+I know that's almost an unfair question, but I'm going to throw it anyway.
+Wow. How is good good enough?
+I think a big thing that defines that is whether or not you can hand your app to somebody who's never used it before and it looks and feels magical.
+I know that that sounds really cliché.
+Very California.
+But it is very true in the sense that, like, I think, you know, I'll give a sort of core example.
+My mom is a big Apple fan, uses Apple devices.
+I have a text from her almost every single day about an app that she's using that has some kind of problem.
+And she's like, "Can you fix it?"
+I'm like, "Mom, I work for Apple, not that company."
+I'm glad it's a universal experience.
+Yeah, it's a pretty universal experience, I think, if you work at Apple.
+And I think, like, the sort of key there is that, like, you know, the fact that somebody like my mother, who is obviously great and smart and whatever,
+can find and see an issue like that and immediately connect it with, like, "Oh, that's, like, a problem that, like, kind of disembarks me from the experience of using this app,"
+is a pretty good metric of whether or not you're good enough, right?
+I think some of the best apps that we use, you know, we talked about a couple of great examples, like Notion and Tinder today.
+Some of the best apps that we have and we use every day, or some folks use, is they do feel magical in your hands.
+They do feel like a really good and smooth experience.
+And I think that that's kind of, like, in my mind, it's not based on, like, a data point or a line and a graph.
+You talked about the peer group benchmarks and all that.
+But it is based on like, you know,
+people's experience using the product and that's kind of where I would say that's when you kind of know it's good enough and maybe you stop hearing as many people as people's mothers talking about how your app is crashing when they're using it or otherwise.
+I would also add that it's always a good idea to ask yourself the question of what's caused me to go to the app switcher and quit an app before and if your app does kind of the same thing then that's probably a really good area to try and optimize
+because I'm guilty of getting frustrated and then just quitting the app and being like I'm gonna come back to that later and you just don't want that experience from people that are using your app so it's a good question to ask.
+I was gonna say it's also easy to get hyper fixated on the metrics rather than the actual human experience because when you open instruments and you see hitches and you're like I've got to make all of those go away but the question really should be when somebody is scrolling through my content like are they noticing the hitches is there any perceivable disruption because otherwise
+you know you can sort of drag yourself up the wall trying to get rid of all of these things and you know it may not necessarily be the best way to be spending time for something that may not be noticeable.
+Totally. Since you mentioned hitches I have a question about hitches here that I'll throw out there. The question is Xcode Organizer shows you kind of a hitch metric across the whole app. So is there anything that would let you like break that down further if you wanted to understand like what part of your app is contributing to those hitches?
+This feels like one part us and then one part. Yeah. Maybe you both want to start. You're the Xcode Organizer Xcode.
+Well you can do this in Metric Kit, right? Yeah, you can do that Metric Kit. The Organizer does aggregate across the entire app.
+It's going to be all animations for your app.
+That's a great question.
+Unfortunately, we don't have anything today that can do that,
+but MetricKit--
+It would be a great feedback report, feature request.
+I'll be on the lookout, because all of those come to me.
+So if anyone here asks that question, please file that.
+But yeah, you can use MetricKit.
+And then that gives you the ability to then go a step further
+and trace your app and profile your app
+to see what exactly caused it, and how do you go about fixing it.
+I'd say the challenge, also, with using MetricKit for something
+like this is that we have these OS signpost-based APIs
+that are kind of old now.
+And we have the animation begin, and animation end,
+these interval signposts that fundamentally--
+I think a lot of us, when we try to reason about how our UI is
+working, we're not thinking about intervals.
+We're thinking about things loading almost in parallel sometimes.
+And I think that one of the things that the MetricKit 27 APIs
+do really well is they let you think more about what state
+is my app in from a product perspective.
+So like the state reporting APIs and the integration
+with the state reporting framework allow you
+to think more of like, hey, this is the buy page.
+Or this is the save action.
+Or it lets you take these sort of more qualifiers type product
+features, and then MetricKit does the intersection for you.
+So you can see things like, oh, during the--
+let's say on the view page, for example,
+the hitch rate was this during this particular payload that
+covers this time range.
+And then you can kind of intersect that with other things,
+like, oh, my app was in a state of sync or online content
+or something like that, which helped kind of build
+a better understanding of the sort of animation hitches
+that are occurring, but in the context of other things
+that your app is doing.
+And Steven, you've debugged a lot of Swift UI hitches
+in your day.
+What tools do you go for?
+specifically in the context of SwiftUI where if you were to just take a time profile or trace, you're mostly just going to see SwiftUI code running. It's not necessarily going to map back to your code.
+Yeah, so the template for the SwiftUI instrument includes the hitches instrument automatically. I generally like to just look for whatever area of the app has the most animation. Usually scrolling is one of the main opportunities for getting better app performance.
+And so typically what I like to do is look at the time in the timeline and instruments when a hitch occurs and also expand the hitches instrument to actually see when the update happened because a hitch tends to land a little bit later than when the actual work is happening.
+So looking at the update interval and lining that up with the SwiftUI work in the SwiftUI instrument can give you a sense of what updates are either taking too long because, you know, maybe there's something synchronous that you're accidentally doing in your view body or, you know, frequent updates like you're churning things faster
+than you would expect to. And then I generally just look to try to reduce that and first see, like, can the hitch get shorter? Like, can I get it down to the point where it may not be noticeable even if I can't get it to, you know, completely go away in like a certain, you know, pressured situation.
+That's another area where people get hyper fixated on the metrics, right? You know, because, you know, we talk about hitch rates like that's one millisecond per second. That's imperceptible.
+Right. And one thing that I'll call out, too, is I think that people have a tendency because they want to iterate quickly to go in and change their scheme to switch to debug mode when profiling.
+And that's not a good idea because profiling in debug mode, you're guaranteed to get worse results.
+And so I know it can be useful for counting updates sometimes, sort of like we were talking about the simulator, right, that it's good for getting directional information,
+but ultimately to understand what people are experiencing. You know, you really need to be on a device in release mode.
+and that counts for things like debug print as well. There are certain things that happen in compiler optimization where like you might be printing something in your view body or doing a debug print and you might see like I'm seeing a body that looks like it's updating five times and you're in debug mode and what you don't realize is that the compiler optimizes some of those updates out and you know maybe you wouldn't have even seen those updates. So just continually checking the release configuration to make sure you're getting like an active representation of what's happening is important.
+To your point too, profiling as release is also going to give you symbols for your app in the call stack when you're profiling. So if you really want to know what's happening in your app, you definitely don't want to be in debug mode.
+Totally. Yeah.
+And that's when you use the command I shortcut earlier, like Xcode does that for you when you choose that option.
+Yes. Yes.
+So, Adneen, I have a question for you and I know this is a bit lower level in terms of APIs than we've talked about some others, so feel free to say I don't want to check the documentation.
+But the question is, it's kind of interesting because I think we see this kind of category of problem a bit. This developer is using a third party SDK and they think that something in the SDK's code is basically locking the display rate to 120 frames per second when it doesn't need to be.
+Is there any sort of like please override what other code is doing and lower the frame rate or do you kind of just have to own what that SDK is doing?
+Yeah, unfortunately not to my knowledge. You do kind of have to own it. You can definitely, you know, make feedback requests to them. Potentially, it's not something that's inherent to the SDK. It's something that, like, you might be triggering in your code with your usage of it that, you know, you can potentially do less of. But yeah, unfortunately, if something is locking it to 120 frames per second, barring other things happening in
+the system. Device doesn't know any better. It doesn't know your intent. So it's going to run at 120 frames per second, definitely.
+And Phil and Shefali, you folks have seen this category problem before, right, where it's like this third-party SDK is doing bad things and it's hurting my performance.
+Maybe it's hurting my launch time because it's running all these static initializers, and there's not really a way to say please don't run the static initializers.
+I mean, maybe there is, but you probably break things. What's the right way to think about this problem?
+Like, how do you kind of make sure you have good performance, but sometimes you have code that's coming from other sources?
+Yeah, I mean, it's a hard problem, not because inherently you can't see these things, but because a lot of these problems,
+sometimes these SDK providers won't even see it themselves because a lot of these problems might happen on, like, the first time the app is launched ever on a particular system,
+or right after first update, or maybe it's just, like, because the phone restarted or something.
+Like, there's, like, these sort of edge case type scenarios where, you know, testing for these things is difficult.
+And I think, ultimately, what I've seen people, what I've seen teams have success with in this regard is, one,
+having a really rigorous process for testing some of these, like, sort of, like, core metrics on new version release.
+So for something like app launch, for example, it's very, like, everybody's going to get their app launched at some point.
+There's very, very few apps that just don't launch ever.
+Yeah.
+That explains a lot.
+But, you know, I think that, like, generally speaking, like, it's also, like, the easiest thing to test, right?
+Like, you can, you know, we have facilities within XC test performance testing that do this,
+and setting up these types of tests when you introduce new frameworks, maybe large, like, service SDKs, or, you know,
+large sort of like functional SDKs that do things that maybe are core to the app is kind
+of creating these baselines and running these tests.
+So for example, in the sort of like launch delay category, right, like sometimes we'll
+see people link frameworks that inadvertently, like you said, run static initializers, and
+that's absolutely something that you can test for and you can see within your code.
+I mean, it's very obvious, like you see the static initializer running, it's the load methods,
+right?
+And just being watchful of those things is kind of a strategy.
+Ultimately, it's kind of like collect the data and work with whoever is providing
+you that framework to fix these problems.
+Yeah, and a lot of these framework owners should care, I mean, unless they're like defunct
+frameworks, but like most of the time they care.
+In my experience, they care.
+And so working with them and providing them that feedback is really important.
+Just like we value feedback at Apple for our frameworks and fixing our bugs, which exist,
+these teams also do.
+These are products just like all the things that we're building, like apps and systems.
+Going back to some of the AI stuff with UI frameworks, maybe Luca, I'll put this on you.
+I know you're mostly focused on Swift UI, but you also talked about some of the other skills
+that are available.
+Apprecisability was up there.
+The question is specifically around UIKit.
+Are there any skills that touch UIKit APIs?
+But also just in general, do you want to talk a little bit about like what some of the other
+skills are?
+And what people can expect from those?
+Yeah.
+So like the app recisability is the one that definitely like touch on UIKit as well.
+So that you, again, the main purpose was to help your app be ready for iPhone Duo.
+There are suggestions on modern practices actually, like the app recisability is a big collection
+of modern UIKit practices to follow.
+And like if you follow modern UIKit practices, your app is ready for iPhone Duo.
+So that's one example.
+a skill that touches on multiple UI framework.
+Steven, do you have anything to add for some of the other skills that are available in your
+experience with them?
+I'll be honest, there's so many of them that I have not looked at all of them, but I would
+like to go back and read them since I'm telling all of you to go and read the skills.
+I honestly would recommend looking at all of them.
+I know there's an App Intense one, which App Intense are a really important part of the
+platform that I feel like it's valuable for people to be looking at.
+Yeah.
+There's also an interesting one, if I remember correctly, on bound check in C, so if you have
+very low-level code that is working on which C, that's the one around security.
+So yeah, there's definitely a broad spectrum of skill.
+Excellent.
+And also, please send us feedback about skills that you would like to see or things that you
+think are missing.
+I think we're very interested to hear about how the skills are working for people.
+Totally.
+Okay.
+One -- there's, like, three different questions here that I'm going to try and summarize.
+Shefali, I think this is for you.
+I think you mentioned this briefly in your talk, but maybe you can expand on it a little
+bit.
+There's questions around, like, you know, people have been talking about their experience having
+agents look at traces and they're saying, you know, it dumped it to XML and it ate a bajillion
+tokens trying to, like, figure out what was wrong.
+And my understanding was that some of the things that you talked about is actually to help with
+token deficiency.
+But you want to talk about that a little more?
+Yeah.
+I think something that we've noticed and observed is that a lot of what the agent will do is convert
+data into formats that it is comfortable operating on.
+and that obviously eats your tokens. And the most precious commodity right now I think is tokens right. And so I mentioned this in the context of xctrace but something great that it does is convert your data into a format that's easy to parse and then the agent is able to take that data and easily understand what pieces it needs to read, what it doesn't, what it needs in order to operate on your code base and is able to do that in the most token efficient way.
+And I think that this is probably true for a lot of the tools that we have. It's like we've put an immense amount of care and consideration into making sure it is as token efficient as possible so that what you're able to do with our tools is not using the majority of your budget and then you can then go and do more with the tokens that you do have to continue ideating and creating and making your app as cool as it can possibly be.
+And that was kind of what I found interesting about your demo is when you scrolled up in the transcript the first thing the agent did was triage and I'm assuming it's doing that because triage is going to be a lot more efficient than like using the show command and going over the entire timeline, right?
+Absolutely. Triage takes the trace and basically tells you is there anything meaningful here for me to do with this information and what do I do and what time period should I care about and then show can then take it, expand on it and continue rolling. If it doesn't find anything, it will just stop there.
+Okay, one question that I have and I'm going to be selfish and just ask my own question, I don't see this here, but you folks are solving performance problems every day and there's a whole bunch of different tools and I think maybe Steven actually already has his answer.
+or you shared that you didn't even know that you could, like, tell the agent, you know, a clarifying question or suggestion in line in the coding assistant but, like, what is your secret tip or trick that you want to share? What's the thing that, like, you use, you're not sure how well-known it is, and you just want to give it a little bit of spotlight?
+I mean, I hate to say the SwiftUI instrument. I feel like people don't necessarily always default to looking at instruments. I think for a lot of people, their experience with instruments may be, like, the old SwiftUI instrument that, you know, existed before we
+shipped the new one. I think if it's been a while since you've looked at instruments, it's definitely worth taking another look because there have been some really cool advances across the board in the last couple of years.
+Awesome. How about anyone else? You got a favorite tool?
+I can definitely say the debug rendering options in Xcode. Earlier, I demoed the flush dirty regions tool, which covers the places that they're updating on the screen yellow.
+But there are several others that, like, are all really, really powerful. I forget the exact verbiage, but one of them is called Compositor Fast Path. And between that and the color flush, if you have, like, video as a main experience in your app, those two tools are really invaluable for making sure that video is as efficient as possible.
+Yeah. I mean, I'm not very familiar with what Compositor Fast Path means. Can you, like, explain like in five?
+Yeah, so the system isn't just drawing your app. It's also, you know, trivially on, like, normal phones, also drawing the time or the battery or whatever else. And then on, like, Duo, it's not just drawing your app. It's drawing, like, the other app, potentially, or whatever else is on the screen. And so the Compositor is a thing that, like, takes every
+everything and composites it into one final image to be displayed to the real screen.
+And there's a fast path in this that's for video and metal rendering and a couple of other
+things, which, like, skips a bunch of work when it meets certain conditions.
+And so if the compositor fast path is -- I believe it's blue -- then, like, you're getting
+that compositor fast path and you're taking significantly less energy and running significantly
+faster.
+And if it's red, I believe -- don't quote me on those colors -- then you're missing that
+compositor fast path.
+And like, you should figure out why that is.
+And if you can fix it, that will save a whole bunch of power and it will speed it up a lot.
+Great.
+I'm looking at the clock and I think we need to wrap up for today's Q&A.
+I want to thank my panelists for joining us today.
+Let's give them a round of applause.
+Thanks so much for joining us today.
+Thank you.
+All right.
+And thank you for joining us here in person and online for this Q&A on power performance
+in your apps.
+After today, let's keep the discussion going.
+You can ask questions on the Apple developer forums and you can send your feedback to us using
+the feedback assistant.
+Have a great rest of your day, everyone.
+Thank you so much.
+indicates that your app is using more battery than your peers.
+Or perhaps you're looking to ensure that your app supports the widest possible mix of devices.
+Maybe users are giving you feedback that your app causes their devices to heat up or use a lot of battery.
+These are all great reasons to focus on power.
+Fortunately, this is a solvable problem.
+You have a lot of levers to improve the efficiency of your app.
+There's two different types of problems you should focus on: thermals and battery usage.
+Thermals are the temperature of the device.
+If someone's device gets warm while using your app, that can be unexpected,
+making your app's experience less appealing.
+And if the device gets too warm, the system will throttle performance in order to control temperature.
+That reduces the speed of your app.
+And in some extreme cases, it can even shut off non-essential functions until the device cools.
+Battery usage, on the other hand, is different.
+When your app uses a lot of battery, it leaves people with less time to use it.
+And an overly large amount of battery usage can be a shock to users, reflecting poorly on your app and leaving a bad taste in their mouth.
+People can see the amount of battery your app uses day to day in battery settings, and may respond to outsized usage by using your app less often.
+Your app using battery or making the device warm are actually two sides of the same coin.
+They're the types of problems which can occur when power is not managed efficiently in your app.
+Power is the rate at which energy is used and work is done.
+A thermal issue can occur when an app uses a lot of power, even over a relatively short period of time.
+Think of thermals as being the product of your app's maximum power draw.
+On the other hand, battery usage comes from using excess power over time.
+Even a relatively small amount of excess power can make a big difference if it's sustained for a long time. The cumulative energy impact can add up to a meaningful change on battery life. Battery usage is primarily driven by your app's average and floor power use. The worst case scenario is when your app has high power draw over an extended period of time. The high power creates thermal issues and the time involved can create high battery usage.
+So there are two goals: reduce peak power to decrease the likelihood of thermal issues, and reduce average power draw over time to decrease battery usage.
+A lot of the times, this work in practice means finding a balance between theoretical quality and power.
+So, what uses power? Literally everything. Nothing your app does is free.
+When an app uses device capabilities, such as storage, audio, or graphics, it requires support through a network of other software on the system,
+all of which have to ultimately run on hardware. And all hardware inherently draws power.
+Even seemingly trivial APIs may result in the system spinning up processes or using hardware, costing more power.
+For example, I want to load an image and display it to a user. This is one single line of Swift code.
+And yet, it drives many different processes and system components.
+It needs to use radios to fetch the image. It needs to decode that image, send it to the GPU using metal, and render it to the display.
+This uses a lot of hardware and software, and it's still a relatively simple example.
+Rendering a map using MapKit requires even more of the device. It needs to discover location using sensors and graphics.
+and radios, fetch data about what's nearby from the network, and it'll drive all the same rendering technology and more because it needs to render the map, its icons, and text.
+It's a whole lot, all of this from one single line of code.
+The system is actually able to account for this web of distributed power consumption.
+It keeps track of which app needs the work it's doing and attributes the power used to that app.
+This means that when people view the battery life impact of your app in settings, that includes the power used by the system on behalf of your app.
+When thinking about what a workload is doing, it's often useful to break it down into subsystems.
+Subsystems include hardware, such as the CPU or memory, as well as Apple frameworks, such as Core Location or SwiftUI.
+Different scenarios exercise different subsystems.
+Complex metal effects drive the GPU and display, but not so much storage.
+Xcode and instruments have tools which let you deeply inspect each individual subsystem.
+And the first step to breaking down power problems is to know what subsystems a workload exercises, so you can use the right tools for the job.
+So now I'll talk about what some of these subsystems actually are.
+Today I'll touch on a few key ones for power, the CPU, GPU, display, and location services.
+Starting with the CPU, enormous parts of your app's power use comes from the CPU.
+It's a subsystem which can often cause thermal issues, because it's really easy to create bursts of expensive work.
+And that work can also occur at high frequency levels.
+frequency, such as every frame, which can raise the power floor of your app, increasing battery usage.
+For CPU issues, a great place to start is to check out the Xcode organizer. When an app exceeds
+a reasonable amount of CPU time over a short period, a backtrace and other details are collected.
+These get delivered to you as aggregated energy reports in the organizer. Since these represent
+spikes in energy, they're possible sources of thermal issues from your app. But they can
+also be sources of excess battery life impact when they occur too frequently. This should be your first
+stop if you're looking to optimize your app's battery or thermals. And the same MCP tools Shefali
+demoed earlier also work for energy logs. The CPU runs your code, so some general principles of efficiency
+apply. When you hit salmon CPU issues, first, consider if the work needs to be done at all.
+You can cache or defer expensive computations. Avoid work which isn't relevant to the current app
+experience and do work less often if the user can't actually notice a difference.
+You can consider more efficient algorithms or operate on smaller sets of data. This makes work cheaper.
+When you can, prefer high level frameworks which suit your needs. For example, AVKit is really heavily
+optimized for rendering video. And you should probably prefer it over re-implementing video playback in
+Metal. The CPU is also a useful subsystem to examine because it provides you hints about what the device is
+doing at a given time. Since the CPU manages and responds to all other subsystems, requests for work
+will often be reflected in call stacks.
+This can give you really valuable hints. In Instruments, the Time Profiler track gives you insight into what your app is doing in a given scenario. Even if the CPU isn't ultimately the primary source of excess power usage, often enough it provides really valuable hints to what actually is. Next, I'll discuss on the GPU. For those of you who use Metal directly in your app, you have a lot of optimization opportunities.
+Metal gives you so much control around the app.
+And optimizing for the GPU work is a little bit different than optimizing CPU work.
+Often, the concern isn't just about reducing power. Your app or game also has to meet its frame deadlines.
+Fortunately, in most other cases, performance and power are really aligned on the CPU.
+So by making your experience faster and able to run on more devices, you'll usually also be using less power in the process.
+When doing advanced rendering or GPU compute work in your app, there's a lot of tools and techniques to optimize. Too many to cover in this session, unfortunately.
+A great starting place would be to check out the documentation on improving your game's graphics performance and settings and the Metal debugger.
+Now, I'll talk about the display. On iPhone, ProMotion displays vary power consumption based on what's actually being put on screen.
+ProMotion displays are capable of dynamically switching between frame rates. Up to 120 frames per second on supported devices.
+When content updates less frequently, iPhone adapts to a lower frame rate which uses less power.
+This also lets your app skip expensive render work on the CPU, GPU, and other subsystems.
+If you're using UIKit, SwiftUI, or other Apple frameworks, you mostly don't have to worry about this at all. The system will handle it for you. But in some cases, your app can over-specify its frame rate. This causes the system to update the display more often than it needs to, with no benefit to the user. I've created an animation for my app. It has several constituent parts: a haze, pulse, and some particles. But none of these effects are actually moving that quickly.
+For an animation like this, a lower frame rate could be just as effective as a higher frame rate. So, by reducing the frame rate, I can save a lot of power without any perceived quality loss. This is really dependent on the effect itself, and even the environment around it. For example, on this huge screen, it might genuinely need to run at a higher frame rate. So, not all animations will be able to take advantage of this without compromising visual quality. So you should evaluate what makes it possible.
+It doesn't make sense in your app on a case-by-case basis. The API you can use to specify frame rate is CA Frame Rate Range. This API lets you specify a minimum, maximum, and preferred frame rate for a given effect. And the system will choose a real frame rate based on it and the other things happening on the system.
+In most cases, you don't need to specify a frame rate at all. You can use CA Frame Rate Range.Default or otherwise defer to normal behavior. In these cases, the system will automatically detect an appropriate frame rate. For cases where the animation is slower or smaller, you can consider a lower frame rate, such as 24, 30, or 48 frames per second, if that meets your visual quality goals. Reserve 120 frames per second
+for large and high impact animations. Even if the animation is really cheap to render, reducing the frame rate can save a ton of power due to how much work the system is able to skip.
+Another source of power consumption in the display is luminance, or how bright the screen is. Generally speaking, darker pixels are cheaper to display than brighter pixels, especially in HDR content.
+An easy way to get a power win is to support dark mode. It's an important accessibility option, and for some, it will use slightly less power.
+For those of you that render your own content, make sure you're only using HDR backing surfaces for content that's actually HDR.
+MetricKit can also give you data about this. You can estimate the impact of the display's luminance through the average pixel luminance metric.
+And you can use the display and frame Lifetime's instruments tracks to understand how often the app is updating the display.
+Finally, I'll discuss how discovering location impacts power.
+Location can be one of the most important subsystems to examine for power.
+When your app uses location, the device may have to turn on many different sensors, radios, and software systems.
+Starting all of this up and keeping it running costs power.
+In addition, the system and your app both need to run to create and respond to location updates.
+This runtime and processing work adds to your power floor.
+Even if you've optimized your codes really well, there are baseline costs to continuously discovering location, which can result in really large battery life impact.
+When using location services, there's a few things which can help Power. First, reduce how much location work is needed by avoiding continuous location tracking. This is the most critical thing you can do for Power. Where possible, you can instead use region monitoring. If you just need to know when someone enters or exits a region, you can use the CL Monitor API. This lets the system automatically avoid location updates when the device is far away from a boundary.
+But some devices or some features really do need continuous location tracking. For example, turn-by-turn navigation. A good technique in these scenarios is to defer updates when the device is stationary. If you're using the CL LocationUpdate API, the stationary flag indicates that the user isn't moving right now and you can safely defer updates.
+These techniques let you build mini location-based features without paying the cost of continuous monitoring and processing.
+Background location features should be a specific point of focus because they can very quickly use a ton of power.
+To get a better understanding of the cost of the location subsystem, you can use the Location Energy Model Instrument, which is automatically loaded in the Power Profiler.
+To measure power in the background, you can also use the Power Profiler in instruments or on-device.
+Earlier, Cole discussed taking on-device traces for performance analysis, and you can do the same for power.
+To profile your app's power on-device, first, enable Developer Mode, and navigate to Developer Settings, then Performance Trace.
+Make sure your app is in the list of monitored apps, and choose the Power Profiler Tracing Mode.
+Then, use Control Center to start and stop recording a trace. Power Profiler traces can be left running for several hours, really useful for tracking down those hard to find power problems. The resulting file can be opened in instruments, just like any other trace.
+So far, I've discussed how to break down and introspect some of the subsystems apps rely on to understand their power consumption.
+Now I'll walk through what this kind of analysis actually looks like in practice, using an int sample from an app I'm working on.
+I make an app which is social media for cats.
+It lets people upload videos and pictures of their babies being cute, customize their cat avatar, and comment in character of their cats.
+On today, National Cat Day, people will obviously spend a lot of time on this app.
+But I've noticed that long sessions use more battery life than I would really hope they would.
+As a first step, I'll check Xcode Organizer.
+In this case, on my latest app version, 6.7, the organizer doesn't have any energy reports.
+This is a great hint.
+It could indicate that the problem isn't due to short bursts of power, but instead, long-running power elevation.
+So my next step is to profile my app's power directly.
+In this case, I want to understand system power.
+So I'll start with the Power Profiler Instruments template.
+In addition to power, it includes some instruments to get a broad view of system activity.
+I'll adjust the instruments to be more tailored to the subsystems my app actually uses in the scenario I'm profiling.
+In the video rendering scenario, the main task is video rendering.
+This involves UI work and the display.
+I'll add the display instrument to get an idea of how often the content is rendered on screen.
+I'll also keep the network connections instrument, since the content is fetched over the network.
+My app uses AVKit to render video, and I'm not doing any custom metal post-processing, so I'll remove the metal performance overview.
+Finally, nothing in my app uses location at all, so I can remove the location energy model.
+Using that set of instruments, I'll record a trace and investigate what's happening step-by-step.
+First, looking at the Power Profiler overview, the average CPU impact is 2.2, GPU impact is 1, and display impact is 4.
+These numbers really don't mean much to me right now, but they're really important for comparison after I've made a change.
+We need to make sure it was actually a good one.
+Next, in the Time Profiler track, instruments indicates that the app's CPU usage is pretty reasonable, around 10% to 30%.
+So, the issue is probably coming from a different subsystem.
+In the network connections instrument, there isn't much activity from my app.
+This is a hint that the networking also isn't the cause of my elevated power.
+In the display instrument, it indicates that the duration of swapped surfaces hovers around 8.3 milliseconds.
+That indicates that the display is updating at 120 frames per second.
+That's a bit spooky.
+I know my apps' videos actually run at 30 frames per second.
+So, I'll focus on what's actually updating the screen.
+Xcode has a debugging tool called Flash Updated Regions, which colors the parts of the screen which are updating yellow.
+You can access it by going to Debug, View Debugging, Rendering,
+In this app, yellow regions appear over and around the cat avatar's tail.
+Note that right now, video is paused, and Liquid Glass would only update if the content under and around it change, so the tail animation must be causing the high frame rate.
+Reviewing my code, this is because I've set my CADisplayLink.PreferredFrameRateRange to request 120 frames per second.
+The fix here is to make the animation's frame rate and match the videos.
+So I'll go ahead and create a new helper method, GetVideoFrameRateRange.
+This method gets the frame rate of the video and returns an appropriate CAFrameRateRange based on it.
+It corrects the current issue, and it makes it forward compatible if I ever change the video frame rate in the future.
+Now, when I collect a new trace with this fix, the display instrument no longer indicates that the display is running at 120 frames per second.
+Instead, it shows it updating around about 30.
+The power profiler track also indicates that total power is lower, with the average CPU impact falling from 2.2 to 1.3, GPU impact falling from 1 to 0.1, and display impact falling from 4 to 2.
+There are a few takeaways from this example.
+First, breaking down the problem into subsystems allowed me to select the right tools, narrow down the problem, and make an important power improvement.
+Second, this is an example of the balance between theoretical quality and power.
+For some animations, reducing frame rate would be an unacceptable visual compromise.
+But for a small animation like this, which is already placed on top of low frame rate video, it's just as effective
+at a lower frame rate. The viewer, when done right, cannot tell a difference if the frame rate
+is high or low. These kinds of optimizations, which reduce theoretical quality with no experience
+impact, are often the most valuable for power. I've covered a lot today. Moving forward, please
+think deeply about all the different workloads in your app. Break them down into the subsystems
+they're driving. And think about which parts are core to your app's user experience and which
+ones really aren't pulling their weight power-wise. Approaching problems like this will make you
+more effective at optimizing your app's efficiency and power. Thank you.
+Amazing. Thanks, Adanim. National Cat Day. I had no idea. One of the best ways to get the best performance
+out of your app for SwiftUI and other UI frameworks is to follow those frameworks' best practices and
+techniques. And occasionally, those are a bit nebulous or hard to find. So, please help me welcome
+Luca from the SwiftUI team, who's going to talk to you about these best practices in the context of
+agentic coding. Thank you.
+Hi, and welcome. My name is Luca, and I work on UI frameworks. Xcode 27 ships with a set of agent
+skills to support you in building the best app. A skill is a set of instruction, reference material,
+example, that provides an AI agent with specialized knowledge.
+Skills can be automatically loaded if they are considered relevant for your prompt.
+But you can also explicitly invoke them by name.
+In this talk, I want to focus on the SwiftUI specialist skill.
+SwiftUI is designed to provide a delightful developer experience, leveraging the SwiftUI
+language and abstracting away complexity to let you build great app. And this skill is a natural extension of this goal. I love SwiftUI, but do you know what I really love? Well, that's croissant. I know, I know. San Francisco has some amazing pastry, so I recently took my team on a testing tour to try the best one. But obviously, every time we leave the office to do something fun, there is one extra thing that always ends up happening.
+Someone on the team has to make an app for it. This time, it was my colleague Steven, Time to Shine, and he has been working on an app to track and rate all the best pastries we tried. But I'm not sure if the app is done yet. He just sent me a video voicemail, and I wonder what that says.
+Hey Luca, so I've been working on the app, and I have a couple of updates to share with you. First, I was doing some performance profiling on the list of pastries,
+and I noticed that the cells seem to be updating more often than they should. Second, I had a great idea to add an entirely new tab to the app. It has a map view, and it shows where all of the bakeries are located.
+I know, I know, I know, scope creep. But I got it done really quickly. The only thing is, I was in a hurry, so I may have cut a few corners. Anyway, I would love to be able to look at these things, but I'm going on vacation now. So I was wondering, could you please do me a favor and take a look at them? I promise to bring you back a souvenir. I don't want to spoil anything, but I hope you like magnets. Anyway, thanks. Gotta go. Bye.
+Oh, boy. I know, it's good. It looks like I have my work cut out for me, but let's take this one step at a time. There's three things I need to do.
+I need to understand this code base first, then I'll dig in and fix the update issue that Steven wants my help with, and then review the new tab with the maps.
+I'll start by opening Xcode and explore the project that he sent me.
+Okay, so pastry tracker app is the main entry point for the app, and on the right hand side you can observe a preview of the app main screen.
+It shows two tabs, but let's focus on the first one for now, where we have a list of tasting with the pastry I've tried, where and when I tried, and a rating for each pastry.
+Finally, up top in the navigation bar, I have a button to add a new tasting.
+Now, I want to start by familiarizing myself with the code.
+An agent are a great way to start exploring a new code base.
+I'm going to show you how I usually use them for this purpose.
+In Xcode, I'm going to start a conversation with the agent by selecting the coding assistant button in the toolbar and clicking on new conversation.
+In the prompt field, I'm going to ask the agent to help me understand the project.
+So I'm just going to type that I want to understand this project.
+And I'm going to ask you to make a table with the data layer.
+And also to add a very brief overview.
+This is actually how I generally like to start understanding an app.
+I always prefer starting from the data layer, because in my head, I start picturing the data, relationship, and operations that are possible.
+And from that, I can start with the data layer.
+I can build up how the UI looks like and how it connects to data This is very powerful to me because especially in SwiftUI apps understanding a view input and how they cause it to update is fundamental to working with the framework. I'm choosing to have the output as a table because it makes it easy for me to scan the output. Okay, I think we're having a little bit of a problem here with Xcode. Well, you know that this is live.
+So, let me try to kill, close Xcode for a second and see if something works out. One second.
+But that's a fun of it.
+Okay, let's see. We should be back. Let me try again. One more time. So, yeah. So, I'm going to go back one second and just like run you through the prompt again that I want in this project and I'm going to ask you to make a table.
+And again, ask you to make a brief overview.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Okay, let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see if you have a table.
+Let's see.
+Now it's working. Yeah, it seems like now it is. Yeah, you can see on screen that he's finally writing the file. Yeah, and all right, cool. We have our table right here. Okay, so the agent finally finished. We needed to, you know, try again. And in the transcript, you can see a summary of the data type in this project. So let me walk you through the most important one. We have testing, and this is the type that represents a testing for a specific
+pastry at a location. This is the data type that is baking a single row. And this testing has a couple of nested type for coordinate and rating. But the more interesting type here seems to be testing store. This is the observable type which holds on to the list of testing and exposes that to the view. So now I want to learn how testing store is being used and understand how the data flow through the UI. This gives me a starting point to investigate issue with view updates. So I'll navigate to that
+file in Xcode. I'm going to use the command shift or keyboard shortcut to quickly open a file. And I'm just going to type in the symbol. So testing store. And here we have the store type. It's okay. Now stick with me as I do some keyboard yoga. I'm going to use the keyboard shortcut command option control shift H. Yeah, I have to practice this many times. Yes. And this opens a new conversation in a side pane. And I'll type in my
+to ask how to ask how the store is being used. So I'm just going to ask it to tell me how this is being used in a view. And what view is observing this data. All right. So when I make this
+this more specific prompt. I like to keep the code editor and the agent side-by-side so I can glance at the source while the agent is working. And then I can look at the responses and navigate around the code.
+While the agent is working, let me point out to the testing array. That's the data that the app is going to display in the list. The agent is finished and there's quite a lot of context. Let me actually scroll up a little bit to see the beginning of it.
+So let me just highlight the most important point. So TastingList is the view that observes the store. And that seems like a good next step for our investigation.
+So I quickly take a look at TastingList. I'm going to use again the quick open keyboard shortcut and navigate to TastingList.
+So the view iterates over the Tasting coming from the store, generate a list where each row gets a tasting.
+And Steven told me that he noticed that the cell row was updating more than it should be.
+So I'll use the agent to figure out why this is happening and if there is anything I can do about it.
+So I'm going to continue this conversation and just state the problem.
+The cell row is updating too frequently and just look into a fix for it.
+All right.
+So this prompt asks if there's any improvement to either Tasting or TastingStore because updates are caused by changes in the input to the view.
+And I'm also explicitly asking the agent to focus on view updates.
+Making sure that Observable notifies the view only when something has changed is a good first step for this investigation.
+Not also how in the transcript it shows that the SwiftUI specialist keeps the view updates.
+skill is being activated. Using the agent with this skill is like sitting with a UI framework
+engineer, working together to build up the follow modern practices. The agent has finished
+producing the answer, so let me highlight the most important part. And I need to scroll
+up a little bit again. There we are. So the agent is telling me that the main issue is
+that testing is not equitable. An observable type does not constrain its property to be
+equitable. But if you make the type of your property equitable, observable will avoid updating
+a view if a new value of a property is equal to the previous one. And the agent is also
+suggesting a fix for these. All of the property are already equitable, so you can just add a
+conformance to it. I'm going to ask that fix, just asking to add the conformance for that
+fix. So yeah, I'm just going to type in. Yes, add the conformance to equitable. Cool. In the
+transcript, there is a rich representation of what the model is doing. And it really helps
+me get a sense of what's happening when it's reading the file, then making an edit, and finally
+compiling the project. I also really like that when the agent produces some edit, it shows the
+diff in a new panel. And also, a little tip, I can over any line number to leave any line
+comment if I want some additional changes or just clarification. So I just made the testing
+type equitable. This is the type that has been used by one of the properties of my observable
+type. But this skill is great for asking clarifying questions about your code or how SIFTI works.
+For example, if I wanted to know whether there is any benefit to making the model object
+equitable, I could just ask that. So let me ask that again to the agent. I'm just going to
+give myself a little bit more space right here.
+ask if I should make TestingStore equitable.
+And I'm going to also ask if this helps reducing the number of your data.
+So the skill is designed to provide explanation for all the recommendation
+and guideline present in the skill.
+And you can use it as a tool to support you in learning and understanding.
+Even when most of the code is written by AI,
+understanding is fundamental to collaborating with the agent
+and verifying its work.
+The agent has finished.
+I'm going to scroll up a little bit again.
+And it's telling us that there is no need
+to make the observable type equitable,
+because the viewer update is not driven by the quality check,
+but instead by the signal sent by the observable conformance.
+Now, this investigation was fairly targeted to a specific type,
+where I knew that something was not quite working.
+But this skill is also great for doing broader analysis and review
+of your code base.
+The second thing that Steven told me about is this new map view.
+And Steven didn't seem very confident about the way it turned out,
+so that seems like a great opportunity to use the coding assistant
+to check it out.
+And I'm going to start a new conversation,
+so I can give the agent a fresh new context.
+And I'm going to ask you to take a look at all the view related to map view.
+I'm going to ask you to review for best practices
+and opportunities to modernize.
+and finally, I'm going to ask you to propose a list of all the improvements and work through them one by one.
+All right. So not in my prompt, I'm explicitly asking the agent to focus on the MapView of the app.
+And in general, I will not recommend using a single prompt to review the whole codebase.
+For larger codebases, these can quickly fill up the agent context window and this degrade its capabilities.
+But more importantly, it can become too overwhelming on you.
+And another tip is that I really like to ask the agent to also work on suggestion one at a time.
+I do find it intimidating to stare at a big wall of text with a laundry list of issues that I need to act on.
+Instead, I prefer to get a summary first to ground myself and then work through all the suggestion one by one in order of importance.
+This is a great way for me to better understand and trust the changes that the agent makes to my code.
+And honestly, making some changes and verify that it works as I expected is a very fun and effective way to learn more about new area of a codebase.
+Okay, the agent is finished. I'm going to scroll back up again to see the beginning of all the proposed improvement.
+And we can see here a list of improvement. And they're all grouped into multiple categories like localization, best practices, accessibility, and more.
+I like this because it makes it easy for me to understand their priority and importance.
+And I also think it's great that the agent has a sense of what are the most important areas in a specific area.
+in SwiftUI apps and the highest impact changes. And as you might guess from my accent, having an app that is well-behaved across locale is important to me. So I'll ask the agent to implement the first fix, which is a change to better support localization. I'll come back to this later in review. So I'm just going to type in, yes.
+Okay, so I just demonstrated how you can use the SwiftUI Specialist skill for targeted fix to your code, building a better understanding of how SwiftUI works so that you maximize your leverage with this very powerful agent.
+And finally, how you can use the skill as your own personal SwiftUI engineer continuously supporting you in evolving and improving your app.
+But this is just one of the several skills available in Xcode for working with UI frameworks.
+There is also a great app-recisibility skill that allow you to easily get your app layout ready for iPhone Duo.
+We have a what's new in SwiftUI 27 that describes new API, behavior, and application in the framework.
+This skill is a great way to bridge the gap between model training and the current SwiftUI APIs.
+But it's also a great way for you to learn what's new.
+Also, there is a skill to help you build document-based app, which contains information about all the new API,
+like reference file document, and how to adopt that in your app.
+And beyond the skill for UI frameworks, we also have skills covering other area, like app intent, security, and testing.
+Throughout the talk, I've used the coding assistant feature in Xcode, which comes with this skill prepackage.
+but we built them to be used with any coding agent of your choice. You can run this xcrun command to export all the available skill and add them to your agent.
+So this is an overview of the SwiftUI specialist skill. It's available in Xcode 27, so go try it out on your project. Let it review specific area of your codebase for best practices and recommendation.
+As you write new code, this skill will work with you to build high quality SwiftUI apps.
+This skill synthesizes our experience working with all of you, so please send us feedback so that we can continue improving it
+and make it another important part of the way you build apps. Thank you very much.
+Thank you, Luca. That was great.
+Okay, before we break for lunch, I want to talk about this afternoon's activities.
+For those of you online, join us back here at 1:30 PM Pacific on the stream.
+We'll have a panel to discuss many of the performance questions you've been asking over the course of the day.
+For those of us in person, you can pick up what you'd like to do from now.
+From 1:30 to 2:30 PM, you can come back here to Big Sur and join the audience for a live Q&A with a panel of engineers.
+But if you're here in person, you can also take advantage of the engineering labs that we're going to be having going on the rest of the afternoon.
+In person, there are 40 Apple engineers who specialize in different areas of power, performance, and other topics to answer your questions.
+There will be three lab areas in the building. Follow the signs right outside to find the ones that work for you.
+On both floor, there are going to be general labs for performance topics.
+You can think of these as a catch-all bucket for any performance questions you might have that might not be specific to you.
