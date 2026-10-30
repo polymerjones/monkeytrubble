@@ -113,6 +113,9 @@
     body.pack-christmas .tile.face-down:nth-child(3n+1){background:var(--ribbon),repeating-linear-gradient(135deg,#1d6b3a 0 9px,#c4182f 9px 11px,#1d6b3a 11px 18px,#f1cf6b 18px 19px),#1d6b3a!important}
     body.pack-christmas .tile.face-down:nth-child(3n+2){background:var(--ribbon),radial-gradient(circle,#b8323f 0 2.2px,#0000 2.8px) 0 0/14px 14px,radial-gradient(circle,#1d6b3a 0 1.6px,#0000 2.2px) 7px 7px/14px 14px,#f4eee2!important}
     body.pack-christmas .tile.face-down::after{opacity:.95;background-size:46% auto}
+    /* Square cards (Christmas, from level 3) show the lower part of each portrait: covered cards show only their top strip, which on
+       a centred crop was empty sky over a hat tip (Paul 2026-10-30). !important beats per-card PHOTO_POSITIONS. */
+    #board.square-cards .tile.has-photo .symbol-image{position:absolute;inset:0;width:100%!important;height:100%!important;object-position:50% 85%!important}  /* pinned: in the tile's grid a % height follows the 2:3 picture */
     /* Covered cards: the same paper in shadow (an inset shade, no CSS filter). */
     body.pack-christmas .tile.blocked.face-down{box-shadow:inset 0 0 0 200px #000a,0 9px 0 #020c05!important}
     body.pack-halloween .tile.blocked.face-down{background:repeating-linear-gradient(135deg,#0b0512 0 7px,#1a0b28 8px 10px,#08040e 11px 17px)!important}
@@ -2200,7 +2203,7 @@
     const setIf=(node,prop,value)=>{if(!FX.renderCache||node.style[prop]!==value)node.style[prop]=value};
     function isFree(tile,activeIds){return !tile.blockers.some(id=>activeIds?activeIds.has(id):state.tiles.some(t=>t.id===id&&t.active))}
     function render(){renderGen++;syncHints();schedulePolyWarm();queueMicrotask(()=>{if(state.tiles.length){const m=boardMetrics();renderBoardPiece(m,new Set(state.tiles.filter(t=>t.active).map(t=>t.id)))}});
-      const m=state.tiles.length?boardMetrics():null;if(m){const fill=cardFill(),tw=`${m.w*fill}px`,th=`${m.h*fill}px`;if(!FX.renderCache||board.style.getPropertyValue('--tile-w')!==tw)board.style.setProperty('--tile-w',tw);if(!FX.renderCache||board.style.getPropertyValue('--tile-h')!==th)board.style.setProperty('--tile-h',th)}const activeTiles=state.tiles.filter(t=>t.active).sort((a,b)=>a.layer-b.layer),activeIds=new Set(activeTiles.map(t=>t.id));
+      const m=state.tiles.length?boardMetrics():null;if(m){const fill=cardFill(),tw=`${m.w*fill}px`,th=`${m.h*fill}px`;if(!FX.renderCache||board.style.getPropertyValue('--tile-w')!==tw)board.style.setProperty('--tile-w',tw);if(!FX.renderCache||board.style.getPropertyValue('--tile-h')!==th)board.style.setProperty('--tile-h',th);board.classList.toggle('square-cards',squareCards())}const activeTiles=state.tiles.filter(t=>t.active).sort((a,b)=>a.layer-b.layer),activeIds=new Set(activeTiles.map(t=>t.id));
       board.querySelectorAll('.board-tile').forEach(node=>{if(!activeIds.has(node.dataset.id)){node.remove();if(node.classList.contains('lifted'))$('#dragLayer').querySelectorAll('.drag-ghost').forEach(g=>{if(!flightFrom.size)g.remove()})}});
       activeTiles.forEach(tile=>{
         const free=isFree(tile,activeIds),up=shownFace(tile),hasPhoto=up&&Boolean(SYMBOL_IMAGES[tile.symbol]),renderKey=`${tile.symbol}|${up}`;
