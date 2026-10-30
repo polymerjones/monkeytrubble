@@ -106,6 +106,15 @@
     /* !important: the themes (jungle, art boards) style these with higher specificity; a Halloween level sits on top of any theme. */
     body.pack-halloween .board-wrap{background:radial-gradient(ellipse at 50% 110%,#ff7a1a33 0,transparent 55%),radial-gradient(ellipse at 50% -10%,#7a2cff40 0,transparent 60%),#07030c!important;border-color:#ff7a1a99!important;box-shadow:inset 0 0 90px #2a0b3dcc,0 0 28px #ff7a1a33,0 20px 70px #000!important}
     body.pack-halloween .tile.face-down{background:radial-gradient(circle at 50% 50%,#ff7a1a2a 0 16%,#0000 17%),repeating-linear-gradient(135deg,#140820 0 7px,#2a1240 8px 10px,#10061a 11px 17px)!important}
+    /* Christmas card backs (Paul 2026-10-30): wrapping paper, three papers alternating across the board, a gold ribbon cross, and the
+       monkey-head emblem where the ribbon crosses, like the bow on a present. Gradients only: drawn once per card, nothing animates. */
+    body.pack-christmas .tile.face-down{--ribbon:linear-gradient(90deg,#0000 43%,#7a5410 43% 44%,#f1cf6b 44% 56%,#7a5410 56% 57%,#0000 57%),linear-gradient(0deg,#0000 43%,#7a5410 43% 44%,#f1cf6b 44% 56%,#7a5410 56% 57%,#0000 57%);
+      background:var(--ribbon),radial-gradient(circle,#fff 0 2.2px,#0000 2.8px) 0 0/13px 13px,radial-gradient(circle,#fff 0 2.2px,#0000 2.8px) 6.5px 6.5px/13px 13px,#c4182f!important;border-color:#f1cf6b!important}
+    body.pack-christmas .tile.face-down:nth-child(3n+1){background:var(--ribbon),repeating-linear-gradient(135deg,#1d6b3a 0 9px,#c4182f 9px 11px,#1d6b3a 11px 18px,#f1cf6b 18px 19px),#1d6b3a!important}
+    body.pack-christmas .tile.face-down:nth-child(3n+2){background:var(--ribbon),radial-gradient(circle,#c4182f 0 2.4px,#0000 3px) 0 0/14px 14px,radial-gradient(circle,#1d6b3a 0 1.6px,#0000 2.2px) 7px 7px/14px 14px,#f7f1e6!important}
+    body.pack-christmas .tile.face-down::after{opacity:.95;background-size:46% auto}
+    /* Covered cards: the same paper in shadow (an inset shade, no CSS filter). */
+    body.pack-christmas .tile.blocked.face-down{box-shadow:inset 0 0 0 200px #000a,0 9px 0 #020c05!important}
     body.pack-halloween .tile.blocked.face-down{background:repeating-linear-gradient(135deg,#0b0512 0 7px,#1a0b28 8px 10px,#08040e 11px 17px)!important}
     body.pack-halloween .board-wrap::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 20% 85%,#c9b6ff14 0,transparent 40%),radial-gradient(ellipse at 80% 70%,#c9b6ff10 0,transparent 45%);animation:hwFog 14s ease-in-out infinite alternate}
     @keyframes hwFog{to{transform:translateX(6%)}}
@@ -958,6 +967,8 @@
       return self})();
     {const off=Object.keys(FX).filter(k=>!FX[k]);perf.state('fx',off.length?`off:${off.join(',')}`:'all-on')}
     // Timed here rather than inside each function (declarations are hoisted, and every caller goes through these bindings).
+    // The heavy moments too (2026-10-30): a pair clearing, the chest scene (until it closes) and the puzzle screen opening.
+    clearPair=perf.wrap('pairClear',clearPair,{frame:true});playChestScene=perf.wrap('chest',playChestScene);openPuzzle=perf.wrap('openPuzzle',openPuzzle,{frame:true});
     preloadAssets=perf.wrap('preloadAssets',preloadAssets);decodeLevelImages=perf.wrap('decodeLevelImages',decodeLevelImages);playExpedition=perf.wrap('expeditionMap',playExpedition);
     showWinScore=perf.wrap('winScore',showWinScore);startLevel=perf.wrap('startLevel',startLevel,{frame:true});shuffleFx=perf.wrap('shuffle',shuffleFx,{frame:true});
     openSettings=perf.wrap('openSettings',openSettings,{frame:true});openLightbox=perf.wrap('openLightbox',openLightbox,{frame:true});
@@ -2177,7 +2188,7 @@
     // FX.renderCache: write a style or attribute only when it changes (each write costs a style pass on 45 cards, several times a tap).
     const setIf=(node,prop,value)=>{if(!FX.renderCache||node.style[prop]!==value)node.style[prop]=value};
     function isFree(tile,activeIds){return !tile.blockers.some(id=>activeIds?activeIds.has(id):state.tiles.some(t=>t.id===id&&t.active))}
-    function render(){renderGen++;syncHints();queueMicrotask(()=>{if(state.tiles.length){const m=boardMetrics();renderBoardPiece(m,new Set(state.tiles.filter(t=>t.active).map(t=>t.id)))}});
+    function render(){renderGen++;syncHints();schedulePolyWarm();queueMicrotask(()=>{if(state.tiles.length){const m=boardMetrics();renderBoardPiece(m,new Set(state.tiles.filter(t=>t.active).map(t=>t.id)))}});
       const m=state.tiles.length?boardMetrics():null;if(m){const fill=cardFill(),tw=`${m.w*fill}px`,th=`${m.h*fill}px`;if(!FX.renderCache||board.style.getPropertyValue('--tile-w')!==tw)board.style.setProperty('--tile-w',tw);if(!FX.renderCache||board.style.getPropertyValue('--tile-h')!==th)board.style.setProperty('--tile-h',th)}const activeTiles=state.tiles.filter(t=>t.active).sort((a,b)=>a.layer-b.layer),activeIds=new Set(activeTiles.map(t=>t.id));
       board.querySelectorAll('.board-tile').forEach(node=>{if(!activeIds.has(node.dataset.id)){node.remove();if(node.classList.contains('lifted'))$('#dragLayer').querySelectorAll('.drag-ghost').forEach(g=>{if(!flightFrom.size)g.remove()})}});
       activeTiles.forEach(tile=>{
@@ -2849,13 +2860,13 @@
       return out
     }
     function firePoly(tile){
-      const s=state,ice=polyIce(),node=tile&&board.querySelector(`[data-id="${tile.id}"]`);s.locked=true;startClock();clearHint();
+      const s=state,ice=polyIce(),node=tile&&board.querySelector(`[data-id="${tile.id}"]`),span=perf.begin('poly'),opening=perf.begin('polyStart');s.locked=true;startClock();clearHint();
       // clearSmooth: the pair search (solveLine, ~170ms on a 6x-slowed CPU) runs before anything moves, so it's a beat on the tap
       // instead of freezing the opening burst (Paul 2026-10-30). The POLY card is taken off the board first, as before.
       if(tile){tile.active=false;tile.temporaryReveal=false}
-      const plat=!!s.platinum,early=FX.clearSmooth?pickPolyPairs(plat?PLATINUM_PAIRS:POLY_PAIRS):null;featuredSymbol=POLY;renderFeatured();
+      const plat=!!s.platinum,early=FX.clearSmooth?polyCached(plat)||pickPolyPairs(plat?PLATINUM_PAIRS:POLY_PAIRS):null;polyCache=null;featuredSymbol=POLY;renderFeatured();
       if(node){const r=node.getBoundingClientRect(),copy=node.cloneNode(true);copy.removeAttribute('data-id');copy.classList.remove('board-tile');copy.style.left=`${r.left+r.width/2}px`;copy.style.top=`${r.top+r.height/2}px`;copy.style.zIndex='';$('#dragLayer').append(copy);copy.animate([{scale:1,opacity:1},{scale:1.35,opacity:1,offset:.4},{scale:1.7,opacity:0}],{duration:520,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'}).onfinish=()=>copy.remove();explode(node)}
-      const beat=plat?PLATINUM_BEAT_MS:POLY_BEAT_MS;polyTone=plat?'plat':ice?'ice':'gold';const pairs=early||pickPolyPairs(plat?PLATINUM_PAIRS:POLY_PAIRS),st=polyStage(ice);render();
+      const beat=plat?PLATINUM_BEAT_MS:POLY_BEAT_MS;polyTone=plat?'plat':ice?'ice':'gold';const pairs=early||pickPolyPairs(plat?PLATINUM_PAIRS:POLY_PAIRS),st=polyStage(ice);render();requestAnimationFrame(()=>setTimeout(()=>perf.end(opening)));
       const seasonal=s.pack==='halloween'||s.pack==='christmas',ownLoop=!seasonal&&!comboMusicReturn&&comboMusicOn({fade:.08});if(ownLoop)polyMusic=true;
       playSound('match',{volume:.4});if(plat)playSound('comboSting',{volume:.45,delay:.25});sayCallout('poly',{delay:.6,maxWait:2,dry:true,duck:false,volume:.7});haptic('jokerSlam');setMessage(loc(plat?'PLATINUM POLY // {0} pairs':'POLY PAYOUT // {0} pairs',pairs.length));
       setTimeout(()=>{if(s!==state)return;const c=st.card.getBoundingClientRect();screenShake(10);playThump(2.2);polyBurst(c.left+c.width/2,c.top+c.height/2,ice,26)},300);
@@ -2863,10 +2874,22 @@
       const jackpotAt=pairs.length?POLY_IN_MS+(pairs.length-1)*beat+POLY_FLY_MS+90:POLY_IN_MS;
       setTimeout(()=>{if(s===state)polyJackpot(st,ice,pairs.length)},jackpotAt);
       // Only Kevin left (nothing to reveal any more): he pops off too, so the level ends.
-      setTimeout(()=>{st.root.animate([{opacity:1},{opacity:0}],{duration:320,fill:'forwards'}).onfinish=()=>st.root.remove();if(ownLoop){polyMusic=false;if(s===state&&(s.chain?.n||0)<COMBO_SWAP_AT)comboMusicOff({fade:.15})}if(s!==state)return;s.locked=false;s.history=[];
+      setTimeout(()=>{st.root.animate([{opacity:1},{opacity:0}],{duration:320,fill:'forwards'}).onfinish=()=>{st.root.remove();perf.end(span)};if(ownLoop){polyMusic=false;if(s===state&&(s.chain?.n||0)<COMBO_SWAP_AT)comboMusicOff({fade:1.2})}  // 1.2s: a .15s hand-back sounded like the music dying (Paul 2026-10-30)if(s!==state)return;s.locked=false;s.history=[];
         const rest=s.tiles.filter(t=>t.active);if(rest.length&&rest.every(t=>t.symbol===KEVIN)&&!s.tray.length)for(const t of rest){explode(board.querySelector(`[data-id="${t.id}"]`));t.active=false}
         render();if(!s.over)finishIfCleared()},jackpotAt+POLY_HOLD_MS)
     }
+    // POLY's pair search done ahead (clearSmooth, 2026-10-30): while a face-up POLY card is free, the pairs are picked in a quiet moment
+    // (the player hasn't touched the screen for POLY_WARM_MS, then an idle callback), with the POLY card counted as gone as firePoly does.
+    // The search takes ~200ms even on a fast Mac, so it never runs between quick moves. They're kept with a
+    // signature of the board and cage; a tap on POLY with nothing changed starts the show without the search (~30-100ms on a phone).
+    var polyCache=null,polyWarmT=0,polyInputAt=0;  // var: render() can run before this line on startup
+    const POLY_WARM_MS=1200;addEventListener('pointerdown',()=>{polyInputAt=performance.now()},{capture:true,passive:true});
+    const polySig=()=>`${state.level}|${state.tiles.filter(t=>t.active).map(t=>t.id)}|${state.tray.filter(t=>!state.clearing.has(t.id)).map(t=>t.id)}`;
+    function schedulePolyWarm(){if(!FX.clearSmooth)return;clearTimeout(polyWarmT);polyWarmT=setTimeout(polyWarmCheck,POLY_WARM_MS)}
+    function polyWarmCheck(){const quiet=performance.now()-polyInputAt;if(quiet<POLY_WARM_MS){polyWarmT=setTimeout(polyWarmCheck,POLY_WARM_MS-quiet);return}polyWarmT=0;window.requestIdleCallback?requestIdleCallback(warmPoly,{timeout:1000}):warmPoly()}
+    function warmPoly(){const s=state;if(s.over||s.locked||s.clearing.size||s.tutorial)return;const poly=s.tiles.find(t=>t.active&&t.symbol===POLY&&t.revealed&&isFree(t));if(!poly)return;
+      poly.active=false;try{const sig=polySig();if(polyCache?.sig===sig)return;polyCache={sig,plat:!!s.platinum,pairs:pickPolyPairs(s.platinum?PLATINUM_PAIRS:POLY_PAIRS)}}finally{poly.active=true}}
+    const polyCached=plat=>polyCache&&polyCache.plat===plat&&polyCache.sig===polySig()?polyCache.pairs:null;
     // The show: a dimmed screen with spinning light rays, POLY over the portrait, and the payout counter under it.
     function polyStage(ice){
       const root=document.createElement('div'),card=CARD_DATA[POLY];root.className=`poly-show${polyTone==='plat'?' platinum':ice?' ice':''}`;root.setAttribute('aria-hidden','true');
@@ -3343,7 +3366,7 @@
     function lbGlare(ry){const a=((((ry+90)%180)+180)%180)-90,m=Math.abs(a);return Math.sign(a)*(Math.min(1,m/16)+Math.max(0,m-16)/74*.8)}
     function lightboxFrame(now){if(!lightbox.open){lightbox.raf=0;return}
       // FX.lightboxRest: 8s untouched, the card settles and the loop stops until the next touch (lightboxWake).
-      if(FX.lightboxRest&&!lightbox.busy&&!lightbox.dragging&&now-(lightbox.touchAt||now)>LIGHTBOX_REST_MS){lightbox.raf=0;lightbox.resting=true;return}
+      if(FX.lightboxRest&&!lightbox.busy&&!lightbox.dragging&&now-(lightbox.touchAt||now)>LIGHTBOX_REST_MS){lightbox.raf=0;lightbox.resting=true;stopMotes();return}
       lightbox.raf=requestAnimationFrame(lightboxFrame);if(document.hidden||FX.lightboxLite&&lightbox.busy)return;lightboxSpin(now);if(!lightbox.player)holoFrame(now);
       lightbox.ry+=(lightbox.try-lightbox.ry)*.15;lightbox.rx+=(lightbox.trx-lightbox.rx)*.15;const still=reduceMotion.matches,ramp=Math.max(0,Math.min(1,(now-lightbox.t0)/900)),cyc=(((now-lightbox.t0)/LB_SWAY_MS)%1+1)%1,tri=cyc<.5?cyc*2:2-cyc*2,wave=smoother(tri)*2-1,sway=still?0:wave*LB_SWAY_DEG*ramp,swayX=still?0:-wave*2*ramp;
       const ry=lightbox.ry+sway+lightbox.spin,rx=lightbox.rx+swayX,u=lbGlare(ry),art=$('#lightboxArt'),card=$('#lightboxCard');
@@ -3369,9 +3392,12 @@
       for(let i=motes.length-1;i>=0;i--){const m=motes[i],t=(now-m.born)/m.life;if(t>=1){motes.splice(i,1);liveMotes--;continue}const e=m.burst?dustEase(t):t,op=t<.25?m.peak*t/.25:t<.6?m.peak*(1-(t-.25)/.35*.6):t<.8?m.peak*(.4+(t-.6)/.2*.6):m.peak*(1-(t-.8)/.2);
         const x=m.x0+(m.x1-m.x0)*e+(m.sway&&Math.sin(m.ph+t*7)*m.sway),y=m.y0+(m.y1-m.y0)*e,w=m.size*(.3+.7*Math.min(1,t*4))*(m.star?1.6:2.4);moteCx.globalAlpha=Math.max(0,Math.min(1,op));moteCx.drawImage(m.sprite,x-w/2,y-w/2,w,w)}
       moteCx.globalAlpha=1;if(motes.length)moteRaf=requestAnimationFrame(moteLoop)}
-    function startMotes(){stopMotes();if(reduceMotion.matches)return;for(let i=0;i<9;i++)spawnMote(true);for(let i=0;i<5;i++)setTimeout(()=>lightbox.open&&spawnMote(),i*150);moteTimer=setInterval(()=>{if(!document.hidden&&!lightbox.resting)spawnMote()},160)}
+    function startMotes(){stopMotes();if(reduceMotion.matches)return;for(let i=0;i<9;i++)spawnMote(true);for(let i=0;i<5;i++)setTimeout(()=>lightbox.open&&spawnMote(),i*150);moteDrift()}
+    // The steady trickle of motes. lightboxRest stops its timer while the card rests (it woke the phone ~6 times a second for nothing,
+    // idle audit 2026-10-30); the next touch starts it again.
+    function moteDrift(){if(!moteTimer&&!reduceMotion.matches)moteTimer=setInterval(()=>{if(!document.hidden&&!lightbox.resting)spawnMote()},160)}
     const LIGHTBOX_REST_MS=8000;
-    function lightboxWake(){lightbox.touchAt=performance.now();if(!lightbox.resting)return;lightbox.resting=false;lightbox.t0=performance.now();if(lightbox.open&&!lightbox.raf)lightbox.raf=requestAnimationFrame(lightboxFrame)}
+    function lightboxWake(){lightbox.touchAt=performance.now();if(!lightbox.resting)return;lightbox.resting=false;lightbox.t0=performance.now();if(lightbox.open)moteDrift();if(lightbox.open&&!lightbox.raf)lightbox.raf=requestAnimationFrame(lightboxFrame)}
     for(const type of ['pointerdown','pointermove'])$('#lightbox').addEventListener(type,lightboxWake,{passive:true});
     function stopMotes(){clearInterval(moteTimer);moteTimer=0}
     function clearMotes(){motes.length=0;liveMotes=0;if(moteCx)moteCx.clearRect(0,0,moteCv.width,moteCv.height)}
@@ -4187,9 +4213,9 @@ void main() {
 
     // Puzzle screen.
     const pz={n:1,box:null};
-    function openPuzzle(){const open=puzzlesOpen(),got=puzzleSave().got,n=currentPuzzle()??[...open].reverse().find(e=>(got[e.key]||[]).length)?.key??open[0].key;pz.n=n;$('#puzzleScreen').hidden=false;gcAccessPoint();renderPuzzle();
+    function openPuzzle(){pz.modeBefore=perf.states.mode;perf.state('mode','puzzle');const open=puzzlesOpen(),got=puzzleSave().got,n=currentPuzzle()??[...open].reverse().find(e=>(got[e.key]||[]).length)?.key??open[0].key;pz.n=n;$('#puzzleScreen').hidden=false;gcAccessPoint();renderPuzzle();
       if(!reduceMotion.matches){$('#puzzleScreen').animate([{opacity:0},{opacity:1}],{duration:220});$('#pzBoard').animate([{opacity:0,transform:'translateY(40px) scale(.92)'},{opacity:1,transform:'translateY(-4px) scale(1.01)',offset:.7},{opacity:1,transform:'none'}],{duration:480,easing:'cubic-bezier(.2,.8,.2,1)'})}playSound('pickup',{volume:.2,rate:1.2})}
-    function closePuzzle(){const el=$('#puzzleScreen');if(el.hidden)return;const done=()=>{el.hidden=true;gcAccessPoint();renderPuzzleBadge()};if(reduceMotion.matches)return done();el.animate([{opacity:1},{opacity:0}],{duration:200}).onfinish=done}
+    function closePuzzle(){const el=$('#puzzleScreen');if(el.hidden)return;pzSweep();perf.state('mode',pz.modeBefore||'home');const done=()=>{el.hidden=true;gcAccessPoint();renderPuzzleBadge()};if(reduceMotion.matches)return done();el.animate([{opacity:1},{opacity:0}],{duration:200}).onfinish=done}
     function pieceEl(n,i,w,h,W,H){const el=document.createElement('div'),r=Math.floor(i/PZ_COLS),c=i%PZ_COLS,bx=c*w-w*.25,by=r*h-h*.25;el.className='pz-piece';
       Object.assign(el.style,{width:`${w*1.5}px`,height:`${h*1.5}px`,backgroundImage:`url(art/puzzles/${puzzleOf(n).img}.jpg)`,backgroundSize:`${W}px ${H}px`,backgroundPosition:`${-bx}px ${-by}px`,clipPath:`path('${piecePath(n,i,w,h)}')`});
       el.style.webkitClipPath=el.style.clipPath;el.dataset.i=i;return{el,bx,by}}
@@ -4233,15 +4259,15 @@ void main() {
     window.__puzzleSaved=(ok,where)=>{const b=document.querySelector('.pz-finished b');if(b)b.textContent=loc(!ok?'Couldn’t save the picture.':where==='gallery'?'Saved to your Gallery!':'Saved to Photos!')};
     // Drag a piece from the tray; dropped near its place (or tapped) it snaps in, anywhere else it springs back.
     function pzDrag(slot,i,k){slot.onpointerdown=e=>{const {W,H,w,h}=pz.box,n=pz.n,start={x:e.clientX,y:e.clientY},sr=slot.getBoundingClientRect();let ghost=null,moved=false;slot.setPointerCapture(e.pointerId);
-      const make=()=>{const {el}=pieceEl(n,i,w,h,W,H);el.classList.add('pz-drag');el.style.left=`${sr.left}px`;el.style.top=`${sr.top}px`;el.style.transform=`scale(${k})`;document.body.append(el);slot.style.opacity=.25;el.animate([{transform:`scale(${k})`},{transform:'scale(1.05)'}],{duration:160,fill:'forwards'});return el};
+      const make=()=>{pz.dragging=true;const {el}=pieceEl(n,i,w,h,W,H);el.classList.add('pz-drag');el.style.left=`${sr.left}px`;el.style.top=`${sr.top}px`;el.style.transform=`scale(${k})`;document.body.append(el);slot.style.opacity=.25;el.animate([{transform:`scale(${k})`},{transform:'scale(1.05)'}],{duration:160,fill:'forwards'});return el};
       slot.onpointermove=ev=>{const dx=ev.clientX-start.x,dy=ev.clientY-start.y;if(!moved&&Math.hypot(dx,dy)<8)return;if(!moved){moved=true;ghost=make()}const gw=w*1.5*1.05,gh=h*1.5*1.05;ghost.style.left=`${ev.clientX-gw/2}px`;ghost.style.top=`${ev.clientY-gh*.75}px`};
-      slot.onpointerup=slot.onpointercancel=ev=>{slot.onpointermove=slot.onpointerup=slot.onpointercancel=null;const B=$('#pzBoard').getBoundingClientRect(),r=Math.floor(i/PZ_COLS),c=i%PZ_COLS,tx=B.left+c*w-w*.25,ty=B.top+r*h-h*.25;
+      slot.onpointerup=slot.onpointercancel=ev=>{slot.onpointermove=slot.onpointerup=slot.onpointercancel=null;pz.dragging=false;const B=$('#pzBoard').getBoundingClientRect(),r=Math.floor(i/PZ_COLS),c=i%PZ_COLS,tx=B.left+c*w-w*.25,ty=B.top+r*h-h*.25;
         if(!moved){placePiece(i,{from:sr,k});return}
         const gr=ghost.getBoundingClientRect(),near=Math.hypot(gr.left-tx,gr.top-ty)<Math.min(w,h)*.45;
         if(near){ghost.remove();placePiece(i,{from:gr,k:1.05})}
         else{rejectTap(slot);ghost.animate([{left:ghost.style.left,top:ghost.style.top,transform:'scale(1.05)'},{left:`${sr.left}px`,top:`${sr.top}px`,transform:`scale(${k})`}],{duration:260,easing:'cubic-bezier(.2,.8,.2,1)'}).onfinish=()=>{ghost.remove();slot.style.opacity=''}}}}}
     function placePiece(i,{from,k}){const n=pz.n,p=puzzleSave(),{W,H,w,h}=pz.box,B=$('#pzBoard').getBoundingClientRect(),r=Math.floor(i/PZ_COLS),c=i%PZ_COLS,bx=c*w-w*.25,by=r*h-h*.25;
-      (p.placed[n]??=[]).includes(i)||p.placed[n].push(i);saveProgress();const {el}=pieceEl(n,i,w,h,W,H);el.classList.add('pz-drag');el.style.left=`${from.left}px`;el.style.top=`${from.top}px`;el.style.transform=`scale(${k})`;document.body.append(el);
+      (p.placed[n]??=[]).includes(i)||p.placed[n].push(i);saveProgress();const {el}=pieceEl(n,i,w,h,W,H);el.classList.add('pz-drag','flying');el.style.left=`${from.left}px`;el.style.top=`${from.top}px`;el.style.transform=`scale(${k})`;document.body.append(el);
       const go=el.animate([{left:`${from.left}px`,top:`${from.top}px`,transform:`scale(${k})`},{left:`${B.left+bx}px`,top:`${B.top+by}px`,transform:'scale(1.08)',offset:.75},{left:`${B.left+bx}px`,top:`${B.top+by}px`,transform:'scale(1)'}],{duration:reduceMotion.matches?1:380,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'});
       go.onfinish=()=>{el.remove();renderPuzzle();playSound('dragDrop',{volume:.5,rate:1.2});haptic('cardCaged');{const x=B.left+bx+w*.75,y=B.top+by+h*.75;dustCanvas().style.zIndex=5400;streakSparks(x,y,12)}
         if((p.placed[n]||[]).length>=PZ_N&&!p.done.includes(n))finishPuzzle(n)}}
@@ -4262,11 +4288,14 @@ void main() {
       pz.n=to;renderPuzzle();
       if(still){board.animate([{opacity:0},{opacity:1}],{duration:200})}
       else{const ease='cubic-bezier(.45,.05,.25,1)',ms=420,far=B.width+28;
-        ghost.animate([{transform:'none',opacity:1},{transform:`translateX(${-dir*far}px) rotateY(${dir*16}deg) scale(.9)`,opacity:.4}],{duration:ms,easing:ease,fill:'forwards'});
-        board.animate([{transform:`translateX(${dir*far}px) rotateY(${-dir*16}deg) scale(.9)`,opacity:.4},{transform:'none',opacity:1}],{duration:ms,easing:ease});
+        // Flat (Paul 2026-10-30): with rotateY, Safari once left a piece of the old board drawn over the next puzzle.
+        ghost.animate([{transform:'none',opacity:1},{transform:`translateX(${-dir*far}px) scale(.9)`,opacity:.4}],{duration:ms,easing:ease,fill:'forwards'});
+        board.animate([{transform:`translateX(${dir*far}px) scale(.9)`,opacity:.4},{transform:'none',opacity:1}],{duration:ms,easing:ease});
         tray.animate([{opacity:0,transform:`translateX(${dir*40}px)`},{opacity:1,transform:'none'}],{duration:ms,easing:ease});
         await new Promise(r=>setTimeout(r,ms));ghost.remove()}
-      pzTurning=null;if(turn.next)pzTurn(turn.next)}
+      pzTurning=null;pzSweep();if(turn.next)pzTurn(turn.next)}
+    // Anything a turn, drag or placing could leave behind (an old board copy, a dragged or flying piece) is removed once the screen settles.
+    function pzSweep(){if(pzTurning)return;for(const el of [...$('#pzStage').children])if(!['pzBoard','pzPrev','pzNext'].includes(el.id))el.remove();for(const el of document.querySelectorAll('body > .pz-drag:not(.flying)'))if(!el.isConnected||!pz.dragging)el.remove()}
     addEventListener('resize',()=>{if(!$('#puzzleScreen').hidden)renderPuzzle()});
     {let sx=null;$('#pzStage').addEventListener('pointerdown',e=>{if(!e.target.closest('.pz-arrow'))sx=e.clientX});$('#pzStage').addEventListener('pointerup',e=>{if(sx==null)return;const dx=e.clientX-sx;sx=null;if(Math.abs(dx)>50)$(dx<0?'#pzNext':'#pzPrev').click()})}
     // Daily streak scene (first clear of the day, after the climb): the flame in a carved emblem is cold, the emblem wobbles while the
@@ -4327,7 +4356,7 @@ void main() {
     function chestDue(r){if(state.tutorial||r.dev)return null;const c=progress.chest??={wins:0};c.wins++;saveProgress();
       if(r.firstToday&&r.streak%7===0)return{big:true};if(!c.first&&r.level>=2){c.first=true;saveProgress();return{}}return c.wins%2===0?{}:null}
     function playChestScene({big=false,preview=false}={}){return new Promise(async resolve=>{
-      const frames=await loadChestFrames();if(!frames){resolve();return}
+      const frames=await loadChestFrames();if(!frames){resolve();return}const modeBefore=perf.states.mode;perf.state('mode','chest');
       const scene=$('#chestScene'),cv=$('#csCanvas'),wrap=$('#csWrap'),hint=$('#csHint'),title=$('#csTitle'),still=reduceMotion.matches,roll=rollChest(big),dust=dustCanvas();
       cv.width=CHEST.w;cv.height=CHEST.h;const cx=cv.getContext('2d');let shown=-1;const draw=i=>{i=Math.max(0,Math.min(CHEST.frames-1,i));if(i===shown)return;shown=i;cx.clearRect(0,0,CHEST.w,CHEST.h);cx.drawImage(frames[i],0,0,CHEST.w,CHEST.h)};draw(0);
       $('#csKicker').textContent=loc(big?'STREAK CHEST':'TREASURE CHEST');title.textContent=loc('Tap the chest!');hint.textContent=loc('TAP!');hint.classList.add('pulse');$('#csRewards').replaceChildren();$('#csActions').replaceChildren();$('#csNote').textContent='';
@@ -4337,7 +4366,7 @@ void main() {
       let taps=0,opened=false,rewardsShown=false;const timers=[],later=(fn,ms)=>timers.push(setTimeout(fn,ms));
       const done=()=>{scene.onpointerdown=null;timers.forEach(clearTimeout);dust.style.zIndex='';// The fade-out holds its end (fill) until the scene is hidden, and is cancelled in the same step, before hiding: it used to snap
         // back to full for a frame, and cancelled under `hidden` Android's WebView kept the stale opacity (Paul 2026-10-30).
-        const end=()=>{scene.getAnimations({subtree:true}).forEach(a=>a.cancel());scene.hidden=true;cx.clearRect(0,0,CHEST.w,CHEST.h);releaseChestFrames();gcAccessPoint();resolve()};
+        const end=()=>{perf.state('mode',modeBefore);scene.getAnimations({subtree:true}).forEach(a=>a.cancel());scene.hidden=true;cx.clearRect(0,0,CHEST.w,CHEST.h);releaseChestFrames();gcAccessPoint();resolve()};
         if(still){end();return}scene.animate([{opacity:1},{opacity:0}],{duration:240,easing:'ease-in',fill:'forwards'}).onfinish=end};
       // The fall: a swoosh as it drops, a thud as it lands (synthesized stand-ins, playSwoosh/playThump, until Paul's recordings).
       if(!still){scene.querySelector('.cs-scrim').animate([{opacity:0},{opacity:1}],{duration:240});later(()=>playSwoosh(340,1),60);
