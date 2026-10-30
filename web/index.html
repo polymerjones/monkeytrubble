@@ -106,12 +106,12 @@
     /* !important: the themes (jungle, art boards) style these with higher specificity; a Halloween level sits on top of any theme. */
     body.pack-halloween .board-wrap{background:radial-gradient(ellipse at 50% 110%,#ff7a1a33 0,transparent 55%),radial-gradient(ellipse at 50% -10%,#7a2cff40 0,transparent 60%),#07030c!important;border-color:#ff7a1a99!important;box-shadow:inset 0 0 90px #2a0b3dcc,0 0 28px #ff7a1a33,0 20px 70px #000!important}
     body.pack-halloween .tile.face-down{background:radial-gradient(circle at 50% 50%,#ff7a1a2a 0 16%,#0000 17%),repeating-linear-gradient(135deg,#140820 0 7px,#2a1240 8px 10px,#10061a 11px 17px)!important}
-    /* Christmas card backs (Paul 2026-10-30): wrapping paper, three papers alternating across the board, a gold ribbon cross, and the
+    /* Christmas card backs (Paul 2026-10-30): wrapping paper (midnight blue, green stripes, cream; red was too clashy), alternating across the board, a gold ribbon cross, and the
        monkey-head emblem where the ribbon crosses, like the bow on a present. Gradients only: drawn once per card, nothing animates. */
     body.pack-christmas .tile.face-down{--ribbon:linear-gradient(90deg,#0000 43%,#7a5410 43% 44%,#f1cf6b 44% 56%,#7a5410 56% 57%,#0000 57%),linear-gradient(0deg,#0000 43%,#7a5410 43% 44%,#f1cf6b 44% 56%,#7a5410 56% 57%,#0000 57%);
-      background:var(--ribbon),radial-gradient(circle,#fff 0 2.2px,#0000 2.8px) 0 0/13px 13px,radial-gradient(circle,#fff 0 2.2px,#0000 2.8px) 6.5px 6.5px/13px 13px,#c4182f!important;border-color:#f1cf6b!important}
+      background:var(--ribbon),radial-gradient(circle,#dfe8f5 0 2px,#0000 2.6px) 0 0/13px 13px,radial-gradient(circle,#dfe8f5aa 0 1.3px,#0000 1.9px) 6.5px 6.5px/13px 13px,#1c2f57!important;border-color:#f1cf6b!important}
     body.pack-christmas .tile.face-down:nth-child(3n+1){background:var(--ribbon),repeating-linear-gradient(135deg,#1d6b3a 0 9px,#c4182f 9px 11px,#1d6b3a 11px 18px,#f1cf6b 18px 19px),#1d6b3a!important}
-    body.pack-christmas .tile.face-down:nth-child(3n+2){background:var(--ribbon),radial-gradient(circle,#c4182f 0 2.4px,#0000 3px) 0 0/14px 14px,radial-gradient(circle,#1d6b3a 0 1.6px,#0000 2.2px) 7px 7px/14px 14px,#f7f1e6!important}
+    body.pack-christmas .tile.face-down:nth-child(3n+2){background:var(--ribbon),radial-gradient(circle,#b8323f 0 2.2px,#0000 2.8px) 0 0/14px 14px,radial-gradient(circle,#1d6b3a 0 1.6px,#0000 2.2px) 7px 7px/14px 14px,#f4eee2!important}
     body.pack-christmas .tile.face-down::after{opacity:.95;background-size:46% auto}
     /* Covered cards: the same paper in shadow (an inset shade, no CSS filter). */
     body.pack-christmas .tile.blocked.face-down{box-shadow:inset 0 0 0 200px #000a,0 9px 0 #020c05!important}
@@ -1156,7 +1156,9 @@
     };
     for(const id in VISION_CARDS)if(VISION_CARDS[id].pending)delete VISION_CARDS[id];
     for(const id in CARD_DATA)if(CARD_DATA[id].pending)delete CARD_DATA[id];
-    const MONKEY_SYMBOLS=Object.keys(CARD_DATA),CHRISTMAS_EXTRA=Object.keys(CARD_DATA).filter(id=>CARD_DATA[id].pack==='christmas'),DECK=MONKEY_SYMBOLS.filter(id=>id!==JOKER&&id!==KEVIN&&id!==POLY&&!CARD_DATA[id].pack&&!CARD_DATA[id].set),SET_DECKS={illustrated:MONKEY_SYMBOLS.filter(id=>CARD_DATA[id].set==='illustrated'&&!CARD_DATA[id].food&&!CARD_DATA[id].region),iceage:MONKEY_SYMBOLS.filter(id=>CARD_DATA[id].set==='iceage')},HALLOWEEN_DECK=MONKEY_SYMBOLS.filter(id=>CARD_DATA[id].pack==='halloween'||(id!==JOKER&&id!==KEVIN&&id!==POLY&&CARD_DATA[id].halloween));
+    const MONKEY_SYMBOLS=Object.keys(CARD_DATA),CHRISTMAS_EXTRA=Object.keys(CARD_DATA).filter(id=>CARD_DATA[id].pack==='christmas'),
+      // Christmas levels (from level 3) deal only cards with Christmas art (Paul 2026-10-30: no regular monkeys among the presents).
+      CHRISTMAS_DECK=Object.keys(CARD_DATA).filter(id=>![JOKER,KEVIN,POLY].includes(id)&&(CARD_DATA[id].christmas||CARD_DATA[id].pack==='christmas')),DECK=MONKEY_SYMBOLS.filter(id=>id!==JOKER&&id!==KEVIN&&id!==POLY&&!CARD_DATA[id].pack&&!CARD_DATA[id].set),SET_DECKS={illustrated:MONKEY_SYMBOLS.filter(id=>CARD_DATA[id].set==='illustrated'&&!CARD_DATA[id].food&&!CARD_DATA[id].region),iceage:MONKEY_SYMBOLS.filter(id=>CARD_DATA[id].set==='iceage')},HALLOWEEN_DECK=MONKEY_SYMBOLS.filter(id=>CARD_DATA[id].pack==='halloween'||(id!==JOKER&&id!==KEVIN&&id!==POLY&&CARD_DATA[id].halloween));
     // Each level is a regular or a Halloween level, chosen by its own seed so retries deal the same set. Level 1 is always regular.
     const HALLOWEEN_CHANCE=.5;
     // Season mode (dev switch; players get TRIAL_DEFAULTS.pack): halloween = every level, fully Halloween (locked look); skin = every
@@ -1718,11 +1720,11 @@
     // each group dealt from its own shuffled cards, repeating only once all of them are used.
     const chapterDeck=ch=>ch.region?[...ch.region,...ch.fill||[]]:SET_DECKS[ch.set]||DECK;
     function levelUnits(rng,level=1,total=TOTAL){
-      const poly=polyLevel(level),set=chapterFor(level).set,ch=chapterFor(level),isSet=levelPack(level)!=='halloween'&&!!(set&&SET_DECKS[set]?.length),pairs=(total-3-poly)/2;let bag;
+      const poly=polyLevel(level),set=chapterFor(level).set,ch=chapterFor(level),isSet=levelPack(level)!=='halloween'&&!(levelPack(level)==='christmas'&&level>2)&&!!(set&&SET_DECKS[set]?.length),pairs=(total-3-poly)/2;let bag;
       // Two artworks can share a species name (S1_/S2_ Japanese Macaque…) but don't match, so each board deals one variant per name,
       // a featured card's own variant first, otherwise a random one.
       const pick=new Map(),keep=id=>{const n=CARD_DATA[id]?.name;if(!n)return true;if(!pick.has(n))pick.set(n,id);return pick.get(n)===id};if(isSet)(ch.featured||[]).forEach(keep);
-      const decks=(levelPack(level)==='halloween'?[HALLOWEEN_DECK]:isSet?[chapterDeck(ch)]:groupDecks(level)).map(d=>levelPack(level)==='christmas'?[...d,...CHRISTMAS_EXTRA]:d).map(d=>shuffleWith([...d],rng).filter(keep)).filter(d=>d.length);
+      const decks=(levelPack(level)==='halloween'?[HALLOWEEN_DECK]:levelPack(level)==='christmas'&&level>2?[CHRISTMAS_DECK]:isSet?[chapterDeck(ch)]:groupDecks(level)).map(d=>levelPack(level)==='christmas'&&level<=2?[...d,...CHRISTMAS_EXTRA]:d).map(d=>shuffleWith([...d],rng).filter(keep)).filter(d=>d.length);
       if(decks.length<=1){const deck=decks[0]||DECK,feat=isSet?[...ch.region?[]:(ch.featured||[]).filter(id=>deck.includes(id)),...(ch.foods||[]).filter(id=>CARD_DATA[id]?.food)]:[];bag=[...shuffleWith([...feat],rng)];while(bag.length<pairs+1+deck.length)bag.push(...shuffleWith([...deck],rng))}
       // pairs + 1 symbols: the regular pairs plus the joker's partner.
       else{const need=pairs+1,share=decks.map(()=>Math.floor(need/decks.length)),order=shuffleWith(decks.map((_,i)=>i),rng);for(let k=0;k<need%decks.length;k++)share[order[k]]++;
@@ -1766,8 +1768,14 @@
     const PLATINUM_CHANCE=.125,polyPlatinum=level=>!!polyLevel(level)&&(trial('poly')==='platinum'||mulberry32(level*104729+11)()<PLATINUM_CHANCE);
     function dropPolySlot(pos,level){if(!polyLevel(level))return pos;const top=pos.filter(p=>!p.blockers.length),stacked=top.filter(p=>pos.some(o=>o.blockers.includes(p.id))),pool=stacked.length?stacked:top,cut=pool[Math.floor(mulberry32(level*7919+5)()*pool.length)];
       return pos.filter(p=>p!==cut).map(p=>({...p,blockers:p.blockers.filter(id=>id!==cut.id)}))}
+    // Christmas boards keep the middle CHRISTMAS_COLS card-widths of the level's shape (about two thirds of the cards), so the square
+    // cards can be big; covering is worked out from the trimmed shape as usual. The count stays odd, as every layout's is (Kevin, the
+    // joker unit and pairs), by dropping one top card. Levels 1-2 and the small starter shapes (Expedition+) keep their boards.
+    const CHRISTMAS_COLS=4;
+    function christmasCells(cells){let c0=1e9,c1=-1e9;for(const [,c] of cells){c0=Math.min(c0,c);c1=Math.max(c1,c)}const mid=(c0+c1)/2,out=cells.filter(([,c])=>Math.abs(c-mid)<=CHRISTMAS_COLS-1);
+      if(out.length%2===0){const top=Math.max(...out.map(([l])=>l)),k=out.findIndex(([l])=>l===top);out.splice(k,1)}return out}
     function buildLevelBoard(level,easy=false){
-      const rng=mulberry32(level*9973),pos=dropPolySlot(buildLayout(boardCells(layoutFor(level,easy))),level),freePairs=startPairsFor(pos,startPairsAt(level,easy),rng),open=new Set(freePairs.flat());
+      const cells=boardCells(layoutFor(level,easy)),rng=mulberry32(level*9973),pos=dropPolySlot(buildLayout(level>2&&cells.length>=40&&levelPack(level)==='christmas'?christmasCells(cells):cells),level),freePairs=startPairsFor(pos,startPairsAt(level,easy),rng),open=new Set(freePairs.flat());
       const assignments=dealUnits(pos,levelUnits(rng,level,pos.length),rng,{freePairs,maxOpen:maxOpenAt(level,easy)}),faceDown=pickFaceDown(pos,Math.round(pos.length*(1-faceUpShare(level,easy))),rng,open);
       return pos.map(p=>({...p,symbol:assignments.get(p.id),active:true,bonus:open.has(p.id),revealed:!faceDown.has(p.id),temporaryReveal:false}))
     }
@@ -2169,7 +2177,10 @@
     // smaller than their grid cell so neighbours have a hairline gap.
     // Home backgrounds (see pickHomeBg) are preloaded with the cards so a fresh one never pops in late.
     const HOME_BGS=['A','B','E','3','4'],HOME_BG_FILES=HOME_BGS.map(k=>`art/home/bg-${k}.jpg`);
-    const CARD_RATIO=1.4,LAYER_NUDGE=7,CARD_FILL=.97,cardFill=()=>chapterFor(state.level||1).cardFill??CARD_FILL;
+    // Christmas levels (from level 3) deal square cards on a narrower board (Paul 2026-10-30): fewer cards, each as big as usual, like
+    // gift boxes, and the Christmas portraits' empty sky above the hats is trimmed without zooming in (christmasCells, buildLevelBoard).
+    const CARD_RATIO=1.4,LAYER_NUDGE=7,CARD_FILL=.97,cardFill=()=>chapterFor(state.level||1).cardFill??CARD_FILL,
+      squareCards=()=>state?.pack==='christmas'&&state.level>2,cardRatio=()=>squareCards()?1:CARD_RATIO;
     // boardSize: the board's size from its ResizeObserver (FX.renderCache), so a redraw doesn't force a layout to read it.
     let boardSize=null;
     function boardMetrics(){
@@ -2178,9 +2189,9 @@
       // The layer nudge shrinks with the cards (at most LAYER_NUDGE px), so small boards keep their stacked look without wasting room.
       // Cards drawn bigger than their cell (cardFill > 1) are measured at their drawn size, so they still never run off the board.
       const pad=2,cc=(c0+c1)/2,rc=(r0+r1)/2,nudge=w=>Math.min(LAYER_NUDGE,w*.12),f=Math.max(1,cardFill()),
-        box=w=>{const h=w*CARD_RATIO,n=nudge(w),hw=w*f/2,hh=h*f/2;let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;for(const t of tiles){const x=(t.c-cc)/2*w-t.layer*n,y=(t.r-rc)/2*h-t.layer*n;x0=Math.min(x0,x-hw);x1=Math.max(x1,x+hw);y0=Math.min(y0,y-hh);y1=Math.max(y1,y+hh)}return{x0,x1,y0,y1}};
-      let lo=4,hi=Math.max(4,Math.min(W,H/CARD_RATIO));for(let i=0;i<22;i++){const w=(lo+hi)/2,b=box(w);if(b.x1-b.x0<=W-pad*2&&b.y1-b.y0<=H-pad*2)lo=w;else hi=w}
-      const w=lo,h=w*CARD_RATIO,n=nudge(w),b=box(w),ox=W/2-(b.x0+b.x1)/2,oy=H/2-(b.y0+b.y1)/2,
+        box=w=>{const h=w*cardRatio(),n=nudge(w),hw=w*f/2,hh=h*f/2;let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;for(const t of tiles){const x=(t.c-cc)/2*w-t.layer*n,y=(t.r-rc)/2*h-t.layer*n;x0=Math.min(x0,x-hw);x1=Math.max(x1,x+hw);y0=Math.min(y0,y-hh);y1=Math.max(y1,y+hh)}return{x0,x1,y0,y1}};
+      let lo=4,hi=Math.max(4,Math.min(W,H/cardRatio()));for(let i=0;i<22;i++){const w=(lo+hi)/2,b=box(w);if(b.x1-b.x0<=W-pad*2&&b.y1-b.y0<=H-pad*2)lo=w;else hi=w}
+      const w=lo,h=w*cardRatio(),n=nudge(w),b=box(w),ox=W/2-(b.x0+b.x1)/2,oy=H/2-(b.y0+b.y1)/2,
         m={w,h,x:t=>ox+(t.c-cc)/2*w-t.layer*n,y:t=>oy+(t.r-rc)/2*h-t.layer*n};
       return m
     }
@@ -3174,7 +3185,7 @@
     // background drift); their alternatives stay in the code but are no longer switchable. DEV_SWITCHES are still picked in dev mode.
     const TRIALS_KEY='monkeyTrubble.trials',TRIAL_DEFAULTS={bg:'D',transition:'spiral',ui:'dim',avatar:'face',drift:'on',pack:'alternate',scene:'chapter',homeMusic:'sparse',comboMusic:'swap',theme:'chapter',poly:'auto',vision:'normal',streakBuild:'random',streakIgnite:'joker'},DEV_SWITCHES=new Set(['pack','comboMusic','theme','poly','vision','streakBuild','streakIgnite']);let trials={...TRIAL_DEFAULTS};try{trials={...TRIAL_DEFAULTS,...JSON.parse(localStorage.getItem(TRIALS_KEY)||'{}')};if(DEBUG_DEFAULTS)trials.pack='alternate';if(trials.homeMusicV!==3){trials.homeMusic='sparse';trials.homeMusicV=3}}catch{}
     const trial=k=>devMode&&DEV_SWITCHES.has(k)?trials[k]:TRIAL_DEFAULTS[k];
-    function applyTrials(){setTimeout(()=>window.__kickSlats?.(),0);syncTheme();MUSIC.settings=[christmasFull()?CHRISTMAS_SETTINGS:HOME_TRACK];{const t=christmasFull()?CHRISTMAS_HOME:HOME_MUSIC_OPTIONS[trial('homeMusic')]||HOME_MUSIC_OPTIONS.sparse;if(MUSIC.home[0]!==t){MUSIC.home=[t];if(musicList==='home')playMusic('home',true);else if(settingsMusicReturn?.list==='home')settingsMusicReturn.el=musicEl(t)}}const cmp=$('#badgeCompare');if(cmp)cmp.innerHTML=['classic','monkey'].map(f=>`<span>${tierBadge(TIERS[2],44,f)}${f==='classic'?'CLASSIC':'NEW'}</span>`).join('')+`<span>${tierBadge(TIERS[TIERS.length-1],22,'monkey')}22px</span>`;document.body.dataset.bg=trial('bg');document.body.classList.toggle('ui-dim',trial('ui')==='dim');document.body.classList.toggle('bg-drift',trial('drift')==='on');if(trial('bg')==='D')buildCardField();for(const row of document.querySelectorAll('.trial-chips'))for(const b of row.children)b.setAttribute('aria-checked',String(trials[row.dataset.trial]===b.dataset.value))}
+    function applyTrials(){setTimeout(syncBylinePoly,0);setTimeout(()=>window.__kickSlats?.(),0);syncTheme();MUSIC.settings=[christmasFull()?CHRISTMAS_SETTINGS:HOME_TRACK];{const t=christmasFull()?CHRISTMAS_HOME:HOME_MUSIC_OPTIONS[trial('homeMusic')]||HOME_MUSIC_OPTIONS.sparse;if(MUSIC.home[0]!==t){MUSIC.home=[t];if(musicList==='home')playMusic('home',true);else if(settingsMusicReturn?.list==='home')settingsMusicReturn.el=musicEl(t)}}const cmp=$('#badgeCompare');if(cmp)cmp.innerHTML=['classic','monkey'].map(f=>`<span>${tierBadge(TIERS[2],44,f)}${f==='classic'?'CLASSIC':'NEW'}</span>`).join('')+`<span>${tierBadge(TIERS[TIERS.length-1],22,'monkey')}22px</span>`;document.body.dataset.bg=trial('bg');document.body.classList.toggle('ui-dim',trial('ui')==='dim');document.body.classList.toggle('bg-drift',trial('drift')==='on');if(trial('bg')==='D')buildCardField();for(const row of document.querySelectorAll('.trial-chips'))for(const b of row.children)b.setAttribute('aria-checked',String(trials[row.dataset.trial]===b.dataset.value))}
     // Dev tools (Settings, dev mode only): jump to any level's seeded deal, win instantly without saving, or set up a 3/4 cage.
     let devLevel=1;
     async function devGoTo(level){closeSettings();await artReady(level);progress.mapIntro=true;if(!$('#home').classList.contains('hidden'))playFromHome();startLevel(level)}
@@ -3298,8 +3309,12 @@
       if(reduceMotion.matches){const scrim=layer.appendChild(Object.assign(document.createElement('i'),{className:'lt-scrim'}));scrim.animate([{opacity:0},{opacity:1}],{duration:200,fill:'forwards'}).onfinish=()=>{swap();scrim.animate([{opacity:1},{opacity:0}],{duration:240,fill:'forwards'}).onfinish=finish};return}
       (style==='cage'?cageDoorTransition:cardSpiralTransition)(layer,swap,finish,prepare)}
     // Card spiral: the level's own cards whirl in from the edges and pile up over the screen, then fling back out on the new board.
-    function cardSpiralTransition(layer,swap,finish,prepare){const ready=prepare?Promise.race([prepare(),new Promise(r=>setTimeout(r,2500))]):Promise.resolve();
-      const syms=[...new Set(state.tiles.map(t=>t.symbol))],N=FX.memLite?16:24,R=Math.hypot(innerWidth,innerHeight)/2+160,IN=560,STAG=12,OUT=480,scrim=layer.appendChild(Object.assign(document.createElement('i'),{className:'lt-scrim'})),cards=[];
+    // The spiral uses faces already decoded (on the website a never-flipped card's face loaded mid-spiral and showed blank, Paul
+    // 2026-10-30); with fewer than 4 ready it waits up to 350ms for the rest first.
+    async function cardSpiralTransition(layer,swap,finish,prepare){const ready=prepare?Promise.race([prepare(),new Promise(r=>setTimeout(r,2500))]):Promise.resolve();
+      const all=[...new Set(state.tiles.map(t=>t.symbol))],seen=all.filter(sym=>decodedFaces.has(faceSrc(sym)));
+      if(seen.length<4)await Promise.race([Promise.all(all.slice(0,8).map(faceReady)),new Promise(r=>setTimeout(r,350))]);
+      const syms=seen.length>=4?seen:all,N=FX.memLite?16:24,R=Math.hypot(innerWidth,innerHeight)/2+160,IN=560,STAG=12,OUT=480,scrim=layer.appendChild(Object.assign(document.createElement('i'),{className:'lt-scrim'})),cards=[];
       scrim.animate([{opacity:0},{opacity:1}],{duration:IN+N*STAG,easing:'ease-in',fill:'forwards'});
       for(let i=0;i<N;i++){const c=document.createElement('div');c.className='lt-card';setSymbolContent(c,syms[i%syms.length],'thumb');layer.append(c);const a0=i/N*Math.PI*2,a1=a0+Math.PI*1.4,r=(1-i/N)*Math.min(innerWidth,innerHeight)*.34,rot=a1*180/Math.PI+90;
         const at=(a,rr,deg,sc)=>`translate(-50%,-50%) translate3d(${(Math.cos(a)*rr).toFixed(1)}px,${(Math.sin(a)*rr).toFixed(1)}px,0) rotate(${deg.toFixed(1)}deg) scale(${sc})`;
@@ -4081,7 +4096,9 @@ void main() {
     $('#adPrivacy').onclick=()=>window.webkit?.messageHandlers?.ads?.postMessage({type:'privacy'});$('#replayTutorial').onclick=()=>replayTutorial();$('#devTutorial').onclick=()=>replayTutorial(true);
     // The home byline picks one of these at random on each visit.
     const BYLINES=['A GAME BY POLYMER JONES','DEVELOPED BY POLYMER JONES'];
-    function showHome(){perf.state('mode','home');setMusicTension(0);comboEdgeOff();setTimeout(syncAmbience,0);playMusic('home');clearDust();closeLightbox({instant:true});$('#homeByline').textContent=loc(BYLINES[rand(BYLINES.length)]);if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}$('#overlay').classList.remove('show');$('#winOverlay').classList.remove('show');renderHome();pickHomeBg();clearTimeout(homeGoneTimer);document.body.classList.remove('home-gone');$('#home').classList.remove('hidden');syncHomeSnow();syncTheme();gcAccessPoint();buildHomeTicker()}
+    // The byline's POLY card wears its Christmas look when Christmas is on (Paul 2026-10-30).
+    function syncBylinePoly(){const img=$('.byline-poly'),src=`cards/thumb/${christmasOn()?'poly-christmas':'poly'}.jpg`;if(img&&img.getAttribute('src')!==src)img.src=src}
+    function showHome(){perf.state('mode','home');syncBylinePoly();setMusicTension(0);comboEdgeOff();setTimeout(syncAmbience,0);playMusic('home');clearDust();closeLightbox({instant:true});$('#homeByline').textContent=loc(BYLINES[rand(BYLINES.length)]);if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}$('#overlay').classList.remove('show');$('#winOverlay').classList.remove('show');renderHome();pickHomeBg();clearTimeout(homeGoneTimer);document.body.classList.remove('home-gone');$('#home').classList.remove('hidden');syncHomeSnow();syncTheme();gcAccessPoint();buildHomeTicker()}
     function playFromHome({tutorial=false,sim=false}={}){
         // FX.lightPreload: let go of the home ticker's 24 big card images while playing (it is rebuilt, freshly shuffled, on the way home).
       $('#home').classList.add('hidden');if(FX.lightPreload)$('#homeTicker').replaceChildren();gcAccessPoint();homeStingPending=false;setTimeout(showLevelBanner,250);setTimeout(syncAmbience,300);setTimeout(()=>ambient.wake(),350);unlockAudio();syncTheme();
