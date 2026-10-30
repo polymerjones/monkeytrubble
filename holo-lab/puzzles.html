@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Puzzle Names</title>
+<style>
+  :root{--bg:#0b1a10;--panel:#122a19;--line:#24502f;--text:#eaf6ea;--dim:#9dbca4;--gold:#ffd84d;--accent:#7dff9a}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 system-ui,-apple-system,sans-serif}
+  header{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:2}
+  h1{font-size:15px;letter-spacing:.12em;margin:0;color:var(--gold)}
+  header a{color:var(--dim);font-size:13px}
+  header .grow{flex:1}
+  button{font:inherit;color:var(--text);background:#1b3a24;border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
+  button:hover{border-color:var(--accent)}
+  .big{padding:9px 16px;font-weight:800;letter-spacing:.08em;background:var(--gold);color:#3b2600;border-color:var(--gold)}
+  main{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;padding:20px}
+  .pz{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+  .pz.changed{border-color:#ff9be8}
+  .art{position:relative;aspect-ratio:9/16;background:#000}
+  .art img{width:100%;height:100%;object-fit:cover;display:block}
+  /* The puzzle screen's subtitle, as the game shows it. */
+  .art .sub{position:absolute;left:8px;right:8px;top:8px;padding:5px 8px;border-radius:8px;background:#000a;color:#fff;font:800 11px system-ui,sans-serif;letter-spacing:.06em;text-align:center;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fields{padding:10px;display:grid;gap:6px}
+  label{display:grid;gap:3px;color:var(--dim);font-size:11px;letter-spacing:.1em;font-weight:700}
+  input{width:100%;padding:7px 9px;border-radius:8px;border:1px solid var(--line);background:#0b1a10;color:var(--text);font:inherit;font-size:14px}
+  .meta{display:flex;justify-content:space-between;align-items:center;color:var(--dim);font-size:11px}
+  .meta button{padding:3px 8px;font-size:11px}
+  .out{padding:0 20px 24px}
+  textarea{width:100%;height:150px;background:#06120a;color:#bfe9c8;border:1px solid var(--line);border-radius:8px;font:12px/1.4 ui-monospace,Menlo,monospace;padding:10px}
+  .note{color:var(--dim);font-size:12px}
+  .err{color:#ff8a8a;padding:0 20px}
+</style>
+</head>
+<body>
+<header>
+  <h1>PUZZLE NAMES</h1>
+  <a href="./">← Holo Lab</a>
+  <span class="grow"></span>
+  <span class="note" id="copied">Name each painting, then copy and paste to Claude.</span>
+  <button class="big" id="copy">COPY NAMES</button>
+</header>
+<p class="err" id="err"></p>
+<main id="grid"></main>
+<div class="out"><textarea id="out" readonly></textarea><p class="note">Names are saved in this browser. The chapter puzzles use the chapter names, so only the extra paintings are here.</p></div>
+<script>
+// Puzzle Names: lists the extra puzzles from PUZZLES in web/index.html (the chapter puzzles take their chapter's name) with their
+// paintings, the current English name and its Spanish from web/i18n/es.js. Edits live in localStorage; COPY NAMES gives Claude a block.
+const GAME='../web/index.html',ES='../web/i18n/es.js',ART='../web/art/puzzles/',STORE='puzzleLab.names';
+const $=s=>document.querySelector(s);
+let puzzles=[],picks={};
+try{picks=JSON.parse(localStorage.getItem(STORE)||'{}')}catch{}
+const save=()=>{try{localStorage.setItem(STORE,JSON.stringify(picks))}catch{}renderOut()};
+
+async function boot(){
+  const [src,es]=await Promise.all([fetch(GAME).then(r=>r.text()),fetch(ES).then(r=>r.text())]);
+  const list=src.match(/const PUZZLES=\[([\s\S]*?)\];/);if(!list)throw new Error('Couldn’t find PUZZLES in web/index.html');
+  // es.js keys are the English strings, written with straight or curly apostrophes as the game uses them.
+  const spanish=en=>{const m=es.match(new RegExp(`"${en.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}":"([^"]*)"`));return m?m[1]:''};
+  puzzles=[...list[1].matchAll(/\{key:'([^']+)',img:'([^']+)',name:'([^']+)'(?:,[^}]*?when:([^}]*))?/g)].map(m=>({key:m[1],img:m[2],name:m[3],es:spanish(m[3]),when:m[4]?'Christmas season only':''}));
+  render();renderOut()
+}
+const current=p=>({en:picks[p.key]?.en??p.name,es:picks[p.key]?.es??p.es});
+function render(){
+  $('#grid').replaceChildren(...puzzles.map(p=>{const c=document.createElement('div'),cur=current(p);c.className='pz'+(picks[p.key]?' changed':'');
+    c.innerHTML=`<div class="art"><img alt="" src="${ART}${p.img}.jpg"><div class="sub"></div></div><div class="fields">
+      <label>ENGLISH<input data-k="en"></label><label>ESPAÑOL<input data-k="es" placeholder="(same as English)"></label>
+      <div class="meta"><span>${p.img}.jpg${p.when?` · ${p.when}`:''}</span><button>Reset</button></div></div>`;
+    const sub=c.querySelector('.sub'),show=()=>{const v=current(p);sub.textContent=`${v.en||'—'} · 0/12`};
+    for(const i of c.querySelectorAll('input')){i.value=cur[i.dataset.k];i.oninput=()=>{const v={...current(p),[i.dataset.k]:i.value.trim()};
+      if(v.en===p.name&&v.es===p.es)delete picks[p.key];else picks[p.key]=v;c.classList.toggle('changed',!!picks[p.key]);show();save()}}
+    c.querySelector('button').onclick=()=>{delete picks[p.key];render();save()};show();return c}))}
+function renderOut(){
+  const changed=puzzles.filter(p=>picks[p.key]);
+  $('#out').value=changed.length?`// Puzzle Names (${new Date().toLocaleString()}): PUZZLES key, English name, Spanish name\n`+changed.map(p=>{const v=picks[p.key];return`${p.key}: "${v.en}" / "${v.es||v.en}"   (was "${p.name}")`}).join('\n'):'// No changes yet.'}
+$('#copy').onclick=async()=>{renderOut();try{await navigator.clipboard.writeText($('#out').value);$('#copied').textContent='Copied! Paste it to Claude.'}catch{$('#out').select();$('#copied').textContent='Select-all and copy the box below.'}};
+boot().catch(e=>{$('#err').textContent=`${e.message}. Start the lab with holo-lab/Open Holo Lab.command.`});
+</script>
+</body>
+</html>

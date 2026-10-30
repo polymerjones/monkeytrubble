@@ -4119,7 +4119,7 @@ void main() {
     const PUZZLES=[...CHAPTERS.map((ch,k)=>({key:k+1,img:`ch${k+1}`,name:ch.name,seed:k+1,chapter:k+1})),
       {key:'bg3',img:'bg-3',name:'Monkey Trubble I',seed:101},{key:'bg4',img:'bg-4',name:'Monkey Trubble II',seed:102},
       {key:'bgB',img:'bg-B',name:'Monkey Trubble III',seed:103},{key:'bgE',img:'bg-E',name:'Monkey Trubble IV',seed:104},
-      {key:'poly',img:'poly',name:'Poly',seed:105},{key:'poly-christmas',img:'poly-christmas',name:'Poly’s Christmas',seed:106,when:()=>christmasSeason()}];
+      {key:'poly',img:'poly',name:'Poly Card',seed:105},{key:'poly-christmas',img:'poly-christmas',name:'Poly’s Christmas',seed:106,when:()=>christmasSeason()}];
     const puzzleOf=key=>PUZZLES.find(e=>e.key===key||String(e.key)===String(key))||PUZZLES[0];
     const puzzleSave=()=>progress.puzzle??={got:{},placed:{},levels:[],done:[]};
     // The open puzzles in order: the chapters reached, then every extra whose `when` passes (none = always).
