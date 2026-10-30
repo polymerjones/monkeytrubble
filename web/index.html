@@ -113,9 +113,9 @@
     body.pack-christmas .tile.face-down:nth-child(3n+1){background:var(--ribbon),repeating-linear-gradient(135deg,#1d6b3a 0 9px,#c4182f 9px 11px,#1d6b3a 11px 18px,#f1cf6b 18px 19px),#1d6b3a!important}
     body.pack-christmas .tile.face-down:nth-child(3n+2){background:var(--ribbon),radial-gradient(circle,#b8323f 0 2.2px,#0000 2.8px) 0 0/14px 14px,radial-gradient(circle,#1d6b3a 0 1.6px,#0000 2.2px) 7px 7px/14px 14px,#f4eee2!important}
     body.pack-christmas .tile.face-down::after{opacity:.95;background-size:46% auto}
-    /* Square cards (Christmas, from level 3) show the lower part of each portrait: covered cards show only their top strip, which on
-       a centred crop was empty sky over a hat tip (Paul 2026-10-30). !important beats per-card PHOTO_POSITIONS. */
-    #board.square-cards .tile.has-photo .symbol-image{position:absolute;inset:0;width:100%!important;height:100%!important;object-position:50% 85%!important}  /* pinned: in the tile's grid a % height follows the 2:3 picture */
+    /* Square cards (Christmas, from level 3) use the framed square art (cards/square, holo-lab/framing.html); a card without one
+       is centre-cropped. !important beats per-card PHOTO_POSITIONS. */
+    #board.square-cards .tile.has-photo .symbol-image{position:absolute;inset:0;width:100%!important;height:100%!important;object-position:50% 50%!important}  /* pinned: in the tile's grid a % height follows the picture's shape */
     /* Covered cards: the same paper in shadow (an inset shade, no CSS filter). */
     body.pack-christmas .tile.blocked.face-down{box-shadow:inset 0 0 0 200px #000a,0 9px 0 #020c05!important}
     body.pack-halloween .tile.blocked.face-down{background:repeating-linear-gradient(135deg,#0b0512 0 7px,#1a0b28 8px 10px,#08040e 11px 17px)!important}
@@ -2210,7 +2210,7 @@
         let node=FX.renderCache?tileNodes.get(tile.id):null;if(node?.parentNode!==board)node=board.querySelector(`[data-id="${tile.id}"]`);
         if(!node){node=document.createElement('button');node.dataset.id=tile.id;node.dataset.code=`L${tile.layer}`;board.append(node)}tileNodes.set(tile.id,node);
         setIf(node,'left',`${m.x(tile)}px`);setIf(node,'top',`${m.y(tile)}px`);setIf(node,'zIndex',String(tile.layer*100+tile.r+(up&&free?1000:0)));const cls=`tile board-tile ${free?'free':'blocked'} ${up?'revealed':'face-down'} ${hasPhoto?'has-photo':''} ${tile.temporaryReveal?'on-top':''} ${up&&(tile.symbol===JOKER||tile.symbol===KEVIN||tile.symbol===POLY)?'joker-card':''} ${tile.symbol===JOKER?'joker-thick':''} ${tile.symbol===POLY?`poly-thick${state.platinum?' poly-platinum':polyIce()?' poly-ice':''}`:''} ${state.hintIds?.has(tile.id)?'hinted':''}${['lifted','drop-match','drop-reveal','peek-show'].filter(c=>node.classList.contains(c)).map(c=>' '+c).join('')}`;if(!FX.renderCache||node.className!==cls)node.className=cls;
-        if(node.dataset.renderKey!==renderKey){node.getAnimations().forEach(animation=>animation.cancel());node.replaceChildren();if(up){setSymbolContent(node,tile.symbol,'thumb',tile.id===asyncFace?'async':'sync');if(tile.symbol===KEVIN||tile.symbol===JOKER||tile.symbol===POLY)node.append(Object.assign(document.createElement('i'),{className:'special-star',textContent:'★'}))}node.dataset.renderKey=renderKey}
+        if(node.dataset.renderKey!==renderKey){node.getAnimations().forEach(animation=>animation.cancel());node.replaceChildren();if(up){setSymbolContent(node,tile.symbol,'board',tile.id===asyncFace?'async':'sync');if(tile.symbol===KEVIN||tile.symbol===JOKER||tile.symbol===POLY)node.append(Object.assign(document.createElement('i'),{className:'special-star',textContent:'★'}))}node.dataset.renderKey=renderKey}
         node.setAttribute('aria-disabled',String(!free||state.locked));node.onclick=e=>{if(performance.now()-(Number(node.dataset.tapAt)||0)<700)return;handleTile(tile,e.currentTarget,e.timeStamp)};
         if(free)enablePeekDrag(node);else{node.peekBound=false;node.onpointerdown=null;node.onpointermove=null;node.onpointerup=null;node.onpointercancel=null;node.onlostpointercapture=null}
       });
@@ -2321,14 +2321,17 @@
     const packVariant=(symbol,s=state)=>{const card=CARD_DATA[symbol];if(!card||!s?.level)return null;if(symbol===POLY){const season=s.pack==='halloween'||s.pack==='christmas'?card[s.pack]:null;
         // Platinum on a seasonal level: the seasonal portrait under the platinum treatment (made once per season, so the object stays the same).
         if(s.platinum)return season?(card.platinumSeason??={})[s.pack]??={...card.platinum,image:season.image}:card.platinum;return season||(polyIce(s)?card.ice:null)}if(s.pack==='halloween')return card.halloween||null;if(symbol===KEVIN){const v=visionCard(s);if(v)return v}if(s.pack==='christmas'&&card.christmas)return card.christmas;const ch=chapterFor(s.level);if(ch.joker&&!ch.boss&&card.chapter?.[ch.joker])return card.chapter[ch.joker];if(ch.look&&card[ch.look])return card[ch.look];return card.sets?.[ch.set]||null};
-    function setSymbolContent(container,symbol,size='thumb',decoding='async'){const v=packVariant(symbol),src=v?cardImage(size,v):(size==='hero'?HERO_IMAGES:SYMBOL_IMAGES)[symbol];if(!src){container.textContent=symbol;return}const img=document.createElement('img');img.className='symbol-image';img.decoding=decoding;img.draggable=false;img.src=src;img.alt=`${CARD_DATA[symbol].name} portrait`;if(PHOTO_POSITIONS[symbol])img.style.objectPosition=PHOTO_POSITIONS[symbol];container.append(img)}
+    // size 'board': the board's face, the thumb except on square Christmas boards, where framed cards use their square art.
+    function setSymbolContent(container,symbol,size='thumb',decoding='async'){const v=packVariant(symbol),src=size==='board'?faceSrc(symbol):v?cardImage(size,v):(size==='hero'?HERO_IMAGES:SYMBOL_IMAGES)[symbol];if(!src){container.textContent=symbol;return}const img=document.createElement('img');img.className='symbol-image';img.decoding=decoding;img.draggable=false;img.src=src;img.alt=`${CARD_DATA[symbol].name} portrait`;if(PHOTO_POSITIONS[symbol])img.style.objectPosition=PHOTO_POSITIONS[symbol];container.append(img)}
     // Flips: a card face is decoded before the flip turns it in, and board faces decode in sync, so the face is on the card for the
     // whole turn. (A fresh async <img> could paint blank for a few frames and pop in mid-flip when the browser had dropped the decoded
     // image since the preload.) The Image is held a moment so the decoded copy isn't discarded before the swap.
     // decodedFaces: faces known to be decoded (levelFaces holds the level's decoded Images so the browser keeps them). instantFlip draws a
     // face that isn't decoded yet with async decoding (asyncFace) and holds the turn edge-on until it is, rather than stalling the frame.
     const faceHold=new Set(),decodedFaces=new Set(),levelFaces=[];let asyncFace=null;
-    const faceSrc=symbol=>{const v=packVariant(symbol);return v?cardImage('thumb',v):SYMBOL_IMAGES[symbol]};
+    // Square Christmas boards use the framed square art (cards/square, tools/make-card-images.sh framed) for the cards that have it.
+    const SQUARE_ART=/^cards\/thumb\/(xmas-|poly-christmas)/,boardSrc=(src,square)=>square&&SQUARE_ART.test(src||'')?src.replace('cards/thumb/','cards/square/'):src;
+    const faceSrc=symbol=>{const v=packVariant(symbol);return boardSrc(v?cardImage('thumb',v):SYMBOL_IMAGES[symbol],squareCards())};
     function faceReady(symbol){const src=faceSrc(symbol);if(!src)return Promise.resolve();const img=new Image();img.src=src;faceHold.add(img);setTimeout(()=>faceHold.delete(img),3000);return img.decode?img.decode().then(()=>{decodedFaces.add(src)},()=>{}):Promise.resolve()}
     const faceOrTimeout=ready=>Promise.race([ready,new Promise(resolve=>setTimeout(resolve,120))]);
     const FLIP_OUT_MS=150,FLIP_IN_MS=185;
@@ -2457,7 +2460,7 @@
       document.querySelectorAll('.drop-match,.drop-reveal,.drop-slot').forEach(n=>n.classList.remove('drop-match','drop-reveal','drop-slot'));shownDrop=el?{el,cls}:null;if(el)el.classList.add(cls)}
     // A face-down card that isn't a match turns up for a moment and back: display only, its state never changes, so nothing activates.
     function peekFlip(t,node){const v=FLIP_VARIANTS[rand(FLIP_VARIANTS.length)],s=state,faceIn=faceReady(t.symbol);node.animate(flipFrames(v),{duration:FLIP_OUT_MS,easing:'cubic-bezier(.38,0,.7,1)'});
-      setTimeout(()=>faceOrTimeout(faceIn).then(()=>{if(s!==state||!t.active||t.revealed)return;node.replaceChildren();setSymbolContent(node,t.symbol,'thumb','sync');node.classList.add('peek-show');node.animate(flipFrames(v,true),{duration:FLIP_IN_MS,easing:'cubic-bezier(.2,.72,.2,1)'})}),FLIP_OUT_MS-5);
+      setTimeout(()=>faceOrTimeout(faceIn).then(()=>{if(s!==state||!t.active||t.revealed)return;node.replaceChildren();setSymbolContent(node,t.symbol,'board','sync');node.classList.add('peek-show');node.animate(flipFrames(v,true),{duration:FLIP_IN_MS,easing:'cubic-bezier(.2,.72,.2,1)'})}),FLIP_OUT_MS-5);
       setTimeout(()=>{if(s!==state||!t.active||t.revealed)return;node.animate(flipFrames(v),{duration:FLIP_OUT_MS,easing:'cubic-bezier(.38,0,.7,1)'});setTimeout(()=>{if(s!==state)return;node.classList.remove('peek-show');node.dataset.renderKey='';render()},FLIP_OUT_MS-5)},FLIP_OUT_MS+FLIP_IN_MS+750)}
     // Resolves a drag release. Returns true if it handled the card (caged, paired or rattled home); false means "nothing here".
     function resolveDrop(tile,t,{releaseInto,drop,unflip}){
@@ -3304,7 +3307,7 @@
     let levelTransitioning=false;
     // The card images a level will deal (in its season / card-set look), decoded ahead so the new board appears without a hitch.
     function decodeLevelImages(level){warmMusic(levelMusic(level,levelPack(level)));const art=artReady(level);try{const tiles=buildLevelBoard(level,progress.settings.difficulty==='easy'),pack=levelPack(level);loadLevelSounds(tiles.map(t=>t.symbol),pack);
-      const at={level,pack},srcs=[...new Set(tiles.map(t=>{const v=packVariant(t.symbol,at);return v?cardImage('thumb',v):SYMBOL_IMAGES[t.symbol]}))];
+      const at={level,pack},square=pack==='christmas'&&level>2,srcs=[...new Set(tiles.map(t=>{const v=packVariant(t.symbol,at);return boardSrc(v?cardImage('thumb',v):SYMBOL_IMAGES[t.symbol],square)}))];
       levelFaces.length=0;return Promise.all([art,...srcs.map(src=>{const i=new Image();i.src=src;levelFaces.push(i);return(i.decode?i.decode().then(()=>{decodedFaces.add(src)}):Promise.resolve()).catch(()=>{})})])}catch{return art}}
     // prepare (optional) returns a promise for work to finish before the swap, e.g. decoding the next board's images.
     function playLevelTransition(swap,{prepare}={}){const style=trial('transition');if(style==='off'||levelTransitioning){swap();return}levelTransitioning=true;const layer=document.createElement('div');layer.className='lt-layer';document.body.append(layer);

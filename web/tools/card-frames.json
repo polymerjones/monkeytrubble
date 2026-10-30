@@ -1,0 +1,224 @@
+{
+ "_doc": "Card framings (holo-lab/framing.html, tools/propose-frames.swift). Key: path under source/art. hero: 2:3 crop for the hero and thumb; square: the Christmas board's square crop. cx, cy: crop centre (0-1 of the source); zoom: source width / crop width (1 = full width).",
+ "poly/poly-christmas.png": {
+  "hero": {
+   "cx": 0.5,
+   "cy": 0.5,
+   "zoom": 1
+  },
+  "square": {
+   "cx": 0.5,
+   "cy": 0.412,
+   "zoom": 1
+  },
+  "tuned": "Paul 2026-10-30"
+ },
+ "seasons/christmas/cards/aye-aye.jpg": {
+  "hero": {
+   "cx": 0.516,
+   "cy": 0.558,
+   "zoom": 1.306
+  },
+  "square": {
+   "cx": 0.5,
+   "cy": 0.484,
+   "zoom": 1
+  },
+  "tuned": "Paul 2026-10-30"
+ },
+ "seasons/christmas/cards/bornean-orangutan.jpg": {
+  "hero": {
+   "cx": 0.506,
+   "cy": 0.551,
+   "zoom": 1.366
+  },
+  "square": {
+   "cx": 0.5,
+   "cy": 0.5147,
+   "zoom": 1
+  },
+  "tuned": "Paul 2026-10-30"
+ },
+ "seasons/christmas/cards/capuchin.jpg": {
+  "hero": {
+   "cx": 0.472,
+   "cy": 0.518,
+   "zoom": 1.182
+  },
+  "square": {
+   "cx": 0.457,
+   "cy": 0.377,
+   "zoom": 1.262
+  },
+  "tuned": "Paul 2026-10-30"
+ },
+ "seasons/christmas/cards/emperor-tamarin.jpg": {
+  "auto": "saliency",
+  "hero": {
+   "cx": 0.48,
+   "cy": 0.52,
+   "zoom": 1.042
+  },
+  "square": {
+   "cx": 0.463,
+   "cy": 0.468,
+   "zoom": 1.079
+  }
+ },
+ "seasons/christmas/cards/gelada.jpg": {
+  "hero": {
+   "cx": 0.535,
+   "cy": 0.535,
+   "zoom": 1.076
+  },
+  "square": {
+   "cx": 0.5,
+   "cy": 0.5023,
+   "zoom": 1
+  },
+  "tuned": "Paul 2026-10-30"
+ },
+ "seasons/christmas/cards/gibbon.jpg": {
+  "hero": {
+   "cx": 0.507,
+   "cy": 0.581,
+   "zoom": 1.232
+  },
+  "square": {
+   "cx": 0.5,
+   "cy": 0.4916,
+   "zoom": 1
+  },
+  "tuned": "Paul 2026-10-30"
+ },
+ "seasons/christmas/cards/gorilla.jpg": {
+  "hero": {
+   "cx": 0.518,
+   "cy": 0.518,
+   "zoom": 1.036
+  },
+  "square": {
+   "cx": 0.5,
+   "cy": 0.522,
+   "zoom": 1
+  },
+  "tuned": "Paul 2026-10-30"
+ },
+ "seasons/christmas/cards/hamadryas-baboon.jpg": {
+  "hero": {
+   "cx": 0.516,
+   "cy": 0.565,
+   "zoom": 1.294
+  },
+  "square": {
+   "cx": 0.5,
+   "cy": 0.4937,
+   "zoom": 1
+  },
+  "tuned": "Paul 2026-10-30"
+ },
+ "seasons/christmas/cards/night-monkey.jpg": {
+  "auto": "saliency",
+  "hero": {
+   "cx": 0.504,
+   "cy": 0.522,
+   "zoom": 1.045
+  },
+  "square": {
+   "cx": 0.504,
+   "cy": 0.477,
+   "zoom": 1.056
+  }
+ },
+ "seasons/christmas/cards/pygmy-marmoset.jpg": {
+  "auto": "saliency",
+  "hero": {
+   "cx": 0.5,
+   "cy": 0.5,
+   "zoom": 1
+  },
+  "square": {
+   "cx": 0.5,
+   "cy": 0.454,
+   "zoom": 1
+  }
+ },
+ "seasons/christmas/cards/red-shanked-douc.jpg": {
+  "hero": {
+   "cx": 0.518,
+   "cy": 0.5915,
+   "zoom": 1.224
+  },
+  "square": {
+   "cx": 0.531,
+   "cy": 0.472,
+   "zoom": 1.153
+  },
+  "tuned": "Paul 2026-10-30"
+ },
+ "seasons/christmas/cards/siamang.jpg": {
+  "auto": "saliency+face",
+  "hero": {
+   "cx": 0.515,
+   "cy": 0.515,
+   "zoom": 1.032
+  },
+  "square": {
+   "cx": 0.5,
+   "cy": 0.483,
+   "zoom": 1
+  }
+ },
+ "seasons/christmas/cards/slow-loris.jpg": {
+  "hero": {
+   "cx": 0.509,
+   "cy": 0.608,
+   "zoom": 1.305
+  },
+  "square": {
+   "cx": 0.5242,
+   "cy": 0.5352,
+   "zoom": 1.109
+  },
+  "tuned": "Paul 2026-10-30"
+ },
+ "seasons/christmas/cards/sumatran-orangutan-2.jpg": {
+  "hero": {
+   "cx": 0.5,
+   "cy": 0.551,
+   "zoom": 1.181
+  },
+  "square": {
+   "cx": 0.5,
+   "cy": 0.545,
+   "zoom": 1
+  },
+  "tuned": "Paul 2026-10-30"
+ },
+ "seasons/christmas/cards/sumatran-orangutan.jpg": {
+  "hero": {
+   "cx": 0.5,
+   "cy": 0.5188,
+   "zoom": 1.085
+  },
+  "square": {
+   "cx": 0.5,
+   "cy": 0.54,
+   "zoom": 1
+  },
+  "tuned": "Paul 2026-10-30"
+ },
+ "seasons/christmas/cards/white-faced-capuchin.jpg": {
+  "hero": {
+   "cx": 0.4821,
+   "cy": 0.532,
+   "zoom": 1.461
+  },
+  "square": {
+   "cx": 0.45,
+   "cy": 0.511,
+   "zoom": 1.111
+  },
+  "tuned": "Paul 2026-10-30"
+ }
+}

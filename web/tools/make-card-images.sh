@@ -6,7 +6,7 @@ cd "$(dirname "$0")/.."
 RAW="../source/art/raw images"
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
-mkdir -p cards/thumb cards/hero
+mkdir -p cards/thumb cards/hero cards/square
 build() {
   sips -s format jpeg -s formatOptions 72 -z 480 320 "$1" --out "cards/thumb/$2.jpg" >/dev/null
   sips -s format jpeg -s formatOptions 76 -z 768 512 "$1" --out "cards/hero/$2.jpg" >/dev/null
@@ -23,6 +23,32 @@ build_crop() {
   sips -s format jpeg -c "$3" "$4" --cropOffset "$5" "$6" "$1" --out "$TMP/$2.jpg" >/dev/null
   build "$TMP/$2.jpg" "$2"
 }
+# Framed cards (tools/card-frames.json, tuned in holo-lab/framing.html, Paul 2026-10-30): the hero frame crops the 2:3 hero and
+# thumb, the square frame crops cards/square/<name>.jpg (the Christmas board's square cards). $3 is the source's key in the JSON
+# (its path under ../source/art). A card with no frame builds as usual.
+frame() { python3 -c 'import json,sys
+f=json.load(open("tools/card-frames.json")).get(sys.argv[1],{}).get(sys.argv[2])
+W,H=int(sys.argv[3]),int(sys.argv[4])
+if not f: sys.exit(1)
+w=W/f["zoom"];h=w*(H/W if sys.argv[2]=="hero" else 1);h=min(h,H);x=max(0,min(W-w,f["cx"]*W-w/2));y=max(0,min(H-h,f["cy"]*H-h/2))
+print(int(h),int(w),int(y),int(x))' "$@"; }
+build_framed() {
+  W=$(sips -g pixelWidth "$1" | awk '/pixelWidth/{print $2}'); H=$(sips -g pixelHeight "$1" | awk '/pixelHeight/{print $2}')
+  if crop=$(frame "$3" hero "$W" "$H"); then set -- "$1" "$2" "$3" $crop
+    sips -s format jpeg -c "$4" "$5" --cropOffset "$6" "$7" "$1" --out "$TMP/$2.jpg" >/dev/null; build "$TMP/$2.jpg" "$2"
+  else build "$1" "$2"; fi
+  if crop=$(frame "$3" square "$W" "$H"); then set -- "$1" "$2" "$3" $crop
+    sips -s format jpeg -c "$4" "$5" --cropOffset "$6" "$7" "$1" --out "$TMP/$2-sq.jpg" >/dev/null
+    sips -s format jpeg -s formatOptions 76 -z 360 360 "$TMP/$2-sq.jpg" --out "cards/square/$2.jpg" >/dev/null
+  fi
+}
+# The framed cards: the Christmas versions (../source/art/seasons/christmas/cards, xmas-<slug>, shown on Christmas levels) and
+# POLY's Christmas card. `tools/make-card-images.sh framed` rebuilds just these.
+framed_cards() {
+  for f in ../source/art/seasons/christmas/cards/*.jpg; do build_framed "$f" "xmas-$(basename "$f" .jpg)" "seasons/christmas/cards/$(basename "$f")"; done
+  build_framed ../source/art/poly/poly-christmas.png poly-christmas poly/poly-christmas.png
+}
+if [ "$1" = framed ]; then framed_cards; echo "framed: $(ls cards/square | wc -l | tr -d ' ') square"; exit 0; fi
 for src in "$RAW"/IMG_*.JPG; do
   build "$src" "$(basename "$src" .JPG)"
 done
@@ -123,8 +149,8 @@ build "$EX/chimp illus.png" set2-chimpanzee
 build "$EX/bonobo illus.png" set2-bonobo
 build "$EX/siamang artsy.jpg" set2-siamang
 for a in mountain-gorilla western-lowland-gorilla chimpanzee bonobo; do build "$EX/artsy/$a.jpg" "set2-$a-artsy"; done
-# Christmas versions (../source/art/seasons/christmas/cards): xmas-<slug>, shown on Christmas levels (card.christmas).
-for f in ../source/art/seasons/christmas/cards/*.jpg; do build "$f" "xmas-$(basename "$f" .jpg)"; done
+# Christmas versions and POLY's Christmas card: framed (see framed_cards).
+framed_cards
 build "$EX/baboon.png" set2-olive-baboon
 # Chapter backgrounds (../source/art/chapters/ch<n>_*.png). When split-layers.py has made layers/<n>/ (far.jpg, mid.webp,
 # near.webp, water.png), those are copied as they are; otherwise the painting becomes a single far layer.
@@ -151,5 +177,4 @@ build ../source/art/poly/poly.png poly
 build ../source/art/poly/poly-ice.png poly-ice
 # Seasonal POLY (Paul, 2026-10-24): zombie on Halloween levels, Santa on Christmas levels.
 build ../source/art/poly/poly-halloween.png poly-halloween
-build ../source/art/poly/poly-christmas.png poly-christmas
 echo "thumb: $(ls cards/thumb | wc -l | tr -d ' ')  hero: $(ls cards/hero | wc -l | tr -d ' ')"
