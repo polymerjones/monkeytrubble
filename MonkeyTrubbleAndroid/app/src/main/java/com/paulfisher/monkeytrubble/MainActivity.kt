@@ -85,7 +85,7 @@ class MainActivity : ComponentActivity() {
             evaluate(String.format(Locale.US, "window.__setMonkeyTilt?.(%.4f,%.4f)", turn, lean))
         }
         ads = Ads(this, ::evaluate)
-        webView.addJavascriptInterface(Bridge(store, Haptics(this, webView), playGames, ads, Perf(this, ::evaluate), motion = { on ->
+        webView.addJavascriptInterface(Bridge(store, Haptics(this, webView), playGames, ads, Perf(this, ::evaluate), Share(this, ::evaluate), motion = { on ->
             pageWantsMotion = on
             if (!on) tilt.stop() else if (resumed) tilt.start()
         }, awake = { on ->

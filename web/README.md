@@ -76,7 +76,7 @@ Players have no login: each install gets a random id and a private secret (store
 
 ## Halloween levels
 
-Halloween is seasonal: from Oct 1 to Nov 2 (the player's local date, `halloweenSeason`), every other level from level 2 is a Halloween level. The rest of the year players get regular levels only. In dev mode the **SEASON** switch decides all year: HALLOWEEN (FULL), HALLOWEEN SKIN, EVERY OTHER, MIXED (about half, seeded by the level number so Retry deals the same set; odds in `HALLOWEEN_CHANCE`) or REGULAR (the off-season game).
+Halloween is seasonal: from Oct 1 to Nov 30 (the player's local date, `halloweenSeason`), every other level from level 2 is a Halloween level. The rest of the year players get regular levels only. In dev mode the **SEASON** switch decides all year: HALLOWEEN (FULL), HALLOWEEN SKIN, EVERY OTHER, MIXED (about half, seeded by the level number so Retry deals the same set; odds in `HALLOWEEN_CHANCE`) or REGULAR (the off-season game).
 
 A Halloween level deals only the haunted primates (`pack:'halloween'` in `CARD_DATA`), plus Kevin and the Joker. Card calls play about 5–6 semitones lower (`HORROR_RATE`) through a long, dark reverb, and the music switches to the `halloweenRelaxed` or `halloweenCompetitive` playlist that matches the Music Mode setting. The board, face-down cards and the hero card's shine (each card's `foil` gradient) take Halloween colors.
 
@@ -91,7 +91,7 @@ To add a Halloween music track, put it in `audio/music/halloween/` and add it to
 
 ## Christmas
 
-Christmas mode is off for players until it's finished. Turn it on with the **SEASON** dev switch, or for everyone by setting `CHRISTMAS_LIVE=true`, which runs it from Dec 1 to Jan 6. SEASON has two Christmas settings. **CHRISTMAS LEVELS** makes every level a Christmas level. **CHRISTMAS (FULL)** (which is what the live season uses) also makes the home screen Christmassy, with the Christmas home music, Settings music, background, falling snow and UI colours. The debug build resets SEASON to Every Other at each launch. While it's on, every level is a Christmas level:
+Christmas mode is off for players until it's finished. Turn it on with the **SEASON** dev switch, or for everyone by setting `CHRISTMAS_LIVE=true`, which runs it from Dec 1 to Jan 6. SEASON has two Christmas settings. Once live, players can turn it off with the SEASONAL LEVELS switch (OFF), and a `christmas-2026` welcome card announces it. **CHRISTMAS LEVELS** makes every level a Christmas level. **CHRISTMAS (FULL)** (which is what the live season uses) also makes the home screen Christmassy, with the Christmas home music, Settings music, background, falling snow and UI colours. The debug build resets SEASON to Every Other at each launch. While it's on, every level is a Christmas level:
 
 - **Scene:** one of Paul's two Christmas backgrounds, alternating by level. `../source/art/chapters/split-layers.py christmas` gives them a snowy grade (shadows lifted into a cold white haze, lower contrast) and splits them into far, mid and near parallax layers like the chapters, plus `flat.jpg`, the whole graded picture, for the full-Christmas home screen. `tools/make-card-images.sh` copies them to `art/seasons/christmas/<n>/`. Snowflakes blow across the scene on a gusting wind.
 - **UI:** a red, pine-green and gold UI theme (`christmas` in `tools/chapter-themes.py`).

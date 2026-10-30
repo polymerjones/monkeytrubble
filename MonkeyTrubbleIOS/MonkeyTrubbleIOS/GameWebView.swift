@@ -3,6 +3,7 @@ import UIKit
 import WebKit
 import CoreMotion
 import AVFoundation
+import Photos
 
 /// Same near-black green as the launch screen and the page's loading screen, so launch → web view → loader shows no black flash.
 let launchBackground = UIColor(named: "LaunchBackground") ?? .black
@@ -163,9 +164,11 @@ struct GameWebView: UIViewRepresentable {
             ) { [weak self] _ in
                 MainActor.assumeIsolated {
                     MonkeyTrubbleApp.activateAudio()
-                    // Undo the background suspend below, then let the page fade its sound back in.
+                    // Undo the background suspend below, then let the page fade its sound back in. (true): also arm the page's
+                    // stalled-engine check, so the next tap restarts an engine that came back "running" but silent (no sound after
+                    // switching to Notes from a puzzle, Paul 2026-10-30).
                     self?.webView?.setAllMediaPlaybackSuspended(false) { [weak self] in
-                        self?.webView?.evaluateJavaScript("window.__resumeMonkeyAudio?.()")
+                        self?.webView?.evaluateJavaScript("window.__resumeMonkeyAudio?.(true)")
                     }
                     if self?.pageWantsMotion != false { self?.startMotionUpdates() }
                 }
@@ -267,6 +270,15 @@ struct GameWebView: UIViewRepresentable {
             webView = nil
         }
 
+        /// Adds the picture to the photo library (asking once for add-only access); `done` runs on the main thread.
+        private func saveToPhotos(_ image: UIImage, done: @escaping (Bool) -> Void) {
+            let finish = { ok in DispatchQueue.main.async { done(ok) } }
+            PHPhotoLibrary.requestAuthorization(for: .addOnly) { status in
+                guard status == .authorized || status == .limited else { return finish(false) }
+                PHPhotoLibrary.shared().performChanges({ PHAssetChangeRequest.creationRequestForAsset(from: image) }) { ok, _ in finish(ok) }
+            }
+        }
+
         private func presentShare(_ image: UIImage) {
             var top = UIApplication.shared.connectedScenes
                 .compactMap { ($0 as? UIWindowScene)?.keyWindow?.rootViewController }
@@ -297,11 +309,15 @@ struct GameWebView: UIViewRepresentable {
                 ads.handle(body)
                 return
             }
-            // A finished jigsaw (Paul, 2026-10-24): the page sends {image: PNG data URL}; the share sheet offers Save Image, Messages...
+            // A finished jigsaw (Paul, 2026-10-24): the page sends {image: PNG data URL}. It's saved to Photos first (add-only access,
+            // Paul 2026-10-30), the page is told (__puzzleSaved), then the share sheet offers Messages and the rest.
             if message.name == "share", let body = message.body as? [String: Any],
                let url = body["image"] as? String, let comma = url.firstIndex(of: ","),
                let data = Data(base64Encoded: String(url[url.index(after: comma)...])), let image = UIImage(data: data) {
-                presentShare(image)
+                saveToPhotos(image) { [weak self] ok in
+                    self?.webView?.evaluateJavaScript("window.__puzzleSaved?.(\(ok),'photos')")
+                    self?.presentShare(image)
+                }
                 return
             }
             // Signposts, game states and the MetricKit reports for dev tools (Perf.swift).

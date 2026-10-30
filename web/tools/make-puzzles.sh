@@ -1,6 +1,7 @@
 #!/bin/sh
-# Builds the jigsaw puzzle paintings (art/puzzles/chN.jpg, 720x1280) from the full chapter paintings in ../source/art/chapters.
-# Chapter 11's painting is 2:3, so a centred 9:16 window is cut out of it first.
+# Builds the jigsaw puzzle paintings (art/puzzles/<img>.jpg, 720x1280): the chapter paintings from ../source/art/chapters and the extra
+# puzzles from ../source/art/puzzles (PUZZLES in index.html). 2:3 paintings (chapter 11, the POLY pair) get a centred 9:16 window cut first.
+# Also bakes announce-bw.jpg, a small black-and-white painting for the puzzles welcome card (no CSS filter at run time).
 set -e
 cd "$(dirname "$0")/.."
 SRC="../source/art/chapters"
@@ -20,3 +21,9 @@ build "$SRC/ch9_thelosttemple.png" ch9
 build "$SRC/ch10_kingdomofthecanopy.png" ch10
 sips -s format jpeg -c 1728 972 "$SRC/ch11_iceage.png" --out "$TMP/ch11.jpg" >/dev/null
 build "$TMP/ch11.jpg" ch11
+# Extra puzzles (Paul 2026-10-30): the 9:16 home backgrounds as they are, the 512x768 POLY paintings cut to 432x768 and scaled up.
+EXTRA="../source/art/puzzles"
+for n in bg-3 bg-4 bg-B bg-E; do build "$EXTRA/$n.jpg" "$n"; done
+for n in poly poly-christmas; do sips -s format jpeg -c 768 432 "$EXTRA/$n.jpg" --out "$TMP/$n.jpg" >/dev/null; build "$TMP/$n.jpg" "$n"; done
+# The welcome card's black-and-white painting.
+sips -s format jpeg -s formatOptions 60 -z 640 360 -m "/System/Library/ColorSync/Profiles/Generic Gray Profile.icc" "$SRC/ch1_thebridgebg.png" --out art/puzzles/announce-bw.jpg >/dev/null
