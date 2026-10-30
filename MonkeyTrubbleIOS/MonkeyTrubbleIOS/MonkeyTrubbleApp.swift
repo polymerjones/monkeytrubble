@@ -22,9 +22,14 @@ struct MonkeyTrubbleApp: App {
 
     var body: some Scene {
         WindowGroup {
-            GameWebView()
-                .background(Color(launchBackground))
-                .ignoresSafeArea()
+            // Full height (the page handles the top and bottom insets itself) but inside the side safe areas: the unfolded iPhone Duo
+            // keeps its status pill in an 84pt strip on the right, which covered the Settings gear and clipped the boosters
+            // (Paul 2026-10-30). Upright iPhones have no side insets, so nothing changes there. The strip shows the launch colour.
+            ZStack {
+                Color(launchBackground).ignoresSafeArea()
+                GameWebView()
+                    .ignoresSafeArea(edges: .vertical)
+            }
         }
     }
 }

@@ -13,7 +13,7 @@ BASELINE=${0:A:h}/launch-baseline.txt
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 
-DEVICE=${DEVICE:-$(xcrun devicectl list devices 2>/dev/null | awk '/available \(paired\)/ && /physical/ {for(i=1;i<=NF;i++) if($i=="(UDID)") print $(i-1)}' | head -1)}
+DEVICE=${DEVICE:-$(xcrun devicectl list devices 2>/dev/null | awk '/physical/ && (/available \(paired\)/ || /connected/) {for(i=1;i<=NF;i++) if($i=="(UDID)") print $(i-1)}' | head -1)}
 [[ -n $DEVICE ]] || { echo "No iPhone available (xcrun devicectl list devices)."; exit 2 }
 model=$(xcrun devicectl list devices 2>/dev/null | grep "$DEVICE" | sed -E 's/ +[0-9A-F-]{20,}.*//' | xargs)
 echo "$model ($DEVICE)"
@@ -25,20 +25,24 @@ for i in $(seq $RUNS); do
   xcrun xctrace record --template 'App Launch' --device "$DEVICE" --time-limit 6s --output "$out" --launch -- $APP >$TMP/run$i.log 2>&1 || true
   [[ -d $out ]] || { echo "Run $i: recording failed (is the phone unlocked?): $(tail -1 $TMP/run$i.log)"; exit 2 }
   xcrun xctrace export --input "$out" --xpath '/trace-toc/run[@number="1"]/data/table[@schema="life-cycle-period"]' > $TMP/run$i.xml 2>/dev/null
-  # Sum the named launch phases (durations in the fmt attributes) up to and including Initial Frame Rendering.
+  # Time to first frame: from the first launch phase's start to the end of Initial Frame Rendering. The table's column order
+  # changes between recordings, so each row's start time and duration are found by their format, not their position.
   ms=$(python3 -I - $TMP/run$i.xml <<'EOF'
 import sys,re
 x=open(sys.argv[1]).read();ids={}
-for m in re.finditer(r'<(\w+) id="(\d+)"(?: fmt="([^"]*)")?',x):ids[m.group(2)]=m.group(3) or ''
-def ms(s):
-    m=re.match(r'([\d.]+) (µs|ms|s)',s or '');return float(m.group(1))*{'µs':.001,'ms':1,'s':1000}[m.group(2)] if m else 0
-total=0
+for m in re.finditer(r'<([\w-]+) id="(\d+)"(?: fmt="([^"]*)")?(?:>([^<]*)<)?',x):ids[m.group(2)]=m.group(3) or m.group(4) or ''
+def ms(v):
+    m=re.fullmatch(r'([\d.]+) (µs|ms|s)',v.strip());return float(m.group(1))*{'µs':.001,'ms':1,'s':1000}[m.group(2)] if m else None
+def at(v):
+    m=re.fullmatch(r'(\d+):(\d+)\.(\d+)\.(\d+)',v.strip());return (int(m.group(1))*60+int(m.group(2)))*1000+int(m.group(3))+int(m.group(4))/1000 if m else None
+first=None
 for r in re.findall(r'<row>(.*?)</row>',x,re.S):
-    cells=[c[2] or ids.get(c[3],'') for c in re.findall(r'<(\w+)(?: id="(\d+)")?(?: fmt="([^"]*)")?(?: ref="(\d+)")?',r)]
-    phase=cells[-1] if cells else ''
-    total+=ms(cells[1] if len(cells)>1 else '')
-    if phase=='Initial Frame Rendering':break
-print(round(total))
+    cells=[c[2] or c[4] or ids.get(c[3],'') for c in re.findall(r'<([\w-]+)(?: id="(\d+)")?(?: fmt="([^"]*)")?(?: ref="(\d+)")?(?:/>|>([^<]*)</\1>)?',r)]
+    start=next((at(c) for c in cells if at(c) is not None),None);dur=next((ms(c) for c in cells if ms(c) is not None),None)
+    if start is None or dur is None:continue
+    if first is None:first=start
+    if any('Initial Frame Rendering' in c for c in cells):print(round(start+dur-first));break
+else:print(0)
 EOF
 )
   [[ $ms -gt 0 ]] || { echo "Run $i: no launch phases in the trace."; exit 2 }

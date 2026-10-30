@@ -416,6 +416,13 @@ struct GameWebView: UIViewRepresentable {
                 consentAsked = true
                 ads.gatherConsent()
             }
+            #if DEBUG
+            // Debug builds only: MT_EVAL (`SIMCTL_CHILD_MT_EVAL=… xcrun simctl launch …`) runs that JavaScript once the page has
+            // loaded, so a screen can be set up for simulator screenshots without taps (Paul 2026-10-30, iPhone Duo check).
+            if let js = ProcessInfo.processInfo.environment["MT_EVAL"] {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { webView.evaluateJavaScript(js) }
+            }
+            #endif
         }
     }
 }
