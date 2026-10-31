@@ -279,13 +279,14 @@ struct GameWebView: UIViewRepresentable {
             }
         }
 
-        private func presentShare(_ image: UIImage) {
+        /// The picture plus the page's words (Paul 2026-10-31), which Messages and most apps put with it.
+        private func presentShare(_ image: UIImage, text: String?) {
             var top = UIApplication.shared.connectedScenes
                 .compactMap { ($0 as? UIWindowScene)?.keyWindow?.rootViewController }
                 .first
             while let presented = top?.presentedViewController { top = presented }
             guard let top else { return }
-            let sheet = UIActivityViewController(activityItems: [image], applicationActivities: nil)
+            let sheet = UIActivityViewController(activityItems: [image] + (text.map { [$0] } ?? []), applicationActivities: nil)
             // iPad shows the sheet as a popover; anchor it mid-screen.
             sheet.popoverPresentationController?.sourceView = top.view
             sheet.popoverPresentationController?.sourceRect = CGRect(x: top.view.bounds.midX, y: top.view.bounds.midY, width: 1, height: 1)
@@ -309,14 +310,15 @@ struct GameWebView: UIViewRepresentable {
                 ads.handle(body)
                 return
             }
-            // A finished jigsaw (Paul, 2026-10-24): the page sends {image: PNG data URL}. It's saved to Photos first (add-only access,
+            // A finished jigsaw (Paul, 2026-10-24): the page sends {image: PNG data URL, text}. It's saved to Photos first (add-only access,
             // Paul 2026-10-30), the page is told (__puzzleSaved), then the share sheet offers Messages and the rest.
             if message.name == "share", let body = message.body as? [String: Any],
                let url = body["image"] as? String, let comma = url.firstIndex(of: ","),
                let data = Data(base64Encoded: String(url[url.index(after: comma)...])), let image = UIImage(data: data) {
+                let text = (body["text"] as? String).flatMap { $0.isEmpty ? nil : $0 }
                 saveToPhotos(image) { [weak self] ok in
                     self?.webView?.evaluateJavaScript("window.__puzzleSaved?.(\(ok),'photos')")
-                    self?.presentShare(image)
+                    self?.presentShare(image, text: text)
                 }
                 return
             }

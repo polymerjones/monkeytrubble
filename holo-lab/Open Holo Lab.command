@@ -6,4 +6,4 @@ URL="http://localhost:$PORT/holo-lab/"
 if lsof -ti tcp:$PORT >/dev/null 2>&1; then open "$URL"; exit 0; fi
 (sleep 1; open "$URL") &
 echo "Holo Lab is running at $URL (close this window to stop it)."
-exec python3 -m http.server $PORT --bind 127.0.0.1
+exec python3 holo-lab/serve.py $PORT

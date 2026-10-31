@@ -13,7 +13,7 @@ import java.io.File
 
 /**
  * A finished jigsaw picture (sharePuzzle in index.html, Paul 2026-10-30), the Android side of the iPhone app's save-then-share. The page
- * sends {image: PNG data URL, name}; it's saved to the Gallery (Pictures/Monkey Trubble), the page is told (__puzzleSaved), then the
+ * sends {image: PNG data URL, name, text}; it's saved to the Gallery (Pictures/Monkey Trubble), the page is told (__puzzleSaved), then the
  * share sheet opens with a copy from the app's cache through the FileProvider. Android 8 and 9 would need the storage permission to
  * save, so there the picture only goes to the share sheet (which has its own save options).
  */
@@ -28,6 +28,8 @@ class Share(private val activity: Activity, private val evaluate: (String) -> Un
         try { file.writeBytes(bytes) } catch (_: Exception) { return }
         val uri = FileProvider.getUriForFile(activity, "${activity.packageName}.files", file)
         val send = Intent(Intent.ACTION_SEND).setType("image/png").putExtra(Intent.EXTRA_STREAM, uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        // The page's words go with the picture (Paul 2026-10-31); most apps put them in the message.
+        message.optString("text").takeIf { it.isNotEmpty() }?.let { send.putExtra(Intent.EXTRA_TEXT, it) }
         activity.runOnUiThread { activity.startActivity(Intent.createChooser(send, null)) }
     }
 

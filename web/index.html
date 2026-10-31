@@ -348,18 +348,35 @@
     .pz-dots{display:flex;justify-content:center;align-items:center;gap:7px;height:10px}.pz-dots i{width:8px;height:8px;border-radius:50%;background:#ffffff40}.pz-dots i.done{background:#ffd84d88}.pz-dots i.on{background:#fff;transform:scale(1.3)}
     
     .pz-stage{position:relative;display:grid;place-items:center;min-height:0;perspective:900px}
-    .pz-board{position:relative;height:100%;max-width:100%;aspect-ratio:9/16;border-radius:10px;background:#000 center/cover;box-shadow:0 0 0 3px #8a5a2b,0 0 0 6px #3b240f,0 16px 40px #000c}
+    .pz-board{position:relative;height:calc(100% * var(--pz-scale,.86));max-width:100%;aspect-ratio:9/16;border-radius:10px;background:#000 center/cover;box-shadow:0 0 0 3px #8a5a2b,0 0 0 6px #3b240f,0 16px 40px #000c}
     .pz-ghost{position:absolute;inset:0;border-radius:10px;background:center/100% 100%;opacity:.14;filter:grayscale(.6)}
     .pz-outline{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
     .pz-outline path{fill:none;stroke:#ffffff40;stroke-width:1.2;stroke-dasharray:4 4}.pz-outline path.missing{fill:#00000040;stroke:#ffffff2a;stroke-dasharray:none}
     .pz-full{position:absolute;inset:0;border-radius:10px;background:center/100% 100%;opacity:0;pointer-events:none}
     .pz-piece{position:absolute;background-repeat:no-repeat;filter:drop-shadow(0 2px 2px #0009)}
     .pz-board .pz-piece{pointer-events:none}
-    .pz-tray{position:relative;display:flex;align-items:center;justify-content:center;height:128px;border-radius:14px;background:radial-gradient(ellipse at 50% 40%,#3a2a17,#1c130a 80%);box-shadow:inset 0 2px 10px #000c;overflow:hidden;touch-action:none}
+    .pz-tray{position:relative;display:flex;align-items:center;justify-content:center;height:150px;border-radius:14px;background:radial-gradient(ellipse at 50% 40%,#3a2a17,#1c130a 80%);box-shadow:inset 0 2px 10px #000c;overflow:hidden;touch-action:none}
     .pz-tray:empty::before{content:attr(data-empty);margin:auto;color:#cfe3d4;font:600 .82rem/1.35 system-ui,sans-serif;text-align:center;padding:0 10px}
     .pz-slot{position:absolute;cursor:grab}
+    .pz-tip{position:absolute;left:50%;bottom:8px;z-index:50;translate:-50% 0;padding:5px 12px;border-radius:99px;background:#000c;color:#ffd84d;font:800 .78rem system-ui,sans-serif;letter-spacing:.04em;white-space:nowrap;pointer-events:none}
+    .game-puzzle{position:relative;font-size:1rem;line-height:1}.game-puzzle b{position:absolute;top:-5px;right:-6px;min-width:17px;height:17px;padding:0 4px;box-sizing:border-box;border-radius:9px;background:#ff5a3c;color:#fff;font:900 .66rem/17px system-ui,sans-serif;box-shadow:0 2px 0 #0008}.game-puzzle b[hidden],.game-puzzle[hidden]{display:none}
+    /* The Lab sandbox keeps the game's own stacking (the flying piece, sparks and shine draw over the puzzle screen); the welcome, dialogs and tips are kept out of the way. */html.puzzle-lab :is(#welcome,.overlay,.tutorial,.tip-bubble){display:none!important}html.puzzle-lab #pzClose{visibility:hidden}
     .pz-finished{display:grid;justify-items:center;gap:8px;padding:0 12px;text-align:center}.pz-finished b{color:#ffd84d;font:800 .85rem system-ui,sans-serif;letter-spacing:.06em}.pz-finished .action{min-height:44px;padding:0 22px}
     .pz-slot .pz-piece{transform-origin:0 0;pointer-events:none}
+    /* Holo shine (Paul 2026-10-31): a rainbow band sweeps across a piece as it lands (.pz-shine, clipped to the piece's shape), and a
+       bigger one over the whole painting when the puzzle is complete (.pz-holo: an iridescent wash and two bands). Transform/opacity only. */
+    .pz-shine{position:fixed;z-index:5150;pointer-events:none;overflow:hidden}
+    .pz-holo{position:absolute;inset:0;border-radius:10px;overflow:hidden;pointer-events:none;isolation:isolate}
+    /* The puzzle shines are the cards' own (Paul 2026-10-31: the first try looked like nothing else in the game): the cage's landing
+       sweep, a white gloss (.gl) and, for a foil look, the card foil (.fo) in a band, over a copy of the art so the blends have
+       something to work on. Look = a card shine family (data-shine: light, prism, fractal, sparkle, strings, blocks). */
+    :is(.pz-shine,.pz-holo) .art{position:absolute;inset:0;background:center/100% 100%}
+    :is(.pz-shine,.pz-holo) .gl{position:absolute;z-index:3;top:-10%;bottom:-10%;left:0;width:100%;opacity:.6;background:linear-gradient(100deg,transparent 18%,#ffffff1c 32%,#ffffffa8 44%,#fff 50%,#ffffffa8 56%,#ffffff1c 68%,transparent 82%);mix-blend-mode:screen;transform:translate3d(-120%,0,0);will-change:transform}
+    :is(.pz-shine,.pz-holo):not([data-shine="light"]) .gl{opacity:.38}
+    :is(.pz-shine,.pz-holo) .fo{position:absolute;z-index:2;top:-10%;bottom:-10%;left:0;width:100%;opacity:var(--foil-opacity);background-image:var(--foil-grad),var(--foil-tex);background-size:200% 100%,var(--foil-size-sm);background-blend-mode:color,normal;mix-blend-mode:color-dodge;-webkit-mask-image:linear-gradient(100deg,transparent 22%,#000 40%,#000 60%,transparent 78%);mask-image:linear-gradient(100deg,transparent 22%,#000 40%,#000 60%,transparent 78%);transform:translate3d(-120%,0,0);will-change:transform}
+    :is(.pz-shine,.pz-holo)[data-shine="light"] .fo{display:none}
+    .pz-holo .art{opacity:0}
+    .pz-flash{position:fixed;z-index:5160;background:#fff;opacity:0;pointer-events:none}.pz-board .pz-flash{position:absolute;inset:0;border-radius:10px}
     .pz-drag{position:fixed;z-index:5100;pointer-events:none;transform-origin:0 0}
     .pz-done{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:12px 20px;border-radius:14px;background:#000b;text-align:center;pointer-events:none;opacity:0}
     .pz-done b{display:block;font:400 1.7rem var(--display,'Lilita One',system-ui);color:#ffd84d}
@@ -522,7 +539,7 @@
     /* Level banner (chapter + level + board shape) and the win screen's chapter-complete callout. */
     .level-banner{position:fixed;left:50%;top:30%;z-index:3950;translate:-50% -50%;pointer-events:none;opacity:0;display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 22px;border-radius:16px;background:#000b;border:1px solid var(--banner-c,#7dff9a66);box-shadow:0 10px 30px #000c,0 0 30px var(--banner-glow,#7dff9a33);text-align:center;max-width:88vw}
     .level-banner small{color:var(--banner-c,#7dff9a);font:900 .62rem system-ui,sans-serif;letter-spacing:.18em;white-space:nowrap}.level-banner b{color:#fff;font:900 1.35rem/1.05 system-ui,sans-serif;letter-spacing:.06em;white-space:nowrap}.level-banner.new-chapter b{font-size:1.6rem}.level-banner .banner-featured{color:#fff;opacity:.8;letter-spacing:.1em;white-space:normal;max-width:80vw}.level-banner .banner-featured[hidden]{display:none}
-    .win-chapter{margin:10px auto 0;padding:8px 14px;border-radius:12px;background:linear-gradient(180deg,#ffd84d33,#ffd84d10);border:1px solid #ffd84d88;text-align:center}.win-chapter[hidden]{display:none}.win-chapter em{display:block;margin-top:4px;color:#e9dcc0;font:800 .66rem system-ui,sans-serif;font-style:normal;letter-spacing:.18em}.win-chapter small{display:block;color:var(--amber,#ffd84d);font:900 .62rem system-ui,sans-serif;letter-spacing:.24em}.win-chapter b{color:#fff;font:900 1.05rem system-ui,sans-serif;letter-spacing:.08em}
+    .win-chapter{margin:10px auto 0;padding:8px 14px;border-radius:12px;background:linear-gradient(180deg,#ffd84d33,#ffd84d10);border:1px solid #ffd84d88;text-align:center}.win-chapter[hidden]{display:none}/* Paul 2026-10-31: the chapter coming next is the big name (the finished one only by number), so it can't read as "next". */.win-chapter em{display:block;margin-top:6px;color:#e9dcc0;font:800 .6rem system-ui,sans-serif;font-style:normal;letter-spacing:.24em}.win-chapter i{display:block;margin-top:4px;color:#ffd84d;font:800 .66rem system-ui,sans-serif;font-style:normal;letter-spacing:.14em}.win-chapter i[hidden]{display:none}.win-chapter small{display:block;color:var(--amber,#ffd84d);font:900 .62rem system-ui,sans-serif;letter-spacing:.24em}.win-chapter b{color:#fff;font:900 1.05rem system-ui,sans-serif;letter-spacing:.08em}
     /* Cage panic: a slow red pulse while 3 cards wait in the cage. */
     .tray-panel.cage-danger{animation:cageDanger 1.8s ease-in-out infinite}@keyframes cageDanger{0%,100%{box-shadow:0 0 35px #0b8c3440,0 16px 50px #000}50%{box-shadow:0 0 0 2px #ff4a3d99,0 0 34px 6px #ff3b2f66,0 16px 50px #000}}
     @media(prefers-reduced-motion:reduce){.tray-panel.cage-danger{animation:none;box-shadow:0 0 0 2px #ff4a3d99,0 16px 50px #000}}
@@ -759,7 +776,7 @@
     .tut-skip{position:fixed;left:0;top:0;translate:-100% -100%;pointer-events:auto;min-height:28px;padding:0 12px;border:1px solid #ffffff44;border-radius:16px;background:#000a;color:#ffffffaa;font:800 .58rem system-ui,sans-serif;letter-spacing:.12em;cursor:pointer}.tut-skip[hidden]{display:none}.tut-skip::after{content:'';position:absolute;inset:-8px}
     .tut-done{position:fixed;inset:0;display:grid;place-items:center;background:#000c;pointer-events:auto}.tut-done[hidden]{display:none}.tut-done h2{color:var(--green)}
     /* No combo meter in the tutorial (nothing is scored). */
-    body.tutorial-on .chain-meter{visibility:hidden}
+    body.tutorial-on :is(.chain-meter,.game-puzzle){visibility:hidden}
     /* The first CAGE FULL's free RESUME (the 'continue' tip): the real fail dialog, with a line saying what RESUME does and no ad. */
     .tut-resume-note{display:none;margin:0 0 12px;color:#fff;font-weight:800}#overlay.free-continue .tut-resume-note{display:block}#overlay.free-continue :is(#continuePitch,#continueLevel .ad-play){display:none}#overlay.tut-mode :is(#retryLevel,#overlayUndo,#adUndo,#adShuffle,#failHome){display:none!important}
     /* Each line writes on word by word: every word pops from nothing to 110% and settles at 100%. */
@@ -877,7 +894,7 @@
   <div class="asset-loader" id="assetLoader" role="status" aria-live="polite"><div class="loader-box"><img class="loader-logo" src="art/home/logo.png" alt="Monkey Trubble"><div class="loader-status" id="loaderStatus">LOADING CAGE // 0%</div><div class="loader-track"><div class="loader-fill" id="loaderFill"></div></div><div class="loader-fun" id="loaderFun" hidden><div class="loader-card" id="loaderCard" role="button" aria-label="Next monkey"><div class="loader-card-inner"><img id="loaderCardImg" alt=""></div></div><div class="loader-name" id="loaderName"></div><p class="loader-fact" id="loaderFact"></p><div class="loader-hint">TAP OR SPIN THE CARD</div></div></div></div>
   <div class="rain"></div>
   <div class="app">
-    <header class="topbar"><div class="top-left"><button class="home-btn" id="homeBtn" title="Home" aria-label="Home">⌂</button><div class="logo">MONKEY<span>//TRUBBLE</span></div></div><div class="level-pill">LEVEL <b id="levelNum">1</b></div><div class="top-stats"><span title="Level time">⏱ <b id="clock">0:00</b></span><span class="streak-pill" id="streakPill" title="Daily streak"><span>🔥</span><b id="streakCount">0</b></span><button class="gear-btn" id="gearBtn" title="Settings" aria-label="Settings"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13.6" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="3.6 5.95"/><circle cx="16" cy="16" r="11.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path transform="translate(9.2 8.6) scale(.136)" d="M24 106C16 98 10 84 8 72C6 64 12 60 17 64C22 69 26 78 31 80L29 24A5.5 5.5 0 0 1 40 23L43 52Q45.5 56 48 52L49 13A5.5 5.5 0 0 1 60 13L60 53Q62.5 57 65 53L67 17A5.5 5.5 0 0 1 78 18L75 55Q77 59 80 55L83 30A5 5 0 0 1 93 32L84 66C82 80 82 94 82 106L60 106Q54 100 48 106Z" fill="none" stroke="currentColor" stroke-width="11" stroke-linejoin="round"/></svg></button></div></header>
+    <header class="topbar"><div class="top-left"><button class="home-btn" id="homeBtn" title="Home" aria-label="Home">⌂</button><button class="home-btn game-puzzle" id="gamePuzzle" title="Puzzles" aria-label="Puzzles">🧩<b id="gamePuzzleBadge" hidden></b></button><div class="logo">MONKEY<span>//TRUBBLE</span></div></div><div class="level-pill">LEVEL <b id="levelNum">1</b></div><div class="top-stats"><span title="Level time">⏱ <b id="clock">0:00</b></span><span class="streak-pill" id="streakPill" title="Daily streak"><span>🔥</span><b id="streakCount">0</b></span><button class="gear-btn" id="gearBtn" title="Settings" aria-label="Settings"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13.6" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="3.6 5.95"/><circle cx="16" cy="16" r="11.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path transform="translate(9.2 8.6) scale(.136)" d="M24 106C16 98 10 84 8 72C6 64 12 60 17 64C22 69 26 78 31 80L29 24A5.5 5.5 0 0 1 40 23L43 52Q45.5 56 48 52L49 13A5.5 5.5 0 0 1 60 13L60 53Q62.5 57 65 53L67 17A5.5 5.5 0 0 1 78 18L75 55Q77 59 80 55L83 30A5 5 0 0 1 93 32L84 66C82 80 82 94 82 106L60 106Q54 100 48 106Z" fill="none" stroke="currentColor" stroke-width="11" stroke-linejoin="round"/></svg></button></div></header>
     <main class="game-shell">
       <div class="hud"><section class="featured-card" aria-live="polite"><div class="featured-art" id="featuredArt">?</div><div class="featured-copy"><div class="featured-kicker">CURRENT CARD</div><div class="featured-name" id="featuredName">Choose a card</div><div class="featured-latin" id="featuredLatin"></div><div class="featured-fact" id="featuredFact">Reveal a portrait to meet the species.</div><div class="message" id="message">Reveal an exposed card to begin.</div></div></section><div class="actions"><button class="action icon active" id="sound" title="Sound on" aria-label="Sound on">♪</button></div></div>
       <section class="board-wrap" aria-label="Layered tile board"><div class="bg-trial" id="bgTrial" aria-hidden="true"><i class="bg-layer bg-far"></i><i class="bg-layer bg-mid"></i><i class="bg-layer bg-near"></i><i class="tod"></i></div><canvas id="microSlats" aria-hidden="true"></canvas><div id="board"></div></section>
@@ -886,7 +903,7 @@
   <aside class="tray-panel bar"><div class="cage-wrap"><div class="tray-label"><span>CAGE</span><span class="build-id" aria-hidden="true">261006.2000</span><span id="bufferStatus">0 / 4</span></div><div class="tray" id="tray"></div></div><div class="boosters"><button class="booster" id="undo" aria-label="Undo"><span class="booster-icon"><svg class="booster-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 4 9l5 5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H9"/></svg></span>UNDO<b class="badge" id="undoCount">2</b></button><button class="booster" id="shuffle" aria-label="Shuffle"><span class="booster-icon"><svg class="booster-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h3.5c4.5 0 6.5 10 11 10H21"/><path d="M3 17h3.5c1.6 0 2.8-1.3 3.8-3M13.7 10c1-1.7 2.2-3 3.8-3H21"/><path d="m18 4 3 3-3 3M18 14l3 3-3 3"/></svg></span>SHUFFLE<b class="badge" id="shuffleCount">1</b></button><button class="booster" id="hint" aria-label="Owl Eyes hint"><span class="booster-icon"><svg class="owl-eyes" viewBox="0 0 44 26" aria-hidden="true"><path d="M3 7Q11 0 19 6M25 6Q33 0 41 7" fill="none" stroke="#fff6dc" stroke-width="2.4" stroke-linecap="round"/><g class="lids"><circle cx="11" cy="15" r="9.6" fill="#2b1a06"/><circle cx="33" cy="15" r="9.6" fill="#2b1a06"/><circle cx="11" cy="15" r="7.6" fill="#ffb31a"/><circle cx="33" cy="15" r="7.6" fill="#ffb31a"/><circle cx="11" cy="15" r="3.9" fill="#120a02"/><circle cx="33" cy="15" r="3.9" fill="#120a02"/><circle cx="9" cy="12.6" r="1.6" fill="#fff"/><circle cx="31" cy="12.6" r="1.6" fill="#fff"/></g></svg></span>EYES<b class="badge" id="hintCount">1</b></button></div></aside>
   <div class="overlay" id="overlay"><div class="dialog"><h2 id="resultTitle">CAGE FULL</h2><p id="resultText"></p><p class="continue-pitch" id="continuePitch" hidden>One more chance? Clear your cage and keep going.</p><p class="tut-resume-note" id="tutResumeNote"></p><button class="action primary ad-btn" id="continueLevel" hidden><svg class="ad-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>RESUME <small>(Watch Ad)</small></button><button class="action primary ad-btn" id="adShuffle" hidden><svg class="ad-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>SHUFFLE <small>(Watch Ad)</small></button><button class="action primary" id="retryLevel">RETRY LEVEL</button><button class="action" id="overlayUndo" hidden>Undo last move</button><button class="action ad-btn" id="adUndo" hidden><svg class="ad-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>UNDO <small>(Watch Ad)</small></button><button class="link-btn" id="failHome">Home</button></div></div>
   <div class="overlay" id="climbOverlay"><div class="dialog climb-dialog" role="dialog" aria-modal="true" aria-labelledby="climbTitle"><h2 id="climbTitle">CLIMBING!</h2><p class="climb-sub" id="climbSub"></p><ol class="climb-list" id="climbList"></ol><p class="climb-more" id="climbMore" hidden></p><button class="action primary" id="climbContinue">CONTINUE</button></div></div>
-  <div class="overlay" id="winOverlay"><img class="win-rays" alt="" aria-hidden="true"><div class="dialog win-dialog"><div class="win-hero win-step" id="winHero"><div class="win-hero-card" id="winHeroCard"></div><div class="win-level" id="winLevel">LEVEL 1 CLEAR!</div></div><div class="win-time win-step" id="winTimeBox"><small>YOUR TIME</small><b id="winTime">0:00</b><div class="win-stamp" id="winStamp" hidden><b>NEW BEST!</b><small id="winStampSub"></small></div></div><div class="win-badge win-step" id="winBadge"></div><div class="win-badge win-world win-step" id="winWorld" hidden></div><div class="win-score win-step" id="winScore"><div class="win-gain"><span><b id="winPoints">+0</b><small id="winPointsLabel">POINTS</small></span><span><b id="winXp">+0</b><small>XP</small></span><span id="winChain" hidden><b id="winChainN">×0</b><small id="winChainLabel">BEST CHAIN</small></span></div><div class="win-tier" id="winTier"><span id="winTierBadge"></span><div class="tier-track"><div class="tier-bar"><i id="winTierFill"></i></div><small id="winTierText"></small></div><div class="win-streak win-step" id="winStreak" hidden><span class="flame" aria-hidden="true">🔥</span><b id="winStreakCount">1</b><small id="winStreakLabel" data-loc-html="DAY<br>STREAK">DAY<br>STREAK</small></div></div><div class="win-chapter" id="winChapter" hidden><small id="winChapterDone">CHAPTER COMPLETE</small><b id="winChapterName"></b><em id="winChapterNext"></em></div><div class="win-unlock" id="winUnlock" hidden><small>NEW CARDS UNLOCKED</small><b id="winUnlockName"></b></div><div class="win-rank" id="winRank" hidden><b id="winRankText"></b></div></div><button class="action primary" id="nextLevel">NEXT LEVEL</button><button class="link-btn" id="winHome">Home</button></div></div>
+  <div class="overlay" id="winOverlay"><img class="win-rays" alt="" aria-hidden="true"><div class="dialog win-dialog"><div class="win-hero win-step" id="winHero"><div class="win-hero-card" id="winHeroCard"></div><div class="win-level" id="winLevel">LEVEL 1 CLEAR!</div></div><div class="win-time win-step" id="winTimeBox"><small>YOUR TIME</small><b id="winTime">0:00</b><div class="win-stamp" id="winStamp" hidden><b>NEW BEST!</b><small id="winStampSub"></small></div></div><div class="win-badge win-step" id="winBadge"></div><div class="win-badge win-world win-step" id="winWorld" hidden></div><div class="win-score win-step" id="winScore"><div class="win-gain"><span><b id="winPoints">+0</b><small id="winPointsLabel">POINTS</small></span><span><b id="winXp">+0</b><small>XP</small></span><span id="winChain" hidden><b id="winChainN">×0</b><small id="winChainLabel">BEST CHAIN</small></span></div><div class="win-tier" id="winTier"><span id="winTierBadge"></span><div class="tier-track"><div class="tier-bar"><i id="winTierFill"></i></div><small id="winTierText"></small></div><div class="win-streak win-step" id="winStreak" hidden><span class="flame" aria-hidden="true">🔥</span><b id="winStreakCount">1</b><small id="winStreakLabel" data-loc-html="DAY<br>STREAK">DAY<br>STREAK</small></div></div><div class="win-chapter" id="winChapter" hidden><small id="winChapterDone">CHAPTER COMPLETE</small><em id="winChapterNext">UP NEXT</em><b id="winChapterName"></b><i id="winChapterPiece" hidden></i></div><div class="win-unlock" id="winUnlock" hidden><small>NEW CARDS UNLOCKED</small><b id="winUnlockName"></b></div><div class="win-rank" id="winRank" hidden><b id="winRankText"></b></div></div><button class="action primary" id="nextLevel">NEXT LEVEL</button><button class="link-btn" id="winHome">Home</button></div></div>
 <div class="overlay" id="settings"><div class="dialog settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settingsTitle"><div class="settings-art" aria-hidden="true"></div><button class="settings-close" id="settingsClose" aria-label="Close settings">×</button><div class="settings-scroll"><h2 id="settingsTitle">SETTINGS</h2><div class="set-row"><div class="set-label">PLAYER</div><div class="player-chips"><button class="avatar-chip" id="settingsAvatar" aria-label="Pick your avatar"><img id="settingsAvatarImg" alt=""></button><button class="name-chip" id="settingsName"><span id="settingsTierBadge"></span><b id="settingsNameText">—</b><small>EDIT ✎</small></button></div><small class="set-hint" id="playerHint" hidden></small></div><div class="set-row"><div class="set-label" id="musicLabel">MUSIC</div><div class="dip" data-setting="music" role="radiogroup" aria-labelledby="musicLabel"><button role="radio" data-value="relaxed">RELAXED</button><button role="radio" data-value="competitive">COMPETITIVE</button></div><small class="set-hint" id="musicHint"></small></div><div class="set-row"><div class="set-label" id="difficultyLabel">DIFFICULTY</div><div class="dip" data-setting="difficulty" role="radiogroup" aria-labelledby="difficultyLabel"><button role="radio" data-value="easy">EASY</button><button role="radio" data-value="normal">NORMAL</button></div><small class="set-hint" id="difficultyHint"></small></div><div class="set-row" id="seasonRow"><div class="set-label" id="seasonLabel">SEASONAL LEVELS</div><div class="dip three" data-setting="season" role="radiogroup" aria-labelledby="seasonLabel"><button role="radio" data-value="only">ONLY</button><button role="radio" data-value="mixed">MIXED</button><button role="radio" data-value="off">OFF</button></div><small class="set-hint season-hint"></small></div><div class="set-row"><div class="set-label" id="cageLabel">CAGE</div><div class="dip" data-setting="cage" role="radiogroup" aria-labelledby="cageLabel"><button role="radio" data-value="hand">CHAINED</button><button role="radio" data-value="classic">CLASSIC</button></div><small class="set-hint" id="cageHint"></small></div><div class="set-row"><div class="set-label" id="soundLabel">SOUND</div><div class="dip" data-setting="sound" role="radiogroup" aria-labelledby="soundLabel"><button role="radio" data-value="on">ON</button><button role="radio" data-value="off">OFF</button></div><small class="set-hint" id="soundHint"></small></div><div class="set-row"><div class="set-label">VOLUME</div><label class="vol-row"><span>MUSIC</span><input type="range" class="vol" id="musicVol" min="0" max="100" step="5" aria-label="Music volume"><b id="musicVolText"></b></label><label class="vol-row"><span>SFX</span><input type="range" class="vol" id="sfxVol" min="0" max="100" step="5" aria-label="Sound effects volume"><b id="sfxVolText"></b></label></div><div class="set-row"><div class="set-label" id="langLabel">LANGUAGE</div><div class="dip" data-setting="lang" role="radiogroup" aria-labelledby="langLabel"><button role="radio" data-value="en">ENGLISH</button><button role="radio" data-value="es">ESPAÑOL</button></div></div><div class="set-row"><div class="set-label">CREDITS</div><small class="set-hint set-credits">Gibbon calls are clipped from “Gibbons 1” by ascap and “Gibbons-Kao Yai National Park” by RTB45 (freesound.org), licensed CC BY 4.0, and edited by Polymer Jones.</small></div><div class="set-row" id="adPrivacyRow" hidden><div class="set-label">ADS</div><button class="name-chip" id="adPrivacy"><b>AD PRIVACY CHOICES</b></button></div><div class="set-row"><div class="set-label">HOW TO PLAY</div><button class="name-chip" id="replayTutorial"><b>REPLAY TUTORIAL</b></button></div><div class="set-row dev-only"><div class="set-label">DEV TOOLS</div><div class="dev-sec" style="--dev:#57ff86"><h4>LEVELS & MAP</h4><div class="trial-row"><small>JUMP TO LEVEL</small><div class="dev-jump"><button data-step="-10">−10</button><button data-step="-1">−1</button><b id="devLevel">1</b><button data-step="1">+1</button><button data-step="10">+10</button><button class="dev-go" id="devGo">GO</button></div><small class="dev-chapter" id="devLevelChapter"></small></div><div class="trial-row"><small>CHAPTER (FIRST LEVEL)</small><div class="trial-chips" id="devChapters"><button data-ch="1">1</button><button data-ch="2">2</button><button data-ch="3">3</button><button data-ch="4">4</button><button data-ch="5">5</button><button data-ch="6">6</button><button data-ch="7">7</button><button data-ch="8">8</button><button data-ch="9">9</button><button data-ch="10">10</button><button data-ch="11">11</button></div></div><div class="trial-row"><small>EXPEDITION MAP</small><div class="trial-chips" id="devExpedition"><button data-leg="0">INTRO</button><button data-leg="1">1→2</button><button data-leg="2">2→3</button><button data-leg="3">3→4</button><button data-leg="4">4→5</button><button data-leg="5">5→6</button><button data-leg="6">6→7</button><button data-leg="7">7→8</button><button data-leg="8">8→9</button><button data-leg="9">9→10</button><button data-leg="10">10→11</button><button data-leg="11">11→1+</button></div></div></div><div class="dev-sec" style="--dev:#ffd84d"><h4>GAMEPLAY TESTS (NOTHING IS SAVED OR SCORED)</h4><div class="trial-row"><small>ON THIS LEVEL</small><div class="trial-chips"><button id="devWin">INSTANT WIN</button><button id="devCage3">CAGE 3/4</button><button id="devChain">AUTO PAIRS (COMBO)</button><button id="devPoly">POLY PAYOUT</button></div></div><div class="trial-row"><small>POLY CARD (RESTARTS THE LEVEL)</small><div class="trial-chips" data-trial="poly"><button data-value="every">EVERY LEVEL</button><button data-value="auto">NORMAL (~1 IN 2)</button><button data-value="platinum">PLATINUM</button><button data-value="off">OFF</button></div></div><div class="trial-row"><small>NIGHT VISION LENGTH</small><div class="trial-chips" data-trial="vision"><button data-value="short">4.4s (OLD)</button><button data-value="normal">6.5s</button><button data-value="long">8s</button></div></div><div class="trial-row"><small>SEASON</small><div class="trial-chips" data-trial="pack"><button data-value="christmas">CHRISTMAS (FULL)</button><button data-value="christmasLevels">CHRISTMAS LEVELS</button><button data-value="halloween">HALLOWEEN (FULL)</button><button data-value="skin">HALLOWEEN SKIN</button><button data-value="alternate">EVERY OTHER</button><button data-value="mixed">MIXED</button><button data-value="regular">REGULAR</button></div></div></div><div class="dev-sec" style="--dev:#c58bff"><h4>SCENES & ANIMATION (NOTHING IS SAVED)</h4><div class="trial-row"><small>PREVIEW</small><div class="trial-chips"><button id="previewTransition">▶ TRANSITION</button><button id="devWelcome">WELCOME</button><button id="devStreak">STREAK</button><button id="devFrozen">FROZEN STREAK</button><button id="devPiece">PUZZLE PIECE</button><button id="devChest">CHEST</button></div></div></div><div class="dev-sec" style="--dev:#5fd3ff"><h4>SOUND (TAP TO HEAR)</h4><div class="trial-row"><small>STREAK BUILD-UP</small><div class="trial-chips" data-trial="streakBuild"><button data-value="random">RANDOM BONGO</button><button data-value="bongo">BONGO HITS</button><button data-value="roll">BONGO ROLL</button><button data-value="rattle">CAGE RATTLE</button></div></div><div class="trial-row"><small>STREAK REWARD SOUND, WHEN THE BUTTON ARRIVES</small><div class="trial-chips" data-trial="streakIgnite"><button data-value="combo">COMBO</button><button data-value="praise">PRAISE STING</button><button data-value="fanfare">FANFARE</button><button data-value="joker">GOLDEN JOKER</button><button data-value="gorilla">GORILLA</button><button data-value="win">LEVEL COMPLETE</button></div></div><div class="trial-row"><small>COMBO MUSIC</small><div class="trial-chips" data-trial="comboMusic"><button data-value="swap">COMBO TRACK</button><button data-value="both">TEMPO + TONE</button><button data-value="tone">TONE ONLY</button><button data-value="off">OFF</button></div></div></div><div class="dev-sec" style="--dev:#ff9a3c"><h4>LOOK</h4><div class="trial-row"><small>THEME</small><div class="trial-chips" data-trial="theme"><button data-value="chapter">CHAPTER</button><button data-value="console">CONSOLE</button><button data-value="jungle">JUNGLE</button><button data-value="halloween">HALLOWEEN</button></div></div></div><div class="dev-sec" style="--dev:#e6e6e6"><h4>PERFORMANCE</h4><div class="trial-row"><small>MEASURE</small><div class="trial-chips"><button id="devFps">FPS METER</button><button id="devHangs" aria-checked="false">HANGS: OFF</button><button id="devFakeHang">FAKE HANG 700ms</button><button id="devPerfLog">COPY PERF LOG</button></div></div><div class="trial-row"><small>PERF SWITCHES: LIT = THE NEW CHEAPER VERSION. TURN ONE OFF TO COMPARE ON THE PHONE (TAP RELOADS)</small><div class="trial-chips dev-fx" id="devFx"></div></div></div><div class="dev-sec" style="--dev:#ff6b6b"><h4>TUTORIAL & RESET</h4><div class="trial-row"><small>TUTORIAL (SAVES NOTHING)</small><div class="trial-chips"><button id="devTutorial">DEV: NEW USER TUTORIAL</button><button id="devTips">RESET TIPS</button></div></div><div class="trial-row"><small>PROGRESS (KEEPS NAME + SETTINGS)</small><div class="trial-chips"><button id="devReset">RESET TO NEW PLAYER</button><button id="devUndoReset" hidden>UNDO RESET</button></div></div></div></div><button class="action primary" id="settingsDone">DONE</button></div></div></div>
   <section class="home" id="home" aria-label="Home"><div class="home-bg" id="homeBg"></div><header class="home-top"><div class="home-top-left"><button class="home-icon" id="homeSound" title="Sound" aria-label="Sound">♪</button><button class="home-icon home-trophy" id="homeLeaders" title="Leaderboard" aria-label="Leaderboard">🏆</button><button class="home-icon home-puzzle" id="homePuzzle" title="Puzzles" aria-label="Puzzles" hidden>🧩<b id="puzzleBadge" hidden></b></button></div><div class="home-top-right"><div class="home-streak"><span>🔥</span><b id="homeStreak">0</b><small data-loc-html="DAY<br>STREAK">DAY<br>STREAK</small></div><button class="gear-btn home-gear" id="homeGear" title="Settings" aria-label="Settings"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13.6" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="3.6 5.95"/><circle cx="16" cy="16" r="11.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path transform="translate(9.2 8.6) scale(.136)" d="M24 106C16 98 10 84 8 72C6 64 12 60 17 64C22 69 26 78 31 80L29 24A5.5 5.5 0 0 1 40 23L43 52Q45.5 56 48 52L49 13A5.5 5.5 0 0 1 60 13L60 53Q62.5 57 65 53L67 17A5.5 5.5 0 0 1 78 18L75 55Q77 59 80 55L83 30A5 5 0 0 1 93 32L84 66C82 80 82 94 82 106L60 106Q54 100 48 106Z" fill="none" stroke="currentColor" stroke-width="11" stroke-linejoin="round"/></svg></button></div></header><div class="home-logo" id="homeLogo"><img src="art/home/logo.png" alt="Monkey Trubble"></div><div class="home-byline-row"><button class="byline-poly-btn" id="bylinePoly" aria-label="What’s new"><img class="byline-poly" src="cards/thumb/poly.jpg" alt=""></button><div class="home-byline" id="homeByline">A GAME BY POLYMER JONES</div></div><div class="home-card" aria-hidden="true"><div class="ticker-plane"><div class="ticker-track" id="homeTicker"></div></div></div><button class="home-play" id="homePlay"><small id="homeChapter">PLAY</small><span>LEVEL <b id="homeLevel">1</b></span></button><div class="home-best" id="homeBest"></div><div class="home-week" id="homeWeek"></div><button class="home-profile" id="homeProfile" hidden><span id="homeTierBadge"></span><span class="home-profile-text"><b id="homeName"></b><small id="homeTierText"></small></span></button></section>
   <section class="leaders hidden" id="leaders" aria-label="Leaderboard"><header class="leaders-top"><button class="home-icon" id="leadersBack" title="Back" aria-label="Back">‹</button><h2>LEADERBOARD</h2><button class="home-icon" id="leadersRefresh" title="Refresh" aria-label="Refresh">⟳</button></header><div class="leaders-tabs" role="tablist"><button role="tab" aria-selected="true">GLOBAL</button><button role="tab" aria-selected="false" disabled>FRIENDS <small>SOON</small></button></div><div class="tier-legend" id="tierLegend"></div><div class="leaders-status" id="leadersStatus" role="status"></div><ol class="leaders-list" id="leadersList"></ol><div class="leaders-me" id="leadersMe"></div></section>
@@ -2023,7 +2040,9 @@
         parts=Array.from({length:k==='mist'?6:k==='butterflies'?7:k==='flakes'?72:16},make);if(!raf){last=performance.now();raf=sceneFrame(loop)}},wake(){if(kind&&!raf){last=performance.now();raf=sceneFrame(loop)}water.wake();drift.wake()}}};
     const atHome=()=>!$('#home').classList.contains('hidden'),ambient=makeAmbient('#bgTrial',()=>!atHome()),homeSnow=makeAmbient('#home',atHome);
     // Any dialog (Settings, win, etc.) dims and blurs everything behind it, so freeze the scenery there: the blur would otherwise be redrawn every frame.
-    {const sync=()=>{const on=!!document.querySelector('.overlay.show');document.body.classList.toggle('board-covered',on);if(!on){ambient.wake();homeSnow.wake()}},mo=new MutationObserver(sync);for(const o of document.querySelectorAll('.overlay'))mo.observe(o,{attributes:true,attributeFilter:['class']})}
+    // The puzzle screen isn't an .overlay but covers the board just the same (opened from a level).
+    function syncBoardCovered(){const on=!!document.querySelector('.overlay.show')||!$('#puzzleScreen').hidden;document.body.classList.toggle('board-covered',on);if(!on){ambient.wake();homeSnow.wake()}}
+    {const sync=syncBoardCovered,mo=new MutationObserver(sync);for(const o of document.querySelectorAll('.overlay'))mo.observe(o,{attributes:true,attributeFilter:['class']})}
     // Screens that change whether tilt shows anywhere (home, the map, the lightbox, dialogs): re-check the motion sensor gate.
     if(FX.motionGate){const mo=new MutationObserver(syncMotion);for(const el of [document.body,$('#home'),$('#expedition'),$('.lightbox')].filter(Boolean))mo.observe(el,{attributes:true,attributeFilter:['class']});addEventListener('visibilitychange',syncMotion)}
     // FX.owlOnce: the hint owl blinks every 13s (as with owlSlow) while the board is awake, as a one-off animation.
@@ -3181,7 +3200,7 @@
       // Climbed the global board (or joined it): say so here; the climb screen itself plays after NEXT LEVEL (prepareClimb).
       const climb=await Promise.race([state.rankSync,new Promise(res=>setTimeout(res,2500))]);if(s!==state)return;s.climbScreen=prepareClimb(r,climb);
       $('#winRank').hidden=true;$('#winUnlock').hidden=true;$('#winChapter').hidden=true;
-      {const ch=chapterFor(r.level);if(r.level===ch.to){const nx=chapterFor(r.level+1);$('#winChapterDone').textContent=loc('CHAPTER {0} COMPLETE',`${ch.number}${ch.plus?'+':''}`);$('#winChapterName').textContent=loc(ch.name);$('#winChapterNext').textContent=loc('NEXT: {0}',loc(nx.name));if(r.reached&&!r.dev&&awardPiece())$('#winChapterNext').textContent+=` · ${loc('+1 PUZZLE PIECE')}`;$('#winChapter').hidden=false;pop($('#winChapter'),[{opacity:0,transform:'scale(1.4)'},{opacity:1,transform:'scale(1)'}],460);if(live()){const b=$('#winChapter').getBoundingClientRect();fairyDust(b.left+b.width/2,b.top+b.height/2);setTimeout(()=>fairyDust(b.left+b.width*.2,b.top),180);setTimeout(()=>fairyDust(b.left+b.width*.8,b.top),340);playSound('comboSting',{volume:.6,rate:.9});haptic('pairCleared')}await wait(900);if(s!==state)return}}
+      {const ch=chapterFor(r.level);if(r.level===ch.to){const nx=chapterFor(r.level+1);$('#winChapterDone').textContent=loc('CHAPTER {0} COMPLETE',`${ch.number}${ch.plus?'+':''}`);$('#winChapterNext').textContent=loc('UP NEXT');$('#winChapterName').textContent=loc(nx.name);$('#winChapterPiece').hidden=!(r.reached&&!r.dev&&awardPiece());$('#winChapterPiece').textContent=loc('+1 PUZZLE PIECE');$('#winChapter').hidden=false;pop($('#winChapter'),[{opacity:0,transform:'scale(1.4)'},{opacity:1,transform:'scale(1)'}],460);if(live()){const b=$('#winChapter').getBoundingClientRect();fairyDust(b.left+b.width/2,b.top+b.height/2);setTimeout(()=>fairyDust(b.left+b.width*.2,b.top),180);setTimeout(()=>fairyDust(b.left+b.width*.8,b.top),340);playSound('comboSting',{volume:.6,rate:.9});haptic('pairCleared')}await wait(900);if(s!==state)return}}
       const unlocked=r.reached&&groupUnlockedAt(r.level+1);if(unlocked){$('#winUnlockName').textContent=loc(unlocked.name);$('#winUnlock').hidden=false;pop($('#winUnlock'),[{opacity:0,transform:'scale(1.5)'},{opacity:1,transform:'scale(1)'}],420);if(live()){explode($('#winUnlock'));playSound('match',{volume:.3,rate:1.15});haptic('pairCleared')}await wait(700);if(s!==state)return}
       if(!r.easy&&climb?.after&&(climb.before==null||climb.after<climb.before)){$('#winRankText').textContent=climb.before==null?loc('YOU’RE ON THE BOARD AT #{0}!',climb.after):climb.after===1?loc('▲ #1 ON THE LEADERBOARD!'):loc('▲ UP TO #{0} ON THE LEADERBOARD',climb.after);$('#winRank').hidden=false;pop($('#winRank'),[{opacity:0,transform:'scale(1.4)'},{opacity:1,transform:'scale(1)'}],380);if(live()){playSound('pickup',{volume:.2,rate:1.5});haptic('pairCleared')}await wait(500)}
     }
@@ -3788,64 +3807,17 @@ void main() {
         // The first small-canvas readback has a one-time ~200ms setup cost; pay it here, on the home screen, not mid-level.
         holoBaseFor(HERO_IMAGES[KEVIN])},{timeout:2000})}
     // Release notes (the home screen's POLY card): what's new for players in the next build. Update for every release.
+    // First public release: What's New reads as a short tour of the game, not the beta changelog. Later updates prepend their lines.
     const RELEASE_NOTES={version:'1.0.1',lines:[
-      'If no ad is ready when you tap Watch Ad, the reward is free.',
-      'NEW: six more puzzle paintings, and puzzle pieces turn up more often.',
-      'Finish a puzzle for a bundle of boosters. Your player card shows how many you’ve done.',
-      'Finished puzzles save straight to your photos, with the Monkey Trubble mark.',
-      'Halloween levels now run until November 30!',
-      'After a leaderboard climb, NEXT LEVEL takes you straight on.',
-      'Treasure chests land with a thud and a puff of dust.',
-      'Fixed: the sound could be missing after switching to another app and back.',
-      'Smoother pair clears, CAGE FULL resumes and POLY payouts on older phones.',
-      'When the game lags, a repeated tap no longer sends the card underneath to the cage by mistake.',
-      'The volume sliders only move when you drag the knob, so scrolling Settings won’t change them.',
-      'Fixed: the expedition map showed the chapter name before you got there.',
-      'Fixed: a shine could freeze across a caged card, the map’s chapter marker could blink, and the chest could flash as it closed.',
-      'NEW: Treasure chests! Tap to shake one open about every other win. The boosters inside are banked for when a level runs out.',
-      'Much better battery life: the game goes almost completely still when you’re not touching it.',
-      'Leave a level with a nearly full cage and it starts begging you to come back!',
-      'Hidden puzzle pieces now tuck neatly under their card.',
-      'Day 7 of your streak now shows the jungle treasure chest.',
-      'Puzzles: smoother page turns with a paper flick, and the pictures stay a surprise until you find the pieces.',
-      'NEW: Puzzles show the pieces you still need as ghosts, spill your found pieces out on the table, and let you save or share a finished painting.',
-      'Level 3 is a POLY party: three POLY cards.',
-      'Smoother player cards, Pick Your Monkey and Halloween levels.',
-      'Your leaderboard name now always matches the name you picked.',
-      'Tips no longer pop up as a level ends.',
-      'The Game Center button only shows on the home screen.',
-      'Found a puzzle piece? It now gets its own moment in the middle of the screen.',
-      'The streak celebration takes you straight to the next level.',
-      'Fixed: the sound could stay off after a video ad was left open.',
-      'NEW: The Forgotten Island is all lemurs: sifakas, ruffed lemurs and more, with the Aye-aye for Night Vision and a Mouse Lemur Joker. Its records start fresh.',
-      'Smoother streak celebration, now with an ice dome when your streak freezes.',
-      'POLY says ¡HOLA! ¿QUÉ TAL? in Spanish. Zombie POLY shows up in the POLY payout on Halloween levels, and Santa POLY has a new hat.',
-      'Card backs and card art are ready before a level starts, so no more blank cards.',
-      'NEW: Jungle Puzzles. Find pieces hidden under cards and build each chapter’s painting.',
-      'A brighter streak celebration that gets bigger the longer your streak.',
-      'Levels 1 and 2 are smaller boards with bigger cards, for a quick start. Their records start fresh.',
-      'Bigger cards in the tutorial.',
-      'NEW: Zombie POLY on Halloween levels, Santa POLY at Christmas.',
-      'New music for the Frozen Mountains.',
-      'NEW: a daily streak celebration after your first win of the day.',
-      'Missed a day or two? Thaw a frozen streak with a short video, once a week.',
-      'NEW: a welcome screen with news, your monkey, and a big ENGLISH | ESPAÑOL switch.',
-      'NEW: SEASONAL LEVELS in Settings. Pick ONLY, MIXED or OFF for Halloween levels.',
-      'Climbed the leaderboard? The climb now plays right after you win, even if you head Home. Tap to skip it.',
-      'NEW: a tutorial level that shows you Undo, Shuffle, Owl Eyes and more as you need them.',
-      'NEW: card backs with the Monkey Trubble logo and a holo shine.',
-      'NEW: tips the first time you meet the Joker, Night Vision, POLY and the power-ups.',
-      'NEW: Platinum POLY. Rare, and it pays out six pairs.',
-      'Your first CAGE FULL comes with a free RESUME.',
-      'Pick Your Monkey shows every monkey. Reach new chapters to unlock them.',
-      'NEW: the POLY card. Dig it out and tap it for a four-pair payout.',
-      'NEW: Chapter 11, Ice Age Battle Apes.',
-      'Real monkey calls on 33 cards.',
-      'Voiced combos and callouts, in English and Spanish.',
-      'CAGE FULL? Resume slams your caged cards onto their matches.',
-      'A Halloween level in every chapter until November 2.',
-      'A new level-complete screen, and a tutorial for everyone.',
-      'Tap two face-down cards together to pair them.',
+      'Welcome to Monkey Trubble! Match the monkeys and clear the pile before your cage fills up.',
+      'Explore wild chapters, from the jungle to the frozen mountains.',
+      'Find hidden pieces to build each chapter’s jungle puzzle.',
+      'Puzzles got a snappier feel: drag each piece home and it slams into place. Open them mid-level with the 🧩 too.',
+      'Some treasure chests are stubborn. Keep tapping!',
+      'Your first puzzle is waiting: finish the Poly Card from the 🧩.',
+      'Open treasure chests, keep your daily streak and climb the leaderboard from Bronze to Silverback.',
+      'Stuck? Undo, Shuffle and Owl Eyes have your back.',
+      'Play in English or Spanish.',
       'Thanks for playing! Ideas or bugs: monkeytrubble.app'
     ]};
     const syncNotesPulse=()=>$('#bylinePoly').classList.toggle('fresh',progress.notesSeen!==RELEASE_NOTES.version);
@@ -4162,23 +4134,31 @@ void main() {
     // Pieces: level 1 and about half the other levels (seeded by the level) hide one under a covered card, its gold edge peeking
     // out; when that card leaves the board the piece pops out. A level gives its piece once (progress.puzzle.levels), so replays
     // don't farm them, and a first chapter clear gives one more. Pieces always go to the first unfinished open puzzle. On the puzzle
-    // screen (home 🧩) they're dragged (or tapped) into place; a finished puzzle gives XP and a booster bundle.
+    // screen (🧩 on home and beside the in-game home button) they're dragged into place; a finished puzzle gives XP and a booster bundle.
     // PUZZLES (Paul 2026-10-30): the chapter paintings (key = chapter number, so older saves keep their progress), then the extra
     // paintings, queued after the chapters reached, each once its `when` passes (poly-christmas from Dec 1).
     // `seed` shapes the piece tabs and the tray scatter; the extras' names are placeholders until Paul names them.
     const PZ_COLS=3,PZ_ROWS=4,PZ_N=PZ_COLS*PZ_ROWS,PIECE_CHANCE=.75,PUZZLE_XP=250,PUZZLE_REWARD={undo:2,shuffle:1,hint:1};
-    const PUZZLES=[...CHAPTERS.map((ch,k)=>({key:k+1,img:`ch${k+1}`,name:ch.name,seed:k+1,chapter:k+1})),
+    // Poly Card is everyone's first puzzle (Paul 2026-10-31): first in the list, every piece already found and most of them placed
+    // (STARTER_PLACED), so a new player finishes it by dragging in the last few.
+    const PUZZLES=[{key:'poly',img:'poly',name:'Poly Card',seed:105},...CHAPTERS.map((ch,k)=>({key:k+1,img:`ch${k+1}`,name:ch.name,seed:k+1,chapter:k+1})),
       {key:'bg3',img:'bg-3',name:'Monkey Trubble I',seed:101},{key:'bg4',img:'bg-4',name:'Monkey Trubble II',seed:102},
       {key:'bgB',img:'bg-B',name:'Monkey Trubble III',seed:103},{key:'bgE',img:'bg-E',name:'Monkey Trubble IV',seed:104},
-      {key:'poly',img:'poly',name:'Poly Card',seed:105},{key:'poly-christmas',img:'poly-christmas',name:'Poly’s Christmas',seed:106,when:()=>christmasSeason()}];
+      {key:'poly-christmas',img:'poly-christmas',name:'Poly’s Christmas',seed:106,when:()=>christmasSeason()}];
     const puzzleOf=key=>PUZZLES.find(e=>e.key===key||String(e.key)===String(key))||PUZZLES[0];
-    const puzzleSave=()=>progress.puzzle??={got:{},placed:{},levels:[],done:[]};
+    // The Lab's sandbox (?puzzlelab, holo-lab/puzzle-feel.html): every piece of every puzzle found, none placed, nothing saved or rewarded.
+    let pzLab=null;
+    const STARTER_PUZZLE='poly',STARTER_PLACED=[0,1,2,5,6,8,9,10];
+    // The starter puzzle is filled in once per save (p.starter), keeping anything already placed in it.
+    function puzzleSave(){if(pzLab)return pzLab;const p=progress.puzzle??={got:{},placed:{},levels:[],done:[]};
+      if(!p.starter){p.starter=true;p.got[STARTER_PUZZLE]=[...Array(PZ_N).keys()];const placed=new Set([...(p.placed[STARTER_PUZZLE]||[]),...STARTER_PLACED]);p.placed[STARTER_PUZZLE]=[...placed]}
+      return p}
     // The open puzzles in order: the chapters reached, then every extra whose `when` passes (none = always).
     const puzzlesOpen=()=>{const reached=Math.min(CHAPTERS.length,chapterFor(progress.level||1).number);return PUZZLES.filter(e=>e.chapter?e.chapter<=reached:!e.when||e.when())};
     function currentPuzzle(){const p=puzzleSave();return puzzlesOpen().find(e=>(p.got[e.key]||[]).length<PZ_N)?.key??null}
     function awardPiece(){const n=currentPuzzle();if(n==null)return null;const p=puzzleSave(),got=new Set(p.got[n]||[]),free=[...Array(PZ_N).keys()].filter(i=>!got.has(i)),i=free[rand(free.length)];(p.got[n]??=[]).push(i);saveProgress();renderPuzzleBadge();return{n,i}}
     const piecesWaiting=()=>{const p=puzzleSave();let k=0;for(const n in p.got)k+=(p.got[n]||[]).length-(p.placed[n]||[]).length;return k};
-    function renderPuzzleBadge(){const k=piecesWaiting();$('#homePuzzle').hidden=false;$('#puzzleBadge').hidden=!k;$('#puzzleBadge').textContent=k}
+    function renderPuzzleBadge(){const k=piecesWaiting();$('#homePuzzle').hidden=false;for(const b of [$('#puzzleBadge'),$('#gamePuzzleBadge')]){b.hidden=!k;b.textContent=k}}
     // The level's hidden piece: a covered card (not Kevin or POLY), picked by the level's seed.
     function pieceForLevel(){if(state.tutorial||state.devWin||currentPuzzle()==null)return null;const level=state.level,p=puzzleSave();if(p.levels.includes(level)||!(level===1||mulberry32(level*6007+13)()<PIECE_CHANCE))return null;
       const hosts=state.tiles.filter(t=>t.active&&t.blockers.length&&t.symbol!==KEVIN&&t.symbol!==POLY);if(!hosts.length)return null;return{tile:hosts[Math.floor(mulberry32(level*31+7)()*hosts.length)].id,got:false}}
@@ -4237,70 +4217,149 @@ void main() {
       setTimeout(()=>{if(root.isConnected){streakSparks(cx,cy,30)}},PIECE_SHOW_MS*.15)}
 
     // Puzzle screen.
-    const pz={n:1,box:null};
-    function openPuzzle(){pz.modeBefore=perf.states.mode;perf.state('mode','puzzle');const open=puzzlesOpen(),got=puzzleSave().got,n=currentPuzzle()??[...open].reverse().find(e=>(got[e.key]||[]).length)?.key??open[0].key;pz.n=n;$('#puzzleScreen').hidden=false;gcAccessPoint();renderPuzzle();
+    // Puzzle feel (Paul 2026-10-31), tuned on the Lab's Puzzle Feel page (holo-lab/puzzle-feel.html, whose COPY SETTINGS replaces this
+    // literal). boardScale: the frame's share of its stage's height. trayPiece: the largest a piece lies in the tray (px). snap: how close
+    // the dropped piece's centre must be to its place (x the smaller cell side). grip: where the finger holds a dragged piece (0 its top,
+    // 1 its bottom). shine/shineMs: the holo band across a piece once it has settled (0 = off); holo/holoMs: the big holo when a puzzle
+    // completes; sweepEase: the share of a sweep spent gliding in before it whizzes across; flash/flashMs: a white flash over the piece as it settles, holoFlash/holoFlashMs
+    // over the whole painting when it completes (0 = off; the welcome screen's flash curve). shineStyle: the card shine family (light, prism, fractal, sparkle, strings, blocks). slamSoundAt: 'settled' (the slam sound once the placing is over) or 'impact'.
+    // A placement eases (lifts to `lift` for easeMs), whizzes in (whizMs, `trail` fading copies behind it) and slams
+    // (slamMs: squashes to `overshoot` and back, the frame shakes `shake` px, `sparks` sparks, the sound and a `thump`).
+    // Sounds (Paul 2026-10-31, picked in the Lab): <moment>Sound is a SOUND_FILES key ('' for none), with its Vol and Rate. pickup: a
+    // piece lifts from the tray; miss: dropped in the wrong place; whiz: flying in; slam: landing; done: the puzzle is complete.
+    const PUZZLE_FEEL={boardScale:.86,trayPiece:120,snap:.55,grip:.62,easeMs:110,lift:1.14,whizMs:170,trail:2,slamMs:260,overshoot:.92,shake:4,sparks:22,thump:1.2,shine:1,shineMs:830,holo:.65,holoMs:600,sweepEase:.05,flash:.45,flashMs:280,holoFlash:.55,holoFlashMs:1200,shineStyle:'blocks',slamSoundAt:'settled',pickupSound:'control',pickupVol:.25,pickupRate:1.3,missSound:'undo',missVol:.3,missRate:1,whizSound:'bongoRoll',whizVol:.5,whizRate:1,slamSound:'comboSting',slamVol:.6,slamRate:1.25,doneSound:'praiseSting',doneVol:.45,doneRate:1};
+    const pzSound=m=>{const F=PUZZLE_FEEL,k=F[`${m}Sound`];if(k)playSound(k,{volume:+F[`${m}Vol`]||0,rate:+F[`${m}Rate`]||1})};
+    window.__puzzleFeel=o=>{Object.assign(PUZZLE_FEEL,o||{});if(!$('#puzzleScreen').hidden)renderPuzzle();return{...PUZZLE_FEEL}};
+    // pz.live: every piece the screen has put on <body> (a dragged piece, a flying one and its trail). Paul's stranded piece (2026-10-31,
+    // with one piece left): a placement finishing redrew the whole tray while the next piece was being dragged, which took the dragged
+    // slot (and its pointer) away and left its copy stuck on the screen. Now a placement only redraws the frame, and anything in pz.live
+    // that isn't the live drag is cleared whenever the screen redraws, hides or the app goes to the background.
+    const pz={n:1,box:null,live:new Set(),drag:null};
+    function pzClearLive(){for(const el of pz.live)if(el!==pz.drag?.ghost){el.getAnimations().forEach(a=>a.cancel());el.remove();pz.live.delete(el)}}
+    // In a level (Paul 2026-10-31: the 🧩 by the home button) the clock stops and the board rests until the puzzles close again.
+    const pzFromGameOk=()=>!state.over&&!state.tutorial&&!ex.busy&&$('#chestScene').hidden&&$('#streakScene').hidden&&!document.querySelector('.overlay.show')&&!lightbox.open&&!document.querySelector('.piece-show');
+    function openPuzzle(){if(!$('#puzzleScreen').hidden)return;const inGame=$('#home').classList.contains('hidden');if(inGame&&!pzFromGameOk()){rejectTap($('#gamePuzzle'));return}
+      pz.inGame=inGame;pz.resume=inGame&&state.clock.startedAt!=null;if(inGame)pauseClock();
+      pz.modeBefore=perf.states.mode;perf.state('mode','puzzle');const open=puzzlesOpen(),{got,placed}=puzzleSave(),loose=open.find(e=>(got[e.key]||[]).length>(placed[e.key]||[]).length)?.key,n=loose??currentPuzzle()??[...open].reverse().find(e=>(got[e.key]||[]).length)?.key??open[0].key;pz.n=n;$('#puzzleScreen').hidden=false;syncBoardCovered();gcAccessPoint();renderPuzzle();
       if(!reduceMotion.matches){$('#puzzleScreen').animate([{opacity:0},{opacity:1}],{duration:220});$('#pzBoard').animate([{opacity:0,transform:'translateY(40px) scale(.92)'},{opacity:1,transform:'translateY(-4px) scale(1.01)',offset:.7},{opacity:1,transform:'none'}],{duration:480,easing:'cubic-bezier(.2,.8,.2,1)'})}playSound('pickup',{volume:.2,rate:1.2})}
-    function closePuzzle(){const el=$('#puzzleScreen');if(el.hidden)return;pzSweep();perf.state('mode',pz.modeBefore||'home');const done=()=>{el.hidden=true;gcAccessPoint();renderPuzzleBadge()};if(reduceMotion.matches)return done();el.animate([{opacity:1},{opacity:0}],{duration:200}).onfinish=done}
+    function closePuzzle(){const el=$('#puzzleScreen');if(el.hidden||pzLab)return;pzDragEnd();pzClearLive();pzSweep();perf.state('mode',pz.modeBefore||'home');
+      const done=()=>{el.hidden=true;syncBoardCovered();gcAccessPoint();renderPuzzleBadge();if(pz.inGame&&pz.resume&&$('#home').classList.contains('hidden'))startClock();pz.inGame=pz.resume=false};if(reduceMotion.matches)return done();el.animate([{opacity:1},{opacity:0}],{duration:200}).onfinish=done}
     function pieceEl(n,i,w,h,W,H){const el=document.createElement('div'),r=Math.floor(i/PZ_COLS),c=i%PZ_COLS,bx=c*w-w*.25,by=r*h-h*.25;el.className='pz-piece';
       Object.assign(el.style,{width:`${w*1.5}px`,height:`${h*1.5}px`,backgroundImage:`url(art/puzzles/${puzzleOf(n).img}.jpg)`,backgroundSize:`${W}px ${H}px`,backgroundPosition:`${-bx}px ${-by}px`,clipPath:`path('${piecePath(n,i,w,h)}')`});
       el.style.webkitClipPath=el.style.clipPath;el.dataset.i=i;return{el,bx,by}}
-    function renderPuzzle(){const n=pz.n,p=puzzleSave(),got=p.got[n]||[],placed=p.placed[n]||[],board=$('#pzBoard'),ch=puzzleOf(n),open=puzzlesOpen(),at=open.findIndex(e=>e.key===ch.key);
-      $('#pzTitle').textContent=loc('PUZZLES');$('#pzBackText').textContent=loc('BACK');{const sub=$('#pzSub');sub.textContent=`${loc(ch.name)} · ${placed.length}/${PZ_N}`;sub.style.fontSize='';if(sub.scrollWidth>sub.clientWidth)sub.style.fontSize=`${Math.max(.5,.72*.96*sub.clientWidth/sub.scrollWidth).toFixed(3)}rem`}$('#pzPrev').disabled=at<=0;$('#pzNext').disabled=at>=open.length-1;
+    function renderPuzzle(){pzDragEnd();pzClearLive();const n=pz.n,p=puzzleSave(),placed=p.placed[n]||[],ch=puzzleOf(n),open=puzzlesOpen(),at=open.findIndex(e=>e.key===ch.key);
+      $('#pzStage').style.setProperty('--pz-scale',PUZZLE_FEEL.boardScale);
+      $('#pzTitle').textContent=loc('PUZZLES');$('#pzBackText').textContent=loc('BACK');pzSub(ch,placed.length);$('#pzPrev').disabled=at<=0;$('#pzNext').disabled=at>=open.length-1;
       $('#pzDots').replaceChildren(...open.map((e,k)=>{const d=document.createElement('i');if(p.done.includes(e.key))d.className='done';if(k===at)d.classList.add('on');return d}));
+      renderPzBoard();renderPzTray()}
+    function pzSub(ch,k){const sub=$('#pzSub');sub.textContent=`${loc(ch.name)} · ${k}/${PZ_N}`;sub.style.fontSize='';if(sub.scrollWidth>sub.clientWidth)sub.style.fontSize=`${Math.max(.5,.72*.96*sub.clientWidth/sub.scrollWidth).toFixed(3)}rem`}
+    // The frame: ghost places for the missing pieces, the placed ones, the full painting (shown when finished) and the finished stamp.
+    function renderPzBoard(){const n=pz.n,p=puzzleSave(),placed=p.placed[n]||[],board=$('#pzBoard'),ch=puzzleOf(n);
       const R=board.getBoundingClientRect(),W=R.width,H=R.height,w=W/PZ_COLS,h=H/PZ_ROWS;pz.box={W,H,w,h};const src=`url(art/puzzles/${ch.img}.jpg)`;
       board.replaceChildren();const ghost=document.createElement('div');ghost.className='pz-ghost';ghost.style.backgroundImage=src;board.append(ghost);
       const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('class','pz-outline');svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
       // Ghost pieces (Paul, 2026-10-24): every empty place is a ghost in its piece's shape over a faint hint of the painting; no marker
       // says where a found piece goes (Paul: the player works that out).
-      for(let i=0;i<PZ_N;i++){if(placed.includes(i))continue;const path=document.createElementNS('http://www.w3.org/2000/svg','path'),r=Math.floor(i/PZ_COLS),c=i%PZ_COLS;path.setAttribute('d',piecePath(n,i,w,h));path.setAttribute('class','missing');path.setAttribute('transform',`translate(${c*w-w*.25} ${r*h-h*.25})`);svg.append(path);
-}board.append(svg);
+      for(let i=0;i<PZ_N;i++){if(placed.includes(i))continue;const path=document.createElementNS('http://www.w3.org/2000/svg','path'),r=Math.floor(i/PZ_COLS),c=i%PZ_COLS;path.setAttribute('d',piecePath(n,i,w,h));path.setAttribute('class','missing');path.setAttribute('transform',`translate(${c*w-w*.25} ${r*h-h*.25})`);svg.append(path)}
+      board.append(svg);
       for(const i of placed){const {el,bx,by}=pieceEl(n,i,w,h,W,H);Object.assign(el.style,{left:`${bx}px`,top:`${by}px`});board.append(el)}
       const full=document.createElement('div');full.className='pz-full';full.style.backgroundImage=src;board.append(full);if(placed.length>=PZ_N)full.style.opacity=1;
       const done=document.createElement('div');done.className='pz-done';done.innerHTML=`<b>${loc('PUZZLE COMPLETE!')}</b><small>${loc('+{0} XP',PUZZLE_XP)}</small>`;board.append(done);
       // The booster bundle a finished puzzle banked, as chips under the stamp (the booster buttons' own icons).
-      {const row=document.createElement('div');row.className='pz-reward';for(const [k,c] of Object.entries(PUZZLE_REWARD)){const chip=document.createElement('span');chip.innerHTML=$(`#${k} .booster-icon`)?.innerHTML||'';chip.append(`×${c}`);row.append(chip)}done.append(row)}
-      // The pieces you've found, spilled out on the table under the frame (each lies where its seed drops it, a little turned).
-      const tray=$('#pzTray'),k=Math.min(1,104/(h*1.5));tray.dataset.empty=loc(got.length?'All your pieces are in.':'Find pieces hidden under cards on the board!');tray.replaceChildren();
+      {const row=document.createElement('div');row.className='pz-reward';for(const [k,c] of Object.entries(PUZZLE_REWARD)){const chip=document.createElement('span');chip.innerHTML=$(`#${k} .booster-icon`)?.innerHTML||'';chip.append(`×${c}`);row.append(chip)}done.append(row)}}
+    // The pieces you've found, spilled out on the table under the frame (each lies where its seed drops it, a little turned).
+    function renderPzTray(){const n=pz.n,p=puzzleSave(),got=p.got[n]||[],placed=p.placed[n]||[],ch=puzzleOf(n),{W,H,w,h}=pz.box;
+      const tray=$('#pzTray'),k=Math.min(1,PUZZLE_FEEL.trayPiece/(h*1.5));tray.dataset.empty=loc(got.length?'All your pieces are in.':'Find pieces hidden under cards on the board!');tray.replaceChildren();
       if(placed.length>=PZ_N){const box=document.createElement('div'),share=document.createElement('button');box.className='pz-finished';box.append(Object.assign(document.createElement('b'),{textContent:loc('Finished! Save it or share it.')}));
         share.className='action primary';share.textContent=loc('SAVE / SHARE');share.onclick=()=>sharePuzzle(n,share);box.append(share);tray.append(box);return}
       const loose=got.filter(i=>!placed.includes(i)),TW=tray.clientWidth,TH=tray.clientHeight,sw=w*1.5*k,sh=h*1.5*k;
       loose.forEach((i,j)=>{const rng=mulberry32(ch.seed*977+i*131),slot=document.createElement('div');slot.className='pz-slot';const x=(j+.5)/loose.length*TW-sw/2+(rng()-.5)*Math.min(30,TW/loose.length*.4),y=(TH-sh)/2+(rng()-.5)*Math.max(0,TH-sh)*.8;
         Object.assign(slot.style,{width:`${sw}px`,height:`${sh}px`,left:`${Math.max(-sw*.2,Math.min(TW-sw*.8,x))}px`,top:`${y}px`,transform:`rotate(${((rng()-.5)*36).toFixed(1)}deg)`,zIndex:String(j+1)});
         const {el}=pieceEl(n,i,w,h,W,H);el.style.transform=`scale(${k})`;slot.append(el);slot.dataset.i=i;tray.append(slot);pzDrag(slot,i,k)})}
-    // A finished puzzle as a picture: the painting with the monkey head over the Monkey Trubble logo in the corner. The apps save it to
+    // A finished puzzle as a picture: the painting with the app icon's monkey face (art/brand-face.png, tools/make-brand-face.py) over the Monkey Trubble logo in the corner. The apps save it to
     // Photos (iPhone) or the Gallery (Android) and then open the share sheet, and say so through __puzzleSaved; a browser shares the
     // file where it can, or downloads it.
     async function sharePuzzle(n,btn){btn.disabled=true;try{const load=src=>new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src});
-        const [art,logo,head]=await Promise.all([load(`art/puzzles/${puzzleOf(n).img}.jpg`),load('art/home/logo.png'),load('art/badge-face.png')]),c=document.createElement('canvas');c.width=art.naturalWidth;c.height=art.naturalHeight;const x=c.getContext('2d');x.drawImage(art,0,0);
+        const [art,logo,head]=await Promise.all([load(`art/puzzles/${puzzleOf(n).img}.jpg`),load('art/home/logo.png'),load('art/brand-face.png')]),c=document.createElement('canvas');c.width=art.naturalWidth;c.height=art.naturalHeight;const x=c.getContext('2d');x.drawImage(art,0,0);
         const lw=c.width*.3,lh=lw*logo.naturalHeight/logo.naturalWidth,m=c.width*.035,hw=lw*.42,lx=c.width-lw-m,ly=c.height-lh-m;x.shadowColor='#000c';x.shadowBlur=c.width*.02;
-        x.drawImage(logo,lx,ly,lw,lh);x.drawImage(head,lx+(lw-hw)/2,ly-hw*.96,hw,hw);
+        x.drawImage(logo,lx,ly,lw,lh);{const hh=hw*head.naturalHeight/head.naturalWidth;x.drawImage(head,lx+(lw-hw)/2,ly-hh*.96,hw,hh)}
         const slug=puzzleOf(n).name.toLowerCase().replace(/[^a-z]+/g,'-').replace(/^-|-$/g,''),name=`${slug.startsWith('monkey-trubble')?slug:`monkey-trubble-${slug}`}.png`;
-        if(window.webkit?.messageHandlers?.share){window.webkit.messageHandlers.share.postMessage({image:c.toDataURL('image/png'),name});return}
+        // The words that go with the picture (Paul 2026-10-31), where the app the player picks takes text.
+        const text=loc('I just completed this puzzle in Monkey Trubble! 🐒');
+        if(window.webkit?.messageHandlers?.share){window.webkit.messageHandlers.share.postMessage({image:c.toDataURL('image/png'),name,text});return}
         const blob=await new Promise(r=>c.toBlob(r,'image/png')),file=new File([blob],name,{type:'image/png'});
-        if(navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:'Monkey Trubble'}).catch(()=>{});return}
+        if(navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:'Monkey Trubble',text}).catch(()=>{});return}
         const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
       catch{}finally{btn.disabled=false}}
     // The app saved the shared picture (ok) to Photos or the Gallery (where): the finished box says so.
     window.__puzzleSaved=(ok,where)=>{const b=document.querySelector('.pz-finished b');if(b)b.textContent=loc(!ok?'Couldn’t save the picture.':where==='gallery'?'Saved to your Gallery!':'Saved to Photos!')};
-    // Drag a piece from the tray; dropped near its place (or tapped) it snaps in, anywhere else it springs back.
-    function pzDrag(slot,i,k){slot.onpointerdown=e=>{const {W,H,w,h}=pz.box,n=pz.n,start={x:e.clientX,y:e.clientY},sr=slot.getBoundingClientRect();let ghost=null,moved=false;slot.setPointerCapture(e.pointerId);
-      const make=()=>{pz.dragging=true;const {el}=pieceEl(n,i,w,h,W,H);el.classList.add('pz-drag');el.style.left=`${sr.left}px`;el.style.top=`${sr.top}px`;el.style.transform=`scale(${k})`;document.body.append(el);slot.style.opacity=.25;el.animate([{transform:`scale(${k})`},{transform:'scale(1.05)'}],{duration:160,fill:'forwards'});return el};
-      slot.onpointermove=ev=>{const dx=ev.clientX-start.x,dy=ev.clientY-start.y;if(!moved&&Math.hypot(dx,dy)<8)return;if(!moved){moved=true;ghost=make()}const gw=w*1.5*1.05,gh=h*1.5*1.05;ghost.style.left=`${ev.clientX-gw/2}px`;ghost.style.top=`${ev.clientY-gh*.75}px`};
-      slot.onpointerup=slot.onpointercancel=ev=>{slot.onpointermove=slot.onpointerup=slot.onpointercancel=null;pz.dragging=false;const B=$('#pzBoard').getBoundingClientRect(),r=Math.floor(i/PZ_COLS),c=i%PZ_COLS,tx=B.left+c*w-w*.25,ty=B.top+r*h-h*.25;
-        if(!moved){placePiece(i,{from:sr,k});return}
-        const gr=ghost.getBoundingClientRect(),near=Math.hypot(gr.left-tx,gr.top-ty)<Math.min(w,h)*.45;
-        if(near){ghost.remove();placePiece(i,{from:gr,k:1.05})}
-        else{rejectTap(slot);ghost.animate([{left:ghost.style.left,top:ghost.style.top,transform:'scale(1.05)'},{left:`${sr.left}px`,top:`${sr.top}px`,transform:`scale(${k})`}],{duration:260,easing:'cubic-bezier(.2,.8,.2,1)'}).onfinish=()=>{ghost.remove();slot.style.opacity=''}}}}}
-    function placePiece(i,{from,k}){const n=pz.n,p=puzzleSave(),{W,H,w,h}=pz.box,B=$('#pzBoard').getBoundingClientRect(),r=Math.floor(i/PZ_COLS),c=i%PZ_COLS,bx=c*w-w*.25,by=r*h-h*.25;
-      (p.placed[n]??=[]).includes(i)||p.placed[n].push(i);saveProgress();const {el}=pieceEl(n,i,w,h,W,H);el.classList.add('pz-drag','flying');el.style.left=`${from.left}px`;el.style.top=`${from.top}px`;el.style.transform=`scale(${k})`;document.body.append(el);
-      const go=el.animate([{left:`${from.left}px`,top:`${from.top}px`,transform:`scale(${k})`},{left:`${B.left+bx}px`,top:`${B.top+by}px`,transform:'scale(1.08)',offset:.75},{left:`${B.left+bx}px`,top:`${B.top+by}px`,transform:'scale(1)'}],{duration:reduceMotion.matches?1:380,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'});
-      go.onfinish=()=>{el.remove();renderPuzzle();playSound('dragDrop',{volume:.5,rate:1.2});haptic('cardCaged');{const x=B.left+bx+w*.75,y=B.top+by+h*.75;dustCanvas().style.zIndex=5400;streakSparks(x,y,12)}
-        if((p.placed[n]||[]).length>=PZ_N&&!p.done.includes(n))finishPuzzle(n)}}
-    function finishPuzzle(n){const p=puzzleSave(),b=progress.bank??={undo:0,shuffle:0,hint:0};p.done.push(n);progress.stats.xp+=PUZZLE_XP;for(const [k,c] of Object.entries(PUZZLE_REWARD))b[k]=(b[k]||0)+c;saveProgress();syncProfile();if(state.tiles?.length)render();const board=$('#pzBoard'),B=board.getBoundingClientRect();
-      board.querySelector('.pz-full').animate([{opacity:0},{opacity:1}],{duration:700,fill:'forwards'});board.querySelector('.pz-full').style.opacity=1;
+    // Drag a piece from the tray; dropped with its centre near its place it snaps in, anywhere else it springs back. A tap only wiggles
+    // it and says to drag (Paul 2026-10-31: tapping placed it, but the player should do the puzzle). One drag at a time, one finger.
+    function pzDragEnd(){const d=pz.drag;if(!d)return;pz.drag=null;pz.dragging=false;d.slot.onpointermove=d.slot.onpointerup=d.slot.onpointercancel=d.slot.onlostpointercapture=null;if(d.ghost){d.ghost.remove();pz.live.delete(d.ghost)}if(d.slot.isConnected)d.slot.style.opacity=''}
+    function pzDrag(slot,i,k){slot.onpointerdown=e=>{if(pz.drag||pzTurning)return;const {W,H,w,h}=pz.box,n=pz.n,start={x:e.clientX,y:e.clientY},sr=slot.getBoundingClientRect(),id=e.pointerId,F=PUZZLE_FEEL,gw=w*1.5*1.05,gh=h*1.5*1.05;
+      const d=pz.drag={slot,ghost:null};pz.dragging=true;let moved=false;try{slot.setPointerCapture(id)}catch{}
+      const make=()=>{const {el}=pieceEl(n,i,w,h,W,H);el.classList.add('pz-drag');el.style.left=`${sr.left}px`;el.style.top=`${sr.top}px`;el.style.transform=`scale(${k})`;document.body.append(el);pz.live.add(el);slot.style.opacity=.25;pzSound('pickup');haptic('cardFlip');el.animate([{transform:`scale(${k})`},{transform:'scale(1.05)'}],{duration:160,fill:'forwards'});return el};
+      slot.onpointermove=ev=>{if(ev.pointerId!==id||pz.drag!==d)return;const dx=ev.clientX-start.x,dy=ev.clientY-start.y;if(!moved&&Math.hypot(dx,dy)<8)return;if(!moved){moved=true;d.ghost=make()}d.ghost.style.left=`${ev.clientX-gw/2}px`;d.ghost.style.top=`${ev.clientY-gh*F.grip}px`};
+      // The finger lifting (or the system taking the touch, or the slot losing it) ends the drag the same way.
+      slot.onpointerup=slot.onpointercancel=slot.onlostpointercapture=ev=>{if(ev.pointerId!==id||pz.drag!==d)return;const ghost=d.ghost;d.ghost=null;pzDragEnd();
+        if(!moved){pzTapHint(slot);return}
+        const B=$('#pzBoard').getBoundingClientRect(),r=Math.floor(i/PZ_COLS),c=i%PZ_COLS,gr=ghost.getBoundingClientRect(),
+          near=Math.hypot(gr.left+gr.width/2-(B.left+c*w+w/2),gr.top+gr.height/2-(B.top+r*h+h/2))<Math.min(w,h)*F.snap;
+        if(near){ghost.remove();pz.live.delete(ghost);slot.remove();placePiece(i,{from:gr})}
+        else{if(!reduceMotion.matches)slot.animate([{translate:'0 0'},{translate:'-3px 0'},{translate:'3px 0'},{translate:'-2px 0'},{translate:'2px 0'},{translate:'0 0'}],{duration:220,easing:'ease-in-out'});pzSound('miss');haptic('cardBlocked');pz.live.add(ghost);slot.style.opacity=.25;ghost.animate([{left:ghost.style.left,top:ghost.style.top,transform:'scale(1.05)'},{left:`${sr.left}px`,top:`${sr.top}px`,transform:`scale(${k})`}],{duration:260,easing:'cubic-bezier(.2,.8,.2,1)'}).finished.catch(()=>{}).finally(()=>{ghost.remove();pz.live.delete(ghost);if(!pz.drag||pz.drag.slot!==slot)slot.style.opacity=''})}}}}
+    // A tap: the piece hops a little and the tray says to drag it (the line shows for a moment, at most once a few seconds).
+    function pzTapHint(slot){if(!reduceMotion.matches)slot.animate([{translate:'0 0'},{translate:'0 -10px'},{translate:'0 0'},{translate:'0 -4px'},{translate:'0 0'}],{duration:420,easing:'ease-out'});playSound('pickup',{volume:.18,rate:1.4});
+      const tray=$('#pzTray');let tip=tray.querySelector('.pz-tip');if(tip)return;tip=document.createElement('div');tip.className='pz-tip';tip.textContent=loc('Drag the piece to its place');tray.append(tip);
+      tip.animate([{opacity:0},{opacity:1,offset:.12},{opacity:1,offset:.85},{opacity:0}],{duration:2200}).finished.catch(()=>{}).finally(()=>tip.remove())}
+    // Placing (Paul 2026-10-31): ease, whiz, slam. The piece lifts where it was dropped, whizzes into its place with a short trail and
+    // slams down (squash, frame shake, sparks, sound, thump). Saved at once; cleanup and the finish check run exactly once, from the
+    // animation ending or a timer behind it, so a cancelled or never-finished animation can't strand the piece.
+    function placePiece(i,{from}){const n=pz.n,p=puzzleSave(),{W,H,w,h}=pz.box,B=$('#pzBoard').getBoundingClientRect(),r=Math.floor(i/PZ_COLS),c=i%PZ_COLS,bx=c*w-w*.25,by=r*h-h*.25,F=PUZZLE_FEEL,still=reduceMotion.matches;
+      (p.placed[n]??=[]).includes(i)||p.placed[n].push(i);if(!pzLab)saveProgress();pzSub(puzzleOf(n),p.placed[n].length);
+      const bw=w*1.5,bh=h*1.5,tx=B.left+bx,ty=B.top+by,s0=from.width/bw,dx=from.left+from.width/2-(tx+bw/2),dy=from.top+from.height/2-(ty+bh/2);
+      const make=()=>{const {el}=pieceEl(n,i,w,h,W,H);el.classList.add('pz-drag','flying');Object.assign(el.style,{left:`${tx}px`,top:`${ty}px`,transformOrigin:'50% 50%',transform:`translate(${dx}px,${dy}px) scale(${s0})`});document.body.append(el);pz.live.add(el);return el};
+      const e1=still?0:F.easeMs,e2=still?0:F.whizMs,e3=still?1:F.slamMs,T=e1+e2+e3,o1=e1/T,o2=(e1+e2)/T,slamAt=e1+e2,
+        frames=[{transform:`translate(${dx}px,${dy}px) scale(${s0})`,easing:'cubic-bezier(.2,.8,.3,1)'},{transform:`translate(${dx}px,${dy-6}px) scale(${F.lift})`,offset:o1,easing:'cubic-bezier(.6,0,.9,.4)'},
+          {transform:`translate(0,0) scale(${Math.max(1,F.lift*.96)})`,offset:o2,easing:'cubic-bezier(.3,0,.5,1)'},{transform:`translate(0,0) scale(${F.overshoot})`,offset:o2+(1-o2)*.35,easing:'cubic-bezier(.2,.8,.3,1)'},{transform:'translate(0,0) scale(1)'}];
+      const el=make(),go=el.animate(frames,{duration:T,fill:'forwards'});
+      // The trail: fading copies a few ms behind, seen only during the whiz.
+      if(!still)for(let j=1;j<=F.trail;j++){const t=make();t.style.filter='none';t.animate(frames,{duration:T,delay:j*22,fill:'forwards'});t.animate([{opacity:0},{opacity:0,offset:o1},{opacity:.45/j,offset:o1+(o2-o1)*.3},{opacity:0,offset:Math.min(1,o2+.02)},{opacity:0}],{duration:T,delay:j*22,fill:'forwards'})}
+      let slammed=false,ended=false;const slam=()=>{if(slammed)return;slammed=true;const x=tx+bw/2,y=ty+bh/2;
+        if(F.slamSoundAt==='impact'){pzSound('slam');if(F.thump)playThump(F.thump)}haptic('jokerSlam');dustCanvas().style.zIndex=5400;streakSparks(x,y,F.sparks);
+        if(!still&&F.shake){const a=F.shake;$('#pzBoard').animate([{translate:'0 0'},{translate:`${-a}px ${a*.6}px`},{translate:`${a*.8}px ${-a*.4}px`},{translate:`${-a*.4}px ${a*.2}px`},{translate:'0 0'}],{duration:240,easing:'ease-out'})}};
+      const end=cancelled=>{if(ended)return;ended=true;if(cancelled!==true){slam();if(F.slamSoundAt!=='impact'){pzSound('slam');if(F.thump)playThump(F.thump)}requestAnimationFrame(()=>pzShine(n,i,tx,ty,bw,bh))}for(const x of [...pz.live])if(x.classList.contains('flying')&&x.dataset.i===String(i)){x.remove();pz.live.delete(x)}
+        if(pz.n!==n||$('#puzzleScreen').hidden)return;renderPzBoard();if((p.placed[n]||[]).length>=PZ_N){renderPzTray();if(!p.done.includes(n))finishPuzzle(n)}};
+      setTimeout(()=>{if(!ended)pzSound('whiz')},e1);setTimeout(()=>{if(!ended)slam()},slamAt);go.finished.then(()=>end(),()=>end(true));setTimeout(end,T+F.trail*22+400)}
+    // The card shine sweeps once across the piece after it has settled, in its own shape (Paul 2026-10-31: at the impact it shared the
+    // busiest frames and stuttered on the phone). Same layers and sweep as a card landing in the cage.
+    function pzShineLayers(el,src,shine){el.dataset.shine=shine||'prism';const art=document.createElement('div'),fo=document.createElement('i'),gl=document.createElement('i');art.className='art';fo.className='fo';gl.className='gl';art.style.backgroundImage=src;el.append(art,fo,gl);return{art,fo,gl}}
+    // Ease, then whiz (Paul 2026-10-31): the band glides in and nearly stops for sweepEase of the time, then speeds across and out.
+    function pzShineSweep(layers,ms,delay=0){const e=Math.max(0,Math.min(.9,+PUZZLE_FEEL.sweepEase||0)),f=e?[{transform:'translate3d(-120%,0,0)',easing:'cubic-bezier(.2,.7,.3,1)'},{transform:'translate3d(-45%,0,0)',offset:e,easing:'cubic-bezier(.6,0,.9,.5)'},{transform:'translate3d(120%,0,0)'}]:[{transform:'translate3d(-120%,0,0)'},{transform:'translate3d(120%,0,0)'}],o={duration:ms,delay,easing:e?'linear':'cubic-bezier(.45,.05,.35,1)',fill:'both'};return Promise.all([layers.gl,layers.fo].map(x=>x.animate(f,o).finished.catch(()=>{})))}
+    // A white flash (the welcome screen's curve): over a piece in its shape (path), or over the whole frame.
+    function pzFlash(k,ms,box,path){if(!k||reduceMotion.matches)return;const el=document.createElement('div');el.className='pz-flash';
+      if(path){Object.assign(el.style,{left:`${box.x}px`,top:`${box.y}px`,width:`${box.w}px`,height:`${box.h}px`,clipPath:`path('${path}')`});el.style.webkitClipPath=el.style.clipPath;document.body.append(el);pz.live.add(el)}else{const d=box.querySelector('.pz-done');if(d)d.before(el);else box.append(el)}
+      el.animate([{opacity:0},{opacity:Math.min(1,k),offset:.3},{opacity:0}],{duration:ms,easing:'ease-out'}).finished.catch(()=>{}).finally(()=>{el.remove();pz.live.delete(el)})}
+    function pzShine(n,i,x,y,bw,bh){const F=PUZZLE_FEEL;if(reduceMotion.matches||$('#puzzleScreen').hidden)return;pzFlash(F.flash,F.flashMs,{x,y,w:bw,h:bh},piecePath(n,i,pz.box.w,pz.box.h));if(!F.shine)return;const {W,H,w,h}=pz.box,el=document.createElement('div'),r=Math.floor(i/PZ_COLS),c=i%PZ_COLS;el.className='pz-shine';
+      Object.assign(el.style,{left:`${x}px`,top:`${y}px`,width:`${bw}px`,height:`${bh}px`,clipPath:`path('${piecePath(n,i,w,h)}')`,opacity:Math.min(1,F.shine)});el.style.webkitClipPath=el.style.clipPath;
+      const L=pzShineLayers(el,`url(art/puzzles/${puzzleOf(n).img}.jpg)`,F.shineStyle);Object.assign(L.art.style,{inset:'auto',width:`${W}px`,height:`${H}px`,left:`${-(c*w-w*.25)}px`,top:`${-(r*h-h*.25)}px`});
+      document.body.append(el);pz.live.add(el);pzShineSweep(L,F.shineMs).then(()=>{el.remove();pz.live.delete(el)})}
+    // The big one, when a puzzle completes: the same card shine over the whole painting, twice (the second a little behind).
+    function pzHolo(board){const F=PUZZLE_FEEL;if(reduceMotion.matches)return;pzFlash(F.holoFlash,F.holoFlashMs,board);if(!F.holo)return;const el=document.createElement('div');el.className='pz-holo';el.style.opacity=Math.min(1,F.holo);
+      const src=`url(art/puzzles/${puzzleOf(pz.n).img}.jpg)`,L=pzShineLayers(el,src,F.shineStyle);L.art.style.opacity=1;
+      {const d=board.querySelector('.pz-done');if(d)d.before(el);else board.append(el)}
+      const L2={gl:L.gl.cloneNode(),fo:L.fo.cloneNode()};el.append(L2.fo,L2.gl);
+      Promise.all([pzShineSweep(L,F.holoMs*.6),pzShineSweep(L2,F.holoMs*.6,F.holoMs*.4)]).then(()=>el.remove())}
+    // The finish: the full painting fades in (PZ_FULL_MS), then the completion holo plays over it (PZ_HOLO_AT), so the sweep runs over
+    // the finished painting, not a half-faded one.
+    const PZ_FULL_MS=500,PZ_HOLO_AT=560;
+    function finishPuzzle(n){const p=puzzleSave(),board=$('#pzBoard'),B=board.getBoundingClientRect();p.done.push(n);
+      // The rewards are saved at once; the profile sync and the board redraw behind wait until the show is over (Paul 2026-10-31: on the
+      // phone that work landed on the completion holo's frames and it never showed).
+      if(!pzLab){const b=progress.bank??={undo:0,shuffle:0,hint:0};progress.stats.xp+=PUZZLE_XP;for(const [k,c] of Object.entries(PUZZLE_REWARD))b[k]=(b[k]||0)+c;saveProgress();setTimeout(()=>{syncProfile();if(state.tiles?.length)render()},PZ_HOLO_AT+PUZZLE_FEEL.holoMs+800)}
+      board.querySelector('.pz-full').animate([{opacity:0},{opacity:1}],{duration:PZ_FULL_MS,fill:'forwards'});setTimeout(()=>{if(board.isConnected&&pz.n===n)pzHolo(board)},PZ_HOLO_AT);board.querySelector('.pz-full').style.opacity=1;
       board.querySelector('.pz-done').animate([{opacity:0,transform:'translate(-50%,-50%) scale(1.8)'},{opacity:1,transform:'translate(-50%,-50%) scale(.95)',offset:.7},{opacity:1,transform:'translate(-50%,-50%)'}],{duration:520,delay:400,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'});
-      setTimeout(()=>{streakSparks(B.left+B.width/2,B.top+B.height/2,70);playSound('praiseOrEnd',{volume:.75});haptic('jokerSlam')},400);$('#pzSub').textContent=`${loc(puzzleOf(n).name)} · ${PZ_N}/${PZ_N}`}
-    $('#homePuzzle').onclick=openPuzzle;$('#pzClose').onclick=closePuzzle;$('#pzPrev').onclick=()=>pzTurn(-1);$('#pzNext').onclick=()=>pzTurn(1);
+      setTimeout(()=>{streakSparks(B.left+B.width/2,B.top+B.height/2,70);pzSound('done');haptic('jokerSlam')},400);pzSub(puzzleOf(n),PZ_N)}
+    $('#homePuzzle').onclick=openPuzzle;$('#gamePuzzle').onclick=openPuzzle;$('#pzClose').onclick=closePuzzle;$('#pzPrev').onclick=()=>pzTurn(-1);$('#pzNext').onclick=()=>pzTurn(1);
     // Turning between puzzles (Paul, 2026-10-24): the board whizzes out one way and the next eases in from the other, with a page-turn
     // flick. One board element, transform and opacity only; taps during a turn queue up as one more turn.
     let pzTurning=null;
@@ -4312,16 +4371,30 @@ void main() {
       if(ghost){ghost.removeAttribute('id');Object.assign(ghost.style,{position:'absolute',left:`${B.left-S.left}px`,top:`${B.top-S.top}px`,width:`${B.width}px`,height:`${B.height}px`,margin:0,pointerEvents:'none'});$('#pzStage').append(ghost)}
       pz.n=to;renderPuzzle();
       if(still){board.animate([{opacity:0},{opacity:1}],{duration:200})}
-      else{const ease='cubic-bezier(.45,.05,.25,1)',ms=420,far=B.width+28;
+      else{const ease='cubic-bezier(.45,.05,.25,1)',ms=440,gap=24,
+          // Far enough that each board is wholly off the screen at its end (Paul 2026-10-31: the old one stopped short at the edge,
+          // faded, and then vanished): the old one goes out past one side, the new one comes in from past the other.
+          out=dir>0?-(B.right+gap):innerWidth-B.left+gap,inn=dir>0?innerWidth-B.left+gap:-(B.right+gap);
         // Flat (Paul 2026-10-30): with rotateY, Safari once left a piece of the old board drawn over the next puzzle.
-        ghost.animate([{transform:'none',opacity:1},{transform:`translateX(${-dir*far}px) scale(.9)`,opacity:.4}],{duration:ms,easing:ease,fill:'forwards'});
-        board.animate([{transform:`translateX(${dir*far}px) scale(.9)`,opacity:.4},{transform:'none',opacity:1}],{duration:ms,easing:ease});
+        const go=ghost.animate([{transform:'none'},{transform:`translateX(${out*.5}px) scale(.96)`,offset:.5},{transform:`translateX(${out}px)`}],{duration:ms,easing:ease,fill:'forwards'});
+        board.animate([{transform:`translateX(${inn}px)`},{transform:`translateX(${inn*.5}px) scale(.96)`,offset:.5},{transform:'none'}],{duration:ms,easing:ease});
         tray.animate([{opacity:0,transform:`translateX(${dir*40}px)`},{opacity:1,transform:'none'}],{duration:ms,easing:ease});
-        await new Promise(r=>setTimeout(r,ms));ghost.remove()}
+        await Promise.race([go.finished.catch(()=>{}),new Promise(r=>setTimeout(r,ms+200))]);ghost.remove()}
       pzTurning=null;pzSweep();if(turn.next)pzTurn(turn.next)}
     // Anything a turn, drag or placing could leave behind (an old board copy, a dragged or flying piece) is removed once the screen settles.
     function pzSweep(){if(pzTurning)return;for(const el of [...$('#pzStage').children])if(!['pzBoard','pzPrev','pzNext'].includes(el.id))el.remove();for(const el of document.querySelectorAll('body > .pz-drag:not(.flying)'))if(!el.isConnected||!pz.dragging)el.remove()}
     addEventListener('resize',()=>{if(!$('#puzzleScreen').hidden)renderPuzzle()});
+    document.addEventListener('visibilitychange',()=>{if(document.hidden&&!$('#puzzleScreen').hidden)renderPuzzle()});
+    // The Lab's sandbox: the game opens straight onto the puzzles; the page resets it and tunes PUZZLE_FEEL through __puzzleFeel.
+    if(params.has('puzzlelab')){document.documentElement.classList.add('puzzle-lab');const all=()=>Object.fromEntries(PUZZLES.map(e=>[e.key,[...Array(PZ_N).keys()]]));
+      pzLab={got:all(),placed:{},levels:[],done:[]};window.__puzzleLabReset=()=>{pzLab.placed={};pzLab.done=[];renderPuzzle()};
+      window.__puzzleLabOne=()=>{pzLab.placed[pz.n]=[...Array(PZ_N-1).keys()];pzLab.done=pzLab.done.filter(k=>k!==pz.n);renderPuzzle()};
+      // Lab previews: the piece shine on a placed piece (one is placed first if none is), and the complete holo over the frame.
+      window.__puzzleLabShine=()=>{const n=pz.n,pl=pzLab.placed[n]??=[];if(!pl.length){pl.push(4);renderPuzzle()}const i=pl[rand(pl.length)],{w,h}=pz.box,B=$('#pzBoard').getBoundingClientRect(),r=Math.floor(i/PZ_COLS),c=i%PZ_COLS;
+        pzShine(n,i,B.left+c*w-w*.25,B.top+r*h-h*.25,w*1.5,h*1.5);pzSound('slam')};
+      window.__puzzleLabHolo=()=>{const b=$('#pzBoard'),f=b.querySelector('.pz-full'),T=PZ_HOLO_AT+PUZZLE_FEEL.holoMs+PUZZLE_FEEL.holoFlashMs+400,was=+f.style.opacity||0;f.getAnimations().forEach(a=>a.cancel());
+        f.animate([{opacity:was},{opacity:1,offset:PZ_FULL_MS/T},{opacity:1,offset:.9},{opacity:was}],{duration:T});setTimeout(()=>pzHolo(b),PZ_HOLO_AT);setTimeout(()=>pzSound('done'),400)};
+      setTimeout(openPuzzle,500)}
     {let sx=null;$('#pzStage').addEventListener('pointerdown',e=>{if(!e.target.closest('.pz-arrow'))sx=e.clientX});$('#pzStage').addEventListener('pointerup',e=>{if(sx==null)return;const dx=e.clientX-sx;sx=null;if(Math.abs(dx)>50)$(dx<0?'#pzNext':'#pzPrev').click()})}
     // Daily streak scene (first clear of the day, after the climb): the flame in a carved emblem is cold, the emblem wobbles while the
     // bongo builds, then the flame catches, the count ticks up and turns gold, and this week's row lands a banana coin on today. A
@@ -4388,7 +4461,8 @@ void main() {
       bakeRays();const rays=$('#csRays');if(RAY_IMAGES.win)rays.src=RAY_IMAGES.win;rays.style.opacity=0;
       scene.hidden=false;gcAccessPoint();dust.style.zIndex=5400;
       const center=()=>{const b=wrap.getBoundingClientRect();return[b.left+b.width/2,b.top+b.height*.55]};
-      let taps=0,opened=false,rewardsShown=false;const timers=[],later=(fn,ms)=>timers.push(setTimeout(fn,ms));
+      // Some chests are more stubborn (Paul 2026-10-31): 3 taps most often, up to 6.
+      const need=[3,3,3,4,4,5,6][rand(7)];let taps=0,opened=false,rewardsShown=false;const timers=[],later=(fn,ms)=>timers.push(setTimeout(fn,ms));
       const done=()=>{scene.onpointerdown=null;timers.forEach(clearTimeout);dust.style.zIndex='';// The fade-out holds its end (fill) until the scene is hidden, and is cancelled in the same step, before hiding: it used to snap
         // back to full for a frame, and cancelled under `hidden` Android's WebView kept the stale opacity (Paul 2026-10-30).
         const end=()=>{perf.state('mode',modeBefore);scene.getAnimations({subtree:true}).forEach(a=>a.cancel());scene.hidden=true;cx.clearRect(0,0,CHEST.w,CHEST.h);releaseChestFrames();gcAccessPoint();resolve()};
@@ -4404,7 +4478,7 @@ void main() {
         const o=wrap.offsetParent.getBoundingClientRect(),b={left:o.left+wrap.offsetLeft,width:wrap.offsetWidth,bottom:o.top+wrap.offsetTop+wrap.offsetHeight,height:wrap.offsetHeight},y=b.bottom-b.height*.1,colors=['#d8c7a3','#c9b18a','#a89f94','#e6dccb'];
         for(const [fx,side] of [[.2,-1],[.5,0],[.8,1]])for(let i=0;i<9;i++){const dir=side||(i%2?1:-1),up=.1+Math.random()*.3;
           spawnDust(b.left+b.width*fx,y,{color:colors[i%colors.length],star:false,size:8+Math.random()*9,dist:30+Math.random()*(side?80:50),angle:dir>0?-up:Math.PI+up,fall:6,life:480+rand(320),delay:rand(60),opacity:.75})}};
-      // Taps: two rattles, then it bursts open. A tap after opening hurries the rewards along.
+      // Taps: rattles (need-1 of them), then it bursts open. A tap after opening hurries the rewards along.
       const shake=k=>{if(still)return;const a=5+7*k,r=2.5*k,hop=4*k;wrap.animate([{transform:'none'},{transform:`translate(${-a}px,${-hop}px) rotate(${-r}deg) scale(${1+.03*k})`},{transform:`translate(${a}px,0) rotate(${r}deg)`},{transform:`translate(${-a*.7}px,${-hop*.5}px) rotate(${-r*.7}deg)`},{transform:`translate(${a*.4}px,0) rotate(${r*.4}deg)`},{transform:'none'}],{duration:320+80*k,easing:'ease-out'});if(k>1)screenShake(2*k,260)};
       // Paul: a tap doesn't change the picture; the closed chest just shakes, harder each time, until it bursts open.
       const rattle=k=>{playSound('chestRattle',{volume:.6+.25*k,rate:1+.1*k});haptic(k>1?'cageRattle':'cageRattleSoft');shake(k)};
@@ -4433,7 +4507,7 @@ void main() {
       const collect=mult=>{if(!preview){const b=progress.bank??={undo:0,shuffle:0,hint:0};for(const [k,n] of Object.entries(roll.boosters))b[k]=(b[k]||0)+n*mult;saveProgress()}
         playSound('comboSting',{volume:.6});haptic('pairCleared');if(state.tiles?.length)render();
         const got=!preview&&roll.piece?awardPiece():null,[px,py]=center();done();if(got)setTimeout(()=>pieceShow(got,px,py),300)};
-      scene.onpointerdown=e=>{if(e.target.closest('button'))return;if(!opened){taps++;hint.classList.remove('pulse');if(taps>=3)open();else rattle(taps)}else if(!rewardsShown)showRewards()};
+      scene.onpointerdown=e=>{if(e.target.closest('button'))return;if(!opened){taps++;hint.classList.remove('pulse');if(taps>=need)open();else{if(taps===1)title.textContent=loc('Keep tapping!');rattle(1+(taps-1)/Math.max(1,need-2))}}else if(!rewardsShown)showRewards()};
       // Nobody tapping: the hint grows after 6s; the chest never opens by itself.
       later(()=>{if(!opened)hint.animate([{transform:'scale(1)'},{transform:'scale(1.35)'},{transform:'scale(1)'}],{duration:700,iterations:3})},6000)})}
     // The ad-style button (play triangle + label + (Watch Ad)/(Free)), as on the thaw offer.
@@ -4521,7 +4595,7 @@ void main() {
         go.onclick=()=>{closeWelcome();setTimeout(()=>playStreakScene({frozen:{count:st.count,lastDate:st.lastDate},welcome:true}),320)};
         card.append(welEl('span','wel-kicker',loc('STREAK FROZEN')),ice,welEl('h3','',loc('Your {0}-day streak froze!',st.count)),welEl('p','',loc('Watch a short video to thaw it.')),go)}})}
       if(fresh||progress.level<=1)out.push({id:'avatar-tip',build:card=>{card.append(welEl('span','wel-kicker',loc('YOUR MONKEY')),welEl('h3','',loc('Every player has a monkey card.')));const row=welEl('div','wel-thumbs');for(const id of CHAPTERS[0].region){const img=welEl('img');img.src=cardImage('thumb',CARD_DATA[id]);img.alt='';row.append(img)}card.append(row,welEl('p','',loc('You can change your profile monkey card in Settings once you’ve beaten your first level!')))}});
-      out.push({id:'puzzles-2026',cls:'puzzle',build:card=>{const icon=welEl('div','board-piece');icon.style.cssText='position:static;width:72px';icon.innerHTML=PIECE_ICON;card.append(welEl('span','wel-kicker',loc('NEW: JUNGLE PUZZLES')),icon,welEl('h3','',loc('Puzzle pieces are hiding under cards!')),welEl('p','',loc('Move the card on top to grab one, then build each chapter’s painting from the 🧩 button on the home screen.')))}});
+      out.push({id:'puzzles-2026',cls:'puzzle',build:card=>{const icon=welEl('div','board-piece');icon.style.cssText='position:static;width:72px';icon.innerHTML=PIECE_ICON;card.append(welEl('span','wel-kicker',loc('JUNGLE PUZZLES')),icon,welEl('h3','',loc('Puzzle pieces are hiding under cards!')),welEl('p','',loc('Move the card on top to grab one, then build each chapter’s painting from the 🧩 button on the home screen.')))}});
       // The season cards share the SEASONAL LEVELS switch. The Halloween card's id changed when the season was extended to Nov 30, so
       // players who saw the Nov 2 card see the new date.
       const seasonDip=()=>{const dip=welEl('div','dip three');dip.dataset.setting='season';dip.setAttribute('role','radiogroup');dip.setAttribute('aria-label',loc('SEASONAL LEVELS'));for(const [v,t] of [['only','ONLY'],['mixed','MIXED'],['off','OFF']]){const b=welEl('button','',loc(t));b.dataset.value=v;b.setAttribute('role','radio');dip.append(b)}dip.onclick=dipClick;return dip};

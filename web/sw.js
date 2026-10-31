@@ -1,7 +1,7 @@
 // Offline cache for the installed web app. Pages load network-first so updates show up on the next visit. Images and audio are
 // served from the cache when there (stale-while-revalidate: a fresh copy is fetched in the background for next time), so a card
 // flip never waits on the network; desktop Safari showed blank faces for seconds while each image re-checked the server.
-const CACHE = 'monkeytrubble-v47';
+const CACHE = 'monkeytrubble-v48';
 const MEDIA = /\.(?:jpe?g|png|webp|gif|svg|mp3|wav|m4a|woff2?)$/i;
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(
