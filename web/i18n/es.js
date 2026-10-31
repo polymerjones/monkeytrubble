@@ -1052,6 +1052,8 @@ window.ES_TEXT={
   "Drag the piece to its place":"Arrastra la pieza a su sitio",
   "Puzzles got a snappier feel: drag each piece home and it slams into place. Open them mid-level with the 🧩 too.":"Los puzles se sienten mejor: arrastra cada pieza a su sitio y encaja de golpe. También puedes abrirlos en mitad de un nivel con el 🧩.",
   "Some treasure chests are stubborn. Keep tapping!":"Algunos cofres del tesoro son tercos. ¡Sigue tocando!",
+  "Card flips are smoother: each card turns all the way over instead of blinking.":"Las cartas giran con más suavidad: cada una da la vuelta completa en lugar de parpadear.",
+  "On desktop browsers, cards no longer flicker under the mouse.":"En el navegador de escritorio, las cartas ya no parpadean bajo el ratón.",
   "Your first puzzle is waiting: finish the Poly Card from the 🧩.":"Tu primer puzle te espera: termina la Poly Card desde el 🧩.",
   "YOU FOUND":"ENCONTRASTE",
   "OWL EYES":"OJOS DE BÚHO",
