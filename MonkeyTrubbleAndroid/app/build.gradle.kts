@@ -17,7 +17,7 @@ android {
         applicationId = "com.paulfisher.monkeytrubble"
         minSdk = 26
         targetSdk = 36
-        versionCode = 20
+        versionCode = 21
         versionName = "1.0.1"
 
         // AdMob app ID (Android app in the AdMob console). Release builds use the real rewarded unit; debug builds use Google's

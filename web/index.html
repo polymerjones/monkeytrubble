@@ -3043,7 +3043,7 @@
       $('#rewardSimType').textContent=`Reward: ${type}`;$('#rewardSim').classList.add('show');
       $('#rewardSim').onclick=e=>{const o=e.target.closest('[data-outcome]')?.dataset.outcome;if(!o)return;$('#rewardSim').classList.remove('show');$('#rewardSim').onclick=null;if(o==='twice'){report('completed');report('completed')}else report(o)}}};
     // The app's rewarded ads (Ads.kt): it plays the ad and answers window.__monkeyAdResult(nonce,status). When there's no ad to show
-    // (no fill yet, offline, no consent), the free once-per-level reward stands in so the player isn't left stuck.
+    // (no fill yet, offline, no consent) or it fails to play, the reward is granted free so the player isn't left stuck.
     // While it waits, #adLoading covers the game (the app calls __monkeyAdOpening as the ad goes full screen); a free stand-in reward
     // gets its own stamp, so the tap always visibly does something.
     let nativeAdWaiting=null;
@@ -3051,7 +3051,8 @@
     const nativeAdProvider={show(type,nonce,report){nativeAdWaiting={type,nonce,report};showAdLoading(true);window.webkit.messageHandlers.ads.postMessage({type,nonce})}};
     window.__monkeyAdOpening=()=>showAdLoading(false);
     window.__monkeyAdResult=(nonce,status)=>{const w=nativeAdWaiting;if(!w||w.nonce!==nonce)return;nativeAdWaiting=null;showAdLoading(false);
-      if(status==='unavailable'){const f=state.freeRewards??={};if((f[w.type]||0)<FREE_REWARDS_PER_LEVEL){f[w.type]=(f[w.type]||0)+1;status='completed';setTimeout(()=>chainStamp(loc('THIS ONE’S ON US!'),4),250)}}
+      // No ad to show, or it couldn't play: the reward is always on us, so a Watch Ad tap never leaves the player stuck (a skipped ad still earns nothing).
+      if(status==='unavailable'||status==='failed'){status='completed';setTimeout(()=>chainStamp(loc('THIS ONE’S ON US!'),4),250)}
       w.report(status)};
     // Ad privacy choices (EEA/UK consent): the app says whether the law requires the entry; the Settings row opens Google's form.
     window.__monkeyPrivacyOptions=on=>{$('#adPrivacyRow').hidden=!on};
@@ -3788,6 +3789,7 @@ void main() {
         holoBaseFor(HERO_IMAGES[KEVIN])},{timeout:2000})}
     // Release notes (the home screen's POLY card): what's new for players in the next build. Update for every release.
     const RELEASE_NOTES={version:'1.0.1',lines:[
+      'If no ad is ready when you tap Watch Ad, the reward is free.',
       'NEW: six more puzzle paintings, and puzzle pieces turn up more often.',
       'Finish a puzzle for a bundle of boosters. Your player card shows how many you’ve done.',
       'Finished puzzles save straight to your photos, with the Monkey Trubble mark.',

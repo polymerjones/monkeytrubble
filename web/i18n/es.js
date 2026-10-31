@@ -1014,6 +1014,7 @@ window.ES_TEXT={
   "NEW: six more puzzle paintings, and puzzle pieces turn up more often.":"NUEVO: seis pinturas de puzle más, y las piezas aparecen más a menudo.",
   "Finish a puzzle for a bundle of boosters. Your player card shows how many you’ve done.":"Termina un puzle y gana un paquete de potenciadores. Tu carta de jugador muestra cuántos llevas.",
   "Finished puzzles save straight to your photos, with the Monkey Trubble mark.":"Los puzles terminados se guardan directamente en tus fotos, con la marca de Monkey Trubble.",
+  "If no ad is ready when you tap Watch Ad, the reward is free.":"Si no hay un anuncio listo al tocar Ver anuncio, la recompensa es gratis.",
   "Halloween levels now run until November 30!":"¡Los niveles de Halloween siguen hasta el 30 de noviembre!",
   "After a leaderboard climb, NEXT LEVEL takes you straight on.":"Después de subir en la clasificación, SIGUIENTE NIVEL te lleva directo al siguiente.",
   "Treasure chests land with a thud and a puff of dust.":"Los cofres del tesoro caen con un golpe y una nube de polvo.",
