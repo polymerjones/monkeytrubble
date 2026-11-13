@@ -1052,6 +1052,7 @@ window.ES_TEXT={
   "Drag the piece to its place":"Arrastra la pieza a su sitio",
   "Puzzles got a snappier feel: drag each piece home and it slams into place. Open them mid-level with the 🧩 too.":"Los puzles se sienten mejor: arrastra cada pieza a su sitio y encaja de golpe. También puedes abrirlos en mitad de un nivel con el 🧩.",
   "Some treasure chests are stubborn. Keep tapping!":"Algunos cofres del tesoro son tercos. ¡Sigue tocando!",
+  "Monkey Trubble now plays on iPad, with every card bigger on the big screen.":"Monkey Trubble ya se juega en iPad, con todas las cartas más grandes en la pantalla grande.",
   "Christmas is coming: from December 1, festive Christmas levels with their own cards, snow and music.":"Se acerca la Navidad: desde el 1 de diciembre, niveles navideños con sus propias cartas, nieve y música.",
   "The home screen fits smaller iPhones: nothing gets cut off at the edges.":"La pantalla de inicio cabe en los iPhone más pequeños: ya no se corta nada en los bordes.",
   "The Game Center bubble no longer covers your name on the home screen.":"La burbuja de Game Center ya no tapa tu nombre en la pantalla de inicio.",
