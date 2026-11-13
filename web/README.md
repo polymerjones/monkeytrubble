@@ -98,9 +98,10 @@ Christmas mode is off for players until it's finished. Turn it on with the **SEA
 - **Sparkles:** red, green, gold and white (`CHRISTMAS_DUST`).
 - **Music:** Paul's tracks are in `audio/music/christmas/`, trimmed to -15.8 LUFS. In full Christmas, the home screen plays `xmasmonkey2best` (`CHRISTMAS_HOME`) and Settings plays `xmasmonkey2better` (`CHRISTMAS_SETTINGS`). On levels, Competitive plays only `xmasmonkey2best`, and Relaxed shuffles the other four. Long combos tighten the tone instead of switching to the jungle combo loop, so the Christmas music keeps playing.
 
+Christmas cards: `CHRISTMAS_DECK`, square cards on a smaller board from level 3. The live season (`CHRISTMAS_LIVE`, on since 1.0.2) runs Dec 1 to Jan 6 by the player's local date.
+
 Still to come from Paul:
 - **Sounds:** add files to `SOUND_FILES` and map regular sounds to them in `CHRISTMAS_SFX`, the same way as `HALLOWEEN_SFX`.
-- **Cards:** Christmas levels deal the regular cards for now. Christmas cards will need a deck and card-art hookup like the Halloween one.
 
 ## Chapter art and the Expedition set
 
