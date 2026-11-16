@@ -1058,6 +1058,7 @@ window.ES_TEXT={
   "The Game Center bubble no longer covers your name on the home screen.":"La burbuja de Game Center ya no tapa tu nombre en la pantalla de inicio.",
   "Card flips are bigger and easier to follow, and cards glide into the cage instead of blinking out, especially on iPad.":"Las cartas giran de forma más grande y fácil de seguir, y entran en la jaula deslizándose en lugar de desaparecer, sobre todo en iPad.",
   "POLY payouts run smoother.":"Los premios de POLY van más fluidos.",
+  "Now runs on iPhones and iPads with iOS 16 too.":"Ahora también funciona en iPhone y iPad con iOS 16.",
   "The big card view no longer flashes the wrong picture for a moment.":"La vista de carta grande ya no muestra por un instante la imagen equivocada.",
   "Tapping Home during a POLY payout now waits for the payout to finish.":"Si tocas Inicio durante un premio de POLY, ahora espera a que termine.",
   "On desktop browsers, cards no longer flicker under the mouse.":"En el navegador de escritorio, las cartas ya no parpadean bajo el ratón.",
