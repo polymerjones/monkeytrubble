@@ -1,5 +1,6 @@
 package com.paulfisher.monkeytrubble
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
 import android.graphics.Color
@@ -16,6 +17,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.addCallback
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
@@ -37,6 +39,11 @@ class MainActivity : ComponentActivity() {
     private lateinit var tilt: Tilt
     private lateinit var playGames: PlayGames
     private lateinit var ads: Ads
+    private lateinit var reminders: Reminders
+    /** Android 13+ notification permission, asked only when the player turns REMINDERS on in Settings. */
+    private val notifyPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        reminders.permissionResult(granted)
+    }
     private var systemBars = Insets.NONE
     /** Null until the page first says; older pages keep the tilt sensor on. */
     private var pageWantsMotion: Boolean? = null
@@ -90,7 +97,8 @@ class MainActivity : ComponentActivity() {
             evaluate(String.format(Locale.US, "window.__setMonkeyTilt?.(%.4f,%.4f)", turn, lean))
         }
         ads = Ads(this, ::evaluate)
-        webView.addJavascriptInterface(Bridge(store, Haptics(this, webView), playGames, ads, Perf(this, ::evaluate), Share(this, ::evaluate), motion = { on ->
+        reminders = Reminders(this, ::evaluate) { notifyPermission.launch(Manifest.permission.POST_NOTIFICATIONS) }
+        webView.addJavascriptInterface(Bridge(store, Haptics(this, webView), playGames, ads, Perf(this, ::evaluate), Share(this, ::evaluate), reminders, motion = { on ->
             pageWantsMotion = on
             if (!on) tilt.stop() else if (resumed) tilt.start()
         }, awake = { on ->
@@ -164,7 +172,7 @@ class MainActivity : ComponentActivity() {
         // The hidden dev mode (three taps on the home logo) works in debug builds only, never in a Play build.
         val debug = BuildConfig.DEBUG
         val save = store.save?.let { "window.__monkeySave=${it.replace("</", "<\\/")};" } ?: ""
-        return "${Bridge.SHIM}window.__monkeyDebugBuild=$debug;window.__monkeyDevTaps=$debug;window.__monkeyAds=true;$save"
+        return "${Bridge.SHIM}window.__monkeyDebugBuild=$debug;window.__monkeyDevTaps=$debug;window.__monkeyAds=true;${Reminders.startScript(this@MainActivity)}$save"
     }
 
     /**

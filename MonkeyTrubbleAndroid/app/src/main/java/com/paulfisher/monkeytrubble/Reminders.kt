@@ -1,0 +1,166 @@
+package com.paulfisher.monkeytrubble
+
+import android.app.AlarmManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.edit
+import org.json.JSONArray
+import org.json.JSONObject
+
+/**
+ * Streak reminders (1.1), the Android twin of the iPhone app's Reminders.swift. The page decides everything (which days, which silly
+ * line) and posts {op, on, time, items:[{slot, at (ms), title, body}]}; this replaces every pending reminder with that list, using
+ * inexact alarms (no exact-alarm permission). op "ask" means the player turned REMINDERS on in Settings, the only time the Android 13+
+ * permission pop-up may show; without that permission they stay off (older Android allows them from install). The on/off, time and
+ * list live in their own prefs file, outside Auto Backup (permission is per phone), and the list is re-armed after a reboot. The page
+ * gets the settings at launch as window.__monkeyRemind and hears back through window.__monkeyReminders({status, asked}).
+ */
+class Reminders(private val context: Context, private val evaluate: (String) -> Unit, private val askPermission: () -> Unit) {
+    private var pending: JSONObject? = null
+
+    fun handle(message: JSONObject) {
+        val ask = message.optString("op") == "ask"
+        val on = message.optBoolean("on")
+        val prefs = prefs(context)
+        message.optString("time").takeIf { TIME.matches(it) }?.let { prefs.edit { putString(TIME_KEY, it) } }
+        // A reminder still showing is stale once the game is open.
+        NotificationManagerCompat.from(context).cancelAll()
+        if (!on) {
+            arm(context, JSONArray())
+            finish("off", ask)
+            return
+        }
+        if (NotificationManagerCompat.from(context).areNotificationsEnabled()) {
+            arm(context, message.optJSONArray("items") ?: JSONArray())
+            finish("on", ask)
+        } else if (ask && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            pending = message
+            askPermission()
+        } else {
+            arm(context, JSONArray())
+            finish(if (ask) "denied" else "off", ask)
+        }
+    }
+
+    /** The Android 13+ pop-up's answer (MainActivity's launcher). */
+    fun permissionResult(granted: Boolean) {
+        val message = pending ?: return
+        pending = null
+        if (granted && NotificationManagerCompat.from(context).areNotificationsEnabled()) {
+            arm(context, message.optJSONArray("items") ?: JSONArray())
+            finish("on", true)
+        } else {
+            arm(context, JSONArray())
+            finish("denied", true)
+        }
+    }
+
+    private fun finish(status: String, asked: Boolean) {
+        prefs(context).edit { putBoolean(ON_KEY, status == "on") }
+        evaluate("window.__monkeyReminders?.({status:'$status',asked:$asked})")
+    }
+
+    companion object {
+        private const val PREFS = "monkeytrubble.reminders"
+        private const val ON_KEY = "on"
+        private const val TIME_KEY = "time"
+        private const val ITEMS_KEY = "items"
+        private const val CHANNEL = "reminders"
+        private const val SLOTS = 7
+        private val TIME = Regex("""^\d\d:\d\d$""")
+        const val EXTRA_TITLE = "title"
+        const val EXTRA_BODY = "body"
+
+        private fun prefs(context: Context) = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+
+        /** Runs before the page: on is null until this phone has ever synced (the page then picks ON for a new install). */
+        fun startScript(context: Context): String {
+            val prefs = prefs(context)
+            val on = if (prefs.contains(ON_KEY)) prefs.getBoolean(ON_KEY, false).toString() else "null"
+            val time = prefs.getString(TIME_KEY, null)?.takeIf { TIME.matches(it) } ?: "19:00"
+            return "window.__monkeyRemind={on:$on,time:'$time'};"
+        }
+
+        private fun intent(context: Context, slot: Int, title: String = "", body: String = "") =
+            Intent(context, ReminderReceiver::class.java)
+                .setAction("com.paulfisher.monkeytrubble.REMINDER.$slot")
+                .putExtra(EXTRA_TITLE, title)
+                .putExtra(EXTRA_BODY, body)
+
+        /** Cancels every slot, then sets an alarm for each future item and keeps the list for a reboot. */
+        fun arm(context: Context, items: JSONArray) {
+            val alarms = context.getSystemService(AlarmManager::class.java)
+            for (slot in 0 until SLOTS) {
+                PendingIntent.getBroadcast(context, slot, intent(context, slot), PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE)
+                    ?.let { alarms.cancel(it); it.cancel() }
+            }
+            val now = System.currentTimeMillis()
+            for (i in 0 until items.length()) {
+                val item = items.optJSONObject(i) ?: continue
+                val slot = item.optInt("slot", -1)
+                val at = item.optLong("at")
+                if (slot !in 0 until SLOTS || at <= now) continue
+                val pi = PendingIntent.getBroadcast(
+                    context, slot, intent(context, slot, item.optString("title"), item.optString("body")),
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+                )
+                alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
+            }
+            prefs(context).edit { putString(ITEMS_KEY, items.toString()) }
+        }
+
+        fun rearm(context: Context) {
+            val saved = prefs(context).getString(ITEMS_KEY, null) ?: return
+            arm(context, try { JSONArray(saved) } catch (_: Exception) { return })
+        }
+
+        fun post(context: Context, title: String, body: String) {
+            val manager = NotificationManagerCompat.from(context)
+            if (!manager.areNotificationsEnabled()) return
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.getSystemService(NotificationManager::class.java).createNotificationChannel(
+                    NotificationChannel(CHANNEL, context.getString(R.string.reminders_channel), NotificationManager.IMPORTANCE_DEFAULT)
+                )
+            }
+            val open = PendingIntent.getActivity(
+                context, 0,
+                Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
+            val notification = NotificationCompat.Builder(context, CHANNEL)
+                .setSmallIcon(R.drawable.ic_notify)
+                .setContentTitle(title)
+                .setContentText(body)
+                .setStyle(NotificationCompat.BigTextStyle().bigText(body))
+                .setContentIntent(open)
+                .setAutoCancel(true)
+                .build()
+            try {
+                manager.notify(1, notification)
+            } catch (_: SecurityException) {
+                // Permission taken away between the check and the post: nothing to show.
+            }
+        }
+    }
+}
+
+/** A reminder's alarm went off: show it. */
+class ReminderReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        Reminders.post(context, intent.getStringExtra(Reminders.EXTRA_TITLE).orEmpty(), intent.getStringExtra(Reminders.EXTRA_BODY).orEmpty())
+    }
+}
+
+/** Alarms don't survive a restart; set the saved week again. */
+class ReminderBootReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action == Intent.ACTION_BOOT_COMPLETED) Reminders.rearm(context)
+    }
+}

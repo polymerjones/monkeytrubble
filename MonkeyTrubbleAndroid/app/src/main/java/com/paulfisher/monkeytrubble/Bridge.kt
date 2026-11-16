@@ -16,6 +16,7 @@ class Bridge(
     private val ads: Ads,
     private val perf: Perf,
     private val share: Share,
+    private val reminders: Reminders,
     private val motion: (Boolean) -> Unit,
     private val awake: (Boolean) -> Unit,
 ) {
@@ -70,6 +71,13 @@ class Bridge(
         share.handle(message)
     }
 
+    /** The next week of streak reminders, or none (Reminders.kt). */
+    @JavascriptInterface
+    fun reminders(json: String) {
+        val message = try { JSONObject(json) } catch (_: Exception) { return }
+        main.post { reminders.handle(message) }
+    }
+
     companion object {
         const val NAME = "MonkeyAndroid"
 
@@ -82,6 +90,7 @@ class Bridge(
             "motion:{postMessage:m=>$NAME.motion(!!m)}," +
             "screen:{postMessage:m=>$NAME.screen(!!m)}," +
             "perf:{postMessage:m=>$NAME.perf(JSON.stringify(m))}," +
-            "share:{postMessage:m=>$NAME.share(JSON.stringify(m))}}};"
+            "share:{postMessage:m=>$NAME.share(JSON.stringify(m))}," +
+            "reminders:{postMessage:m=>$NAME.reminders(JSON.stringify(m))}}};"
     }
 }

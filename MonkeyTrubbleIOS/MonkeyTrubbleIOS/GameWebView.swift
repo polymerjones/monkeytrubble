@@ -23,6 +23,7 @@ struct GameWebView: UIViewRepresentable {
         controller.add(context.coordinator, name: "share")
         controller.add(context.coordinator, name: "screen")
         controller.add(context.coordinator, name: "perf")
+        controller.add(context.coordinator, name: "reminders")
         // Debug builds (Xcode / ship) keep the page's dev mode on; Release builds (TestFlight, App Store) turn it off.
         #if DEBUG
         let debugBuild = true
@@ -33,7 +34,7 @@ struct GameWebView: UIViewRepresentable {
         // The hidden dev mode (three taps on the home logo) works in Debug builds only. Not in TestFlight either: App Review installs
         // builds the same way TestFlight does, and guideline 2.3.1 forbids hidden features.
         controller.addUserScript(WKUserScript(
-            source: "window.__monkeyDebugBuild = \(debugBuild); window.__monkeyDevTaps = \(debugBuild); window.__monkeyAds = true;",
+            source: "window.__monkeyDebugBuild = \(debugBuild); window.__monkeyDevTaps = \(debugBuild); window.__monkeyAds = true;" + Reminders.startScript,
             injectionTime: .atDocumentStart,
             forMainFrameOnly: true
         ))
@@ -133,6 +134,7 @@ struct GameWebView: UIViewRepresentable {
     final class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
         let services = GameServices()
         let ads = Ads()
+        let reminders = Reminders()
         private var consentAsked = false
         private weak var webView: WKWebView?
         private let lightImpact = UIImpactFeedbackGenerator(style: .light)
@@ -154,6 +156,7 @@ struct GameWebView: UIViewRepresentable {
             self.webView = webView
             services.attach(webView)
             ads.attach(webView)
+            reminders.attach(webView)
             lightImpact.prepare()
             mediumImpact.prepare()
             notification.prepare()
@@ -311,6 +314,11 @@ struct GameWebView: UIViewRepresentable {
             }
             if message.name == "gameCenter", let body = message.body as? [String: Any] {
                 services.handle(body)
+                return
+            }
+            // Streak reminders (Reminders.swift): the page sends the next week's list whenever it changes.
+            if message.name == "reminders", let body = message.body as? [String: Any] {
+                reminders.handle(body)
                 return
             }
             if message.name == "ads", let body = message.body as? [String: Any] {
