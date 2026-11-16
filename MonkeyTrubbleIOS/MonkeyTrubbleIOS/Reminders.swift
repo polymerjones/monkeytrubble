@@ -10,7 +10,7 @@ import UserNotifications
 /// gets them at launch as window.__monkeyRemind and hears back through window.__monkeyReminders({status, asked}), status being
 /// on, quiet (provisional), off or denied.
 @MainActor
-final class Reminders {
+final class Reminders: NSObject, UNUserNotificationCenterDelegate {
     private weak var webView: WKWebView?
     private static let onKey = "reminders.on"
     private static let timeKey = "reminders.time"
@@ -22,8 +22,59 @@ final class Reminders {
         let body: String
     }
 
+    /// The week's ids; only these are replaced, so a dev test reminder survives a sync.
+    private static let weekIDs = (0..<7).map { "reminder-\($0)" }
+    nonisolated private static let testID = "reminder-test"
+
     func attach(_ webView: WKWebView) {
         self.webView = webView
+        UNUserNotificationCenter.current().delegate = self
+    }
+
+    /// iOS hides notifications while the app is open; the dev test shows anyway, real reminders don't (you're already playing).
+    nonisolated func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler(notification.request.identifier == Self.testID ? [.banner, .list, .sound] : [])
+    }
+
+    /// Dev tools TEST: {op:'test', delay (s), title, body}. Asks for full permission if needed, then counts the delay from there,
+    /// so time spent on the pop-up doesn't eat it. Answers window.__monkeyReminderTest(status). Leaves REMINDERS as it is.
+    private func test(_ body: [String: Any]) {
+        let delay = max(1, (body["delay"] as? NSNumber)?.doubleValue ?? 10)
+        let title = body["title"] as? String ?? "Monkey Trubble"
+        let text = body["body"] as? String ?? ""
+        let center = UNUserNotificationCenter.current()
+        let fire: @Sendable (String) -> Void = { status in
+            if status == "on" || status == "quiet" {
+                let content = UNMutableNotificationContent()
+                content.title = title
+                content.body = text
+                content.sound = .default
+                center.add(UNNotificationRequest(identifier: Self.testID, content: content,
+                                                 trigger: UNTimeIntervalNotificationTrigger(timeInterval: delay, repeats: false)))
+            }
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated { _ = self.webView?.evaluateJavaScript("window.__monkeyReminderTest?.('\(status)')") }
+            }
+        }
+        let name: @Sendable (UNAuthorizationStatus) -> String = {
+            switch $0 {
+            case .authorized, .ephemeral: return "on"
+            case .provisional: return "quiet"
+            case .denied: return "denied"
+            default: return "off"
+            }
+        }
+        center.getNotificationSettings { settings in
+            let status = settings.authorizationStatus
+            guard status == .notDetermined || status == .provisional else { fire(name(status)); return }
+            center.requestAuthorization(options: [.alert, .sound]) { _, _ in
+                center.getNotificationSettings { fire(name($0.authorizationStatus)) }
+            }
+        }
     }
 
     /// Runs before the page: on is null until this device has ever synced (the page then picks: ON for a new install, OFF otherwise).
@@ -35,6 +86,7 @@ final class Reminders {
     }
 
     func handle(_ body: [String: Any]) {
+        if body["op"] as? String == "test" { test(body); return }
         let ask = body["op"] as? String == "ask"
         let on = body["on"] as? Bool ?? false
         if let time = body["time"] as? String { UserDefaults.standard.set(time, forKey: Self.timeKey) }
@@ -46,7 +98,7 @@ final class Reminders {
         // A reminder sitting in Notification Center is stale once the game is open.
         UNUserNotificationCenter.current().removeAllDeliveredNotifications()
         guard on else {
-            UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: Self.weekIDs)
             finish("off", asked: ask)
             return
         }
@@ -77,7 +129,7 @@ final class Reminders {
         case .notDetermined where mayRequest:
             request(ask ? [.alert, .sound] : [.alert, .sound, .provisional], items: items, ask: ask)
         case .denied, .notDetermined:
-            center.removeAllPendingNotificationRequests()
+            center.removePendingNotificationRequests(withIdentifiers: Self.weekIDs)
             finish(status == .denied ? "denied" : "off", asked: ask)
         @unknown default:
             finish("off", asked: ask)
@@ -94,7 +146,7 @@ final class Reminders {
 
     private func schedule(_ items: [Item]) {
         let center = UNUserNotificationCenter.current()
-        center.removeAllPendingNotificationRequests()
+        center.removePendingNotificationRequests(withIdentifiers: Self.weekIDs)
         let calendar = Calendar.current
         for item in items where item.at > Date() {
             let content = UNMutableNotificationContent()

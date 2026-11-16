@@ -26,6 +26,7 @@ class Reminders(private val context: Context, private val evaluate: (String) -> 
     private var pending: JSONObject? = null
 
     fun handle(message: JSONObject) {
+        if (message.optString("op") == "test") { test(message); return }
         val ask = message.optString("op") == "ask"
         val on = message.optBoolean("on")
         val prefs = prefs(context)
@@ -49,9 +50,30 @@ class Reminders(private val context: Context, private val evaluate: (String) -> 
         }
     }
 
+    /** Dev tools TEST: one notification `delay` seconds after permission is settled; REMINDERS stays as it is. */
+    private fun test(message: JSONObject) {
+        if (!NotificationManagerCompat.from(context).areNotificationsEnabled() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            pending = message
+            askPermission()
+            return
+        }
+        fireTest(message)
+    }
+
+    private fun fireTest(message: JSONObject) {
+        val on = NotificationManagerCompat.from(context).areNotificationsEnabled()
+        if (on) {
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                post(context, message.optString("title"), message.optString("body"))
+            }, (message.optDouble("delay", 10.0) * 1000).toLong())
+        }
+        evaluate("window.__monkeyReminderTest?.('${if (on) "on" else "denied"}')")
+    }
+
     /** The Android 13+ pop-up's answer (MainActivity's launcher). */
     fun permissionResult(granted: Boolean) {
         val message = pending ?: return
+        if (message.optString("op") == "test") { pending = null; fireTest(message); return }
         pending = null
         if (granted && NotificationManagerCompat.from(context).areNotificationsEnabled()) {
             arm(context, message.optJSONArray("items") ?: JSONArray())
