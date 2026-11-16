@@ -20,6 +20,12 @@ ADB=~/Library/Android/sdk/platform-tools/adb
    ```
    If it fails, stop and fix the error before building.
 
+   **What's New version check (warn, don't block):** compare the POLY card's notes version with the app version:
+   ```sh
+   cd <repo root> && notes=$(grep -o "RELEASE_NOTES={version:'[^']*'" web/index.html | grep -o "'.*'" | tr -d "'"); app=$(grep -m1 -o 'versionName = "[0-9.]*"' MonkeyTrubbleAndroid/app/build.gradle* | grep -o '[0-9][0-9.]*'); [ "$notes" = "$app" ] && echo "What's New $notes matches the app" || echo "WARNING: What's New says $notes but the Android versionName is $app"
+   ```
+   On a mismatch, mention it in the report. It's fine for a native-only release (1.0.4 kept the 1.0.3 notes), but a release with player-facing changes should bump `RELEASE_NOTES.version` (2026-11-16: players saw 1.0.3 notes on 1.0.4).
+
 2. **Find the device:**
    ```sh
    $ADB devices -l

@@ -792,7 +792,7 @@
     .tile.board-tile.poly-thick.poly-thick{box-shadow:1px 1px 0 #fff4c9,2px 2px 0 #ffeaa6,3px 3px 0 #f6dc88,4px 4px 0 #ecca6c,5px 5px 0 #e0b955,6px 6px 0 #d3a845,7px 7px 0 #c39538,8px 8px 0 #b0822d,9px 9px 0 #9a6f24,10px 10px 0 #80591c,11px 11px 0 #614214,12px 12px 0 #3d2a0c,13px 14px 0 #000a,0 16px 22px #000c}
     .tile.board-tile.poly-thick.poly-ice{box-shadow:1px 1px 0 #ffffff,2px 2px 0 #eef8ff,3px 3px 0 #dff1ff,4px 4px 0 #cde9ff,5px 5px 0 #bbe0fb,6px 6px 0 #a7d3f3,7px 7px 0 #92c4ea,8px 8px 0 #7cb2dd,9px 9px 0 #669ccb,10px 10px 0 #4f84b4,11px 11px 0 #3a6a96,12px 12px 0 #234a6e,13px 14px 0 #000a,0 16px 22px #000c}
     /* The POLY payout show: under the flying cards (#dragLayer 3000) and the sparkles, over the board and the cage. */
-    .poly-show{position:fixed;inset:0;z-index:2900;pointer-events:none;overflow:hidden}
+    .poly-show{position:fixed;inset:0;z-index:2900;pointer-events:none;overflow:hidden}html.fx-polyLite body.poly-busy .app{will-change:translate}body.poly-busy #homeBtn{opacity:.45;transition:opacity .2s}
     .poly-dim{position:absolute;inset:0;background:linear-gradient(#000000b8 0,#00000066 34%,#0000002e 60%,#00000040);transition:box-shadow .3s}
     .poly-show.ice .poly-dim{background:linear-gradient(#04182cbf 0,#04182c66 34%,#04182c2e 60%,#04182c40)}
     .poly-show.jackpot .poly-dim{box-shadow:inset 0 0 90px 26px #ffd84dcc}
@@ -966,7 +966,7 @@
     // card's back face (with a holo band 4 cards wide) only exists while the card is turned past edge-on.
     // streakLite (2026-10-24, Paul saw a low frame rate on the streak scene): the rays are a baked bitmap that only rotates, the flame
     // licks are HTML layers, and the climax shake moves the stage with transform (off: the conic gradient under a mask).
-    const FX={shineSleep:true,tiltLite:true,driftLiteral:true,cageShineOnce:true,glowOpacity:true,owlSlow:true,waterSleep:true,audioSleep:true,lightPreload:true,renderCache:true,clockSleep:true,bakedField:true,canvasBurst:true,clearLite:true,edgeLite:true,overlayLite:true,instantFlip:true,flipTurn:true,sceneClock:true,idleRest:true,lighterLayers:true,owlOnce:true,motionGate:true,audioIdle:true,restGuard:true,holoCard:true,tutLite:true,streakLite:true,lightboxLite:true,halloweenLite:true,avatarLite:true,raysLite:true,homeRest:true,lightboxRest:true,sceneShared:true,memLite:true,settingsWarm:true,clearSmooth:true};
+    const FX={shineSleep:true,tiltLite:true,driftLiteral:true,cageShineOnce:true,glowOpacity:true,owlSlow:true,waterSleep:true,audioSleep:true,lightPreload:true,renderCache:true,clockSleep:true,bakedField:true,canvasBurst:true,clearLite:true,edgeLite:true,overlayLite:true,instantFlip:true,flipTurn:true,flipPop:true,polyLite:true,sceneClock:true,idleRest:true,lighterLayers:true,owlOnce:true,motionGate:true,audioIdle:true,restGuard:true,holoCard:true,tutLite:true,streakLite:true,lightboxLite:true,halloweenLite:true,avatarLite:true,raysLite:true,homeRest:true,lightboxRest:true,sceneShared:true,memLite:true,settingsWarm:true,clearSmooth:true};
     // Dev tools can flip any switch for A/B testing on the phone (saved, applied on reload).
     try{const saved=JSON.parse(localStorage.getItem('monkeyFX')||'{}');for(const k in FX)if(typeof saved[k]==='boolean')FX[k]=saved[k]}catch{}
     for(const[k,on]of Object.entries(FX))document.documentElement.classList.toggle(`fx-${k}`,on);
@@ -993,7 +993,7 @@
     clearPair=perf.wrap('pairClear',clearPair,{frame:true});playChestScene=perf.wrap('chest',playChestScene);openPuzzle=perf.wrap('openPuzzle',openPuzzle,{frame:true});
     preloadAssets=perf.wrap('preloadAssets',preloadAssets);decodeLevelImages=perf.wrap('decodeLevelImages',decodeLevelImages);playExpedition=perf.wrap('expeditionMap',playExpedition);
     showWinScore=perf.wrap('winScore',showWinScore);startLevel=perf.wrap('startLevel',startLevel,{frame:true});shuffleFx=perf.wrap('shuffle',shuffleFx,{frame:true});
-    openSettings=perf.wrap('openSettings',openSettings,{frame:true});openLightbox=perf.wrap('openLightbox',openLightbox,{frame:true});
+    openSettings=perf.wrap('openSettings',openSettings,{frame:true});openLightbox=perf.wrap('openLightbox',openLightbox,{frame:true});handleTile=perf.wrap('tap',handleTile,{frame:true});  // tap: card tap to its first painted frame (iPad perf pass 2026-11-16)
     const JOKER='JOKER',KEVIN='KEVIN',POLY='POLY',WAR_CLEARS=['warClear1','warClear2','warClear3'];
     // One card per look-alike group (chimps keep two). Retired near-duplicates (2026-10-07): IMG_7573, 7576, 7581, 7582, 7583, 7585, 7597, 7599, 7600.
     // `facts` are rotated on the hero card (pickFact). `sounds` lists the calls a card can play when its pair clears (keys of SOUND_FILES); `clearExtras` adds one random clip on top. `echoes` sets how many times the clear call echoes (default 1). `paleShine` gives grey/white-furred cards a screen-blend shine.
@@ -1575,25 +1575,32 @@
     // was left open a few minutes the engine came back "running" but silent. audioCheck notes the engine clock so the next tap can
     // tell a stalled engine (clock not moving) and kick it again.
     let audioCheck=null;
+    // Audio diary (Paul 2026-11-16: back from sending a text in Messages, the game was silent). The last 40 audio events with the
+    // engine's state, so COPY PERF LOG after a repro shows which way back failed. A few object pushes per app switch; always on.
+    const audioLog=[],audioSnap=()=>({st:audioContext?.state,t:audioContext?+audioContext.currentTime.toFixed(2):null,out:outGain?+outGain.gain.value.toFixed(3):null,musicPaused:!!music?.paused,musicReady:music?.readyState,musicErr:music?.error?.code,sound:soundEnabled,unlocked:audioUnlocked,hidden:document.hidden});
+    function audioNote(ev,extra){audioLog.push({ev,at:Math.round(performance.now()),...audioSnap(),...extra});if(audioLog.length>40)audioLog.shift()}
+    window.__audioNote=(ev,extra)=>audioNote(`native:${ev}`,extra);
     const audioStalled=()=>{if(!audioCheck||audioContext?.state!=='running')return false;const real=(performance.now()-audioCheck.at)/1000,moved=audioContext.currentTime-audioCheck.t;audioCheck=null;return real>.3&&moved<real*.5};
-    function resumeMonkeyAudio(kick=false){if(document.hidden)return;quietToken++;fadeOutput(1,.15);const ready=engineAsleep()?audioContext.resume():Promise.resolve();
+    function resumeMonkeyAudio(kick=false){audioNote(kick===true?'resume:kick':'resume');if(document.hidden)return;quietToken++;setTimeout(()=>audioNote('resume:+1s'),1000);fadeOutput(1,.15);const ready=engineAsleep()?audioContext.resume():Promise.resolve();
       // Paul, later on the 24th: restarting a working engine after every ad cut the sound out and stuttered (and the clock check, taken
       // mid-restart, kept re-triggering it). Now a working engine is left alone; its clock is noted once it runs, and the next tap
       // restarts it only if that clock really stood still.
       if(kick===true&&audioContext)ready.then(()=>setTimeout(()=>{if(audioContext.state==='running')audioCheck={t:audioContext.currentTime,at:performance.now()}},400)).catch(()=>{});
       if(soundEnabled&&audioUnlocked)music.play().catch(()=>{})}
     // A stalled engine (says running, clock not moving) gets one suspend/resume; no new check after it, so it can't loop.
-    function restartAudioEngine(){if(!audioContext||audioContext.state!=='running'||FX.audioIdle&&!soundEnabled)return;audioContext.suspend().then(()=>audioContext.resume()).catch(()=>{})}
+    function restartAudioEngine(){audioNote('restart');if(!audioContext||audioContext.state!=='running'||FX.audioIdle&&!soundEnabled)return;audioContext.suspend().then(()=>audioContext.resume()).catch(()=>{})}
     // No buzz when the audio stops (2026-10-22). Cutting the engine mid-sound (app closing, an ad taking over the audio) left the
     // phone repeating the last scrap of output as a loud high buzz. So the output fades to silence first, then the music pauses
     // and the engine sleeps. The apps call __quietMonkeyAudio as they lose focus or before an ad; coming back fades it up again.
-    function fadeOutput(level,seconds){if(!outGain)return;const t=audioContext.currentTime,g=outGain.gain;g.cancelScheduledValues(t);g.setValueAtTime(g.value,t);g.linearRampToValueAtTime(level,t+seconds)}
-    function quietMonkeyAudio(){const token=++quietToken,sleep=()=>{if(token!==quietToken)return;music.pause();if(FX.audioSleep&&audioContext?.state==='running')audioContext.suspend().catch(()=>{})};
+    // An engine that isn't running has a frozen clock, so a ramp scheduled now could sit there; set the level outright instead
+    // (2026-11-16, while chasing the silent-after-Messages report).
+    function fadeOutput(level,seconds){if(!outGain)return;const t=audioContext.currentTime,g=outGain.gain;g.cancelScheduledValues(t);if(audioContext.state!=='running'){g.value=level;return}g.setValueAtTime(g.value,t);g.linearRampToValueAtTime(level,t+seconds)}
+    function quietMonkeyAudio(){audioNote('quiet');const token=++quietToken,sleep=()=>{if(token!==quietToken)return;music.pause();if(FX.audioSleep&&audioContext?.state==='running')audioContext.suspend().catch(()=>{})};
       if(audioContext?.state!=='running'){sleep();return Promise.resolve()}fadeOutput(0,.06);return new Promise(r=>setTimeout(()=>{sleep();r()},80))}
     window.__quietMonkeyAudio=quietMonkeyAudio;
-    {const retry=()=>{if(!audioUnlocked||document.hidden)return;if(audioStalled())restartAudioEngine();else if(engineAsleep()||soundEnabled&&music.paused)resumeMonkeyAudio()};
+    {const retry=e=>{if(!audioUnlocked||document.hidden)return;if(audioCheck)audioNote(`check:${e?.type}`);if(audioStalled())restartAudioEngine();else if(engineAsleep()||soundEnabled&&music.paused){audioNote(`retry:${e?.type}`);resumeMonkeyAudio()}};
       for(const type of ['pointerdown','touchend','keydown'])addEventListener(type,retry,{capture:true,passive:true});
-      addEventListener('pageshow',retry);addEventListener('focus',retry);audioContext?.addEventListener('statechange',retry)}
+      addEventListener('pageshow',retry);addEventListener('focus',retry);audioContext?.addEventListener('statechange',e=>{audioNote('statechange');retry(e)})}
     // Visible again: resume now, and once more 400ms later with the stalled-engine check armed (the app may still have its media
     // suspended at the first call; iPhone, back from Notes during a puzzle, 2026-10-30).
     window.__resumeMonkeyAudio=resumeMonkeyAudio;document.addEventListener('visibilitychange',()=>{syncAmbience();if(!document.hidden&&progress.player&&!$('#home').classList.contains('hidden')&&!document.querySelector('.overlay.show')&&welcomeDue())openWelcome();if(!document.hidden){ambient.wake();homeSnow.wake()}if(document.hidden){quietMonkeyAudio();if(state.clock.startedAt!=null){pauseClock();state.clock.resume=true}}else{resumeMonkeyAudio();setTimeout(()=>{if(!document.hidden)resumeMonkeyAudio(true)},400);if(state.clock.resume){state.clock.resume=false;startClock()}}});
@@ -2355,10 +2362,18 @@
     const faceSrc=symbol=>{const v=packVariant(symbol);return boardSrc(v?cardImage('thumb',v):SYMBOL_IMAGES[symbol],squareCards())};
     function faceReady(symbol){const src=faceSrc(symbol);if(!src)return Promise.resolve();const img=new Image();img.src=src;faceHold.add(img);setTimeout(()=>faceHold.delete(img),3000);return img.decode?img.decode().then(()=>{decodedFaces.add(src)},()=>{}):Promise.resolve()}
     const faceOrTimeout=ready=>Promise.race([ready,new Promise(resolve=>setTimeout(resolve,120))]);
-    const FLIP_OUT_MS=150,FLIP_IN_MS=185;
+    const FLIP_OUT_MS=150,FLIP_IN_MS=185,FLIP_EDGE=78;
     const FLIP_VARIANTS=[{axis:'Y',sign:-1,x:-2,y:-1},{axis:'Y',sign:1,x:2,y:-1},{axis:'X',sign:1,x:0,y:-3},{axis:'X',sign:-1,x:0,y:3}];
-    function flipFrames(variant,opening=false){
-      const {axis,sign,x,y}=variant,angle=n=>`rotate${axis}(${n*sign}deg)`,pose=(degrees,progress,scale)=>`translate(calc(-50% + ${x*progress}px),calc(-50% + ${y*progress}px)) perspective(700px) ${angle(degrees)} scale(${scale})`;
+    // pop (FX.flipPop): the card lifts toward the player through the turn (up to ~1.14x, a deeper sideways nudge) instead of ~1.045x.
+    function flipFrames(variant,opening=false,pop=FX.flipPop){  // every flip (undo, Owl Eyes peeks, auto pairs, drag reveal) gets it
+      const {axis,sign,x,y}=variant,k=pop?2.6:1,s=n=>pop?1+(n-1)*2.6:n,angle=n=>`rotate${axis}(${n*sign}deg)`,pose=(degrees,progress,scale)=>`translate(calc(-50% + ${x*progress*k}px),calc(-50% + ${y*progress*k}px)) perspective(700px) ${angle(degrees)} scale(${s(scale)})`;
+      // pop also spreads the opening's angle evenly: the iPad recording (2026-11-16, 60fps) showed the old curve nearly flat by the
+      // second frame, so the turn read as the card vanishing and reappearing.
+      // It also never reaches edge-on (Paul's second iPad recording: at exactly 90deg a flat card has no width, so with the easing at
+      // both ends the slot sat empty for ~3 frames, a blink). Each half stops at FLIP_EDGE, where a sliver still shows, like a card's thickness.
+      if(pop)return opening
+        ?[{transform:pose(-FLIP_EDGE,0,1.05)},{offset:.3,transform:pose(-55,.6,1.05)},{offset:.65,transform:pose(-20,1,1.055)},{offset:.88,transform:pose(5,.3,1.012)},{transform:pose(0,0,1)}]
+        :[{transform:pose(0,0,1)},{offset:.4,transform:pose(28,1,1.04)},{offset:.75,transform:pose(58,.6,1.05)},{transform:pose(FLIP_EDGE,0,1.05)}];
       return opening
         ?[{transform:pose(-90,0,.98)},{offset:.24,transform:pose(-68,.55,1.025)},{offset:.62,transform:pose(-28,1,1.045)},{offset:.86,transform:pose(4,.25,1.01)},{transform:pose(0,0,1)}]
         :[{transform:pose(0,0,1)},{offset:.45,transform:pose(42,1,1.045)},{offset:.78,transform:pose(72,.55,1.025)},{transform:pose(90,0,.98)}];
@@ -2421,12 +2436,15 @@
     // (Paul 2026-10-31). Now a copy of the card as it was turns away on #dragLayer (FLIP_TURN_MS) while the real card waits edge-on,
     // then the new side opens. Only the picture waits: the game state has already flipped, so taps still go straight through.
     // flipLead: set while instantFlip runs an auto-match, so the card flying to the cage opens after the turn-away (flyToTray).
-    const FLIP_TURN_MS=90;let flipLead=0;
+    // flipPop (Paul 2026-11-16, iPad: "the cards disappear instead of flipping"): the 90ms turn-away and 185ms front-loaded opening
+    // read as a blink on big cards. With it on, the turn-away takes 110ms (moving from the first frame), the opening 250ms with a softer ease, and the card lifts
+    // through the turn (flipFrames pop). The game state still flips on the tap, so fast play isn't slowed.
+    const FLIP_TURN_MS=90;let flipLead=0;const flipTurnMs=()=>FX.flipPop?110:FLIP_TURN_MS,flipInMs=()=>FX.flipPop?250:FLIP_IN_MS,flipInEase=()=>FX.flipPop?'cubic-bezier(.3,.45,.4,1)':FLIP_EASE,flipOutEase=()=>FX.flipPop?'cubic-bezier(.15,.35,.55,1)':'cubic-bezier(.38,0,.7,1)';  // pop: moving from the first frame (an ease-in sat still ~3 frames, read as a hitch on the tap, Paul 2026-11-16)
     function turnAway(node,variant){if(!FX.flipTurn||!node?.isConnected||!node.offsetWidth)return 0;
       const r=node.getBoundingClientRect(),g=node.cloneNode(true);g.removeAttribute('data-id');g.classList.remove('board-tile','on-top','touch-glow');
       Object.assign(g.style,{left:`${r.left+r.width/2}px`,top:`${r.top+r.height/2}px`,zIndex:'',pointerEvents:'none'});g.style.setProperty('--tile-w',`${node.offsetWidth}px`);g.style.setProperty('--tile-h',`${node.offsetHeight}px`);
-      $('#dragLayer').append(g);const turn=g.animate(flipFrames(variant),{duration:FLIP_TURN_MS,easing:'cubic-bezier(.38,0,.7,1)',fill:'forwards'}),done=()=>g.remove();
-      turn.onfinish=done;turn.oncancel=done;setTimeout(done,FLIP_TURN_MS+300);return FLIP_TURN_MS}
+      $('#dragLayer').append(g);const ms=flipTurnMs(),turn=g.animate(flipFrames(variant,false,FX.flipPop),{duration:ms,easing:flipOutEase(),fill:'forwards'}),done=()=>g.remove();
+      turn.onfinish=done;turn.oncancel=done;setTimeout(done,ms+300);return ms}
     function instantFlip(tile,previous,matchingFlip){
       state.history.push(snapshot('flip'));playSound('pickup',{volume:.075,rate:1.12+Math.random()*.08});haptic('cardFlip');
       const turnBack=previous&&!matchingFlip;if(turnBack){previous.revealed=false;previous.temporaryReveal=false}
@@ -2434,10 +2452,10 @@
       const lead=turnAway(board.querySelector(`[data-id="${tile.id}"]`),v),backLead=turnBack?turnAway(board.querySelector(`[data-id="${previous.id}"]`),pv):0;
       const src=faceSrc(tile.symbol),faceIn=!src||decodedFaces.has(src)?null:faceReady(tile.symbol);
       tile.revealed=true;tile.temporaryReveal=true;tile.revealedAt=performance.now();if(faceIn)asyncFace=tile.id;render();asyncFace=null;
-      if(turnBack)board.querySelector(`[data-id="${previous.id}"]`)?.animate(flipFrames(pv,true),{duration:FLIP_IN_MS,delay:backLead,fill:'backwards',easing:FLIP_EASE});
+      if(turnBack)board.querySelector(`[data-id="${previous.id}"]`)?.animate(flipFrames(pv,true,FX.flipPop),{duration:flipInMs(),delay:backLead,fill:'backwards',easing:flipInEase()});
       const node=board.querySelector(`[data-id="${tile.id}"]`);
       flipLead=lead;const auto=autoResolveRevealed(tile,previous,true,AUTO_READ_MS+lead);flipLead=0;if(!auto)setMessage('');
-      if(tile.active&&node){const turn=node.animate(flipFrames(v,true),{duration:FLIP_IN_MS,delay:lead,fill:'backwards',easing:FLIP_EASE});if(faceIn){turn.pause();Promise.all([faceOrTimeout(faceIn),new Promise(r=>setTimeout(r,lead))]).then(()=>{turn.currentTime=lead;turn.play()})}}
+      if(tile.active&&node){const turn=node.animate(flipFrames(v,true,FX.flipPop),{duration:flipInMs(),delay:lead,fill:'backwards',easing:flipInEase()});if(faceIn){turn.pause();Promise.all([faceOrTimeout(faceIn),new Promise(r=>setTimeout(r,lead))]).then(()=>{turn.currentTime=lead;turn.play()})}}
       tutorialEvent('flipped')
     }
     function commitTile(tile,node,recordHistory){
@@ -2447,7 +2465,9 @@
       else{setMessage(loc('CAGED // {0} of 4',waitingInCage()));if(waitingInCage()>=3&&state.shufflesLeft<=0)cueAdBooster('shuffle');if(isStuck()){const s=state;s.over=true;s.locked=true;setTimeout(()=>{if(s===state)finish(false,'stuck')},260)}}
     }
     // Auto-match after a flip (fast): the card heads for the cage sooner and quicker, and the pair clears as it lands.
-    const AUTO_READ_MS=90,AUTO_FLIGHT_MS=180,AUTO_CLEAR_MS=190;
+    // flipPop (Paul 2026-11-16: "the auto match makes the card disappear"): the face was readable for ~90ms, then faded to 20% as it
+    // flew. Now it holds 250ms, flies 220ms at full strength onto its cage slot, and the pair clears as it lands (~600ms tap to gone, was ~410).
+    const AUTO_READ_MS=FX.flipPop?250:90,AUTO_FLIGHT_MS=FX.flipPop?220:180,AUTO_CLEAR_MS=FX.flipPop?250:190;
     function autoResolveRevealed(tile,previous,fast=false,beat=0){
       if(!tile.active||!tile.revealed||!isFree(tile))return false;
       // Flipping Kevin up only shows him; MVP Vision needs a deliberate tap on the revealed card.
@@ -2742,7 +2762,7 @@
     function findTrayPair(symbol){const items=state.tray.map((t,i)=>({t,i})).filter(x=>!state.clearing.has(x.t.id)),same=items.filter(x=>x.t.symbol===symbol);if(symbol!==JOKER&&same.length>=2)return same.slice(0,2);const joker=items.find(x=>x.t.symbol===JOKER),other=symbol===JOKER?items.find(x=>x.t.symbol!==JOKER):same[0];return joker&&other?[other,joker]:null}
     // Clearing never locks the board: the pair is reserved at once, leaves the cage after its fly-in, and pops on stand-in copies
     // while play continues.
-    function scheduleClear(symbol,ids,delay=260){
+    function scheduleClear(symbol,ids,delay=260){if(FX.flipPop)delay=Math.max(delay,flightLandsAt-performance.now()+30);  // never clear under a card still flying in
       const pair=ids?state.tray.filter(t=>ids.includes(t.id)):findTrayPair(symbol)?.map(x=>x.t);if(!pair||pair.length<2)return;
       const s=state,pairIds=pair.map(t=>t.id);pairIds.forEach(id=>s.clearing.add(id));render();setTimeout(()=>{if(s===state)clearPair(pairIds)},delay)
     }
@@ -2910,7 +2930,7 @@
       return out
     }
     function firePoly(tile){
-      const s=state,ice=polyIce(),node=tile&&board.querySelector(`[data-id="${tile.id}"]`),span=perf.begin('poly'),opening=perf.begin('polyStart');s.locked=true;startClock();clearHint();
+      const s=state,ice=polyIce(),node=tile&&board.querySelector(`[data-id="${tile.id}"]`),span=perf.begin('poly'),opening=perf.begin('polyStart');s.locked=true;document.body.classList.add('poly-busy');startClock();clearHint();
       // clearSmooth: the pair search (solveLine, ~170ms on a 6x-slowed CPU) runs before anything moves, so it's a beat on the tap
       // instead of freezing the opening burst (Paul 2026-10-30). The POLY card is taken off the board first, as before.
       if(tile){tile.active=false;tile.temporaryReveal=false}
@@ -2924,7 +2944,7 @@
       const jackpotAt=pairs.length?POLY_IN_MS+(pairs.length-1)*beat+POLY_FLY_MS+90:POLY_IN_MS;
       setTimeout(()=>{if(s===state)polyJackpot(st,ice,pairs.length)},jackpotAt);
       // Only Kevin left (nothing to reveal any more): he pops off too, so the level ends.
-      setTimeout(()=>{st.root.animate([{opacity:1},{opacity:0}],{duration:320,fill:'forwards'}).onfinish=()=>{st.root.remove();perf.end(span)};if(ownLoop){polyMusic=false;if(s===state&&(s.chain?.n||0)<COMBO_SWAP_AT)comboMusicOff({fade:1.2})}  /* 1.2s: a .15s hand-back sounded like the music dying (Paul 2026-10-30) */if(s!==state)return;s.locked=false;s.history=[];
+      setTimeout(()=>{st.root.animate([{opacity:1},{opacity:0}],{duration:320,fill:'forwards'}).onfinish=()=>{st.root.remove();perf.end(span)};if(ownLoop){polyMusic=false;if(s===state&&(s.chain?.n||0)<COMBO_SWAP_AT)comboMusicOff({fade:1.2})}  /* 1.2s: a .15s hand-back sounded like the music dying (Paul 2026-10-30) */document.body.classList.remove('poly-busy');if(s!==state)return;s.locked=false;s.history=[];
         const rest=s.tiles.filter(t=>t.active);if(rest.length&&rest.every(t=>t.symbol===KEVIN)&&!s.tray.length)for(const t of rest){explode(board.querySelector(`[data-id="${t.id}"]`));t.active=false}
         render();if(!s.over)finishIfCleared()},jackpotAt+POLY_HOLD_MS)
     }
@@ -2962,7 +2982,11 @@
       const glint=ice?' saturate(.55) hue-rotate(-12deg)':'';
       for(const {copy,r,side} of flyers){const tx=cx+side*c.width*.14-(r.left+r.width/2),ty=cy-(r.top+r.height/2),sc=c.width*.46/r.width;
         const lift=POLY_LIFT_MS/POLY_FLY_MS;
-        copy.animate([{transform:'none',filter:'none',easing:'cubic-bezier(.2,1.5,.4,1)'},{transform:`translate(0,-14px) scale(1.3) rotate(${side*-6}deg)`,filter:`drop-shadow(0 0 14px ${ice?'#bfe8ff':polyTone==='plat'?'#f2f6ff':'#ffd84d'}) drop-shadow(0 14px 10px #000c) brightness(1.25)${glint}`,offset:lift,easing:'cubic-bezier(.2,.8,.3,1)'},{transform:`translate(${tx*.3}px,${ty*.3-46}px) scale(1.25) rotate(${side*-9}deg)`,filter:`drop-shadow(0 22px 14px #000c) brightness(1.15)${glint}`,offset:lift+(1-lift)*.45,easing:'cubic-bezier(.7,0,1,.5)'},{transform:`translate(${tx}px,${ty}px) scale(${sc}) rotate(${side*5}deg)`,filter:`drop-shadow(0 2px 2px #000c) brightness(1.45)${glint}`}],{duration:POLY_FLY_MS,fill:'forwards'})}
+        {const kf=[{transform:'none',filter:'none',easing:'cubic-bezier(.2,1.5,.4,1)'},{transform:`translate(0,-14px) scale(1.3) rotate(${side*-6}deg)`,filter:`drop-shadow(0 0 14px ${ice?'#bfe8ff':polyTone==='plat'?'#f2f6ff':'#ffd84d'}) drop-shadow(0 14px 10px #000c) brightness(1.25)${glint}`,offset:lift,easing:'cubic-bezier(.2,.8,.3,1)'},{transform:`translate(${tx*.3}px,${ty*.3-46}px) scale(1.25) rotate(${side*-9}deg)`,filter:`drop-shadow(0 22px 14px #000c) brightness(1.15)${glint}`,offset:lift+(1-lift)*.45,easing:'cubic-bezier(.7,0,1,.5)'},{transform:`translate(${tx}px,${ty}px) scale(${sc}) rotate(${side*5}deg)`,filter:`drop-shadow(0 2px 2px #000c) brightness(1.45)${glint}`}];
+          // polyLite: the glow is set once (box-shadow, rasterised with the card) and only transform animates; an animated filter
+          // re-rendered both big copies every frame (iPad 10th gen: 34fps through the payout, Paul 2026-11-16).
+          if(FX.polyLite){for(const f of kf)delete f.filter;copy.style.boxShadow=`0 0 18px 3px ${ice?'#bfe8ff':polyTone==='plat'?'#f2f6ff':'#ffd84d'},0 16px 14px #000a`;if(glint)copy.style.filter=glint.trim()}
+          copy.animate(kf,{duration:POLY_FLY_MS,fill:'forwards'})}}
       setTimeout(()=>{for(const {copy} of flyers)copy.animate([{opacity:1,scale:1},{opacity:0,scale:1.35}],{duration:260,easing:'ease-out',fill:'forwards'}).onfinish=()=>copy.remove();if(s===state)polyHit(st,n,ice,cx,cy,pair)},POLY_FLY_MS)
     }
     function polyHit(st,n,ice,x,y,pair){
@@ -2994,7 +3018,10 @@
       setTimeout(()=>{if(s!==state)return;const back=state.tiles.filter(t=>t.active&&t.peeking);state.tiles.forEach(t=>{if(t.peeking){t.peeking=false;if(t.active)t.revealed=false}});render();flipIn(back,8)},holdMs)
     }
     let activeCardFlights=0,peekDragging=false;
-    function flyToTray(source,index,ms=240,beat=0,opening=false){source=flightFrom.get(source?.dataset?.id)||source;const target=tray.children[Math.min(index,3)];if(!target)return;const a=source.getBoundingClientRect(),b=target.getBoundingClientRect(),ghost=source.cloneNode(true),dx=b.left-a.left,dy=b.top-a.top,sx=b.width/a.width,sy=b.height/a.height;activeCardFlights++;document.body.classList.add('card-in-flight');ghost.style.cssText=`position:fixed;z-index:190;left:${a.left}px;top:${a.top}px;width:${a.width}px;height:${a.height}px;transform:none;transform-origin:top left;rotate:0deg;transition:transform ${ms}ms cubic-bezier(.2,.8,.2,1),opacity ${ms}ms ease;pointer-events:none;will-change:transform,opacity`;document.body.append(ghost);if(opening&&beat){const lead=Math.min(flipLead,beat-1);ghost.animate([{rotate:'y 90deg',transformOrigin:'50% 50%'},{rotate:'y 0deg',transformOrigin:'50% 50%'}],{duration:beat-lead,delay:lead,fill:'backwards',easing:FLIP_EASE})}const go=()=>requestAnimationFrame(()=>{ghost.style.transform=`translate3d(${dx}px,${dy}px,0) scale(${sx},${sy})`;ghost.style.opacity='.2'});if(beat)setTimeout(go,beat);else go();if(!reduceMotion.matches){const t0=performance.now()+beat;let lastDrop=0;const shed=now=>{if(!ghost.isConnected||now-t0>ms)return;if(now>=t0&&now-lastDrop>=30){lastDrop=now;const r=ghost.getBoundingClientRect();trailDust(r.left+r.width/2,r.top+r.height/2,{vx:dx*4,vy:dy*4})}requestAnimationFrame(shed)};requestAnimationFrame(shed)}setTimeout(()=>{ghost.remove();activeCardFlights--;if(!activeCardFlights)document.body.classList.remove('card-in-flight')},beat+ms+20)}
+    // flipPop (Paul 2026-11-16, iPad: cards high on the board "disappear" on the way to the cage): a fixed 240ms front-loaded flight
+    // crossed ~1000px in ~80ms. Long flights now take up to 380ms with a gentler ease, and scheduleClear waits for the landing.
+    var flightLandsAt=0;
+    function flyToTray(source,index,ms=240,beat=0,opening=false){source=flightFrom.get(source?.dataset?.id)||source;const target=tray.children[Math.min(index,3)];if(!target)return;const a=source.getBoundingClientRect(),b=target.getBoundingClientRect(),ghost=source.cloneNode(true),dx=b.left-a.left,dy=b.top-a.top,sx=b.width/a.width,sy=b.height/a.height;if(FX.flipPop)ms=Math.round(Math.min(380,Math.max(ms,ms+(Math.hypot(dx,dy)-300)*.14)));flightLandsAt=Math.max(flightLandsAt,performance.now()+beat+ms);activeCardFlights++;document.body.classList.add('card-in-flight');ghost.style.cssText=`position:fixed;z-index:190;left:${a.left}px;top:${a.top}px;width:${a.width}px;height:${a.height}px;transform:none;transform-origin:top left;rotate:0deg;transition:transform ${ms}ms ${FX.flipPop?'cubic-bezier(.3,.65,.3,1)':'cubic-bezier(.2,.8,.2,1)'},opacity ${ms}ms ease;pointer-events:none;will-change:transform,opacity`;document.body.append(ghost);if(opening&&beat){const lead=Math.min(flipLead,beat-1);ghost.animate([{rotate:`y ${FX.flipPop?FLIP_EDGE:90}deg`,transformOrigin:'50% 50%'},{rotate:'y 0deg',transformOrigin:'50% 50%'}],{duration:beat-lead,delay:lead,fill:'backwards',easing:FLIP_EASE})}const go=()=>requestAnimationFrame(()=>{ghost.style.transform=`translate3d(${dx}px,${dy}px,0) scale(${sx},${sy})`;if(!FX.flipPop)ghost.style.opacity='.2'});if(beat)setTimeout(go,beat);else go();if(!reduceMotion.matches){const t0=performance.now()+beat;let lastDrop=0;const shed=now=>{if(!ghost.isConnected||now-t0>ms)return;if(now>=t0&&now-lastDrop>=30){lastDrop=now;const r=ghost.getBoundingClientRect();trailDust(r.left+r.width/2,r.top+r.height/2,{vx:dx*4,vy:dy*4})}requestAnimationFrame(shed)};requestAnimationFrame(shed)}setTimeout(()=>{ghost.remove();activeCardFlights--;if(!activeCardFlights)document.body.classList.remove('card-in-flight')},beat+ms+20)}
     // Fairy dust: one shared emitter for the drag-match burst, the tap-to-cage sparkle, the flight and drag trails, combos and the cage.
     // Everything is drawn on one fixed canvas in a single animation loop from pre-rendered glow and star sprites (dozens of DOM
     // sparkles per combo caused frame drops on iPhone). The loop runs only while sparkles are alive. Never takes touches.
@@ -3249,7 +3276,7 @@
       replaceProgress({...freshProgress(),player:progress.player,settings:progress.settings,devReset:true})}
     function devUndoReset(){let saved=null;try{saved=JSON.parse(localStorage.getItem(BACKUP_KEY)||'null')}catch{}if(!saved)return;try{localStorage.removeItem(BACKUP_KEY)}catch{}replaceProgress(saved)}
     // What each perf switch does, in plain words, for the dev menu.
-    const FX_LABELS={clearSmooth:'Smoother clears, continue burst and POLY start',settingsWarm:'Settings keeps its layout while closed',memLite:'Hidden screens let go of their drawing',raysLite:'Rays as a small rotating image',homeRest:'Home animations rest when idle or covered',lightboxRest:'Card view rests after 8s',sceneShared:'Scenery shares one 30fps tick',shineSleep:'Card shine sleeps when idle',tiltLite:'Lighter tilt',driftLiteral:'Simpler scenery drift',cageShineOnce:'Cage shine plays once',glowOpacity:'Glows fade instead of re-shadowing',owlSlow:'Owl blinks less',waterSleep:'Water stops when idle',audioSleep:'Sound sleeps when the app is hidden',lightPreload:'Load only this chapter’s art',renderCache:'Board redraw cache',clockSleep:'Timer redraws only on change',bakedField:'Halloween background drawn once',canvasBurst:'Clear bursts on the sparkle canvas',clearLite:'Lighter pair clear',edgeLite:'Lighter combo edge glow',overlayLite:'No blur behind dialogs',instantFlip:'Flips never lock the board',flipTurn:'Flips turn the old side away first',sceneClock:'Scenery at 30fps',idleRest:'Scenery rests when idle',lighterLayers:'Fewer 3D layers on cards',owlOnce:'Owl blink on a timer',motionGate:'Tilt sensor only when needed',audioIdle:'Sound engine off when muted',restGuard:'A long press isn’t a tap',holoCard:'Holo foil on special cards (a look)',tutLite:'Lighter tutorial',streakLite:'Lighter streak scene',lightboxLite:'Lighter card / player card fly',halloweenLite:'Lighter Halloween levels',avatarLite:'Lighter Pick Your Monkey'};
+    const FX_LABELS={clearSmooth:'Smoother clears, continue burst and POLY start',settingsWarm:'Settings keeps its layout while closed',memLite:'Hidden screens let go of their drawing',raysLite:'Rays as a small rotating image',homeRest:'Home animations rest when idle or covered',lightboxRest:'Card view rests after 8s',sceneShared:'Scenery shares one 30fps tick',shineSleep:'Card shine sleeps when idle',tiltLite:'Lighter tilt',driftLiteral:'Simpler scenery drift',cageShineOnce:'Cage shine plays once',glowOpacity:'Glows fade instead of re-shadowing',owlSlow:'Owl blinks less',waterSleep:'Water stops when idle',audioSleep:'Sound sleeps when the app is hidden',lightPreload:'Load only this chapter’s art',renderCache:'Board redraw cache',clockSleep:'Timer redraws only on change',bakedField:'Halloween background drawn once',canvasBurst:'Clear bursts on the sparkle canvas',clearLite:'Lighter pair clear',edgeLite:'Lighter combo edge glow',overlayLite:'No blur behind dialogs',instantFlip:'Flips never lock the board',flipTurn:'Flips turn the old side away first',flipPop:'Bigger, slower card flip (a look)',polyLite:'Lighter POLY payout (fixed glow, shake on one layer)',sceneClock:'Scenery at 30fps',idleRest:'Scenery rests when idle',lighterLayers:'Fewer 3D layers on cards',owlOnce:'Owl blink on a timer',motionGate:'Tilt sensor only when needed',audioIdle:'Sound engine off when muted',restGuard:'A long press isn’t a tap',holoCard:'Holo foil on special cards (a look)',tutLite:'Lighter tutorial',streakLite:'Lighter streak scene',lightboxLite:'Lighter card / player card fly',halloweenLite:'Lighter Halloween levels',avatarLite:'Lighter Pick Your Monkey'};
     function setupDevTools(){$('#devExpedition').onclick=e=>{const b=e.target.closest('[data-leg]');if(!b)return;const n=+b.dataset.leg;closeSettings();setTimeout(()=>playExpedition(n?{from:n,to:n%CHAPTERS.length+1,plus:n===CHAPTERS.length}:{to:1}),200)};$('#devChapters').onclick=e=>{const n=+e.target.closest('[data-ch]')?.dataset.ch;if(n)devGoTo((n-1)*CHAPTER_LEN+1)};$('#devReset').onclick=devResetProgress;$('#devUndoReset').onclick=devUndoReset;$('#devUndoReset').hidden=!hasBackup();$('#devChain').onclick=devAutoPairs;$('#devPoly').onclick=devPoly;const show=()=>{$('#devLevel').textContent=devLevel;const ch=chapterFor(devLevel);$('#devLevelChapter').textContent=`${ch.number}${ch.plus?'+':''} · ${ch.name}${ch.boss?' · BOSS':''}${devLevel-ch.from===2&&!ch.noSeason?' · SEASONAL SLOT':''}`};show();
       document.querySelectorAll('.dev-jump [data-step]').forEach(b=>b.onclick=()=>{devLevel=Math.max(1,devLevel+Number(b.dataset.step));show()});
       $('#devGo').onclick=()=>devGoTo(devLevel);$('#devWin').onclick=devInstantWin;$('#devCage3').onclick=devCageThree;
@@ -3294,7 +3321,7 @@
     function copyPerfLog(){const native=window.webkit?.messageHandlers?.perf;
       const metrics=native?new Promise(res=>{metricsWaiter=res;native.postMessage({op:'metrics'});setTimeout(()=>res(null),1500)}):Promise.resolve(null);
       const text=metrics.then(m=>JSON.stringify({at:new Date().toISOString(),ua:navigator.userAgent,screen:`${innerWidth}x${innerHeight}@${devicePixelRatio}`,level:state.level,states:perf.states,
-        measures:perf.log,hangs:hangs.on?hangs.list:'detector off',stalls:hangs.stalls,metricKit:m},null,1));
+        measures:perf.log,hangs:hangs.on?hangs.list:'detector off',stalls:hangs.stalls,audio:audioLog,metricKit:m},null,1));
       const done=()=>{const b=$('#devPerfLog');b.textContent='COPIED ✓';setTimeout(()=>{b.textContent='COPY PERF LOG'},1500)};
       if(window.ClipboardItem&&navigator.clipboard?.write)navigator.clipboard.write([new ClipboardItem({'text/plain':text.then(t=>new Blob([t],{type:'text/plain'}))})]).then(done,()=>text.then(t=>navigator.clipboard?.writeText(t)).then(done,()=>{}));
       else text.then(t=>navigator.clipboard?.writeText(t)).then(done,()=>{})}
@@ -3777,10 +3804,12 @@ void main() {
       for(const n of ['uArt','uSize','uAspect','uTilt','uLight','uDistance','uPreset','uIntensity','uScale','uEdge','uFrame','uRadius','uGlare','uFoil','uReady'])holoCard.u[n]=gl.getUniformLocation(prog,n);
       cv.addEventListener('webglcontextlost',e=>{e.preventDefault();holoCard.ready=false;holoCard.prog=null;holoCard.cv=null;cv.remove()});
       Object.assign(holoCard,{gl,prog,tex,cv});return true}
-    // Puts the foil on a freshly dressed lightbox face when its card has a look; the canvas fades in once the art is on the GPU.
+    // Puts the foil on a freshly dressed lightbox face when its card has a look. The one canvas is shared by every card, so it is
+    // cleared on attach and only shown after its first draw of this card (Paul 2026-11-16: opening POLY's What's New, then a hero, flashed
+    // POLY's last frame while the card flew in, since lightboxLite skips draws in flight).
     function holoCardAttach(art,symbol){holoCard.ready=false;const img=art.querySelector('img.symbol-image'),look=img&&holoLook(symbol,img.src);if(!FX.holoCard||!look||!holoInit())return;
-      const {gl,cv}=holoCard,src=img.src;holoCard.look={...look,preset:HOLO_PRESETS.indexOf(look.preset),foil:holoFoil(look.foil)};holoCard.src=src;cv.classList.remove('on');art.append(cv);
-      const im=new Image();im.decoding='async';im.onload=()=>{if(holoCard.src!==src||!holoCard.prog)return;try{gl.bindTexture(gl.TEXTURE_2D,holoCard.tex);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,false);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,im);gl.generateMipmap(gl.TEXTURE_2D);holoCard.ready=true;cv.classList.add('on')}catch{}};im.src=src}
+      const {gl,cv}=holoCard,src=img.src;holoCard.look={...look,preset:HOLO_PRESETS.indexOf(look.preset),foil:holoFoil(look.foil)};holoCard.src=src;holoCard.fresh=false;cv.classList.remove('on');try{gl.viewport(0,0,cv.width,cv.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT)}catch{}art.append(cv);
+      const im=new Image();im.decoding='async';im.onload=()=>{if(holoCard.src!==src||!holoCard.prog)return;try{gl.bindTexture(gl.TEXTURE_2D,holoCard.tex);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,false);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,im);gl.generateMipmap(gl.TEXTURE_2D);holoCard.ready=holoCard.fresh=true}catch{}};im.src=src}
     // Each lightbox frame: the card's total turn (degrees) drives the foil; the light swings opposite the turn so the rainbow sweeps.
     function holoCardDraw(rx,ry){if(!holoCard.ready||!lightbox.open||!holoCard.cv?.isConnected)return;const {gl,cv,u,look}=holoCard,R=Math.PI/180;if(Math.cos(ry*R)<-.05)return;
       // Sized here, not on attach: the lightbox is still hidden (0x0) when the face is dressed.
@@ -3789,7 +3818,7 @@ void main() {
       gl.uniform1i(u.uArt,0);gl.uniform2f(u.uSize,cv.width,cv.height);gl.uniform1f(u.uAspect,cv.height/cv.width);gl.uniform2f(u.uTilt,rx*R,ry*R);
       gl.uniform2f(u.uLight,Math.max(0,Math.min(1,.5-Math.sin(ry*R)*1.6)),Math.max(0,Math.min(1,.38+Math.sin(rx*R)*1.6)));gl.uniform1f(u.uDistance,1100/Math.max(1,cv.clientWidth));
       gl.uniform1i(u.uPreset,look.preset);gl.uniform1f(u.uIntensity,look.intensity);gl.uniform1f(u.uScale,look.scale);gl.uniform1f(u.uEdge,look.edge);gl.uniform1f(u.uFrame,.04);gl.uniform1f(u.uRadius,holoCard.radius/Math.max(1,cv.clientWidth));gl.uniform1f(u.uGlare,look.glare);
-      gl.uniform3f(u.uFoil,...look.foil);gl.uniform1f(u.uReady,1);gl.drawArrays(gl.TRIANGLES,0,3)}
+      gl.uniform3f(u.uFoil,...look.foil);gl.uniform1f(u.uReady,1);gl.drawArrays(gl.TRIANGLES,0,3);if(holoCard.fresh){holoCard.fresh=false;cv.classList.add('on')}}
     const heroSrcOf=symbol=>{const v=packVariant(symbol);return v?cardImage('hero',v):HERO_IMAGES[symbol]};
     function prepHolo(symbol){const src=symbol&&heroSrcOf(symbol);if(!src||holoBases.has(src))return;(window.requestIdleCallback||setTimeout)(()=>holoBaseFor(src),{timeout:600})}
     function paintHolo(symbol){const cv=$('#holoBase'),cx=cv.getContext('2d');holoBase=holoBases.get(heroSrcOf(symbol))||null;
@@ -3823,6 +3852,10 @@ void main() {
     // Release notes (the home screen's POLY card): what's new for players in the next build. Update for every release.
     // First public release: What's New reads as a short tour of the game, not the beta changelog. Later updates prepend their lines.
     const RELEASE_NOTES={version:'1.0.3',lines:[
+      'Card flips are bigger and easier to follow, and cards glide into the cage instead of blinking out, especially on iPad.',
+      'POLY payouts run smoother.',
+      'The big card view no longer flashes the wrong picture for a moment.',
+      'Tapping Home during a POLY payout now waits for the payout to finish.',
       'Monkey Trubble now plays on iPad, with every card bigger on the big screen.',
       'Christmas is coming: from December 1, festive Christmas levels with their own cards, snow and music.',
       'The home screen fits smaller iPhones: nothing gets cut off at the edges.',
@@ -3833,7 +3866,6 @@ void main() {
       'Puzzles got a snappier feel: drag each piece home and it slams into place. Open them mid-level with the 🧩 too.',
       'Some treasure chests are stubborn. Keep tapping!',
       'Your first puzzle is waiting: finish the Poly Card from the 🧩.',
-      'Card flips are smoother: each card turns all the way over instead of blinking.',
       'On desktop browsers, cards no longer flicker under the mouse.',
       'Open treasure chests, keep your daily streak and climb the leaderboard from Bronze to Silverback.',
       'Stuck? Undo, Shuffle and Owl Eyes have your back.',
@@ -4132,7 +4164,8 @@ void main() {
       probe('art/home/button.png',()=>{$('#homePlay').style.backgroundImage="url('art/home/button.png')"});
       let logoTaps=[];$('#homeLogo').addEventListener('click',()=>{if(window.__monkeyDevTaps===false)return;const now=performance.now();logoTaps=logoTaps.filter(t=>now-t<1500).concat(now);if(logoTaps.length<3)return;logoTaps=[];setDevMode(!devMode);$('#homeByline').textContent=devMode?'DEV MODE ON':'DEV MODE OFF'});
     }
-    $('#homeBtn').onclick=showHome;$('#winHome').onclick=async()=>{const s=state,btn=$('#winHome');if(btn.disabled)return;btn.disabled=true;winShow?.skip();await winSettled(s);btn.disabled=false;if(s===state)showHome()};$('#failHome').onclick=()=>{startLevel(state.level,{silent:true});pendingLevelStart=false;showHome()};$('#homePlay').onclick=playFromHome;$('#homeSound').onclick=()=>{$('#sound').click();$('#homeSound').textContent=soundEnabled?'♪':'♩'};
+    // Home waits out a POLY payout (Paul 2026-11-16: the show kept running over the home screen, and its end could pop the win screen there).
+    $('#homeBtn').onclick=()=>{if(!document.body.classList.contains('poly-busy'))showHome()};$('#winHome').onclick=async()=>{const s=state,btn=$('#winHome');if(btn.disabled)return;btn.disabled=true;winShow?.skip();await winSettled(s);btn.disabled=false;if(s===state)showHome()};$('#failHome').onclick=()=>{startLevel(state.level,{silent:true});pendingLevelStart=false;showHome()};$('#homePlay').onclick=playFromHome;$('#homeSound').onclick=()=>{$('#sound').click();$('#homeSound').textContent=soundEnabled?'♪':'♩'};
     $('#shuffle').onclick=()=>{if(state.shufflesLeft<=0&&!bankTake('shuffle'))return offerReward('shuffle');clearHint(true);reshuffle()};$('#hint').onclick=()=>{if(state.hintsLeft<=0&&!bankTake('hint'))return offerReward('hint');useHint()};$('#undo').onclick=()=>{if(state.undosLeft<=0&&!bankTake('undo'))return offerReward('undo');undo()};$('#continueLevel').onclick=()=>{if(!$('#overlay').classList.contains('free-continue'))return requestReward('continue');const tutorial=state.tutorial;if(resumeFromCage()&&!tutorial){progress.freeContinueUsed=true;learnTip('continue')}};$('#overlayUndo').onclick=undo;$('#adShuffle').onclick=()=>requestReward('shuffle').then(({status})=>{if(status==='completed')shuffleAfterStuck()});$('#adUndo').onclick=()=>requestReward('undo').then(({status})=>{if(status==='completed')undo()});$('#winOverlay').addEventListener('pointerdown',e=>{if(!e.target.closest('button'))winShow.skip()});$('#retryLevel').onclick=()=>startLevel(state.level,{retry:true});$('#nextLevel').onclick=async()=>{const s=state,next=s.level+1,btn=$('#nextLevel');if(btn.disabled)return;btn.disabled=true;winShow.skip();await winSettled(s);if(s!==state)return;{const a=chapterFor(s.level),b=chapterFor(next);if(a.number!==b.number&&trial('expedition')!=='off')playExpedition({from:a.number,to:b.number,plus:b.plus,swap:()=>startLevel(next,{silent:true}),prepare:()=>decodeLevelImages(next)});else playLevelTransition(()=>startLevel(next),{prepare:()=>decodeLevelImages(next)})}};$('#sound').onclick=()=>{soundEnabled=!soundEnabled;setTimeout(syncAmbience,0);$('#sound').textContent=soundEnabled?'♪':'♩';$('#sound').title=loc(soundEnabled?'Sound on':'Sound off');$('#sound').setAttribute('aria-label',$('#sound').title);$('#sound').classList.toggle('active',soundEnabled);if(soundEnabled){if(FX.audioIdle&&audioUnlocked)audioContext?.resume().catch(()=>{});if(audioUnlocked)music.play().catch(()=>{});playSound('control',{volume:.4})}else{music.pause();if(FX.audioIdle&&audioContext?.state==='running')audioContext.suspend().catch(()=>{})}};$('#prevVariant').onclick=()=>cycleVariant(-1);$('#nextVariant').onclick=()=>cycleVariant(1);
     // Player profile: a display name plus a private id/secret (for posting scores later); no account or password.
     // Name filter (App Store guideline 1.2), the same list and look-alike swaps as name_ok in supabase/leaderboard.sql. "nazi" only
@@ -4672,7 +4705,7 @@ void main() {
     $('#nameSave').onclick=saveName;$('#nameInput').onkeydown=e=>{if(e.key==='Enter')saveName()};$('#nameCancel').onclick=()=>$('#nameDialog').classList.remove('show');$('#settingsName').onclick=openNameDialog;
     // Android back gesture: the app calls this and leaves only when it returns false. It closes the top dialog, takes a level home,
     // and is swallowed while something must be answered (first name, reward prompts) or is mid-animation (expedition map).
-    window.__monkeyBack=()=>{const shown=id=>$(id).classList.contains('show');if(ex.busy)return true;if(lightbox.open){closeLightbox();return true}if(shown('#nameDialog')&&progress.player){$('#nameCancel').click();return true}if(!$('#welcome').hidden){closeWelcome();return true}if(!$('#puzzleScreen').hidden){closePuzzle();return true}if(shown('#settings')){closeSettings();return true}if(shown('#avatarDialog')){$('#avatarDialog').classList.remove('show');return true}if(shown('#reportDialog')){$('#reportDialog').classList.remove('show');return true}if(shown('#nameDialog')){if(progress.player)$('#nameCancel').click();return true}if(shown('#winOverlay')){$('#winHome').click();return true}if(shown('#overlay')){$('#failHome').click();return true}if(document.querySelector('.overlay.show'))return true;if($('#home').classList.contains('hidden')){$('#homeBtn').click();return true}return false};
+    window.__monkeyBack=()=>{const shown=id=>$(id).classList.contains('show');if(ex.busy||document.body.classList.contains('poly-busy'))return true;if(lightbox.open){closeLightbox();return true}if(shown('#nameDialog')&&progress.player){$('#nameCancel').click();return true}if(!$('#welcome').hidden){closeWelcome();return true}if(!$('#puzzleScreen').hidden){closePuzzle();return true}if(shown('#settings')){closeSettings();return true}if(shown('#avatarDialog')){$('#avatarDialog').classList.remove('show');return true}if(shown('#reportDialog')){$('#reportDialog').classList.remove('show');return true}if(shown('#nameDialog')){if(progress.player)$('#nameCancel').click();return true}if(shown('#winOverlay')){$('#winHome').click();return true}if(shown('#overlay')){$('#failHome').click();return true}if(document.querySelector('.overlay.show'))return true;if($('#home').classList.contains('hidden')){$('#homeBtn').click();return true}return false};
     // Game Center (iOS app): the app signs the player in at launch (the system banner) and calls __gameCenterReady with their
     // nickname. Scores go to two leaderboards, set up in App Store Connect with these ids. The Game Center button (access point)
     // shows on the home screen only, hidden while Settings is open.

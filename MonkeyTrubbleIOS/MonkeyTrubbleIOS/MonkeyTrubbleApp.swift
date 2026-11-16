@@ -14,10 +14,17 @@ struct MonkeyTrubbleApp: App {
 
     // The game's audio session: ambient, mixing with other apps. Re-applied after an ad, an interruption or a return to the app,
     // because the ad's video player changes it and the game's sound stayed silent after an ad was left open for a few minutes.
-    static func activateAudio() {
+    // Returns the NSError code when the session couldn't be set up, nil when it worked, for the page's audio diary (__audioNote).
+    @discardableResult
+    static func activateAudio() -> Int? {
         let session = AVAudioSession.sharedInstance()
-        try? session.setCategory(.ambient, mode: .default, options: [.mixWithOthers])
-        try? session.setActive(true)
+        do {
+            try session.setCategory(.ambient, mode: .default, options: [.mixWithOthers])
+            try session.setActive(true)
+            return nil
+        } catch {
+            return (error as NSError).code
+        }
     }
 
     var body: some Scene {

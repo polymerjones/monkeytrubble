@@ -73,7 +73,8 @@ struct GameWebView: UIViewRepresentable {
         webView.allowsBackForwardNavigationGestures = false
         webView.allowsLinkPreview = false
         #if DEBUG
-        webView.isInspectable = true
+        // Debug only, so the iOS 16.0 minimum (1.0.4) didn't catch it in the Release archive.
+        if #available(iOS 16.4, *) { webView.isInspectable = true }
         #endif
         context.coordinator.attach(webView)
 
@@ -163,7 +164,7 @@ struct GameWebView: UIViewRepresentable {
                 queue: .main
             ) { [weak self] _ in
                 MainActor.assumeIsolated {
-                    MonkeyTrubbleApp.activateAudio()
+                    self?.noteAudio("active", MonkeyTrubbleApp.activateAudio())
                     // Undo the background suspend below, then let the page fade its sound back in. (true): also arm the page's
                     // stalled-engine check, so the next tap restarts an engine that came back "running" but silent (no sound after
                     // switching to Notes from a puzzle, Paul 2026-10-30).
@@ -182,7 +183,7 @@ struct GameWebView: UIViewRepresentable {
                 let raw = note.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt
                 guard raw == AVAudioSession.InterruptionType.ended.rawValue else { return }
                 MainActor.assumeIsolated {
-                    MonkeyTrubbleApp.activateAudio()
+                    self?.noteAudio("interruptionEnded", MonkeyTrubbleApp.activateAudio())
                     self?.webView?.evaluateJavaScript("window.__resumeMonkeyAudio?.(true)")
                 }
             }
@@ -209,6 +210,12 @@ struct GameWebView: UIViewRepresentable {
                     self?.webView?.evaluateJavaScript("window.__quietMonkeyAudio?.()")
                 }
             }
+        }
+
+        // Audio diary entry on the page (COPY PERF LOG): which native step ran, and the session error code if activation failed.
+        private func noteAudio(_ event: String, _ errorCode: Int?) {
+            let extra = errorCode.map { "{err:\($0)}" } ?? "{}"
+            webView?.evaluateJavaScript("window.__audioNote?.('\(event)',\(extra))")
         }
 
         // Tilt comes from the gravity vector (stable upright, flat or anywhere between) and is sent relative to a neutral pose
