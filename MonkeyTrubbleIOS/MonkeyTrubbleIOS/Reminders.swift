@@ -101,7 +101,7 @@ final class Reminders {
             content.title = item.title
             content.body = item.body
             content.sound = .default
-            let when = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: item.at)
+            let when = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: item.at)
             let trigger = UNCalendarNotificationTrigger(dateMatching: when, repeats: false)
             center.add(UNNotificationRequest(identifier: "reminder-\(item.slot)", content: content, trigger: trigger))
         }
