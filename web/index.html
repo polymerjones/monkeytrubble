@@ -155,6 +155,54 @@
     body[data-cage="C"] .tray-panel.bar .tray .slot:nth-child(3){rotate:2.3deg;translate:0 1px;z-index:3}
     body[data-cage="C"] .tray-panel.bar .tray .slot:nth-child(4){rotate:7deg;translate:0 9px;z-index:4}
     .cage-chain{display:none}
+    /* ===== Landscape (v1.1, iPads and tablets held sideways): body.landscape, set by applyLandscape. The play area (the scene)
+       fills the whole screen. A left column holds the current card at the top and the cage and boosters at the bottom (Paul,
+       2026-11-16: not a cage mid-right); the cards (#board) get all the room to its right. Same board shapes as portrait. Phones
+       never get it (min-height in LANDSCAPE). =====*/
+    body.landscape{--ls-gap:14px;--ls-left:clamp(290px,28vw,360px);--ls-pad:max(12px,env(safe-area-inset-left))}
+    body.landscape .game-shell,body.landscape[data-cage] .game-shell,body.landscape[data-cage="C"] .game-shell{width:100%;max-width:none;margin:0;display:grid;grid-template-columns:var(--ls-left) minmax(0,1fr);grid-template-rows:minmax(0,1fr);gap:var(--ls-gap);padding:0!important}
+    /* The top bar floats over the scene: home, puzzles and the level over the left column; clock, streak and gear top right. */
+    body.landscape .topbar{position:fixed;z-index:85;inset:0 0 auto 0;display:grid;grid-template-columns:var(--ls-left) minmax(0,1fr);gap:var(--ls-gap);padding:calc(6px + env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 0 var(--ls-pad);border:0!important;background:none!important;box-shadow:none!important;backdrop-filter:none!important;pointer-events:none}
+    body.landscape .topbar>*{pointer-events:auto;grid-row:1;align-self:start}
+    body.landscape .top-left,body.landscape .level-pill{margin-top:4px}
+    body.landscape .top-left{grid-column:1;justify-self:start}
+    body.landscape .level-pill{grid-column:1;justify-self:end}
+    /* Clock, streak and gear stack down the top-right corner; the cards keep clear of that strip (#board's right inset). */
+    body.landscape .top-stats{grid-column:2;justify-self:end;flex-direction:column-reverse;align-items:center;gap:10px;padding:8px 4px;border-radius:14px;background:#0000006b}
+    body.landscape .board-wrap{grid-column:1/-1;grid-row:1;min-height:0;border:0!important;border-radius:0!important;box-shadow:none!important}
+    body.landscape #board{inset:max(10px,env(safe-area-inset-top)) calc(max(12px,env(safe-area-inset-right)) + 64px) max(10px,env(safe-area-inset-bottom)) calc(var(--ls-pad) + var(--ls-left) + var(--ls-gap))}
+    /* Current card: the portrait art on the left, its name and fact beside it, like the phone panel but taller. */
+    body.landscape .hud{grid-column:1;grid-row:1;z-index:82;align-self:start;width:var(--ls-left);min-height:0;margin:calc(52px + env(safe-area-inset-top)) 0 0 var(--ls-pad)}
+    body.landscape .featured-card{height:auto;padding:9px;gap:11px;align-items:flex-start}
+    body.landscape .featured-art{width:46%;height:auto;aspect-ratio:2/3;margin:0}
+    body.landscape .featured-copy{padding-top:26px}
+    body.landscape .featured-name{font-size:1.08rem;-webkit-line-clamp:3}body.landscape .featured-latin{white-space:normal}
+    body.landscape .featured-fact{-webkit-line-clamp:6}
+    /* Cage and boosters at the bottom of the left column, boosters in a row under the cage. */
+    body.landscape .tray-panel.bar,body.landscape[data-cage] .tray-panel.bar,body.landscape[data-cage="C"] .tray-panel.bar{left:var(--ls-pad);right:auto;top:auto;bottom:max(10px,env(safe-area-inset-bottom));translate:none;width:var(--ls-left);flex-direction:column;align-items:center;gap:12px;padding:0 10px 4px!important;background:none!important}
+    body.landscape[data-cage="C"]{--cage-w:min(calc((var(--ls-left) - 44px) / 2),calc((100dvh - 470px - env(safe-area-inset-top)) / 2.9));--cage-overlap:0px}
+    body.landscape[data-cage="C"] .tray-panel.bar .cage-wrap{flex:none;width:100%;margin:0}
+    /* Cage in landscape: four big cards in a 2x2, slightly tilted, filling the column under the current card (no chain). */
+    body.landscape[data-cage="C"] .tray-panel.bar .tray{display:grid;grid-template-columns:repeat(2,var(--cage-w));gap:12px 14px;justify-content:center}
+    body.landscape[data-cage="C"] .tray-panel.bar .tray .slot{margin:0}
+    body.landscape[data-cage="C"] .tray-panel.bar .tray .slot:nth-child(1){rotate:-3deg;translate:0 0}
+    body.landscape[data-cage="C"] .tray-panel.bar .tray .slot:nth-child(2){rotate:2.5deg;translate:0 4px}
+    body.landscape[data-cage="C"] .tray-panel.bar .tray .slot:nth-child(3){rotate:-2deg;translate:0 0}
+    body.landscape[data-cage="C"] .tray-panel.bar .tray .slot:nth-child(4){rotate:3deg;translate:0 4px}
+    body.landscape .cage-chain{display:none!important}
+    /* The combo meter rides on the cage's top edge; the cage panel sits above the current card so the meter is never hidden under it. */
+    body.landscape .tray-panel.bar{z-index:83}
+    body.landscape .chain-meter{top:-6px;right:10px}
+    body.landscape[data-cage="C"] .tray-panel.bar .tray-label{position:static;margin:0 0 8px;justify-content:center;opacity:.7}
+    body.landscape[data-cage="C"] .tray-panel.bar .boosters{order:2;flex-direction:row;justify-content:center;gap:16px;margin:4px 0 0}
+    body.landscape[data-cage="C"] .tray-panel.bar .booster{width:52px;height:52px}
+    body.landscape[data-cage="C"] .tray-panel.bar .booster-icon{font-size:1.4rem}
+    body.landscape[data-cage="C"] .tray-panel.bar .owl-eyes{width:34px;height:20px}
+    /* Lightbox in landscape: the big card on the left, its facts beside it (stacked, the facts ran off the bottom). */
+    body.landscape .lightbox-stage{flex-direction:row;justify-content:center;gap:28px;padding:calc(20px + env(safe-area-inset-top)) 72px calc(20px + env(safe-area-inset-bottom))}
+    body.landscape .lightbox-card,body.landscape .lightbox.notes .lightbox-card{--lb-w:min(40vw,calc((100dvh - 60px) * .667),460px)}
+    body.landscape .lightbox-info{width:min(42vw,420px);max-height:calc(100dvh - 60px)}
+    body.landscape:not([data-cage]) .tray-panel.bar{flex-direction:column}body.landscape:not([data-cage]) .tray-panel.bar .cage-wrap{width:100%}
     body[data-cage="C"] .cage-chain{display:block;position:absolute;z-index:6;left:-4px;top:calc(84% - 20px);width:calc(100% + 4px);height:44px;overflow:visible;pointer-events:none;filter:drop-shadow(0 3px 3px #000c)}
     body.pack-halloween .tile{border-color:#ff8a2a!important}
     /* Fairy dust (drag match). */
@@ -2094,7 +2142,9 @@
       if(EXPEDITION.mid){const d=EXPEDITION.midDepth-1;$('#exMid').style.transform=`translate(${(-(x-W/2)*d).toFixed(1)}px,${(-(y-H/2)*d).toFixed(1)}px)`}
       // Clouds drift above the map at 1.6x the camera's speed, so they slide past faster than the land.
       for(const c of ex.clouds){const sx=vw/2+(c.x-x)*z*1.6,sy=vh/2+(c.y-y)*z*1.6,vis=sx>-400&&sx<vw+400&&sy>-200&&sy<vh+200;c.el.style.display=vis?'':'none';if(vis)c.el.style.transform=`translate3d(${sx.toFixed(1)}px,${sy.toFixed(1)}px,0) scale(${(c.s*z*1.6).toFixed(3)})`}}
-    const exZoom=()=>Math.max(innerWidth/(EXPEDITION.w*EXPEDITION.view),innerHeight/EXPEDITION.h);
+    // Landscape (v1.1): zoom as if the screen were a portrait column (.75 of its height wide), so the painting isn't blown up to
+    // fill the width; the extra width just shows more of the map either side (never less than the map's full width).
+    const exZoom=()=>{const vw=document.body.classList.contains('landscape')?Math.min(innerWidth,innerHeight*.75):innerWidth;return Math.max(vw/(EXPEDITION.w*EXPEDITION.view),innerHeight/EXPEDITION.h,innerWidth/EXPEDITION.w*1.02)};
     // The widest view: the whole map's width (or height, whichever fills the screen first).
     const exZoomWide=()=>Math.max(innerWidth/EXPEDITION.w,innerHeight/EXPEDITION.h)*1.02;
     function exSetup(fromCh,toCh){const W=EXPEDITION.w,H=EXPEDITION.h,world=$('#exWorld'),svg=$('#exRoute'),marks=$('#exMarkers');
@@ -2319,7 +2369,12 @@
     function rattleChain(strong=false){const c=$('.cage-chain');if(!c||document.body.dataset.cage!=='C')return;const d=strong?4:2;c.animate([{translate:'0 0'},{translate:`${-d}px ${d/2}px`},{translate:`${d}px 0`},{translate:`${-d/2}px ${-d/2}px`},{translate:'0 0'}],{duration:strong?340:250,easing:'ease-out'})}
     function applyCageStyle(){const hand=progress.settings.cage!=='classic';if(hand)document.body.dataset.cage='C';else delete document.body.dataset.cage;measureHud();if(hand)requestAnimationFrame(buildCageChain);if(state.tiles.length)render()}
     function measureHud(){requestAnimationFrame(()=>{const p=$('.tray-panel'),t=$('#tray');const top=Math.min(p.getBoundingClientRect().top,t.getBoundingClientRect().top);document.documentElement.style.setProperty('--hud-h',`${Math.max(0,innerHeight-top)}px`)})}
-    function setupCageStyle(){applyCageStyle();addEventListener('resize',()=>{measureHud();if(document.body.dataset.cage==='C')buildCageChain()})}
+    // Landscape (v1.1): tablets held sideways get the landscape game screen (see body.landscape in the CSS). Phones never match.
+    const LANDSCAPE=matchMedia('(orientation:landscape) and (min-width:900px) and (min-height:600px)');
+    function applyLandscape(){const on=LANDSCAPE.matches;if(document.body.classList.contains('landscape')===on)return;document.body.classList.toggle('landscape',on);cancelDragForRotate();measureHud();if(document.body.dataset.cage==='C'&&!on)requestAnimationFrame(buildCageChain);if(state.tiles.length)render()}
+    // A card being dragged when the screen turns is dropped back (its ghost was placed for the old layout).
+    function cancelDragForRotate(){document.querySelectorAll('.board-tile.lifted').forEach(n=>n.onpointercancel?.({pointerId:-1}))}
+    function setupCageStyle(){applyLandscape();LANDSCAPE.addEventListener?.('change',applyLandscape);applyCageStyle();addEventListener('resize',()=>{measureHud();if(document.body.dataset.cage==='C')buildCageChain()})}
     // Out of a booster: its badge shows ▶ (tap it to watch an ad for more). With three in the cage and no shuffles left, the shuffle
     // button pulses a few times to point at that.
     function cueAdBooster(id){const b=$(`#${id}`);if(reduceMotion.matches||!b)return;b.getAnimations().forEach(a=>a.cancel());b.animate([{transform:'scale(1)'},{transform:'scale(1.14)',filter:'saturate(1) brightness(1.15)'},{transform:'scale(1)'}],{duration:520,iterations:3,easing:'ease-in-out'})}
@@ -3851,7 +3906,8 @@ void main() {
         holoBaseFor(HERO_IMAGES[KEVIN])},{timeout:2000})}
     // Release notes (the home screen's POLY card): what's new for players in the next build. Update for every release.
     // First public release: What's New reads as a short tour of the game, not the beta changelog. Later updates prepend their lines.
-    const RELEASE_NOTES={version:'1.0.5',lines:[
+    const RELEASE_NOTES={version:'1.1',lines:[
+      'NEW: Turn your iPad sideways! Landscape play with the board at full height, the current card on the left and your cage on the right.',
       'Card flips are bigger and easier to follow, and cards glide into the cage instead of blinking out, especially on iPad.',
       'POLY payouts run smoother.',
       'The big card view no longer flashes the wrong picture for a moment.',

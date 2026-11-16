@@ -1056,6 +1056,7 @@ window.ES_TEXT={
   "Christmas is coming: from December 1, festive Christmas levels with their own cards, snow and music.":"Se acerca la Navidad: desde el 1 de diciembre, niveles navideños con sus propias cartas, nieve y música.",
   "The home screen fits smaller iPhones: nothing gets cut off at the edges.":"La pantalla de inicio cabe en los iPhone más pequeños: ya no se corta nada en los bordes.",
   "The Game Center bubble no longer covers your name on the home screen.":"La burbuja de Game Center ya no tapa tu nombre en la pantalla de inicio.",
+  "NEW: Turn your iPad sideways! Landscape play with the board at full height, the current card on the left and your cage on the right.":"NUEVO: ¡Gira tu iPad! Juega en horizontal con el tablero a toda altura, la carta actual a la izquierda y tu jaula a la derecha.",
   "Card flips are bigger and easier to follow, and cards glide into the cage instead of blinking out, especially on iPad.":"Las cartas giran de forma más grande y fácil de seguir, y entran en la jaula deslizándose en lugar de desaparecer, sobre todo en iPad.",
   "POLY payouts run smoother.":"Los premios de POLY van más fluidos.",
   "Now runs on iPhones and iPads with iOS 16 too.":"Ahora también funciona en iPhone y iPad con iOS 16.",

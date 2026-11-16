@@ -1,6 +1,7 @@
 package com.paulfisher.monkeytrubble
 
 import android.annotation.SuppressLint
+import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -44,6 +45,10 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Tablets (smallest width 600dp+) may turn sideways for the landscape game screen (v1.1); phones stay portrait (manifest).
+        if (resources.configuration.smallestScreenWidthDp >= 600) {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_FULL_USER
+        }
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
