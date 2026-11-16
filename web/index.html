@@ -5027,7 +5027,7 @@ void main() {
       '🙈 One monkey has covered his eyes until you come back. He keeps walking into trees.','🃏 The cards shuffled themselves out of boredom. Nobody asked them to.',
       '🐒 A monkey is wearing your hat. We don’t know where he got it.','🧩 A puzzle piece has wandered off. Last seen near the bananas.',
       '🌴 It’s quiet in the jungle. Too quiet. Someone is eating crisps.','🦍 The gorilla is pretending he isn’t waiting for you. He is.',
-      '🐵 The monkeys held a vote for a new leader. A coconut won.','🔒 Something rattled the cage. It was probably fine. Probably.'];
+      '🐵 The monkeys held a vote for a new leader. A coconut won.','🔒🐵 Something rattled the cage. It was probably fine. Probably.'];
     const remind={bridge:window.webkit?.messageHandlers?.reminders,on:false,time:'19:00',status:null,denied:false};
     {const pref=window.__monkeyRemind;if(pref){remind.time=/^\d\d:\d\d$/.test(pref.time||'')?pref.time:'19:00';remind.on=pref.on??(window.__monkeySave==null&&window.__monkeyCloudSave==null)}}
     // Each calendar day has its own line (day number × 5 steps through the 12), so tomorrow never repeats today, whenever we reschedule.

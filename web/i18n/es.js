@@ -1090,5 +1090,5 @@ window.ES_TEXT={
   "🌴 It’s quiet in the jungle. Too quiet. Someone is eating crisps.":"🌴 Hay silencio en la selva. Demasiado silencio. Alguien está comiendo patatas fritas.",
   "🦍 The gorilla is pretending he isn’t waiting for you. He is.":"🦍 El gorila finge que no te está esperando. Te está esperando.",
   "🐵 The monkeys held a vote for a new leader. A coconut won.":"🐵 Los monos votaron a un nuevo líder. Ganó un coco.",
-  "🔒 Something rattled the cage. It was probably fine. Probably.":"🔒 Algo ha sacudido la jaula. Seguro que no era nada. Seguro.",
+  "🔒🐵 Something rattled the cage. It was probably fine. Probably.":"🔒🐵 Algo ha sacudido la jaula. Seguro que no era nada. Seguro.",
 };
