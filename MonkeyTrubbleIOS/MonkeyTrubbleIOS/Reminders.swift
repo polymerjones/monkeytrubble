@@ -1,6 +1,6 @@
 import UIKit
 import WebKit
-import UserNotifications
+@preconcurrency import UserNotifications
 
 /// Streak reminders (1.1), the iPhone twin of the Android app's Reminders.kt. The page decides everything (which days, which silly
 /// line) and posts {op, on, time, items:[{slot, at (ms), title, body}]} on the "reminders" handler; this replaces every pending
@@ -53,7 +53,7 @@ final class Reminders: NSObject, UNUserNotificationCenterDelegate {
                 content.title = title
                 content.body = text
                 content.sound = .default
-                center.add(UNNotificationRequest(identifier: Self.testID, content: content,
+                UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: Self.testID, content: content,
                                                  trigger: UNTimeIntervalNotificationTrigger(timeInterval: delay, repeats: false)))
             }
             DispatchQueue.main.async {
