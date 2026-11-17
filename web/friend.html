@@ -31,6 +31,7 @@
     ol{text-align:left;margin:12px auto 0;max-width:360px;padding-left:22px;color:var(--text)}
     li{margin:6px 0}
     a{color:var(--link)}
+    .stores{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:4px 0 18px}.stores .store{margin:0}
     .store{display:inline-block;margin:4px 0 18px;padding:12px 22px;border-radius:14px;background:var(--accent);color:#1a1000;font-weight:900;text-decoration:none}
   </style>
 </head>
@@ -44,17 +45,20 @@
     <div class="code" id="code">———</div>
     <div class="how">their friend code</div>
   </div>
-  <a class="store" href="https://apps.apple.com/us/app/monkey-trubble/id6822473244">Get it on the App Store</a>
+  <div class="stores" id="stores"><a class="store" id="appStore" href="https://apps.apple.com/us/app/monkey-trubble/id6822473244">Get it on the App Store</a><a class="store" id="playStore" href="https://play.google.com/store/apps/details?id=com.paulfisher.monkeytrubble">Get it on Google Play</a></div>
   <ol>
-    <li>Get <b>Monkey Trubble</b> on the <a href="https://apps.apple.com/us/app/monkey-trubble/id6822473244">App Store</a> (on Android, search “Monkey Trubble” on Google Play).</li>
+    <li>Get <b>Monkey Trubble</b> on the <a href="https://apps.apple.com/us/app/monkey-trubble/id6822473244">App Store</a> or <a href="https://play.google.com/store/apps/details?id=com.paulfisher.monkeytrubble">Google Play</a>.</li>
     <li>Pick your name and clear your first level.</li>
     <li>Open the 🏆 leaderboard, tap <b>FRIENDS</b>, then <b>ADD</b>, and type the code above.</li>
   </ol>
-  <p class="how">Already have the game on iPhone? Open this link again from Messages or Notes and it goes straight to their card.</p>
+  <p class="how">Already have the game? Tap the link from Messages or another app (not the browser’s address bar) and it opens straight to their card.</p>
   <p class="how"><a href="/privacy.html">Privacy</a> · <a href="/support.html">Support</a></p>
 </main>
 <script src="/config.js"></script>
 <script>
+  // Android sees only Google Play; iPhone and iPad only the App Store; a computer sees both.
+  if(/Android/i.test(navigator.userAgent))document.getElementById('appStore').remove();
+  else if(/iPhone|iPad|iPod/i.test(navigator.userAgent)||/Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints>1)document.getElementById('playStore').remove();
   const code=(location.pathname.match(/\/f\/([A-Za-z0-9]{6})/)||location.search.match(/[?&]friend=([A-Za-z0-9]{6})/)||[])[1]?.toUpperCase();
   if(code){document.getElementById('code').textContent=`${code.slice(0,3)}-${code.slice(3)}`;
     const LB=window.MONKEY_LEADERBOARD||{};

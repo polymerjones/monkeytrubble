@@ -1,10 +1,15 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "com.paulfisher.monkeytrubble",
       "sha256_cert_fingerprints": [
+        "2E:B6:C5:96:10:63:6C:20:16:EA:A6:FD:BF:87:11:BE:77:EE:47:92:48:41:97:C0:93:89:81:5E:44:6B:C1:46",
+        "90:00:42:57:C9:80:04:0B:1B:74:2A:40:98:D6:9E:71:52:20:E3:1A:B4:92:22:C9:7C:03:58:A8:E4:3A:5F:D4",
+        "06:E7:FB:95:95:32:B2:D4:7A:28:BD:F9:A3:F5:85:E1:28:18:EE:7F:2D:5A:29:2B:AC:16:A8:FE:E3:8F:F0:B3",
         "09:88:80:33:19:19:0B:7E:C7:03:C9:72:7D:B5:69:EB:E5:F2:55:F5:63:26:C2:CB:06:FD:B6:36:9C:5B:D1:A7",
         "6C:7F:72:E3:CB:60:4D:DA:43:DE:C1:27:30:0F:7F:49:F5:18:DD:26:BB:B8:A0:28:2A:8E:D0:22:97:FD:61:14"
       ]
