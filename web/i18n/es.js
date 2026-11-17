@@ -1183,4 +1183,7 @@ window.ES_TEXT={
   "🐒 {0} wants to be friends!":"🐒 ¡{0} quiere ser tu amigo!",
   "🐒 Someone wants to be your friend!":"🐒 ¡Alguien quiere ser tu amigo!",
   "⬆ {0} passed you on the leaderboard. The monkeys are outraged.":"⬆ {0} te ha adelantado en la clasificación. Los monos están indignados.",
+  "Remove friend":"Quitar amigo",
+  "Tap again to remove {0}":"Toca otra vez para quitar a {0}",
+  "Block or report":"Bloquear o denunciar",
 };
