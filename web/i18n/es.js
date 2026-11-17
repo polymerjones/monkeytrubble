@@ -1140,7 +1140,7 @@ window.ES_TEXT={
   "FRIEND LIST FULL":"LISTA DE AMIGOS LLENA",
   "ADD ME AS A FRIEND":"AÑÁDEME COMO AMIGO",
   "TROOP LV {0}":"TROPA NV {0}",
-  "Scan the code, or type it on the leaderboard’s FRIENDS tab":"Escanea el código o escríbelo en la pestaña AMIGOS de la clasificación",
-  "Be my friend in Monkey Trubble! 🐒 {0} or add my code {1} on the leaderboard’s FRIENDS tab.":"¡Sé mi amigo en Monkey Trubble! 🐒 {0} o añade mi código {1} en la pestaña AMIGOS de la clasificación.",
+  "Tap the link in the message, or type this code on the FRIENDS tab":"Toca el enlace del mensaje o escribe este código en la pestaña AMIGOS",
+  "Be my friend in Monkey Trubble! 🐒 Tap the link, or add my code {0} on the leaderboard’s FRIENDS tab.":"¡Sé mi amigo en Monkey Trubble! 🐒 Toca el enlace o añade mi código {0} en la pestaña AMIGOS de la clasificación.",
   "NEW: Friends! Share your friend card from the leaderboard’s FRIENDS tab (a friend scans the QR or opens the link), or tap anyone’s card on the board to ADD FRIEND. Nudge friends who haven’t played today. The trophy shows a red number when someone nudges you or passes you on the board.":"NUEVO: ¡Amigos! Comparte tu tarjeta de amigo desde la pestaña AMIGOS de la clasificación (tu amigo escanea el QR o abre el enlace), o toca la tarjeta de cualquiera en la clasificación para AÑADIR AMIGO. Dales un toque a los amigos que no hayan jugado hoy. El trofeo muestra un número rojo cuando alguien te da un toque o te adelanta en la clasificación.",
 };

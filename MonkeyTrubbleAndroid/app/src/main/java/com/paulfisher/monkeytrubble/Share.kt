@@ -37,7 +37,9 @@ class Share(private val activity: Activity, private val evaluate: (String) -> Un
         val uri = FileProvider.getUriForFile(activity, "${activity.packageName}.files", file)
         val send = Intent(Intent.ACTION_SEND).setType("image/png").putExtra(Intent.EXTRA_STREAM, uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         // The page's words go with the picture (Paul 2026-10-31); most apps put them in the message.
-        message.optString("text").takeIf { it.isNotEmpty() }?.let { send.putExtra(Intent.EXTRA_TEXT, it) }
+        // A friend card's link (url, 2026-11-17) goes after the words, where it's tappable and opens the game (App Links).
+        listOf(message.optString("text"), message.optString("url")).filter { it.isNotEmpty() }.joinToString(" ")
+            .takeIf { it.isNotEmpty() }?.let { send.putExtra(Intent.EXTRA_TEXT, it) }
         activity.runOnUiThread { activity.startActivity(Intent.createChooser(send, null)) }
     }
 

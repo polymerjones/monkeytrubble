@@ -291,13 +291,14 @@ struct GameWebView: UIViewRepresentable {
 
         /// The picture plus the page's words (Paul 2026-10-31), which Messages and most apps put with it. No picture: just the words
         /// (a friend code, 2026-11-17).
-        private func presentShare(_ image: UIImage?, text: String?) {
+        private func presentShare(_ image: UIImage?, text: String?, url: URL? = nil) {
             var top = UIApplication.shared.connectedScenes
                 .compactMap { ($0 as? UIWindowScene)?.keyWindow?.rootViewController }
                 .first
             while let presented = top?.presentedViewController { top = presented }
             guard let top else { return }
-            let items: [Any] = (image.map { [$0] } ?? []) + (text.map { [$0] } ?? [])
+            // A friend link goes in as a URL (2026-11-17): Messages shows it as a tappable preview, which opens the game (Universal Links).
+            let items: [Any] = (image.map { [$0] } ?? []) + (text.map { [$0] } ?? []) + (url.map { [$0] } ?? [])
             guard !items.isEmpty else { return }
             let sheet = UIActivityViewController(activityItems: items, applicationActivities: nil)
             // iPad shows the sheet as a popover; anchor it mid-screen.
@@ -336,7 +337,7 @@ struct GameWebView: UIViewRepresentable {
                 let text = (body["text"] as? String).flatMap { $0.isEmpty ? nil : $0 }
                 // A friend card (save: false, 2026-11-17) goes straight to the share sheet; a puzzle is saved to Photos first.
                 if body["save"] as? Bool == false {
-                    presentShare(image, text: text)
+                    presentShare(image, text: text, url: (body["url"] as? String).flatMap(URL.init(string:)))
                     return
                 }
                 saveToPhotos(image) { [weak self] ok in

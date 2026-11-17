@@ -5114,12 +5114,13 @@ void main() {
       x.fillStyle=tier.colors[1];x.font='800 40px system-ui,sans-serif';x.fillText(`${loc(tier.name)} · 🔥 ${me.streak} · ${loc('TROOP LV {0}',troopLevel(me.xp))}`.toUpperCase(),W/2,ay+ah+180,W-120);
       x.fillStyle='#adffc0';x.font='800 38px system-ui,sans-serif';x.fillText(loc('ADD ME AS A FRIEND'),W/2,H-250);
       x.fillStyle='#ffcf57';x.font='950 120px system-ui,sans-serif';x.fillText(fmtCode(code),W/2,H-125);
-      x.fillStyle='#ffffffaa';x.font='700 32px system-ui,sans-serif';x.fillText(loc('Scan the code, or type it on the leaderboard’s FRIENDS tab'),W/2,H-60,W-100);
+      x.fillStyle='#ffffffaa';x.font='700 32px system-ui,sans-serif';x.fillText(loc('Tap the link in the message, or type this code on the FRIENDS tab'),W/2,H-60,W-100);
       return c}
     $('#friendShare').onclick=async()=>{const code=fr.home?.code,btn=$('#friendShare');if(!code)return rejectTap(btn);btn.disabled=true;
-      const text=loc('Be my friend in Monkey Trubble! 🐒 {0} or add my code {1} on the leaderboard’s FRIENDS tab.',friendLinkOf(code),fmtCode(code)),name=`monkey-trubble-friend-${code}.png`;
+      // The app gets the link as its own item (url), so Messages shows a tappable preview that opens the game; elsewhere it's in the words.
+      const url=friendLinkOf(code),words=loc('Be my friend in Monkey Trubble! 🐒 Tap the link, or add my code {0} on the leaderboard’s FRIENDS tab.',fmtCode(code)),text=`${words} ${url}`,name=`monkey-trubble-friend-${code}.png`;
       try{const c=await friendCardImage(code);
-        if(window.webkit?.messageHandlers?.share){window.webkit.messageHandlers.share.postMessage({image:c.toDataURL('image/png'),name,text,save:false});return}
+        if(window.webkit?.messageHandlers?.share){window.webkit.messageHandlers.share.postMessage({image:c.toDataURL('image/png'),name,text:words,url,save:false});return}
         const blob=await new Promise(r=>c.toBlob(r,'image/png')),file=new File([blob],name,{type:'image/png'});
         if(navigator.canShare?.({files:[file]})){await navigator.share({files:[file],text}).catch(()=>{});return}
         if(navigator.share){await navigator.share({text}).catch(()=>{});return}
