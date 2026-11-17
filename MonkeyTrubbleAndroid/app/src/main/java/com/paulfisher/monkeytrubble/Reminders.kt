@@ -31,6 +31,8 @@ class Reminders(private val context: Context, private val evaluate: (String) -> 
         val on = message.optBoolean("on")
         val prefs = prefs(context)
         message.optString("time").takeIf { TIME.matches(it) }?.let { prefs.edit { putString(TIME_KEY, it) } }
+        // Friends news settings for when the alarm fires (ReminderReceiver), or none (reminders off, or no friends yet).
+        prefs.edit { message.optJSONObject("news")?.takeIf { on }?.let { putString(NEWS_KEY, it.toString()) } ?: remove(NEWS_KEY) }
         // A reminder still showing is stale once the game is open.
         NotificationManagerCompat.from(context).cancelAll()
         if (!on) {
@@ -63,9 +65,14 @@ class Reminders(private val context: Context, private val evaluate: (String) -> 
     private fun fireTest(message: JSONObject) {
         val on = NotificationManagerCompat.from(context).areNotificationsEnabled()
         if (on) {
-            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                post(context, message.optString("title"), message.optString("body"))
-            }, (message.optDouble("delay", 10.0) * 1000).toLong())
+            // TEST NEWS (dev): the friends news line, fetched the same way the alarm does (the silly line if there's none).
+            val news = message.optJSONObject("news")
+            Thread {
+                val body = news?.let { newsLine(context, it) } ?: message.optString("body")
+                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                    post(context, message.optString("title"), body)
+                }, (message.optDouble("delay", 10.0) * 1000).toLong())
+            }.start()
         }
         evaluate("window.__monkeyReminderTest?.('${if (on) "on" else "denied"}')")
     }
@@ -94,6 +101,7 @@ class Reminders(private val context: Context, private val evaluate: (String) -> 
         private const val ON_KEY = "on"
         private const val TIME_KEY = "time"
         private const val ITEMS_KEY = "items"
+        private const val NEWS_KEY = "news"
         private const val CHANNEL = "reminders"
         private const val SLOTS = 7
         private val TIME = Regex("""^\d\d:\d\d$""")
@@ -138,6 +146,47 @@ class Reminders(private val context: Context, private val evaluate: (String) -> 
             prefs(context).edit { putString(ITEMS_KEY, items.toString()) }
         }
 
+        /**
+         * Friends news in the daily reminder (Phase B, 2026-11-17), the Android side of the iPhone's NewsRefresh: when the alarm fires, a
+         * quick my_news call (6s at most); if there's news, the reminder says that instead of its silly line. Same order as the iPhone:
+         * a nudge, the shared puzzle, a friend request, a shared puzzle invite, being passed. Runs off the main thread.
+         */
+        fun newsLine(context: Context, given: JSONObject? = null): String? {
+            val cfg = given ?: try { JSONObject(prefs(context).getString(NEWS_KEY, null) ?: return null) } catch (_: Exception) { return null }
+            val t = cfg.optJSONObject("t") ?: return null
+            val key = cfg.optString("key")
+            val n = try {
+                val conn = (java.net.URL(cfg.optString("url") + "/rest/v1/rpc/my_news").openConnection() as java.net.HttpURLConnection).apply {
+                    requestMethod = "POST"; connectTimeout = 6000; readTimeout = 6000; doOutput = true
+                    setRequestProperty("apikey", key); setRequestProperty("Content-Type", "application/json")
+                    if (key.startsWith("eyJ")) setRequestProperty("Authorization", "Bearer $key")
+                }
+                conn.outputStream.use { it.write(JSONObject().put("p_id", cfg.optString("id")).put("p_secret", cfg.optString("secret")).put("p_mark", false).toString().toByteArray()) }
+                if (conn.responseCode != 200) return null
+                JSONObject(conn.inputStream.bufferedReader().use { it.readText() })
+            } catch (_: Exception) { return null }
+            fun fill(k: String, vararg a: String): String? {
+                var s = t.optString(k).ifEmpty { return null }
+                a.forEachIndexed { i, v -> s = s.replace("{$i}", v) }
+                return s
+            }
+            n.optJSONArray("nudges")?.optJSONObject(0)?.let { nudge ->
+                val lines = t.optJSONArray("lines")
+                val line = lines?.optString(nudge.optInt("line"))?.ifEmpty { null } ?: lines?.optString(0).orEmpty()
+                return fill("nudge", nudge.optString("name"), line)
+            }
+            n.optJSONObject("duo")?.let { duo ->
+                if (duo.optBoolean("done")) return fill("duoDone", duo.optString("name"))
+                if (duo.optInt("found") + duo.optInt("placed") > 0) return fill("duo", duo.optString("name"))
+            }
+            if (n.optInt("requests") > 0) {
+                return n.optJSONArray("request_names")?.optString(0)?.ifEmpty { null }?.let { fill("request", it) } ?: fill("requestAny")
+            }
+            if (n.optInt("duo_invites") > 0) return fill("duoInvite")
+            n.optJSONArray("passed")?.optJSONObject(0)?.let { return fill("passed", it.optString("name")) }
+            return null
+        }
+
         fun rearm(context: Context) {
             val saved = prefs(context).getString(ITEMS_KEY, null) ?: return
             arm(context, try { JSONArray(saved) } catch (_: Exception) { return })
@@ -176,7 +225,13 @@ class Reminders(private val context: Context, private val evaluate: (String) -> 
 /** A reminder's alarm went off: show it. */
 class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        Reminders.post(context, intent.getStringExtra(Reminders.EXTRA_TITLE).orEmpty(), intent.getStringExtra(Reminders.EXTRA_BODY).orEmpty())
+        val title = intent.getStringExtra(Reminders.EXTRA_TITLE).orEmpty()
+        val body = intent.getStringExtra(Reminders.EXTRA_BODY).orEmpty()
+        // The news check needs the network, so it runs on its own thread while the broadcast is kept alive (goAsync, ~10s budget).
+        val result = goAsync()
+        Thread {
+            try { Reminders.post(context, title, Reminders.newsLine(context) ?: body) } finally { result.finish() }
+        }.start()
     }
 }
 

@@ -1,5 +1,6 @@
 import UIKit
 import WebKit
+import BackgroundTasks
 @preconcurrency import UserNotifications
 
 /// Streak reminders (1.1), the iPhone twin of the Android app's Reminders.kt. The page decides everything (which days, which silly
@@ -43,6 +44,22 @@ final class Reminders: NSObject, UNUserNotificationCenterDelegate {
     /// Dev tools TEST: {op:'test', delay (s), title, body}. Asks for full permission if needed, then counts the delay from there,
     /// so time spent on the pop-up doesn't eat it. Answers window.__monkeyReminderTest(status). Leaves REMINDERS as it is.
     private func test(_ body: [String: Any]) {
+        // TEST NEWS (dev): the friends news line instead, fetched now the same way the background refresh does (silly line if none).
+        if let cfg = body["news"] as? [String: Any] {
+            var plain = body
+            plain.removeValue(forKey: "news")
+            let sendable = plain as NSDictionary
+            NewsRefresh.fetchLine(cfg) { line in
+                DispatchQueue.main.async {
+                    MainActor.assumeIsolated {
+                        var b = sendable as? [String: Any] ?? [:]
+                        if let line { b["body"] = line }
+                        self.test(b)
+                    }
+                }
+            }
+            return
+        }
         let delay = max(1, (body["delay"] as? NSNumber)?.doubleValue ?? 10)
         let title = body["title"] as? String ?? "Monkey Trubble"
         let text = body["body"] as? String ?? ""
@@ -95,6 +112,8 @@ final class Reminders: NSObject, UNUserNotificationCenterDelegate {
                   let title = item["title"] as? String, let text = item["body"] as? String else { return nil }
             return Item(slot: slot, at: Date(timeIntervalSince1970: at / 1000), title: title, body: text)
         }
+        // Friends news settings for the background refresh (NewsRefresh), or none (reminders off, or no friends yet).
+        NewsRefresh.save(on ? body["news"] as? [String: Any] : nil)
         // A reminder sitting in Notification Center is stale once the game is open.
         UNUserNotificationCenter.current().removeAllDeliveredNotifications()
         guard on else {
@@ -162,5 +181,127 @@ final class Reminders: NSObject, UNUserNotificationCenterDelegate {
     private func finish(_ status: String, asked: Bool) {
         UserDefaults.standard.set(status == "on" || status == "quiet", forKey: Self.onKey)
         webView?.evaluateJavaScript("window.__monkeyReminders?.({status:'\(status)',asked:\(asked)})")
+    }
+}
+
+/// Friends news in the daily reminder (Phase B, 2026-11-17). iOS can't push without a server, so a background refresh, which iOS runs
+/// when it sees fit, asks for my_news a few hours before the reminder. If there's news (a nudge, a finished or growing shared puzzle,
+/// a friend request, someone passing you), today's pending reminder is replaced with the same time and a news line. Otherwise
+/// nothing changes. The page sends the server details and the lines in the player's language (reminderNews in index.html). There's
+/// no reminder pending on a day the player has played, so there's nothing to rewrite then: still at most one a day, never after playing.
+enum NewsRefresh {
+    static let taskID = "com.paulfisher.MonkeyTrubble.news"
+    private static let configKey = "reminders.news"
+
+    /// Called from the app's init: the handler has to be registered before launch ends.
+    static func register() {
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: taskID, using: nil) { task in
+            guard let task = task as? BGAppRefreshTask else { task.setTaskCompleted(success: false); return }
+            run(task)
+        }
+    }
+
+    static func save(_ config: [String: Any]?) {
+        if let config, let data = try? JSONSerialization.data(withJSONObject: config) {
+            UserDefaults.standard.set(data, forKey: configKey)
+            schedule()
+        } else {
+            UserDefaults.standard.removeObject(forKey: configKey)
+            BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: taskID)
+        }
+    }
+
+    private static var config: [String: Any]? {
+        guard let data = UserDefaults.standard.data(forKey: configKey) else { return nil }
+        return (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
+    }
+
+    /// Next run: three hours before the reminder time (today's if that's still ahead, else tomorrow's). iOS may run it later.
+    static func schedule() {
+        guard config != nil else { return }
+        let time = UserDefaults.standard.string(forKey: "reminders.time") ?? "19:00"
+        let parts = time.split(separator: ":").compactMap { Int($0) }
+        let calendar = Calendar.current
+        var at = calendar.date(bySettingHour: parts.first ?? 19, minute: parts.count > 1 ? parts[1] : 0, second: 0, of: Date()) ?? Date()
+        at = at.addingTimeInterval(-3 * 3600)
+        if at < Date() { at = Date().addingTimeInterval(15 * 60) }
+        let request = BGAppRefreshTaskRequest(identifier: taskID)
+        request.earliestBeginDate = at
+        try? BGTaskScheduler.shared.submit(request)
+    }
+
+    private static func run(_ task: BGAppRefreshTask) {
+        // The next one is booked first, so a run that fails or is cut short doesn't end the chain.
+        schedule()
+        guard let cfg = config else { task.setTaskCompleted(success: true); return }
+        let job = fetchLine(cfg) { line in
+            guard let line else { task.setTaskCompleted(success: true); return }
+            rewriteToday(line) { task.setTaskCompleted(success: true) }
+        }
+        task.expirationHandler = { job?.cancel() }
+    }
+
+    /// Asks the server for my_news and picks the line (nil: no news, or no answer).
+    @discardableResult
+    static func fetchLine(_ cfg: [String: Any], done: @escaping @Sendable (String?) -> Void) -> URLSessionDataTask? {
+        guard let base = cfg["url"] as? String, let key = cfg["key"] as? String, let id = cfg["id"] as? String,
+              let secret = cfg["secret"] as? String, let t = cfg["t"] as? [String: Any],
+              let url = URL(string: "\(base)/rest/v1/rpc/my_news") else { done(nil); return nil }
+        var request = URLRequest(url: url, timeoutInterval: 20)
+        request.httpMethod = "POST"
+        request.setValue(key, forHTTPHeaderField: "apikey")
+        if key.hasPrefix("eyJ") { request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization") }
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try? JSONSerialization.data(withJSONObject: ["p_id": id, "p_secret": secret, "p_mark": false])
+        let tSend = t as NSDictionary
+        let job = URLSession.shared.dataTask(with: request) { data, _, _ in
+            guard let data, let news = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] else { done(nil); return }
+            done(line(news, tSend as? [String: Any] ?? [:]))
+        }
+        job.resume()
+        return job
+    }
+
+    /// The most personal news first: a nudge, your shared puzzle finished or growing, a friend request, a shared puzzle invite, being passed.
+    static func line(_ n: [String: Any], _ t: [String: Any]) -> String? {
+        func fill(_ key: String, _ args: String...) -> String? {
+            guard var s = t[key] as? String else { return nil }
+            for (i, a) in args.enumerated() { s = s.replacingOccurrences(of: "{\(i)}", with: a) }
+            return s
+        }
+        if let nudge = (n["nudges"] as? [[String: Any]])?.first, let name = nudge["name"] as? String {
+            let lines = t["lines"] as? [String] ?? []
+            let i = (nudge["line"] as? NSNumber)?.intValue ?? 0
+            return fill("nudge", name, lines.indices.contains(i) ? lines[i] : (lines.first ?? ""))
+        }
+        if let duo = n["duo"] as? [String: Any], let name = duo["name"] as? String {
+            if duo["done"] as? Bool == true { return fill("duoDone", name) }
+            if ((duo["found"] as? NSNumber)?.intValue ?? 0) + ((duo["placed"] as? NSNumber)?.intValue ?? 0) > 0 { return fill("duo", name) }
+        }
+        if ((n["requests"] as? NSNumber)?.intValue ?? 0) > 0 {
+            if let name = (n["request_names"] as? [String])?.first { return fill("request", name) }
+            return fill("requestAny")
+        }
+        if ((n["duo_invites"] as? NSNumber)?.intValue ?? 0) > 0 { return fill("duoInvite") }
+        if let p = (n["passed"] as? [[String: Any]])?.first, let name = p["name"] as? String { return fill("passed", name) }
+        return nil
+    }
+
+    /// Today's pending reminder (if any) gets the news line, keeping its time, title and id.
+    private static func rewriteToday(_ line: String, done: @escaping @Sendable () -> Void) {
+        let center = UNUserNotificationCenter.current()
+        center.getPendingNotificationRequests { requests in
+            let calendar = Calendar.current
+            guard let today = requests.first(where: { r in
+                guard r.identifier.hasPrefix("reminder-"), r.identifier != "reminder-test",
+                      let when = (r.trigger as? UNCalendarNotificationTrigger)?.nextTriggerDate() else { return false }
+                return calendar.isDateInToday(when)
+            }), let trigger = today.trigger else { done(); return }
+            let content = UNMutableNotificationContent()
+            content.title = today.content.title
+            content.body = line
+            content.sound = .default
+            center.add(UNNotificationRequest(identifier: today.identifier, content: content, trigger: trigger)) { _ in done() }
+        }
     }
 }

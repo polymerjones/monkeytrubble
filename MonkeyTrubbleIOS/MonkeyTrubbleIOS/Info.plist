@@ -5,6 +5,16 @@
 	<!-- Only standard HTTPS (the leaderboard): exempt from export documentation. -->
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<!-- Friends news in the daily reminder (Reminders.swift, NewsRefresh): a background refresh shortly before the reminder asks the
+	     leaderboard for nudges and friend news and rewrites that day's reminder with it. -->
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.paulfisher.MonkeyTrubble.news</string>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+	</array>
 	<!-- AdMob (Ads.swift). The IDs are the ADMOB_APP_ID / ADMOB_REWARDED_ID build settings, so Debug can use the test unit. -->
 	<key>GADApplicationIdentifier</key>
 	<string>$(ADMOB_APP_ID)</string>

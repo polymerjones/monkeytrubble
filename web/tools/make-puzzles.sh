@@ -25,5 +25,13 @@ build "$TMP/ch11.jpg" ch11
 EXTRA="../source/art/puzzles"
 for n in bg-3 bg-4 bg-B bg-E; do build "$EXTRA/$n.jpg" "$n"; done
 for n in poly poly-christmas; do sips -s format jpeg -c 768 432 "$EXTRA/$n.jpg" --out "$TMP/$n.jpg" >/dev/null; build "$TMP/$n.jpg" "$n"; done
+# Shared Puzzles' "Together" paintings (Paul 2026-11-17, from ../source/art/puzzles/together-N.png): each gets a centred 9:16 cut
+# first (together-1 is 992x1586, a bit wider than 9:16; the others already are), then the usual 720x1280.
+for n in together-1 together-2 together-3 together-4 together-5; do
+  [ -f "$EXTRA/$n.png" ] || { echo "missing $EXTRA/$n.png"; continue; }
+  W=$(sips -g pixelWidth "$EXTRA/$n.png" | awk '/pixelWidth/{print $2}'); H=$(sips -g pixelHeight "$EXTRA/$n.png" | awk '/pixelHeight/{print $2}')
+  CW=$(( H * 9 / 16 )); CH=$H; if [ "$CW" -gt "$W" ]; then CW=$W; CH=$(( W * 16 / 9 )); fi
+  sips -s format jpeg -c "$CH" "$CW" "$EXTRA/$n.png" --out "$TMP/$n.jpg" >/dev/null; build "$TMP/$n.jpg" "$n"
+done
 # The welcome card's black-and-white painting.
 sips -s format jpeg -s formatOptions 60 -z 640 360 -m "/System/Library/ColorSync/Profiles/Generic Gray Profile.icc" "$SRC/ch1_thebridgebg.png" --out art/puzzles/announce-bw.jpg >/dev/null

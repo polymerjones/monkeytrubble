@@ -10,6 +10,8 @@ struct MonkeyTrubbleApp: App {
         Self.activateAudio()
         // MetricKit reports, saved on this device for dev tools (Perf.swift).
         MetricsStore.shared.start()
+        // Friends news in the daily reminder: the background refresh handler (Reminders.swift).
+        NewsRefresh.register()
     }
 
     // The game's audio session: ambient, mixing with other apps. Re-applied after an ad, an interruption or a return to the app,

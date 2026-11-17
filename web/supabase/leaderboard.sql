@@ -34,6 +34,8 @@ update public.players set best_streak = streak where best_streak < streak;
 alter table public.players add column if not exists last_played timestamptz;
 alter table public.players add column if not exists friend_code text unique;
 alter table public.players add column if not exists news_seen_at timestamptz;
+-- When the player last looked at their shared puzzle (my_news counts the partner's finds and placings since then).
+alter table public.players add column if not exists duo_seen_at timestamptz;
 -- passes: (passed, passer) when passer's submit moved them past passed (written by submit_score, read by my_news, kept 8 days).
 create table if not exists public.passes (
   passed uuid not null references public.players(id) on delete cascade,
@@ -284,6 +286,9 @@ create table if not exists public.friend_links (
   check (player <> other)
 );
 create index if not exists friend_links_other_idx on public.friend_links (other, status);
+-- Added 2026-11-17: when the other player accepted this row's request, and whether the requester has seen that in their news.
+alter table public.friend_links add column if not exists accepted_at timestamptz;
+alter table public.friend_links add column if not exists accepted_seen boolean not null default false;
 create table if not exists public.nudges (
   id         bigserial primary key,
   sender     uuid not null references public.players(id) on delete cascade,
@@ -365,7 +370,7 @@ begin
     return json_build_object('status', 'full'); end if;
   if exists (select 1 from public.friend_links where player = them.id and other = p_me and status = 'pending') then
     if (select count(*) from public.friend_links where player = them.id and status = 'friends') >= 50 then return json_build_object('status', 'full'); end if;
-    update public.friend_links set status = 'friends' where player = them.id and other = p_me;
+    update public.friend_links set status = 'friends', accepted_at = now() where player = them.id and other = p_me;
     insert into public.friend_links (player, other, status) values (p_me, them.id, 'friends')
       on conflict (player, other) do update set status = 'friends';
     return json_build_object('status', 'friends', 'name', shown_name(them));
@@ -419,7 +424,7 @@ begin
   if not exists (select 1 from public.friend_links where player = p_other and other = p_id and status = 'pending') then return; end if;
   if not p_accept then delete from public.friend_links where player = p_other and other = p_id; return; end if;
   if (select count(*) from public.friend_links where player = p_id and status = 'friends') >= 50 then raise exception 'full'; end if;
-  update public.friend_links set status = 'friends' where player = p_other and other = p_id;
+  update public.friend_links set status = 'friends', accepted_at = now() where player = p_other and other = p_id;
   insert into public.friend_links (player, other, status) values (p_id, p_other, 'friends')
     on conflict (player, other) do update set status = 'friends';
 end $$;
@@ -460,7 +465,7 @@ begin
 end $$;
 
 -- News for the home badge, the FRIENDS tab and (later) the daily reminder: unread nudges from friends, players who passed you since you
--- last played or looked (and are still ahead), and how many friend requests wait. p_mark marks the nudges read and the passes seen.
+-- last played or looked (and are still ahead), friends who accepted your requests, and how many friend requests wait. p_mark marks the nudges read and the passes seen.
 create or replace function public.my_news(p_id uuid, p_secret text, p_mark boolean default false) returns json
 language plpgsql security definer set search_path = public, extensions as $$
 declare
@@ -479,10 +484,26 @@ begin
       from public.passes ps join public.players s on s.id = ps.passer
       where ps.passed = p_id and ps.at > since and s.score > me.score order by s.score limit 5) x), '[]'),
     'passed_count', (select count(*) from public.passes x join public.players s on s.id = x.passer where x.passed = p_id and x.at > since and s.score > me.score),
+    'accepted', coalesce((select json_agg(x order by x.at desc) from (
+      select s.id, shown_name(s) as name, s.avatar, s.tier, l.accepted_at as at from public.friend_links l join public.players s on s.id = l.other
+      where l.player = p_id and l.status = 'friends' and l.accepted_at is not null and not l.accepted_seen
+      order by l.accepted_at desc limit 10) x), '[]'),
+    'duo', (select json_build_object('name', shown_name(o), 'found', (select count(*) from public.duo_pieces x where x.duo = d.id and x.found_by = o.id and x.found_at > coalesce(me.duo_seen_at, d.created_at)),
+        'placed', (select count(*) from public.duo_pieces x where x.duo = d.id and x.placed_by = o.id and x.placed_at > coalesce(me.duo_seen_at, d.created_at)),
+        'done', d.status = 'done' and not (case when d.a = p_id then d.a_claimed else d.b_claimed end))
+      from public.duo_puzzles d join public.players o on o.id = case when d.a = p_id then d.b else d.a end
+      where (d.a = p_id or d.b = p_id) and (d.status = 'active' or d.status = 'done' and not (case when d.a = p_id then d.a_claimed else d.b_claimed end))
+      order by d.created_at desc limit 1),
+    'duo_invites', (select count(*) from public.duo_puzzles d where d.b = p_id and d.status = 'pending'),
+    -- Who's asking (added 2026-11-17 for the daily reminder: "Sam wants to be friends!").
+    'request_names', coalesce((select json_agg(x.name) from (select shown_name(f) as name from public.friend_links l join public.players f on f.id = l.player
+      where l.other = p_id and l.status = 'pending' and not exists (select 1 from public.friend_links b where b.player = p_id and b.other = l.player and b.status = 'blocked')
+      order by l.created_at desc limit 3) x), '[]'),
     'requests', (select count(*) from public.friend_links l where l.other = p_id and l.status = 'pending'
       and not exists (select 1 from public.friend_links b where b.player = p_id and b.other = l.player and b.status = 'blocked')));
   if p_mark then
     update public.nudges set seen = true where receiver = p_id and not seen;
+    update public.friend_links set accepted_seen = true where player = p_id and accepted_at is not null and not accepted_seen;
     update public.players set news_seen_at = now() where id = p_id;
   end if;
   return out;
@@ -502,3 +523,167 @@ grant execute on function public.remove_friend(uuid, text, uuid) to anon, authen
 grant execute on function public.block_friend(uuid, text, uuid) to anon, authenticated;
 grant execute on function public.nudge(uuid, text, uuid, int) to anon, authenticated;
 grant execute on function public.my_news(uuid, text, boolean) to anon, authenticated;
+
+-- ===================================================================================================================================
+-- Shared Puzzles (added 2026-11-17, Paul). Two friends build one jigsaw together: a = the player who invited, b = the friend. Clearing a
+-- Normal level can drop a shared piece (an extra, on top of the player's own puzzle pieces); either partner can place any found piece.
+-- One open shared puzzle (pending or active) per player. When all 12 are placed it's done, and each partner claims the reward once.
+create table if not exists public.duo_puzzles (
+  id         bigserial primary key,
+  a          uuid not null references public.players(id) on delete cascade,
+  b          uuid not null references public.players(id) on delete cascade,
+  art        text not null check (art ~ '^[a-z0-9-]{1,32}$'),
+  status     text not null default 'pending' check (status in ('pending', 'active', 'done', 'left')),
+  a_claimed  boolean not null default false,
+  b_claimed  boolean not null default false,
+  created_at timestamptz not null default now(),
+  done_at    timestamptz,
+  check (a <> b)
+);
+create index if not exists duo_puzzles_a_idx on public.duo_puzzles (a, status);
+create index if not exists duo_puzzles_b_idx on public.duo_puzzles (b, status);
+create table if not exists public.duo_pieces (
+  duo         bigint not null references public.duo_puzzles(id) on delete cascade,
+  piece       smallint not null check (piece between 0 and 11),
+  found_by    uuid references public.players(id) on delete set null,
+  found_level int not null,
+  found_at    timestamptz not null default now(),
+  placed_by   uuid references public.players(id) on delete set null,
+  placed_at   timestamptz,
+  primary key (duo, piece)
+);
+create unique index if not exists duo_pieces_level_idx on public.duo_pieces (duo, found_by, found_level);
+alter table public.duo_puzzles enable row level security;
+alter table public.duo_pieces enable row level security;
+revoke all on public.duo_puzzles from anon, authenticated;
+revoke all on public.duo_pieces from anon, authenticated;
+
+-- The player's shared puzzle: the open one (pending or active), else a finished one they haven't claimed, else the latest finished
+-- one from the last 3 days (so the finished picture stays to look at and share). Internal.
+create or replace function public.duo_current(p_me uuid) returns public.duo_puzzles language sql stable security definer set search_path = public as $$
+  select d.* from public.duo_puzzles d where (d.a = p_me or d.b = p_me)
+    and (d.status in ('pending', 'active') or d.status = 'done' and (not (case when d.a = p_me then d.a_claimed else d.b_claimed end) or d.done_at > now() - interval '3 days'))
+  order by (d.status in ('pending', 'active')) desc, d.created_at desc limit 1
+$$;
+revoke all on function public.duo_current(uuid) from public, anon, authenticated;
+
+-- Everything the SHARED view shows: the puzzle (art, status, whether you started it, whether you've claimed it), your partner, the pieces
+-- (who found and placed each), and invites waiting for you. Marks the partner's activity seen.
+create or replace function public.duo_state(p_id uuid, p_secret text) returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  me public.players := player_auth(p_id, p_secret);
+  d public.duo_puzzles := duo_current(p_id);
+  o public.players;
+  out json;
+begin
+  if d.id is not null then select * into o from public.players where id = case when d.a = p_id then d.b else d.a end; end if;
+  out := json_build_object(
+    'duo', case when d.id is null then null else json_build_object('id', d.id, 'art', d.art, 'status', d.status, 'mine', d.a = p_id,
+      'claimed', case when d.a = p_id then d.a_claimed else d.b_claimed end,
+      'partner', json_build_object('id', o.id, 'name', shown_name(o), 'avatar', o.avatar, 'tier', o.tier)) end,
+    'pieces', coalesce((select json_agg(json_build_object('piece', x.piece, 'found_by', x.found_by, 'placed', x.placed_by is not null, 'placed_by', x.placed_by) order by x.piece)
+      from public.duo_pieces x where x.duo = d.id), '[]'),
+    'invites', coalesce((select json_agg(json_build_object('id', i.id, 'art', i.art, 'from', json_build_object('id', f.id, 'name', shown_name(f), 'avatar', f.avatar, 'tier', f.tier)) order by i.created_at desc)
+      from public.duo_puzzles i join public.players f on f.id = i.a where i.b = p_id and i.status = 'pending'), '[]'));
+  update public.players set duo_seen_at = now() where id = p_id;
+  return out;
+end $$;
+
+-- Invite a friend to a shared puzzle. Returns 'sent', 'busy' (you or they already have one open) or 'not_friends'.
+create or replace function public.duo_invite(p_id uuid, p_secret text, p_friend uuid, p_art text) returns text
+language plpgsql security definer set search_path = public, extensions as $$
+declare me public.players := player_auth(p_id, p_secret);
+begin
+  if not exists (select 1 from public.friend_links where player = p_id and other = p_friend and status = 'friends')
+     or not exists (select 1 from public.friend_links where player = p_friend and other = p_id and status = 'friends') then return 'not_friends'; end if;
+  if exists (select 1 from public.duo_puzzles where (a in (p_id, p_friend) or b in (p_id, p_friend)) and status in ('pending', 'active')) then return 'busy'; end if;
+  insert into public.duo_puzzles (a, b, art) values (p_id, p_friend, coalesce(nullif(p_art, ''), 'together-1'));
+  return 'sent';
+end $$;
+
+-- Accept or decline an invite to you.
+create or replace function public.duo_answer(p_id uuid, p_secret text, p_duo bigint, p_accept boolean) returns text
+language plpgsql security definer set search_path = public, extensions as $$
+declare me public.players := player_auth(p_id, p_secret);
+begin
+  if not exists (select 1 from public.duo_puzzles where id = p_duo and b = p_id and status = 'pending') then return 'gone'; end if;
+  if not p_accept then delete from public.duo_puzzles where id = p_duo; return 'declined'; end if;
+  if exists (select 1 from public.duo_puzzles where id <> p_duo and (a = p_id or b = p_id) and status = 'active') then return 'busy'; end if;
+  update public.duo_puzzles set status = 'active' where id = p_duo;
+  -- Other invites to this player go (one shared puzzle at a time).
+  delete from public.duo_puzzles where b = p_id and status = 'pending' and id <> p_duo;
+  return 'active';
+end $$;
+
+-- A Normal clear of p_level found a shared piece: the server picks a free one. One per player per level, levels the player has
+-- reached, 6 a day. Returns the piece number, or null (nothing found: limits, or the puzzle is full).
+create or replace function public.duo_find(p_id uuid, p_secret text, p_level int) returns int
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  me public.players := player_auth(p_id, p_secret);
+  d public.duo_puzzles;
+  free int[];
+  pick int;
+begin
+  select * into d from public.duo_puzzles where (a = p_id or b = p_id) and status = 'active' limit 1;
+  if d.id is null or p_level < 1 or p_level > me.level then return null; end if;
+  if exists (select 1 from public.duo_pieces where duo = d.id and found_by = p_id and found_level = p_level) then return null; end if;
+  if (select count(*) from public.duo_pieces where found_by = p_id and found_at > now() - interval '1 day') >= 6 then return null; end if;
+  free := array(select g from generate_series(0, 11) g where not exists (select 1 from public.duo_pieces x where x.duo = d.id and x.piece = g));
+  if cardinality(free) = 0 then return null; end if;
+  pick := free[1 + floor(random() * cardinality(free))::int];
+  insert into public.duo_pieces (duo, piece, found_by, found_level) values (d.id, pick, p_id, p_level) on conflict do nothing;
+  return pick;
+end $$;
+
+-- Place a found piece (either partner). Returns {placed, done}; the 12th placing finishes the puzzle.
+create or replace function public.duo_place(p_id uuid, p_secret text, p_piece int) returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  me public.players := player_auth(p_id, p_secret);
+  d public.duo_puzzles;
+begin
+  select * into d from public.duo_puzzles where (a = p_id or b = p_id) and status = 'active' limit 1;
+  if d.id is null then return json_build_object('placed', false, 'done', false); end if;
+  update public.duo_pieces set placed_by = p_id, placed_at = now() where duo = d.id and piece = p_piece and placed_by is null;
+  if (select count(*) from public.duo_pieces where duo = d.id and placed_by is not null) >= 12 then
+    update public.duo_puzzles set status = 'done', done_at = now() where id = d.id;
+    return json_build_object('placed', true, 'done', true);
+  end if;
+  return json_build_object('placed', true, 'done', false);
+end $$;
+
+-- Claim a finished shared puzzle's reward: true the first time for each partner, false after.
+create or replace function public.duo_claim(p_id uuid, p_secret text, p_duo bigint) returns boolean
+language plpgsql security definer set search_path = public, extensions as $$
+declare me public.players := player_auth(p_id, p_secret);
+begin
+  update public.duo_puzzles set a_claimed = true where id = p_duo and a = p_id and status = 'done' and not a_claimed;
+  if found then return true; end if;
+  update public.duo_puzzles set b_claimed = true where id = p_duo and b = p_id and status = 'done' and not b_claimed;
+  return found;
+end $$;
+
+-- Leave (or cancel) your open shared puzzle; it ends for both. Found pieces stay in the history.
+create or replace function public.duo_leave(p_id uuid, p_secret text) returns void
+language plpgsql security definer set search_path = public, extensions as $$
+declare me public.players := player_auth(p_id, p_secret);
+begin
+  update public.duo_puzzles set status = 'left' where (a = p_id or b = p_id) and status in ('pending', 'active');
+end $$;
+
+revoke all on function public.duo_state(uuid, text) from public;
+revoke all on function public.duo_invite(uuid, text, uuid, text) from public;
+revoke all on function public.duo_answer(uuid, text, bigint, boolean) from public;
+revoke all on function public.duo_find(uuid, text, int) from public;
+revoke all on function public.duo_place(uuid, text, int) from public;
+revoke all on function public.duo_claim(uuid, text, bigint) from public;
+revoke all on function public.duo_leave(uuid, text) from public;
+grant execute on function public.duo_state(uuid, text) to anon, authenticated;
+grant execute on function public.duo_invite(uuid, text, uuid, text) to anon, authenticated;
+grant execute on function public.duo_answer(uuid, text, bigint, boolean) to anon, authenticated;
+grant execute on function public.duo_find(uuid, text, int) to anon, authenticated;
+grant execute on function public.duo_place(uuid, text, int) to anon, authenticated;
+grant execute on function public.duo_claim(uuid, text, bigint) to anon, authenticated;
+grant execute on function public.duo_leave(uuid, text) to anon, authenticated;
