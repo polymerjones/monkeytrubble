@@ -2,6 +2,7 @@ package com.paulfisher.monkeytrubble
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.os.Build
@@ -115,8 +116,34 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        friendLink = friendCode(intent)
         webView.loadUrl("https://${WebViewAssetLoader.DEFAULT_DOMAIN}/web/index.html")
         ads.gatherConsent()
+    }
+
+    /** Friend links (monkeytrubble.app/f/CODE, 2026-11-17): the code waits until the page has loaded, then __friendLink opens the card. */
+    private var friendLink: String? = null
+    private var pageLoaded = false
+
+    private fun friendCode(intent: Intent?): String? {
+        val uri = intent?.data ?: return null
+        if (uri.host != "monkeytrubble.app") return null
+        val parts = uri.pathSegments
+        if (parts.size < 2 || parts[0] != "f") return null
+        return parts[1].uppercase(Locale.US).filter { it in 'A'..'Z' || it in '0'..'9' }.takeIf { it.length == 6 }
+    }
+
+    private fun deliverFriendLink() {
+        val code = friendLink ?: return
+        if (!pageLoaded) return
+        friendLink = null
+        // A beat after load, like the iPhone: the page has set __friendLink and waits for the player's name itself.
+        webView.postDelayed({ webView.evaluateJavascript("window.__friendLink?.('$code')", null) }, 1000)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        friendCode(intent)?.let { friendLink = it; deliverFriendLink() }
     }
 
     override fun onResume() {
@@ -217,6 +244,8 @@ class MainActivity : ComponentActivity() {
             request.url.host != WebViewAssetLoader.DEFAULT_DOMAIN
 
         override fun onPageFinished(view: WebView, url: String) {
+            pageLoaded = true
+            deliverFriendLink()
             checkSafeArea()
             ads.announcePrivacyOptions()
         }

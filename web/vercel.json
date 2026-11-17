@@ -2,7 +2,27 @@
   "headers": [
     {
       "source": "/(cards|art|audio|icons|fonts|symbols)/(.*)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, stale-while-revalidate=604800"
+        }
+      ]
+    },
+    {
+      "source": "/.well-known/apple-app-site-association",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/f/:code",
+      "destination": "/friend.html"
     }
   ]
 }

@@ -20,10 +20,18 @@ import java.io.File
 class Share(private val activity: Activity, private val evaluate: (String) -> Unit) {
     /** Runs on the bridge's background thread: decoding and writing stay off the main thread. */
     fun handle(message: JSONObject) {
+        // Words only (a friend code, 2026-11-17): a plain text share, nothing saved.
+        if (!message.has("image")) {
+            val text = message.optString("text").takeIf { it.isNotEmpty() } ?: return
+            val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text)
+            activity.runOnUiThread { activity.startActivity(Intent.createChooser(send, null)) }
+            return
+        }
         val url = message.optString("image")
         val bytes = try { Base64.decode(url.substringAfter(","), Base64.DEFAULT) } catch (_: Exception) { return }
         val name = message.optString("name").ifEmpty { "monkey-trubble.png" }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) evaluate("window.__puzzleSaved?.(${saveToGallery(bytes, name)},'gallery')")
+        // A friend card (save: false, 2026-11-17) only goes to the share sheet; a puzzle is saved to the Gallery too.
+        if (message.optBoolean("save", true) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) evaluate("window.__puzzleSaved?.(${saveToGallery(bytes, name)},'gallery')")
         val file = File(activity.cacheDir, "shared").apply { mkdirs() }.resolve(name)
         try { file.writeBytes(bytes) } catch (_: Exception) { return }
         val uri = FileProvider.getUriForFile(activity, "${activity.packageName}.files", file)

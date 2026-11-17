@@ -29,6 +29,18 @@ alter table public.players add column if not exists avatar text check (avatar ~ 
 alter table public.players add column if not exists best_streak int not null default 0;
 alter table public.players add column if not exists best_rank int;
 update public.players set best_streak = streak where best_streak < streak;
+-- Added 2026-11-17 (friends): when the player last cleared a level (submit_score sets it when their XP goes up, so a rename
+-- doesn't count), and their friend code (made by friends_home the first time they open FRIENDS).
+alter table public.players add column if not exists last_played timestamptz;
+alter table public.players add column if not exists friend_code text unique;
+alter table public.players add column if not exists news_seen_at timestamptz;
+-- passes: (passed, passer) when passer's submit moved them past passed (written by submit_score, read by my_news, kept 8 days).
+create table if not exists public.passes (
+  passed uuid not null references public.players(id) on delete cascade,
+  passer uuid not null references public.players(id) on delete cascade,
+  at     timestamptz not null default now(),
+  primary key (passed, passer)
+);
 -- The board functions below gained an avatar column (2026-10-23); a return type can't be changed in place.
 drop function if exists public.top_players(int);
 drop function if exists public.player_rank(uuid);
@@ -91,16 +103,25 @@ begin
 
   select * into existing from public.players where id = p_id;
   if not found then
-    insert into public.players (id, secret_hash, name, rating, score, xp, streak, best_streak, level, tier)
-    values (p_id, crypt(p_secret, gen_salt('bf')), clean_name, p_rating, new_score, p_xp, p_streak, p_streak, p_level, tier_for(p_rating));
+    insert into public.players (id, secret_hash, name, rating, score, xp, streak, best_streak, level, tier, last_played)
+    values (p_id, crypt(p_secret, gen_salt('bf')), clean_name, p_rating, new_score, p_xp, p_streak, p_streak, p_level, tier_for(p_rating), now());
   else
     if existing.secret_hash <> crypt(p_secret, existing.secret_hash) then raise exception 'bad secret'; end if;
     update public.players set name = clean_name, rating = p_rating, score = new_score, prev_score = existing.score,
       xp = greatest(existing.xp, p_xp), streak = p_streak, best_streak = greatest(existing.best_streak, p_streak), level = greatest(existing.level, p_level), tier = tier_for(p_rating),
-      name_hidden = existing.name_hidden and existing.name = clean_name, updated_at = now()
+      name_hidden = existing.name_hidden and existing.name = clean_name, updated_at = now(),
+      last_played = case when p_xp > existing.xp then now() else existing.last_played end
     where id = p_id;
     -- A new name starts clean.
     if existing.name <> clean_name then delete from public.name_reports where player = p_id; end if;
+    -- Who this submit passed (added 2026-11-17, read by my_news for "Sam passed you").
+    if new_score > existing.score then
+      insert into public.passes (passed, passer)
+      select o.id, p_id from public.players o where o.id <> p_id and o.score > existing.score and o.score < new_score
+      order by o.score desc limit 50
+      on conflict (passed, passer) do update set at = now();
+      if random() < 0.02 then delete from public.passes where at < now() - interval '8 days'; end if;
+    end if;
   end if;
   new_rank := (select count(*) + 1 from public.players p where p.score > new_score);
   if new_score > 0 then update public.players set best_rank = least(coalesce(best_rank, new_rank), new_rank) where id = p_id; end if;
@@ -247,3 +268,237 @@ revoke all on function public.set_avatar(uuid, text, text) from public;
 revoke all on function public.player_profile(uuid) from public;
 grant execute on function public.set_avatar(uuid, text, text) to anon, authenticated;
 grant execute on function public.player_profile(uuid) to anon, authenticated;
+
+-- ===================================================================================================================================
+-- Friends (added 2026-11-17). Friend codes only: no search by name, no contacts. Entering a code sends a request, and the other
+-- player accepts it in the game. Nudges are a fixed set of lines: the game holds the words, the server stores only the line number,
+-- so no player ever types a message to another. Everything goes through the functions below, each checking the caller's secret.
+-- friend_links has one row per direction: (player, other, 'friends') both ways once accepted, (player, other, 'pending') for a request
+-- player sent, (player, other, 'blocked') when player blocked other. Deleting a player cascades their links, nudges and passes.
+create table if not exists public.friend_links (
+  player     uuid not null references public.players(id) on delete cascade,
+  other      uuid not null references public.players(id) on delete cascade,
+  status     text not null check (status in ('pending', 'friends', 'blocked')),
+  created_at timestamptz not null default now(),
+  primary key (player, other),
+  check (player <> other)
+);
+create index if not exists friend_links_other_idx on public.friend_links (other, status);
+create table if not exists public.nudges (
+  id         bigserial primary key,
+  sender     uuid not null references public.players(id) on delete cascade,
+  receiver   uuid not null references public.players(id) on delete cascade,
+  line       int  not null check (line between 0 and 31),
+  created_at timestamptz not null default now(),
+  seen       boolean not null default false
+);
+create index if not exists nudges_receiver_idx on public.nudges (receiver, seen);
+create index if not exists nudges_sender_idx on public.nudges (sender, receiver, created_at desc);
+alter table public.friend_links enable row level security;
+alter table public.nudges enable row level security;
+alter table public.passes enable row level security;
+revoke all on public.friend_links from anon, authenticated;
+revoke all on public.nudges from anon, authenticated;
+revoke all on public.passes from anon, authenticated;
+
+-- The caller's row, or an error if the secret doesn't match. Internal: not granted to the app.
+create or replace function public.player_auth(p_id uuid, p_secret text) returns public.players
+language plpgsql stable security definer set search_path = public, extensions as $$
+declare me public.players;
+begin
+  select * into me from public.players where id = p_id;
+  if not found or me.secret_hash <> crypt(coalesce(p_secret, ''), me.secret_hash) then raise exception 'bad secret'; end if;
+  return me;
+end $$;
+revoke all on function public.player_auth(uuid, text) from public, anon, authenticated;
+
+-- A friend's board row as JSON (the same fields as top_players, plus hours since they last played and whether p_me nudged them lately).
+create or replace function public.friend_json(p public.players, p_me uuid) returns json language sql stable security definer set search_path = public as $$
+  select json_build_object('rank', (select count(*) + 1 from public.players o where o.score > p.score), 'id', p.id, 'name', shown_name(p),
+    'score', p.score, 'rating', p.rating, 'tier', p.tier, 'streak', p.streak, 'xp', p.xp, 'level', p.level, 'avatar', p.avatar,
+    'idle_hours', case when p.last_played is null then null else floor(extract(epoch from now() - p.last_played) / 3600)::int end,
+    'nudged', exists (select 1 from public.nudges n where n.sender = p_me and n.receiver = p.id and n.created_at > now() - interval '20 hours'))
+$$;
+revoke all on function public.friend_json(public.players, uuid) from public, anon, authenticated;
+
+-- Everything the FRIENDS tab shows: your code (made here the first time: 6 characters with no 0/O/1/I/L look-alikes), your friends
+-- (you included) with board rows, requests to you, and requests you've sent.
+create or replace function public.friends_home(p_id uuid, p_secret text) returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  me public.players := player_auth(p_id, p_secret);
+  abc constant text := 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  code text := me.friend_code;
+begin
+  for i in 1..20 loop
+    exit when code is not null;
+    code := (select string_agg(substr(abc, 1 + get_byte(b, k) % length(abc), 1), '' order by k)
+             from (select gen_random_bytes(6) as b) x, generate_series(0, 5) k);
+    begin update public.players set friend_code = code where id = p_id;
+    exception when unique_violation then code := null; end;
+  end loop;
+  return json_build_object('code', code,
+    'friends', coalesce((select json_agg(friend_json(p, p_id) order by p.score desc, p.updated_at) from public.players p
+      where p.id = p_id or p.id in (select other from public.friend_links where player = p_id and status = 'friends')), '[]'),
+    'incoming', coalesce((select json_agg(json_build_object('id', p.id, 'name', shown_name(p), 'avatar', p.avatar, 'tier', p.tier) order by l.created_at desc)
+      from public.friend_links l join public.players p on p.id = l.player
+      where l.other = p_id and l.status = 'pending'
+        and not exists (select 1 from public.friend_links b where b.player = p_id and b.other = l.player and b.status = 'blocked')), '[]'),
+    'outgoing', coalesce((select json_agg(json_build_object('id', p.id, 'name', shown_name(p), 'avatar', p.avatar, 'tier', p.tier) order by l.created_at desc)
+      from public.friend_links l join public.players p on p.id = l.other where l.player = p_id and l.status = 'pending'), '[]'));
+end $$;
+
+-- A friend request from p_me to them (shared by add_friend and add_friend_id). Returns {status, name}: 'friends' (they'd already asked
+-- you, or you were friends), 'sent', 'self' or 'full' (50 friends, or 60 friends plus open requests). Someone who blocked you just sees
+-- 'sent'. Internal: not granted to the app.
+create or replace function public.friend_request(p_me uuid, them public.players) returns json
+language plpgsql security definer set search_path = public, extensions as $$
+begin
+  if them.id = p_me then return json_build_object('status', 'self'); end if;
+  if exists (select 1 from public.friend_links where player = them.id and other = p_me and status = 'blocked') then
+    return json_build_object('status', 'sent', 'name', shown_name(them)); end if;
+  delete from public.friend_links where player = p_me and other = them.id and status = 'blocked';
+  if exists (select 1 from public.friend_links where player = p_me and other = them.id and status = 'friends') then
+    return json_build_object('status', 'friends', 'name', shown_name(them)); end if;
+  if (select count(*) from public.friend_links where player = p_me and status = 'friends') >= 50
+     or (select count(*) from public.friend_links where player = p_me and status in ('friends', 'pending')) >= 60 then
+    return json_build_object('status', 'full'); end if;
+  if exists (select 1 from public.friend_links where player = them.id and other = p_me and status = 'pending') then
+    if (select count(*) from public.friend_links where player = them.id and status = 'friends') >= 50 then return json_build_object('status', 'full'); end if;
+    update public.friend_links set status = 'friends' where player = them.id and other = p_me;
+    insert into public.friend_links (player, other, status) values (p_me, them.id, 'friends')
+      on conflict (player, other) do update set status = 'friends';
+    return json_build_object('status', 'friends', 'name', shown_name(them));
+  end if;
+  insert into public.friend_links (player, other, status) values (p_me, them.id, 'pending') on conflict do nothing;
+  return json_build_object('status', 'sent', 'name', shown_name(them));
+end $$;
+revoke all on function public.friend_request(uuid, public.players) from public, anon, authenticated;
+
+-- Add a friend by code (typed, or from a shared link or QR). Also 'no_code' when nobody has it.
+create or replace function public.add_friend(p_id uuid, p_secret text, p_code text) returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  me public.players := player_auth(p_id, p_secret);
+  them public.players;
+begin
+  select * into them from public.players where friend_code = upper(regexp_replace(coalesce(p_code, ''), '[^A-Za-z0-9]', '', 'g'));
+  if not found then return json_build_object('status', 'no_code'); end if;
+  return friend_request(p_id, them);
+end $$;
+
+-- Add a friend from their player card on the board (a request they still have to accept).
+create or replace function public.add_friend_id(p_id uuid, p_secret text, p_other uuid) returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  me public.players := player_auth(p_id, p_secret);
+  them public.players;
+begin
+  select * into them from public.players where id = p_other;
+  if not found then return json_build_object('status', 'no_code'); end if;
+  return friend_request(p_id, them);
+end $$;
+
+-- The board row for a friend code, so a shared link or QR opens that player's card (the same public details as the leaderboard).
+create or replace function public.player_by_code(p_code text)
+returns table (rank bigint, id uuid, name text, score int, rating int, tier text, streak int, xp int, level int, avatar text)
+language sql stable security definer set search_path = public as $$
+  select (select count(*) + 1 from public.players o where o.score > p.score), p.id, shown_name(p), p.score, p.rating, p.tier, p.streak, p.xp, p.level, p.avatar
+  from public.players p where p.friend_code = upper(regexp_replace(coalesce(p_code, ''), '[^A-Za-z0-9]', '', 'g'))
+$$;
+revoke all on function public.add_friend_id(uuid, text, uuid) from public;
+revoke all on function public.player_by_code(text) from public;
+grant execute on function public.add_friend_id(uuid, text, uuid) to anon, authenticated;
+grant execute on function public.player_by_code(text) to anon, authenticated;
+
+-- Accept or decline a request someone sent you.
+create or replace function public.answer_friend(p_id uuid, p_secret text, p_other uuid, p_accept boolean) returns void
+language plpgsql security definer set search_path = public, extensions as $$
+declare me public.players := player_auth(p_id, p_secret);
+begin
+  if not exists (select 1 from public.friend_links where player = p_other and other = p_id and status = 'pending') then return; end if;
+  if not p_accept then delete from public.friend_links where player = p_other and other = p_id; return; end if;
+  if (select count(*) from public.friend_links where player = p_id and status = 'friends') >= 50 then raise exception 'full'; end if;
+  update public.friend_links set status = 'friends' where player = p_other and other = p_id;
+  insert into public.friend_links (player, other, status) values (p_id, p_other, 'friends')
+    on conflict (player, other) do update set status = 'friends';
+end $$;
+
+-- Unfriend (or cancel a request you sent). Either side can; both directions go.
+create or replace function public.remove_friend(p_id uuid, p_secret text, p_other uuid) returns void
+language plpgsql security definer set search_path = public, extensions as $$
+declare me public.players := player_auth(p_id, p_secret);
+begin
+  delete from public.friend_links where (player = p_id and other = p_other and status <> 'blocked')
+    or (player = p_other and other = p_id and status <> 'blocked');
+end $$;
+
+-- Block: ends the friendship or request, and they can't send you requests or nudges again (they aren't told). Their unread nudges go.
+create or replace function public.block_friend(p_id uuid, p_secret text, p_other uuid) returns void
+language plpgsql security definer set search_path = public, extensions as $$
+declare me public.players := player_auth(p_id, p_secret);
+begin
+  if p_other = p_id then return; end if;
+  delete from public.friend_links where (player = p_id and other = p_other) or (player = p_other and other = p_id and status <> 'blocked');
+  insert into public.friend_links (player, other, status) values (p_id, p_other, 'blocked');
+  update public.nudges set seen = true where sender = p_other and receiver = p_id and not seen;
+end $$;
+
+-- Nudge a friend with one of the game's fixed lines. Returns 'sent', 'already' (you nudged them in the last 20 hours), 'played' (they
+-- cleared a level in the last 16 hours, so there's nothing to nudge about) or 'not_friends'.
+create or replace function public.nudge(p_id uuid, p_secret text, p_friend uuid, p_line int) returns text
+language plpgsql security definer set search_path = public, extensions as $$
+declare me public.players := player_auth(p_id, p_secret);
+begin
+  if p_line not between 0 and 31 then raise exception 'bad line'; end if;
+  if not exists (select 1 from public.friend_links where player = p_id and other = p_friend and status = 'friends')
+     or not exists (select 1 from public.friend_links where player = p_friend and other = p_id and status = 'friends') then return 'not_friends'; end if;
+  if exists (select 1 from public.nudges where sender = p_id and receiver = p_friend and created_at > now() - interval '20 hours') then return 'already'; end if;
+  if exists (select 1 from public.players where id = p_friend and last_played > now() - interval '16 hours') then return 'played'; end if;
+  insert into public.nudges (sender, receiver, line) values (p_id, p_friend, p_line);
+  return 'sent';
+end $$;
+
+-- News for the home badge, the FRIENDS tab and (later) the daily reminder: unread nudges from friends, players who passed you since you
+-- last played or looked (and are still ahead), and how many friend requests wait. p_mark marks the nudges read and the passes seen.
+create or replace function public.my_news(p_id uuid, p_secret text, p_mark boolean default false) returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  me public.players := player_auth(p_id, p_secret);
+  since timestamptz := greatest(coalesce(me.last_played, me.created_at), coalesce(me.news_seen_at, me.created_at), now() - interval '7 days');
+  out json;
+begin
+  out := json_build_object(
+    'nudges', coalesce((select json_agg(x order by x.at desc) from (
+      select s.id, shown_name(s) as name, s.avatar, s.tier, n.line, n.created_at as at from public.nudges n join public.players s on s.id = n.sender
+      where n.receiver = p_id and not n.seen and exists (select 1 from public.friend_links l where l.player = p_id and l.other = s.id and l.status = 'friends')
+      order by n.created_at desc limit 10) x), '[]'),
+    'passed', coalesce((select json_agg(x order by x.score) from (
+      select s.id, shown_name(s) as name, s.avatar, s.tier, s.score,
+        exists (select 1 from public.friend_links l where l.player = p_id and l.other = s.id and l.status = 'friends') as friend
+      from public.passes ps join public.players s on s.id = ps.passer
+      where ps.passed = p_id and ps.at > since and s.score > me.score order by s.score limit 5) x), '[]'),
+    'passed_count', (select count(*) from public.passes x join public.players s on s.id = x.passer where x.passed = p_id and x.at > since and s.score > me.score),
+    'requests', (select count(*) from public.friend_links l where l.other = p_id and l.status = 'pending'
+      and not exists (select 1 from public.friend_links b where b.player = p_id and b.other = l.player and b.status = 'blocked')));
+  if p_mark then
+    update public.nudges set seen = true where receiver = p_id and not seen;
+    update public.players set news_seen_at = now() where id = p_id;
+  end if;
+  return out;
+end $$;
+
+revoke all on function public.friends_home(uuid, text) from public;
+revoke all on function public.add_friend(uuid, text, text) from public;
+revoke all on function public.answer_friend(uuid, text, uuid, boolean) from public;
+revoke all on function public.remove_friend(uuid, text, uuid) from public;
+revoke all on function public.block_friend(uuid, text, uuid) from public;
+revoke all on function public.nudge(uuid, text, uuid, int) from public;
+revoke all on function public.my_news(uuid, text, boolean) from public;
+grant execute on function public.friends_home(uuid, text) to anon, authenticated;
+grant execute on function public.add_friend(uuid, text, text) to anon, authenticated;
+grant execute on function public.answer_friend(uuid, text, uuid, boolean) to anon, authenticated;
+grant execute on function public.remove_friend(uuid, text, uuid) to anon, authenticated;
+grant execute on function public.block_friend(uuid, text, uuid) to anon, authenticated;
+grant execute on function public.nudge(uuid, text, uuid, int) to anon, authenticated;
+grant execute on function public.my_news(uuid, text, boolean) to anon, authenticated;

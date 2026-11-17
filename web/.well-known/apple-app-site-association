@@ -1,0 +1,10 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["976XKW42U9.com.paulfisher.MonkeyTrubble"],
+        "components": [{ "/": "/f/*", "comment": "Friend links: open the player's card in the game" }]
+      }
+    ]
+  }
+}

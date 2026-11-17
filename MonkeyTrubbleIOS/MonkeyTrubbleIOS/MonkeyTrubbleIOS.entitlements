@@ -8,5 +8,10 @@
 	<!-- iCloud key-value storage: the save syncs across the player's devices (CloudSave in GameWebView.swift). -->
 	<key>com.apple.developer.ubiquity-kvstore-identifier</key>
 	<string>$(TeamIdentifierPrefix)$(CFBundleIdentifier)</string>
+	<!-- Universal Links: monkeytrubble.app/f/CODE (friend links) open the app; web/.well-known/apple-app-site-association lists the paths. -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:monkeytrubble.app</string>
+	</array>
 </dict>
 </plist>

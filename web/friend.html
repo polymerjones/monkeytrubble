@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Monkey Trubble Friend</title>
+  <meta name="description" content="A friend invited you to Monkey Trubble.">
+  <link rel="icon" href="/icons/icon-192.png">
+  <!-- Safari's banner: GET without the game, OPEN with it. -->
+  <meta name="apple-itunes-app" content="app-id=6822473244">
+  <!-- Served at /f/CODE (vercel.json rewrite). With the game installed on iPhone, that link opens the game instead (Universal Links,
+       .well-known/apple-app-site-association) on the player's card. This page is for everyone else: who invited you, the code,
+       and where to get the game. Names come from players: textContent only. -->
+  <style>
+    :root{--bg:#06140b;--panel:#0d2614;--edge:#1d4a26;--text:#e9f5ea;--muted:#a9c4ad;--accent:#ffd84d;--link:#7ff3a8}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 20%,#1f5a2c,var(--bg) 70%);color:var(--text);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+    main{max-width:480px;margin:0 auto;padding:40px 16px 56px;text-align:center}
+    .logo{width:min(320px,80%)}
+    .card{margin:24px 0;padding:22px 18px;background:var(--panel);border:1px solid var(--edge);border-radius:18px}
+    .kicker{color:var(--muted);font-weight:800;font-size:.8rem;letter-spacing:.16em}
+    .name{margin:6px 0 2px;font-size:1.8rem;font-weight:900;overflow-wrap:anywhere}
+    .tier{color:var(--muted);font-weight:700;font-size:.9rem;letter-spacing:.08em;text-transform:uppercase}
+    .code{margin:18px 0 4px;color:var(--accent);font-size:2.6rem;font-weight:900;letter-spacing:.14em;font-variant-numeric:tabular-nums}
+    .how{color:var(--muted);font-size:.95rem}
+    ol{text-align:left;margin:12px auto 0;max-width:360px;padding-left:22px;color:var(--text)}
+    li{margin:6px 0}
+    a{color:var(--link)}
+    .store{display:inline-block;margin:4px 0 18px;padding:12px 22px;border-radius:14px;background:var(--accent);color:#1a1000;font-weight:900;text-decoration:none}
+  </style>
+</head>
+<body>
+<main>
+  <img class="logo" src="/art/home/logo.png" alt="Monkey Trubble">
+  <div class="card">
+    <div class="kicker">YOU'VE BEEN INVITED BY</div>
+    <div class="name" id="name">A fellow monkey</div>
+    <div class="tier" id="tier"></div>
+    <div class="code" id="code">———</div>
+    <div class="how">their friend code</div>
+  </div>
+  <a class="store" href="https://apps.apple.com/us/app/monkey-trubble/id6822473244">Get it on the App Store</a>
+  <ol>
+    <li>Get <b>Monkey Trubble</b> on the <a href="https://apps.apple.com/us/app/monkey-trubble/id6822473244">App Store</a> (on Android, search “Monkey Trubble” on Google Play).</li>
+    <li>Pick your name and clear your first level.</li>
+    <li>Open the 🏆 leaderboard, tap <b>FRIENDS</b>, then <b>ADD</b>, and type the code above.</li>
+  </ol>
+  <p class="how">Already have the game on iPhone? Open this link again from Messages or Notes and it goes straight to their card.</p>
+  <p class="how"><a href="/privacy.html">Privacy</a> · <a href="/support.html">Support</a></p>
+</main>
+<script src="/config.js"></script>
+<script>
+  const code=(location.pathname.match(/\/f\/([A-Za-z0-9]{6})/)||location.search.match(/[?&]friend=([A-Za-z0-9]{6})/)||[])[1]?.toUpperCase();
+  if(code){document.getElementById('code').textContent=`${code.slice(0,3)}-${code.slice(3)}`;
+    const LB=window.MONKEY_LEADERBOARD||{};
+    if(LB.url&&LB.anonKey)fetch(`${LB.url.replace(/\/$/,'')}/rest/v1/rpc/player_by_code`,{method:'POST',headers:{apikey:LB.anonKey,...(LB.anonKey.startsWith('eyJ')?{Authorization:`Bearer ${LB.anonKey}`}:{}),'Content-Type':'application/json'},body:JSON.stringify({p_code:code})})
+      .then(r=>r.ok?r.json():[]).then(([p])=>{if(!p)return;document.getElementById('name').textContent=p.name;document.getElementById('tier').textContent=`${p.tier} · #${p.rank} on the leaderboard`}).catch(()=>{});
+  }
+</script>
+</body>
+</html>

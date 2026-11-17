@@ -289,14 +289,17 @@ struct GameWebView: UIViewRepresentable {
             }
         }
 
-        /// The picture plus the page's words (Paul 2026-10-31), which Messages and most apps put with it.
-        private func presentShare(_ image: UIImage, text: String?) {
+        /// The picture plus the page's words (Paul 2026-10-31), which Messages and most apps put with it. No picture: just the words
+        /// (a friend code, 2026-11-17).
+        private func presentShare(_ image: UIImage?, text: String?) {
             var top = UIApplication.shared.connectedScenes
                 .compactMap { ($0 as? UIWindowScene)?.keyWindow?.rootViewController }
                 .first
             while let presented = top?.presentedViewController { top = presented }
             guard let top else { return }
-            let sheet = UIActivityViewController(activityItems: [image] + (text.map { [$0] } ?? []), applicationActivities: nil)
+            let items: [Any] = (image.map { [$0] } ?? []) + (text.map { [$0] } ?? [])
+            guard !items.isEmpty else { return }
+            let sheet = UIActivityViewController(activityItems: items, applicationActivities: nil)
             // iPad shows the sheet as a popover; anchor it mid-screen.
             sheet.popoverPresentationController?.sourceView = top.view
             sheet.popoverPresentationController?.sourceRect = CGRect(x: top.view.bounds.midX, y: top.view.bounds.midY, width: 1, height: 1)
@@ -331,10 +334,21 @@ struct GameWebView: UIViewRepresentable {
                let url = body["image"] as? String, let comma = url.firstIndex(of: ","),
                let data = Data(base64Encoded: String(url[url.index(after: comma)...])), let image = UIImage(data: data) {
                 let text = (body["text"] as? String).flatMap { $0.isEmpty ? nil : $0 }
+                // A friend card (save: false, 2026-11-17) goes straight to the share sheet; a puzzle is saved to Photos first.
+                if body["save"] as? Bool == false {
+                    presentShare(image, text: text)
+                    return
+                }
                 saveToPhotos(image) { [weak self] ok in
                     self?.webView?.evaluateJavaScript("window.__puzzleSaved?.(\(ok),'photos')")
                     self?.presentShare(image, text: text)
                 }
+                return
+            }
+            // Words only (a friend code, 2026-11-17): straight to the share sheet, nothing saved.
+            if message.name == "share", let body = message.body as? [String: Any], body["image"] == nil,
+               let text = body["text"] as? String, !text.isEmpty {
+                presentShare(nil, text: text)
                 return
             }
             // Signposts, game states and the MetricKit reports for dev tools (Perf.swift).
@@ -427,6 +441,7 @@ struct GameWebView: UIViewRepresentable {
         // Consent is asked once the game is on screen (the form needs a window to present from); every page load hears whether
         // Settings needs the "Ad privacy choices" row.
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            FriendLinks.shared.attach(webView)
             if consentAsked {
                 ads.announcePrivacyOptions()
             } else {
@@ -440,6 +455,37 @@ struct GameWebView: UIViewRepresentable {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { webView.evaluateJavaScript(js) }
             }
             #endif
+        }
+    }
+}
+
+/// Friend links (2026-11-17): https://monkeytrubble.app/f/CODE opens the app (Universal Links, applinks:monkeytrubble.app) and the code
+/// goes to the page's __friendLink, which opens that player's card with ADD FRIEND. A link that arrives before the page has loaded waits.
+final class FriendLinks {
+    static let shared = FriendLinks()
+    private weak var webView: WKWebView?
+    private var pending: String?
+
+    func open(_ url: URL) {
+        let parts = url.pathComponents
+        guard parts.count >= 3, parts[1] == "f" else { return }
+        let code = parts[2].uppercased().filter { $0.isLetter || $0.isNumber }
+        guard code.count == 6, code.allSatisfy(\.isASCII) else { return }
+        pending = code
+        deliver()
+    }
+
+    func attach(_ webView: WKWebView) {
+        self.webView = webView
+        deliver()
+    }
+
+    private func deliver() {
+        guard let webView, let code = pending else { return }
+        pending = nil
+        // The page sets __friendLink while it starts; a beat later it's there and can wait for the player's name itself.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            webView.evaluateJavaScript("window.__friendLink?.('\(code)')")
         }
     }
 }

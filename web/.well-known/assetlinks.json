@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.paulfisher.monkeytrubble",
+      "sha256_cert_fingerprints": [
+        "09:88:80:33:19:19:0B:7E:C7:03:C9:72:7D:B5:69:EB:E5:F2:55:F5:63:26:C2:CB:06:FD:B6:36:9C:5B:D1:A7",
+        "6C:7F:72:E3:CB:60:4D:DA:43:DE:C1:27:30:0F:7F:49:F5:18:DD:26:BB:B8:A0:28:2A:8E:D0:22:97:FD:61:14"
+      ]
+    }
+  }
+]

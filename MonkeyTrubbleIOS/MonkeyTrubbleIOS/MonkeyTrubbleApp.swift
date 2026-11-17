@@ -36,6 +36,11 @@ struct MonkeyTrubbleApp: App {
                 Color(launchBackground).ignoresSafeArea()
                 GameWebView()
                     .ignoresSafeArea(edges: .vertical)
+                    // Friend links (monkeytrubble.app/f/CODE) open the player's card (FriendLinks in GameWebView.swift).
+                    .onOpenURL { FriendLinks.shared.open($0) }
+                    .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
+                        if let url = activity.webpageURL { FriendLinks.shared.open(url) }
+                    }
             }
         }
     }

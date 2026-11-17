@@ -51,10 +51,19 @@
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|density|fontScale"
             android:exported="true"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- Friend links (2026-11-17): https://monkeytrubble.app/f/CODE opens the game on that player's card (App Links, verified by
+                 web/.well-known/assetlinks.json). singleTask: a link reuses the running game instead of starting a second copy. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="monkeytrubble.app" android:pathPrefix="/f/" />
             </intent-filter>
         </activity>
     </application>
