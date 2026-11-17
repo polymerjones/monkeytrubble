@@ -15,6 +15,10 @@ Builds `MonkeyTrubbleIOS` (which bundles `web/`), installs it on the paired iPho
    ```
    If it fails, stop and fix the error before building.
 
+   **Leaderboard cap check (blocks):** `cd <repo root>/web && node tools/check-scoring.mjs`. If it fails, a legitimate score can exceed the
+   server's anti-cheat cap in `supabase/leaderboard.sql`, and those players' scores freeze silently (2026-11-16: the combo bonus outgrew
+   the cap and froze ssaammllzz at 720). Stop and tell Paul. The fix is to raise the cap in leaderboard.sql and have Paul run it in Supabase.
+
    **What's New version check (warn, don't block):** compare the POLY card's notes version with the app version:
    ```sh
    cd <repo root> && notes=$(grep -o "RELEASE_NOTES={version:'[^']*'" web/index.html | grep -o "'.*'" | tr -d "'"); app=$(grep -m1 -o 'MARKETING_VERSION = [0-9.]*' MonkeyTrubbleIOS/MonkeyTrubbleIOS.xcodeproj/project.pbxproj | grep -o '[0-9.]*$'); [ "$notes" = "$app" ] && echo "What's New $notes matches the app" || echo "WARNING: What's New says $notes but the iOS MARKETING_VERSION is $app"
