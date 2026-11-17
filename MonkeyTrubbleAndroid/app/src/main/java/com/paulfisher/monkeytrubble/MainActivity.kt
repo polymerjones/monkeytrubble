@@ -52,10 +52,10 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Tablets (smallest width 600dp+) may turn sideways for the landscape game screen (v1.1); phones stay portrait (manifest).
-        if (resources.configuration.smallestScreenWidthDp >= 600) {
-            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_FULL_USER
-        }
+        // Landscape game screen (v1.1): tablets (smallest width 600dp+) may turn any way; phones may turn sideways too (compact
+        // body.phone-ls layout) but not upside down, like the iPhone. Both follow the user's rotation lock. Manifest default is portrait.
+        requestedOrientation = if (resources.configuration.smallestScreenWidthDp >= 600) ActivityInfo.SCREEN_ORIENTATION_FULL_USER
+            else ActivityInfo.SCREEN_ORIENTATION_USER
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),

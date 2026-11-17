@@ -241,6 +241,45 @@
     body.landscape.phone-ls .lightbox-stage{padding-left:max(24px,env(safe-area-inset-left));padding-right:max(24px,env(safe-area-inset-right));gap:18px}
     body.landscape.phone-ls .lightbox-card,body.landscape.phone-ls .lightbox.notes .lightbox-card{--lb-w:min(36vw,calc((100dvh - 40px) * .667))}
     body.landscape.phone-ls .lightbox-info{max-height:calc(100dvh - 40px);overflow:auto}
+    /* Sideways phone, other screens: ~390-430pt of height, so tall stacks become two columns (art left, words and buttons right). */
+    body.phone-ls .overlay>.dialog:not(.win-dialog){max-height:calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow-y:auto;overscroll-behavior:contain;padding:20px 24px}
+    body.phone-ls .overlay>.settings-dialog{width:min(760px,calc(100% - 32px));padding:18px 18px 12px;overflow:hidden}
+    body.phone-ls .settings-scroll{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:22px;align-items:start}
+    body.phone-ls .settings-scroll>.set-row:first-child,body.phone-ls .settings-scroll>.dev-only,body.phone-ls .settings-scroll>:not(.set-row){grid-column:1/-1}
+    body.phone-ls #winOverlay .win-dialog{width:min(800px,100%);display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:40px;align-content:center;justify-items:center;padding:calc(env(safe-area-inset-top) + 10px) max(24px,env(safe-area-inset-right)) calc(env(safe-area-inset-bottom) + 8px) max(24px,env(safe-area-inset-left))}
+    body.phone-ls #winOverlay .win-dialog>*{grid-column:2}
+    body.phone-ls #winOverlay .win-hero{grid-column:1;grid-row:1/span 9;align-self:center;height:min(64dvh,270px);margin:0 30px}
+    body.phone-ls #winOverlay .win-time{margin:0}
+    body.phone-ls #winOverlay .win-time>b{font-size:clamp(52px,16dvh,76px)}
+    body.phone-ls #winOverlay .win-score{margin:8px 0 10px}
+    body.phone-ls #winOverlay .win-gain>span{padding:6px 4px}
+    body.phone-ls #winOverlay .win-tier{margin-top:8px}
+    body.phone-ls #winOverlay #nextLevel{margin-top:0}
+    body.phone-ls .climb-dialog{width:min(520px,calc(100% - 32px))}
+    body.phone-ls .climb-list{max-height:calc(100dvh - 200px)}
+    body.phone-ls .avatar-dialog{width:min(560px,calc(100% - 32px));padding:12px 16px 10px}
+    body.phone-ls .avatar-dialog h2{font-size:1.2rem}
+    body.phone-ls .avatar-dialog p{margin-bottom:2px}
+    body.phone-ls .avatar-ring{height:min(176px,calc(100dvh - 286px))}
+    body.phone-ls .avatar-ring .avatar-card{scale:min(1,calc((100dvh - 298px) / 156px))}
+    body.phone-ls .welcome{grid-template-rows:minmax(0,1fr) auto;gap:8px;padding:calc(8px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+    body.phone-ls .welcome .dialog.wel-panel{width:min(760px,100%);display:grid;grid-template-columns:200px minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto auto;gap:8px 16px;padding:14px}
+    body.phone-ls .wel-hero{grid-column:1;grid-row:1/3;flex-direction:column;justify-content:center;text-align:center;gap:10px}
+    body.phone-ls .wel-avatar{width:84px}
+    body.phone-ls .wel-cards{grid-column:2;grid-row:1}
+    body.phone-ls .wel-dots{grid-column:2;grid-row:2}
+    body.phone-ls .wel-go{grid-column:1/-1;grid-row:3;min-height:46px;font-size:1.25rem}
+    body.phone-ls .wel-art{height:clamp(64px,calc(100dvh - 300px),150px)}
+    body.phone-ls .wel-lang{width:min(760px,100%)}
+    body.phone-ls .wel-lang.dip button{min-height:40px}
+    body.phone-ls .cs-stage,body.phone-ls .ss-stage{width:min(780px,100%);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-auto-rows:auto;column-gap:28px;row-gap:8px;align-content:center;justify-items:center}
+    body.phone-ls .cs-stage>*,body.phone-ls .ss-stage>*{grid-column:2}
+    body.phone-ls .cs-chest{grid-column:1;grid-row:1/span 6;width:min(100%,calc((100dvh - 40px) * 560 / 515),340px);align-self:center}
+    body.phone-ls .cs-rewards{min-height:70px}
+    body.phone-ls .cs-actions{min-height:0}
+    body.phone-ls .ss-emblem-wrap{grid-column:1;grid-row:1/span 6;align-self:center}
+    body.phone-ls .ss-emblem{width:min(220px,calc(100dvh - 140px))}
+    body.phone-ls .ss-actions{min-height:0;margin-top:2px}
     body[data-cage="C"] .cage-chain{display:block;position:absolute;z-index:6;left:-4px;top:calc(84% - 20px);width:calc(100% + 4px);height:44px;overflow:visible;pointer-events:none;filter:drop-shadow(0 3px 3px #000c)}
     body.pack-halloween .tile{border-color:#ff8a2a!important}
     /* Fairy dust (drag match). */
@@ -1429,6 +1468,7 @@
       hwGrab1:'audio/halloween/halloween-cardgrab1.wav',hwGrab2:'audio/halloween/halloween-cardgrab2.wav',hwGrab3:'audio/halloween/halloween-cardgrab3.wav',hwCantSelect:'audio/halloween/halloween-cant-select-card.wav',
       hwLevelStart:'audio/halloween/growl-levelstart.wav',hwOwl:'audio/halloween/howl-owleyes.wav',hwShuffle1:'audio/halloween/windupcrank-useshuffle.wav',hwShuffle2:'audio/halloween/windupcrank2-shuffle.wav',
       hwGameOver:'audio/halloween/gameover.wav',hwJoker:'audio/halloween/halloween-special.wav',hwScream:'audio/halloween/scream.wav',
+      xmGrab1:'audio/christmas/sleighbell-grab1.wav',xmGrab2:'audio/christmas/sleighbell-grab2.wav',xmGrab3:'audio/christmas/sleighbell-grab3.wav',xmBells:'audio/christmas/sleighbell-long.wav',
       callHamadryas:'audio/video-calls/official-hamadryas.mp3',callGuereza:'audio/video-calls/official-guereza.mp3',callBarbary:'audio/video-calls/official-barbary-macaque.mp3',
       callDeBrazza:'audio/video-calls/official-debrazza-monkey.mp3',callMandrill:'audio/video-calls/official-mandrill.mp3',callCapuchin:'audio/video-calls/official-capuchin-monkey.mp3',
       callAgile:'audio/video-calls/official-agile-gibbon.mp3',callHowler:'audio/video-calls/HOWLERYELL.wav',callSmallApe:'audio/video-calls/SMALLAPEYELL.wav',
@@ -1450,8 +1490,9 @@
     const MONKEY_CALL_DB=-8,VOICE_DB=-4,CALL_SPLIT_HZ=1000,CALL_DUCK=.3,isMonkeyCall=name=>/^(call|warClear)/.test(name),isVoice=name=>name.startsWith('praise:')||/^(levelStart|caulinClear|kevinClear|jokerClear)$/.test(name);const liveCalls=new Set();
     // Halloween levels swap these sounds for their own; with several files, each play picks one at random.
     const HALLOWEEN_SFX={pickup:['hwGrab1','hwGrab2','hwGrab3'],cantSelect:['hwCantSelect'],hwShuffle:['hwShuffle1','hwShuffle2'],gameOverA:['hwGameOver'],gameOverB:['hwGameOver'],jokerClear:['hwJoker'],dragDrop:['hwShuffle2']};
-    // Christmas sound swaps, same shape as HALLOWEEN_SFX (a regular sound key -> Christmas sound keys in SOUND_FILES). Empty for now.
-    const CHRISTMAS_SFX={};
+    // Christmas sound swaps, same shape as HALLOWEEN_SFX (a regular sound key -> Christmas sound keys in SOUND_FILES): sleigh-bell card grabs
+    // (Paul, 2026-11-16). The long sleigh bells follow the level-start voice and the PLAY announcement, like Halloween's growl.
+    const CHRISTMAS_SFX={pickup:['xmGrab1','xmGrab2','xmGrab3']};
     const SEASON_SFX={halloween:HALLOWEEN_SFX,christmas:CHRISTMAS_SFX};
     // Music sits at -4 dB (was -7; Paul 2026-10-13: the music was too quiet next to the sound effects).
     const MUSIC_VOLUME=Math.pow(10,-4/20),MUSIC_DUCK=Math.pow(10,-14/20),CARD_SELECT_GAIN=.85;
@@ -1460,7 +1501,7 @@
     // Per-sound trims in dB, from measured loudness, so each category plays at one level (at the volumes the calls already use):
     // monkey calls about -10.5 LUFS (loudest), praise lines -12, voices -13/-14, stings -15, the pair chime -20, UI blips last.
     // 'praise' covers every praise:* take. A master limiter (setupAudioGraph) keeps the louder mix from clipping.
-    const MIX_DB={cageRattle3:3.5,streakFlame:2,chestRattle:8,chestOpen:6,chestSlam:3,cageRattle4:.5,owlEyes:0,hwGrab1:7.5,hwGrab2:7,hwGrab3:8,hwCantSelect:12,hwLevelStart:7,hwOwl:8,hwShuffle1:10,hwShuffle2:10,hwGameOver:9,hwJoker:10,hwScream:6,callHamadryas:0,callGuereza:3,callBarbary:0.8,callDeBrazza:0.2,callMandrill:0.9,callCapuchin:1.6,callAgile:-2.3,callHowler:4,callSmallApe:1,callGorilla1:-0.4,callGorilla2:3.7,callLemur1:-0.1,callLemur2:-0.2,callLemur3:0.5,callScream:0.8,callShout:6.9,callYell:-0.2,callBaby:6.1,callHuhu:2.6,caulinClear:4.5,kevinClear:1.6,jokerClear:8.4,warClear1:-3.2,warClear2:7.1,warClear3:2,callJoker:-0.7,callSmallMonkeyAlt:2.8,callMonkeys:8.6,callAnotherSmallMonkey:3.0,callGibbon09Small:1.8,callAnotherAnotherCapuchin:1.2,callNotherCapuchin:3.2,callSmallMonkeyGrunt:2.0,callLongHowl:2.9,callGibbon12:2.3,callNotherHowl:1.1,callMedHowl:1.8,callNotherHowl2:0.7,callSmallmonkey:3.7,callMonkeyyell:0.2,callOranatang:1.1,callLilHowl2:2.7,callHowl:1.4,callGeofry:8.2,callSpider5:5.4,callSpider1:8.8,callSpider2:6.6,callSpider4:6.6,callMoreGibbonYell:-1.7,callYetNotherSmallMonkey:2.5,callSpider3:4.1,callMonkeysqueak3:5.1,callMonkeysqueak2:6.6,callMonkeySqueak:5.6,callGibbonSqueal1:0.8,callGibbonYell:2.6,callGibbonSqueal2:1.4,praise:1.3,levelStart:2.6,homeSting:0.9,win:2.9,gameOverA:1.4,gameOverB:1.4,comboSting:2.7,praiseSting:2.7,praiseOrEnd:2.1,match:2.3,pickup:4,cantSelect:4.9};
+    const MIX_DB={cageRattle3:3.5,streakFlame:2,chestRattle:8,chestOpen:6,chestSlam:3,cageRattle4:.5,owlEyes:0,hwGrab1:7.5,hwGrab2:7,hwGrab3:8,hwCantSelect:12,hwLevelStart:7,hwOwl:8,hwShuffle1:10,hwShuffle2:10,hwGameOver:9,hwJoker:10,hwScream:6,xmGrab1:7.5,xmGrab2:7.5,xmGrab3:7.5,xmBells:6,callHamadryas:0,callGuereza:3,callBarbary:0.8,callDeBrazza:0.2,callMandrill:0.9,callCapuchin:1.6,callAgile:-2.3,callHowler:4,callSmallApe:1,callGorilla1:-0.4,callGorilla2:3.7,callLemur1:-0.1,callLemur2:-0.2,callLemur3:0.5,callScream:0.8,callShout:6.9,callYell:-0.2,callBaby:6.1,callHuhu:2.6,caulinClear:4.5,kevinClear:1.6,jokerClear:8.4,warClear1:-3.2,warClear2:7.1,warClear3:2,callJoker:-0.7,callSmallMonkeyAlt:2.8,callMonkeys:8.6,callAnotherSmallMonkey:3.0,callGibbon09Small:1.8,callAnotherAnotherCapuchin:1.2,callNotherCapuchin:3.2,callSmallMonkeyGrunt:2.0,callLongHowl:2.9,callGibbon12:2.3,callNotherHowl:1.1,callMedHowl:1.8,callNotherHowl2:0.7,callSmallmonkey:3.7,callMonkeyyell:0.2,callOranatang:1.1,callLilHowl2:2.7,callHowl:1.4,callGeofry:8.2,callSpider5:5.4,callSpider1:8.8,callSpider2:6.6,callSpider4:6.6,callMoreGibbonYell:-1.7,callYetNotherSmallMonkey:2.5,callSpider3:4.1,callMonkeysqueak3:5.1,callMonkeysqueak2:6.6,callMonkeySqueak:5.6,callGibbonSqueal1:0.8,callGibbonYell:2.6,callGibbonSqueal2:1.4,praise:1.3,levelStart:2.6,homeSting:0.9,win:2.9,gameOverA:1.4,gameOverB:1.4,comboSting:2.7,praiseSting:2.7,praiseOrEnd:2.1,match:2.3,pickup:4,cantSelect:4.9};
     // Music: the home screen loops its own track; in a level the Music Mode playlist (Settings) shuffles, never the same track twice in a row.
     // trim (dB) evens out loudness: every track is matched to polyjong-mus1 (-15.8 LUFS).
     // The classic home track doubles as a calm level track and the Settings music.
@@ -1617,7 +1658,8 @@
     // unless advance asks for the next one (a track ended).
     // The level's playlist: the Music Mode setting, or its Halloween counterpart on a Halloween level.
     // Level-start voiceover. On Halloween levels it is pitched down into the horror reverb, and the growl follows once it ends.
-    function playLevelStart(){if(state?.pack!=='halloween'){playSound('levelStart',{volume:.78});return}playSound('levelStart',{volume:.78,horror:true});playSound('hwLevelStart',{volume:.9,delay:soundLengthMs('levelStart',2000)/HORROR_RATE/1000})}
+    function playLevelStart(){if(state?.pack==='christmas'){playSound('levelStart',{volume:.78});playSound('xmBells',{volume:.9,delay:soundLengthMs('levelStart',2000)/1000});return}
+      if(state?.pack!=='halloween'){playSound('levelStart',{volume:.78});return}playSound('levelStart',{volume:.78,horror:true});playSound('hwLevelStart',{volume:.9,delay:soundLengthMs('levelStart',2000)/HORROR_RATE/1000})}
     function levelMusic(level=state?.level,pack=state?.pack){const m=progress.settings.music,season=`${pack}${m[0].toUpperCase()}${m.slice(1)}`;if((pack==='halloween'||pack==='christmas')&&MUSIC[season]?.length)return season;if(pack==='halloween')return m;const ch=level&&chapterFor(level).music?.[m];return ch&&MUSIC[ch]?.length?ch:m}
     // Settings music: opening Settings fades to MUSIC.settings; closing fades back to whatever was playing, resumed where it stopped.
     let settingsMusicReturn=null;
@@ -3949,7 +3991,7 @@ void main() {
     // Release notes (the home screen's POLY card): what's new for players in the next build. Update for every release.
     // First public release: What's New reads as a short tour of the game, not the beta changelog. Later updates prepend their lines.
     const RELEASE_NOTES={version:'1.1',lines:[
-      'NEW: Turn your iPad sideways! Landscape play with the board at full height, the current card on the left and your cage on the right.',
+      'NEW: Turn your phone or iPad sideways! Landscape play gives the board the full height of the screen, with your current card and cage beside it.',
       'NEW: Daily reminders from the monkeys. Silly, once a day at your time, and never after you’ve played. Settings › Reminders.',
       'Card flips are bigger and easier to follow, and cards glide into the cage instead of blinking out, especially on iPad.',
       'POLY payouts run smoother.',
@@ -3957,7 +3999,7 @@ void main() {
       'Tapping Home during a POLY payout now waits for the payout to finish.',
       'Now runs on iPhones and iPads with iOS 16 too.',
       'Monkey Trubble now plays on iPad, with every card bigger on the big screen.',
-      'Christmas is coming: from December 1, festive Christmas levels with their own cards, snow and music.',
+      'Christmas is coming: from December 1, festive Christmas levels with their own cards, snow, music and sleigh bells.',
       'Welcome to Monkey Trubble! Match the monkeys and clear the pile before your cage fills up.',
       'Explore wild chapters, from the jungle to the frozen mountains.',
       'Find hidden pieces to build each chapter’s jungle puzzle.',
@@ -4245,7 +4287,7 @@ void main() {
       const take=lang==='es'?'praise:es-monos-lios':`praise:monkey-trubble-${'ab'[rand(2)]}`;
       // Halloween levels: the announcement is pitched down into the horror reverb, then the growl follows.
       if(state.pack==='halloween'){playSound(take,{volume:1,delay:.1,praise:true,rate:PRAISE_HORROR_RATE,horror:true});playSound('hwLevelStart',{volume:.9,delay:.1+soundLengthMs(take,1500)/PRAISE_HORROR_RATE/1000})}
-      else playSound(take,{volume:1,delay:.1,praise:true})
+      else{playSound(take,{volume:1,delay:.1,praise:true});if(state.pack==='christmas')playSound('xmBells',{volume:.9,delay:.1+soundLengthMs(take,1500)/1000})}
       // A brand-new player sees the expedition map fly in to chapter 1 once (saved, so never again on any device).
       if(!tutorial)firstExpedition()
     }
