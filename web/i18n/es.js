@@ -1070,7 +1070,7 @@ window.ES_TEXT={
   "Banked for later: they kick in when a level runs out.":"Guardados para después: se usan cuando se te acaben en un nivel.",
   "COLLECT":"RECOGER",
   "COLLECT ×2":"RECOGER ×2",
-  "NEW: Daily reminders from the monkeys. Silly, once a day at your time, and never after you’ve played. Settings › Reminders.":"NUEVO: Recordatorios diarios de los monos. Tontos, una vez al día a tu hora, y nunca si ya has jugado. Ajustes › Recordatorios.",
+  "NEW: Daily reminders from the monkeys. Silly, once a day at your time, and never after you’ve played. Friends’ nudges and news show up in them too. Settings › Reminders.":"NUEVO: Recordatorios diarios de los monos. Tontos, una vez al día a tu hora, y nunca si ya has jugado. También traen los toques y novedades de tus amigos. Ajustes › Recordatorios.",
   "REMINDERS":"RECORDATORIOS",
   "TIME":"HORA",
   "Reminder time":"Hora del recordatorio",
