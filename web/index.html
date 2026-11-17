@@ -203,6 +203,31 @@
     body.landscape .lightbox-card,body.landscape .lightbox.notes .lightbox-card{--lb-w:min(40vw,calc((100dvh - 60px) * .667),460px)}
     body.landscape .lightbox-info{width:min(42vw,420px);max-height:calc(100dvh - 60px)}
     body.landscape:not([data-cage]) .tray-panel.bar{flex-direction:column}body.landscape:not([data-cage]) .tray-panel.bar .cage-wrap{width:100%}
+    /* ===== EXPERIMENT (exp/iphone-landscape): phones held sideways, body.landscape.phone-ls. Only ~400pt of height, so the left
+       column is compact: home/puzzles/level, then clock/streak/gear in a row, a small current card, the cage as one row of four and
+       the boosters. The cards get everything to the right (no top-right strip). =====*/
+    body.landscape.phone-ls{--ls-gap:10px;--ls-left:224px;--ls-pad:max(10px,env(safe-area-inset-left))}
+    body.landscape.phone-ls .topbar{grid-template-columns:var(--ls-left) 0;grid-template-rows:auto auto;row-gap:6px;padding-top:calc(6px + env(safe-area-inset-top))}
+    body.landscape.phone-ls .top-left,body.landscape.phone-ls .level-pill{margin-top:0}
+    body.landscape.phone-ls .top-stats{grid-column:1;grid-row:2;justify-self:stretch;flex-direction:row;justify-content:space-between;gap:8px;padding:3px 8px;border-radius:12px}
+    body.landscape.phone-ls #board{inset:max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) calc(var(--ls-pad) + var(--ls-left) + var(--ls-gap))}
+    body.landscape.phone-ls .hud{margin-top:calc(96px + env(safe-area-inset-top))}
+    body.landscape.phone-ls .featured-card{padding:6px;gap:8px;align-items:center}
+    body.landscape.phone-ls .featured-art{width:64px;flex:none}
+    body.landscape.phone-ls .featured-copy{padding-top:14px}
+    body.landscape.phone-ls .featured-name{font-size:.9rem;-webkit-line-clamp:2}
+    body.landscape.phone-ls .featured-fact{display:none}
+    body.landscape.phone-ls .tray-panel.bar,body.landscape.phone-ls[data-cage] .tray-panel.bar,body.landscape.phone-ls[data-cage="C"] .tray-panel.bar{gap:6px;bottom:max(6px,env(safe-area-inset-bottom))}
+    body.landscape.phone-ls[data-cage="C"]{--cage-w:44px}
+    body.landscape.phone-ls[data-cage="C"] .tray-panel.bar .tray{grid-template-columns:repeat(4,var(--cage-w));gap:6px 8px}
+    body.landscape.phone-ls[data-cage="C"] .tray-panel.bar .tray-label{margin:0 0 4px}
+    body.landscape.phone-ls[data-cage="C"] .tray-panel.bar .boosters{gap:14px;margin:0}
+    body.landscape.phone-ls[data-cage="C"] .tray-panel.bar .booster{width:40px;height:40px}
+    body.landscape.phone-ls[data-cage="C"] .tray-panel.bar .booster-icon{font-size:1.1rem}
+    body.landscape.phone-ls[data-cage="C"] .tray-panel.bar .owl-eyes{width:26px;height:15px}
+    body.landscape.phone-ls .lightbox-stage{padding-left:max(24px,env(safe-area-inset-left));padding-right:max(24px,env(safe-area-inset-right));gap:18px}
+    body.landscape.phone-ls .lightbox-card,body.landscape.phone-ls .lightbox.notes .lightbox-card{--lb-w:min(36vw,calc((100dvh - 40px) * .667))}
+    body.landscape.phone-ls .lightbox-info{max-height:calc(100dvh - 40px);overflow:auto}
     body[data-cage="C"] .cage-chain{display:block;position:absolute;z-index:6;left:-4px;top:calc(84% - 20px);width:calc(100% + 4px);height:44px;overflow:visible;pointer-events:none;filter:drop-shadow(0 3px 3px #000c)}
     body.pack-halloween .tile{border-color:#ff8a2a!important}
     /* Fairy dust (drag match). */
@@ -2264,17 +2289,20 @@
       squareCards=()=>state?.pack==='christmas'&&state.level>2,cardRatio=()=>squareCards()?1:CARD_RATIO;
     // boardSize: the board's size from its ResizeObserver (FX.renderCache), so a redraw doesn't force a layout to read it.
     let boardSize=null;
+    // EXPERIMENT (exp/iphone-landscape): on a phone held sideways the board may be drawn turned on its side (rows <-> columns),
+    // whichever way gives bigger cards. Only the drawing turns: which card covers which, the deal and the records are unchanged.
     function boardMetrics(){
       const W=FX.renderCache&&boardSize?boardSize.w:board.clientWidth,H=FX.renderCache&&boardSize?boardSize.h:board.clientHeight,tiles=state.tiles;
-      let c0=Infinity,c1=-Infinity,r0=Infinity,r1=-Infinity;for(const t of tiles){c0=Math.min(c0,t.c);c1=Math.max(c1,t.c);r0=Math.min(r0,t.r);r1=Math.max(r1,t.r)}
+      const fitFor=tr=>{const C=t=>tr?t.r:t.c,R=t=>tr?t.c:t.r;
+      let c0=Infinity,c1=-Infinity,r0=Infinity,r1=-Infinity;for(const t of tiles){c0=Math.min(c0,C(t));c1=Math.max(c1,C(t));r0=Math.min(r0,R(t));r1=Math.max(r1,R(t))}
       // The layer nudge shrinks with the cards (at most LAYER_NUDGE px), so small boards keep their stacked look without wasting room.
       // Cards drawn bigger than their cell (cardFill > 1) are measured at their drawn size, so they still never run off the board.
       const pad=2,cc=(c0+c1)/2,rc=(r0+r1)/2,nudge=w=>Math.min(LAYER_NUDGE,w*.12),f=Math.max(1,cardFill()),
-        box=w=>{const h=w*cardRatio(),n=nudge(w),hw=w*f/2,hh=h*f/2;let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;for(const t of tiles){const x=(t.c-cc)/2*w-t.layer*n,y=(t.r-rc)/2*h-t.layer*n;x0=Math.min(x0,x-hw);x1=Math.max(x1,x+hw);y0=Math.min(y0,y-hh);y1=Math.max(y1,y+hh)}return{x0,x1,y0,y1}};
+        box=w=>{const h=w*cardRatio(),n=nudge(w),hw=w*f/2,hh=h*f/2;let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;for(const t of tiles){const x=(C(t)-cc)/2*w-t.layer*n,y=(R(t)-rc)/2*h-t.layer*n;x0=Math.min(x0,x-hw);x1=Math.max(x1,x+hw);y0=Math.min(y0,y-hh);y1=Math.max(y1,y+hh)}return{x0,x1,y0,y1}};
       let lo=4,hi=Math.max(4,Math.min(W,H/cardRatio()));for(let i=0;i<22;i++){const w=(lo+hi)/2,b=box(w);if(b.x1-b.x0<=W-pad*2&&b.y1-b.y0<=H-pad*2)lo=w;else hi=w}
-      const w=lo,h=w*cardRatio(),n=nudge(w),b=box(w),ox=W/2-(b.x0+b.x1)/2,oy=H/2-(b.y0+b.y1)/2,
-        m={w,h,x:t=>ox+(t.c-cc)/2*w-t.layer*n,y:t=>oy+(t.r-rc)/2*h-t.layer*n};
-      return m
+      const w=lo,h=w*cardRatio(),n=nudge(w),b=box(w),ox=W/2-(b.x0+b.x1)/2,oy=H/2-(b.y0+b.y1)/2;
+      return{w,h,x:t=>ox+(C(t)-cc)/2*w-t.layer*n,y:t=>oy+(R(t)-rc)/2*h-t.layer*n}};
+      const m=fitFor(false);if(!document.body.classList.contains('phone-ls'))return m;const t=fitFor(true);return t.w>m.w?t:m
     }
     const tileNodes=new Map();
     // FX.renderCache: write a style or attribute only when it changes (each write costs a style pass on 45 cards, several times a tap).
@@ -2370,11 +2398,12 @@
     function applyCageStyle(){const hand=progress.settings.cage!=='classic';if(hand)document.body.dataset.cage='C';else delete document.body.dataset.cage;measureHud();if(hand)requestAnimationFrame(buildCageChain);if(state.tiles.length)render()}
     function measureHud(){requestAnimationFrame(()=>{const p=$('.tray-panel'),t=$('#tray');const top=Math.min(p.getBoundingClientRect().top,t.getBoundingClientRect().top);document.documentElement.style.setProperty('--hud-h',`${Math.max(0,innerHeight-top)}px`)})}
     // Landscape (v1.1): tablets held sideways get the landscape game screen (see body.landscape in the CSS). Phones never match.
-    const LANDSCAPE=matchMedia('(orientation:landscape) and (min-width:900px) and (min-height:600px)');
-    function applyLandscape(){const on=LANDSCAPE.matches;if(document.body.classList.contains('landscape')===on)return;document.body.classList.toggle('landscape',on);cancelDragForRotate();measureHud();if(document.body.dataset.cage==='C'&&!on)requestAnimationFrame(buildCageChain);if(state.tiles.length)render()}
+    // EXPERIMENT (exp/iphone-landscape): phones held sideways get it too, in a compact form (body.phone-ls).
+    const LANDSCAPE=matchMedia('(orientation:landscape) and (min-width:900px) and (min-height:600px)'),PHONE_LS=matchMedia('(orientation:landscape) and (max-height:599px) and (min-width:640px)');
+    function applyLandscape(){const phone=PHONE_LS.matches,on=LANDSCAPE.matches||phone;document.body.classList.toggle('phone-ls',phone);if(document.body.classList.contains('landscape')===on)return;document.body.classList.toggle('landscape',on);cancelDragForRotate();measureHud();if(document.body.dataset.cage==='C'&&!on)requestAnimationFrame(buildCageChain);if(state.tiles.length)render()}
     // A card being dragged when the screen turns is dropped back (its ghost was placed for the old layout).
     function cancelDragForRotate(){document.querySelectorAll('.board-tile.lifted').forEach(n=>n.onpointercancel?.({pointerId:-1}))}
-    function setupCageStyle(){applyLandscape();LANDSCAPE.addEventListener?.('change',applyLandscape);applyCageStyle();addEventListener('resize',()=>{measureHud();if(document.body.dataset.cage==='C')buildCageChain()})}
+    function setupCageStyle(){applyLandscape();LANDSCAPE.addEventListener?.('change',applyLandscape);PHONE_LS.addEventListener?.('change',applyLandscape);applyCageStyle();addEventListener('resize',()=>{measureHud();if(document.body.dataset.cage==='C')buildCageChain()})}
     // Out of a booster: its badge shows ▶ (tap it to watch an ad for more). With three in the cage and no shuffles left, the shuffle
     // button pulses a few times to point at that.
     function cueAdBooster(id){const b=$(`#${id}`);if(reduceMotion.matches||!b)return;b.getAnimations().forEach(a=>a.cancel());b.animate([{transform:'scale(1)'},{transform:'scale(1.14)',filter:'saturate(1) brightness(1.15)'},{transform:'scale(1)'}],{duration:520,iterations:3,easing:'ease-in-out'})}
