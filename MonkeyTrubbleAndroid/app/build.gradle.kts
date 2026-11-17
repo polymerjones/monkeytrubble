@@ -17,7 +17,7 @@ android {
         applicationId = "com.paulfisher.monkeytrubble"
         minSdk = 26
         targetSdk = 36
-        versionCode = 25
+        versionCode = 26
         versionName = "1.1"
 
         // AdMob app ID (Android app in the AdMob console). Release builds use the real rewarded unit; debug builds use Google's
@@ -64,6 +64,8 @@ android {
 
 dependencies {
     implementation("androidx.activity:activity-ktx:1.13.0")
+    // Play services bring an old Fragment; 1.3+ is needed for the notification permission request (registerForActivityResult, release lint).
+    implementation("androidx.fragment:fragment-ktx:1.8.5")
     implementation("androidx.core:core-ktx:1.19.1")
     implementation("androidx.webkit:webkit:1.17.1")
     implementation("com.google.android.gms:play-services-games-v2:22.1.0")
