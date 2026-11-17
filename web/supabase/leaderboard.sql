@@ -70,7 +70,8 @@ create or replace function public.tier_for(p_rating int) returns text language s
 $$;
 
 -- Creates or updates a player's row and returns their rank. Score and tier are worked out here, not trusted from the phone.
--- A level-L clear scores at most 200 x (1 + L/10), so a rating above that for the player's level is rejected.
+-- A level-L clear scores at most 200 x (1 + L/10) x 1.2 (the combo chain bonus, CHAIN_BONUS_MAX in index.html), so a rating above
+-- that for the player's level is rejected. (Was 200 until 2026-11-16: it predated the chain bonus and silently froze top players.)
 create or replace function public.submit_score(p_id uuid, p_secret text, p_name text, p_rating int, p_xp int, p_streak int, p_level int)
 returns table (rank bigint, score int, tier text)
 language plpgsql security definer set search_path = public, extensions as $$
@@ -85,7 +86,7 @@ begin
   if char_length(clean_name) not between 2 and 16 then raise exception 'bad name'; end if;
   if not name_ok(clean_name) then raise exception 'name not allowed'; end if;
   if p_level < 1 or p_level > 100000 or p_rating < 0 or p_xp < 0 or p_streak < 0 or p_streak > 100000 then raise exception 'bad values'; end if;
-  if p_rating > 200 * (1 + p_level / 10.0) then raise exception 'rating out of range'; end if;
+  if p_rating > 240 * (1 + p_level / 10.0) then raise exception 'rating out of range'; end if;
   new_score := round(p_rating * (1 + least(p_streak, 10) * 0.01));
 
   select * into existing from public.players where id = p_id;

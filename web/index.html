@@ -4879,7 +4879,7 @@ void main() {
       // gen: a change made while this post is in flight (a rename...) has a newer syncGen, so it stays pending and posts right after.
       const gen=progress.syncGen||0;
       lbSyncing=lbCall('submit_score',{p_id:p.id,p_secret:p.secret,p_name:p.name,p_rating:ratingOf(progress.stats.scores),p_xp:progress.stats.xp,p_streak:liveStreak(),p_level:progress.level})
-        .then(rows=>{const before=progress.rank??null,after=rows[0]?.rank??null,oldScore=progress.lbScore??null;if((progress.syncGen||0)===gen)progress.pendingSync=false;else setTimeout(flushSync,0);progress.rank=after;progress.lbScore=rows[0]?.score??oldScore;saveProgress();flushAvatar();return{before,after,oldScore}}).catch(()=>{}).finally(()=>{lbSyncing=null});return lbSyncing
+        .then(rows=>{const before=progress.rank??null,after=rows[0]?.rank??null,oldScore=progress.lbScore??null;if((progress.syncGen||0)===gen)progress.pendingSync=false;else setTimeout(flushSync,0);progress.rank=after;progress.lbScore=rows[0]?.score??oldScore;saveProgress();flushAvatar();return{before,after,oldScore}}).catch(e=>{console.warn('[lb] submit_score',e?.message)}).finally(()=>{lbSyncing=null});return lbSyncing
     }
     addEventListener('online',()=>flushSync().then(flushTimes));
     // World records (level_records in supabase/leaderboard.sql): the fastest Normal clear of each level, shared by every player since
@@ -4915,7 +4915,8 @@ void main() {
       li.append(rank,badge.firstChild,...av?[av]:[],who,Object.assign(document.createElement('span'),{className:'lb-score',textContent:row.score}));return li
     }
     function renderLeaders({top=[],me=null,status=''}={}){
-      $('#leadersStatus').textContent=status;$('#leadersList').replaceChildren(...top.map(leaderRow));
+      // Dev "Reset to new player" never posts (flushSync), so say so here: a frozen score on the board isn't a bug while it's on.
+      $('#leadersStatus').textContent=progress.devReset?'DEV RESET · your score isn’t posting · UNDO RESET in Settings to resume':status;$('#leadersStatus').style.color=progress.devReset?'#ff8a8a':'';$('#leadersList').replaceChildren(...top.map(leaderRow));
       const mine=me||(progress.player?localRow():null);$('#leadersMe').replaceChildren(...(mine?[leaderRow(mine)]:[]))
     }
     async function loadLeaders(){
