@@ -1139,7 +1139,7 @@
       F_PALM:{set:'illustrated',food:true,image:'set2-palm-fruit.jpg',name:"Oil Palm Fruit",latin:"Elaeis guineensis",facts:["The oil palm is native to West and Central Africa.","Some chimpanzees crack its hard nuts open with stone hammers."],sounds:['callBaby']},
       F_BAMBOO:{set:'illustrated',food:true,image:'set2-bamboo-shoot.jpg',name:"Bamboo Shoot",latin:"Bambusoideae",facts:["Some bamboos can grow almost a metre in a single day.","Japanese macaques and many Asian langurs eat the tender young shoots."],sounds:['callBaby']},
       // Christmas-only species (Paul, 2026-10-21): pack:'christmas' keeps them out of the regular decks; Christmas levels add them to the deal
-      // (CHRISTMAS_EXTRA in levelUnits).
+      // (they're in CHRISTMAS_DECK).
       XMAS_LORIS:{pack:'christmas',image:'xmas-slow-loris.jpg',name:'Slow Loris',latin:'Nycticebus',facts:['The slow loris is the only venomous primate: the venom comes from a gland on its upper arm.','It creeps through the branches at night, so slowly and quietly that prey rarely notices.','A special network of blood vessels lets it grip a branch for hours without tiring.'],sounds:['callBaby']},
       XMAS_DOUC:{pack:'christmas',image:'xmas-red-shanked-douc.jpg',name:'Red-shanked Douc',latin:'Pygathrix nemaeus',facts:['Its maroon “stockings” and white forearms earned it the nickname “queen of primates.”','Doucs live in the forests of Vietnam, Laos and Cambodia.','A stomach with several chambers lets it live almost entirely on leaves.'],sounds:['callLemur2']},
       // Apes (art 2026-10-21): christmas = the Santa/elf version on Christmas levels, artsy = the version chapter 6 (look:'artsy') shows.
@@ -1226,8 +1226,8 @@
     };
     for(const id in VISION_CARDS)if(VISION_CARDS[id].pending)delete VISION_CARDS[id];
     for(const id in CARD_DATA)if(CARD_DATA[id].pending)delete CARD_DATA[id];
-    const MONKEY_SYMBOLS=Object.keys(CARD_DATA),CHRISTMAS_EXTRA=Object.keys(CARD_DATA).filter(id=>CARD_DATA[id].pack==='christmas'),
-      // Christmas levels (from level 3) deal only cards with Christmas art (Paul 2026-10-30: no regular monkeys among the presents).
+    const MONKEY_SYMBOLS=Object.keys(CARD_DATA),
+      // Christmas levels deal only cards with Christmas art (Paul 2026-10-30: no regular monkeys among the presents; levels 1-2 too since 2026-11-16).
       CHRISTMAS_DECK=Object.keys(CARD_DATA).filter(id=>![JOKER,KEVIN,POLY].includes(id)&&(CARD_DATA[id].christmas||CARD_DATA[id].pack==='christmas')),DECK=MONKEY_SYMBOLS.filter(id=>id!==JOKER&&id!==KEVIN&&id!==POLY&&!CARD_DATA[id].pack&&!CARD_DATA[id].set),SET_DECKS={illustrated:MONKEY_SYMBOLS.filter(id=>CARD_DATA[id].set==='illustrated'&&!CARD_DATA[id].food&&!CARD_DATA[id].region),iceage:MONKEY_SYMBOLS.filter(id=>CARD_DATA[id].set==='iceage')},HALLOWEEN_DECK=MONKEY_SYMBOLS.filter(id=>CARD_DATA[id].pack==='halloween'||(id!==JOKER&&id!==KEVIN&&id!==POLY&&CARD_DATA[id].halloween));
     // Each level is a regular or a Halloween level, chosen by its own seed so retries deal the same set. Level 1 is always regular.
     const HALLOWEEN_CHANCE=.5;
@@ -1797,11 +1797,11 @@
     // each group dealt from its own shuffled cards, repeating only once all of them are used.
     const chapterDeck=ch=>ch.region?[...ch.region,...ch.fill||[]]:SET_DECKS[ch.set]||DECK;
     function levelUnits(rng,level=1,total=TOTAL){
-      const poly=polyLevel(level),set=chapterFor(level).set,ch=chapterFor(level),isSet=levelPack(level)!=='halloween'&&!(levelPack(level)==='christmas'&&level>2)&&!!(set&&SET_DECKS[set]?.length),pairs=(total-3-poly)/2;let bag;
+      const poly=polyLevel(level),set=chapterFor(level).set,ch=chapterFor(level),isSet=levelPack(level)!=='halloween'&&levelPack(level)!=='christmas'&&!!(set&&SET_DECKS[set]?.length),pairs=(total-3-poly)/2;let bag;
       // Two artworks can share a species name (S1_/S2_ Japanese Macaque…) but don't match, so each board deals one variant per name,
       // a featured card's own variant first, otherwise a random one.
       const pick=new Map(),keep=id=>{const n=CARD_DATA[id]?.name;if(!n)return true;if(!pick.has(n))pick.set(n,id);return pick.get(n)===id};if(isSet)(ch.featured||[]).forEach(keep);
-      const decks=(levelPack(level)==='halloween'?[HALLOWEEN_DECK]:levelPack(level)==='christmas'&&level>2?[CHRISTMAS_DECK]:isSet?[chapterDeck(ch)]:groupDecks(level)).map(d=>levelPack(level)==='christmas'&&level<=2?[...d,...CHRISTMAS_EXTRA]:d).map(d=>shuffleWith([...d],rng).filter(keep)).filter(d=>d.length);
+      const decks=(levelPack(level)==='halloween'?[HALLOWEEN_DECK]:levelPack(level)==='christmas'?[CHRISTMAS_DECK]:isSet?[chapterDeck(ch)]:groupDecks(level)).map(d=>shuffleWith([...d],rng).filter(keep)).filter(d=>d.length);
       if(decks.length<=1){const deck=decks[0]||DECK,feat=isSet?[...ch.region?[]:(ch.featured||[]).filter(id=>deck.includes(id)),...(ch.foods||[]).filter(id=>CARD_DATA[id]?.food)]:[];bag=[...shuffleWith([...feat],rng)];while(bag.length<pairs+1+deck.length)bag.push(...shuffleWith([...deck],rng))}
       // pairs + 1 symbols: the regular pairs plus the joker's partner.
       else{const need=pairs+1,share=decks.map(()=>Math.floor(need/decks.length)),order=shuffleWith(decks.map((_,i)=>i),rng);for(let k=0;k<need%decks.length;k++)share[order[k]]++;
@@ -4803,7 +4803,7 @@ void main() {
     // records restart on the new boards. A clear's time waits in progress.pendingTimes (best per level) and posts after the profile,
     // since submit_time needs the player's row and checks they've passed the level. worldRecords caches the latest row per level.
     // Seasonal packs deal different boards for the same level, so each pack keeps its own records (deal = pack offset + DEAL_VERSION).
-    const DEAL_VERSION=1,PACK_DEAL={regular:0,halloween:1020,christmas:2000},worldRecords=new Map();let timesSyncing=null;
+    const DEAL_VERSION=1,PACK_DEAL={regular:0,halloween:1020,christmas:2001},worldRecords=new Map();let timesSyncing=null;
     // Halloween moved 1010 -> 1020 on 2026-10-24 (an extra POLY pair had crept into every Halloween board); level 3 is +300 (POLY party).
     // Halloween moved 1000 -> 1010 on 2026-10-22 (POLY on every Halloween level changed those boards; regular records kept theirs).
     // Levels 1-2 got the small starter boards on 2026-10-24, so they moved to deal +100 (new records; every other level kept its own).
