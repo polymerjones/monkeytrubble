@@ -210,21 +210,34 @@
     body.landscape.phone-ls .topbar{grid-template-columns:var(--ls-left) 0;grid-template-rows:auto auto;row-gap:6px;padding-top:calc(6px + env(safe-area-inset-top))}
     body.landscape.phone-ls .top-left,body.landscape.phone-ls .level-pill{margin-top:0}
     body.landscape.phone-ls .top-stats{grid-column:1;grid-row:2;justify-self:stretch;flex-direction:row;justify-content:space-between;gap:8px;padding:3px 8px;border-radius:12px}
-    body.landscape.phone-ls #board{inset:max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) calc(var(--ls-pad) + var(--ls-left) + var(--ls-gap))}
-    body.landscape.phone-ls .hud{margin-top:calc(96px + env(safe-area-inset-top))}
+    body.landscape.phone-ls #board{inset:max(4px,env(safe-area-inset-top)) max(6px,env(safe-area-inset-right)) max(4px,calc(env(safe-area-inset-bottom) - 14px)) calc(var(--ls-pad) + var(--ls-left) + var(--ls-gap))}
+    body.landscape.phone-ls .hud{margin-top:calc(94px + env(safe-area-inset-top))}
+    body.landscape.phone-ls .featured-kicker{font-size:.62rem;letter-spacing:.12em}
     body.landscape.phone-ls .featured-card{padding:6px;gap:8px;align-items:center}
-    body.landscape.phone-ls .featured-art{width:64px;flex:none}
+    body.landscape.phone-ls .featured-art{width:56px;flex:none}
     body.landscape.phone-ls .featured-copy{padding-top:14px}
     body.landscape.phone-ls .featured-name{font-size:.9rem;-webkit-line-clamp:2}
     body.landscape.phone-ls .featured-fact{display:none}
-    body.landscape.phone-ls .tray-panel.bar,body.landscape.phone-ls[data-cage] .tray-panel.bar,body.landscape.phone-ls[data-cage="C"] .tray-panel.bar{gap:6px;bottom:max(6px,env(safe-area-inset-bottom))}
-    body.landscape.phone-ls[data-cage="C"]{--cage-w:44px}
-    body.landscape.phone-ls[data-cage="C"] .tray-panel.bar .tray{grid-template-columns:repeat(4,var(--cage-w));gap:6px 8px}
+    /* Cage: a 2x2 like the iPad (bigger than the board's cards), the three boosters in a column beside it. */
+    body.landscape.phone-ls .tray-panel.bar,body.landscape.phone-ls[data-cage] .tray-panel.bar,body.landscape.phone-ls[data-cage="C"] .tray-panel.bar{flex-direction:row;align-items:flex-end;justify-content:center;gap:14px;bottom:max(6px,calc(env(safe-area-inset-bottom) - 10px))}
+    body.landscape.phone-ls[data-cage="C"]{--cage-w:min(58px,calc((100dvh - 250px) / 2.9))}
+    body.landscape.phone-ls[data-cage="C"] .tray-panel.bar .cage-wrap{width:auto}
+    body.landscape.phone-ls[data-cage="C"] .tray-panel.bar .tray{grid-template-columns:repeat(2,var(--cage-w));gap:8px 10px}
     body.landscape.phone-ls[data-cage="C"] .tray-panel.bar .tray-label{margin:0 0 4px}
-    body.landscape.phone-ls[data-cage="C"] .tray-panel.bar .boosters{gap:14px;margin:0}
-    body.landscape.phone-ls[data-cage="C"] .tray-panel.bar .booster{width:40px;height:40px}
-    body.landscape.phone-ls[data-cage="C"] .tray-panel.bar .booster-icon{font-size:1.1rem}
-    body.landscape.phone-ls[data-cage="C"] .tray-panel.bar .owl-eyes{width:26px;height:15px}
+    body.landscape.phone-ls[data-cage="C"] .tray-panel.bar .boosters{flex-direction:column;gap:10px;margin:0 0 4px}
+    body.landscape.phone-ls[data-cage="C"] .tray-panel.bar .booster{width:42px;height:42px}
+    body.landscape.phone-ls[data-cage="C"] .tray-panel.bar .booster-icon{font-size:1.15rem}
+    body.landscape.phone-ls[data-cage="C"] .tray-panel.bar .owl-eyes{width:27px;height:16px}
+    /* Home on a sideways phone: logo and the monkey ticker on the left, PLAY, best time, the week and the profile on the right. */
+    body.phone-ls .home{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,300px);grid-template-rows:auto auto auto auto auto minmax(0,1fr);column-gap:24px;row-gap:8px;align-items:center;justify-items:center;padding:calc(8px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+    body.phone-ls .home-top{grid-column:1/-1;grid-row:1}
+    body.phone-ls .home-logo{grid-column:1;grid-row:2;margin:0;font-size:1.6rem}
+    body.phone-ls .home-byline-row{grid-column:1;grid-row:3}
+    body.phone-ls .home-card{grid-column:1;grid-row:4/7;align-self:stretch;margin:0 -16px 0 0;min-height:0;width:100%}
+    body.phone-ls .home-play{grid-column:2;grid-row:2/4;width:100%}
+    body.phone-ls .home-best{grid-column:2;grid-row:4}
+    body.phone-ls .home-week{grid-column:2;grid-row:5;gap:6px;padding:8px 10px}
+    body.phone-ls .home-profile{grid-column:2;grid-row:6;align-self:start}
     body.landscape.phone-ls .lightbox-stage{padding-left:max(24px,env(safe-area-inset-left));padding-right:max(24px,env(safe-area-inset-right));gap:18px}
     body.landscape.phone-ls .lightbox-card,body.landscape.phone-ls .lightbox.notes .lightbox-card{--lb-w:min(36vw,calc((100dvh - 40px) * .667))}
     body.landscape.phone-ls .lightbox-info{max-height:calc(100dvh - 40px);overflow:auto}
