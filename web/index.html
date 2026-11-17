@@ -4096,6 +4096,7 @@ void main() {
     // Release notes (the home screen's POLY card): what's new for players in the next build. Update for every release.
     // First public release: What's New reads as a short tour of the game, not the beta changelog. Later updates prepend their lines.
     const RELEASE_NOTES={version:'1.1',lines:[
+      'NEW: Shared Puzzles! Build a jigsaw together with a friend: pieces either of you find go into the same painting, and you both get the reward. Puzzles › SHARED.',
       'NEW: Friends! Share your friend card from the leaderboard’s FRIENDS tab (a friend scans the QR or opens the link), or tap anyone’s card on the board to ADD FRIEND. Nudge friends who haven’t played today. The trophy shows a red number when someone nudges you or passes you on the board.',
       'NEW: Turn your phone or iPad sideways! Landscape play gives the board the full height of the screen, with your current card and cage beside it.',
       'NEW: Daily reminders from the monkeys. Silly, once a day at your time, and never after you’ve played. Friends’ nudges and news show up in them too. Settings › Reminders.',
@@ -4710,7 +4711,7 @@ void main() {
     // screen's MINE / SHARED switch (pz.mode) swaps the data source: pzSave() is the local save or a view built from duo_state, in the
     // same {got, placed, done} shape, so the board, tray, dragging, placing and finishing are the same code. SHARED_PUZZLES_LIVE
     // turns it on for everyone (dev mode always sees it).
-    const SHARED_PUZZLES_LIVE=false,SHARED_PIECE_CHANCE=.4;
+    const SHARED_PUZZLES_LIVE=true,SHARED_PIECE_CHANCE=.4;
     // Paul's Together paintings (2026-11-17): the four posters, then the banana-sharing painting.
     const SHARED_ART=[{key:'together-1',img:'together-1',name:'Banana Giggles',seed:201},{key:'together-2',img:'together-2',name:'Sunset Grooming',seed:202},{key:'together-3',img:'together-3',name:'Best Buds',seed:203},{key:'together-4',img:'together-4',name:'High Five!',seed:204},{key:'together-5',img:'together-5',name:'Sharing Is Caring',seed:205}];
     PUZZLES.push(...SHARED_ART.map(e=>({...e,shared:true,when:()=>false})));

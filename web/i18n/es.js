@@ -1186,4 +1186,5 @@ window.ES_TEXT={
   "Remove friend":"Quitar amigo",
   "Tap again to remove {0}":"Toca otra vez para quitar a {0}",
   "Block or report":"Bloquear o denunciar",
+  "NEW: Shared Puzzles! Build a jigsaw together with a friend: pieces either of you find go into the same painting, and you both get the reward. Puzzles › SHARED.":"NUEVO: ¡Puzles compartidos! Haz un puzle con un amigo: las piezas que encuentre cualquiera de los dos van al mismo cuadro, y los dos recibís el premio. Puzles › COMPARTIDOS.",
 };
