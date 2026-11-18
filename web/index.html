@@ -1822,12 +1822,17 @@
     const audioLog=[],audioSnap=()=>({st:audioContext?.state,t:audioContext?+audioContext.currentTime.toFixed(2):null,out:outGain?+outGain.gain.value.toFixed(3):null,musicPaused:!!music?.paused,musicReady:music?.readyState,musicErr:music?.error?.code,sound:soundEnabled,unlocked:audioUnlocked,hidden:document.hidden});
     function audioNote(ev,extra){audioLog.push({ev,at:Math.round(performance.now()),...audioSnap(),...extra});if(audioLog.length>40)audioLog.shift()}
     window.__audioNote=(ev,extra)=>audioNote(`native:${ev}`,extra);
-    const audioStalled=()=>{if(!audioCheck||audioContext?.state!=='running')return false;const real=(performance.now()-audioCheck.at)/1000,moved=audioContext.currentTime-audioCheck.t;audioCheck=null;return real>.3&&moved<real*.5};
+    const audioStalled=()=>{if(!audioCheck||audioContext?.state!=='running')return false;const real=(performance.now()-audioCheck.at)/1000,moved=audioContext.currentTime-audioCheck.t;if(real<=.3)return false;audioCheck=null;return moved<real*.5};
+    // Paul's audio diary, 2026-11-18 (back from Messages): the engine said "running" with its clock frozen, and the one clock check was used up
+    // by a tap 0.26s after it was armed, too soon to judge, so nothing ever restarted it. Now an early check is kept for the next touch, and a
+    // timer judges it without waiting for one: still frozen after ~1s, the engine is restarted and checked again (3 tries, all in the diary).
+    function watchStall(n=0){setTimeout(()=>{if(document.hidden||!audioCheck)return;if(!audioStalled())return;audioNote(`stalled:${n}`);restartAudioEngine();
+      if(n<2)setTimeout(()=>{if(!document.hidden&&audioContext?.state==='running'){audioCheck={t:audioContext.currentTime,at:performance.now()};watchStall(n+1)}},700)},1000)}
     function resumeMonkeyAudio(kick=false){audioNote(kick===true?'resume:kick':'resume');if(document.hidden)return;quietToken++;setTimeout(()=>audioNote('resume:+1s'),1000);fadeOutput(1,.15);const ready=engineAsleep()?audioContext.resume():Promise.resolve();
       // Paul, later on the 24th: restarting a working engine after every ad cut the sound out and stuttered (and the clock check, taken
       // mid-restart, kept re-triggering it). Now a working engine is left alone; its clock is noted once it runs, and the next tap
       // restarts it only if that clock really stood still.
-      if(kick===true&&audioContext)ready.then(()=>setTimeout(()=>{if(audioContext.state==='running')audioCheck={t:audioContext.currentTime,at:performance.now()}},400)).catch(()=>{});
+      if(kick===true&&audioContext)ready.then(()=>setTimeout(()=>{if(audioContext.state==='running'){audioCheck={t:audioContext.currentTime,at:performance.now()};watchStall()}},400)).catch(()=>{});
       if(soundEnabled&&audioUnlocked)music.play().catch(()=>{})}
     // A stalled engine (says running, clock not moving) gets one suspend/resume; no new check after it, so it can't loop.
     function restartAudioEngine(){audioNote('restart');if(!audioContext||audioContext.state!=='running'||FX.audioIdle&&!soundEnabled)return;audioContext.suspend().then(()=>audioContext.resume()).catch(()=>{})}
