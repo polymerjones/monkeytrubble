@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- The game runs in portrait, but a portrait screen isn't required: without this, Play hides the app from devices that don't
+         report one (tablets, Chromebooks, Play Games on PC) and blocks the release (Play Console, 2026-11-18). -->
+    <uses-feature android:name="android.hardware.screen.portrait" android:required="false" />
 
     <!-- Supabase world records and leaderboard, and AdMob. -->
     <uses-permission android:name="android.permission.INTERNET" />
