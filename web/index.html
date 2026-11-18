@@ -280,6 +280,11 @@
     body.phone-ls #winOverlay :is(.win-chapter,.win-unlock,.win-rank){margin-top:6px}
     body.phone-ls #winOverlay #nextLevel{min-height:48px;font-size:22px}
     body.phone-ls #winOverlay #winHome{margin-top:4px}
+    /* Sideways (Paul 2026-11-18): the score box at a readable width, not the whole column; room under the time for the NEW BEST! stamp. */
+    body.phone-ls #winOverlay .win-score{width:min(100%,440px)}
+    /* The level intro card grows with a new chapter's FEATURED and record lines: sideways it hangs from the top edge instead of running off it. */
+    body.phone-ls .level-banner{top:calc(env(safe-area-inset-top) + 8px);translate:-50% 0}
+    body.phone-ls #winOverlay .win-time:has(.win-stamp:not([hidden])){margin-bottom:20px}
     /* Climbing! on a sideways phone: title, places and CONTINUE on the left, the rows on the right (stacked, CONTINUE ran off the bottom). */
     body.phone-ls .climb-dialog{width:min(760px,calc(100% - 32px));display:grid;grid-template-columns:250px minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto auto auto auto minmax(0,1fr);column-gap:18px;align-items:center;padding:14px 18px}
     body.phone-ls .climb-dialog>*{grid-column:1}
@@ -3433,6 +3438,7 @@
       const stamp=node=>{if(show.on){node.style.opacity=1;return}node.animate([{opacity:0,transform:'scale(1.9)'},{opacity:1,transform:'scale(.94)',offset:.7},{opacity:1,transform:'scale(1)'}],{duration:440,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'})};
       const countUp=(ms,set)=>new Promise(resolve=>{const t0=performance.now(),tick=now=>{const k=show.on?1:Math.min(1,(now-t0)/ms);set(1-Math.pow(1-k,3));if(k<1&&s===state)requestAnimationFrame(tick);else resolve()};requestAnimationFrame(tick)});
       steps.forEach(node=>{node.getAnimations().forEach(a=>a.cancel());node.style.opacity=0});
+      $('#levelBanner').getAnimations().forEach(a=>a.cancel());
       $('#winLevel').textContent=loc('LEVEL {0} CLEAR!',r.level);$('#winTime').textContent='0:00';badge.className='win-badge win-step';badge.replaceChildren();badge.style.display='';$('#winStamp').hidden=true;$('#winStreak').hidden=!r.firstToday;$('#nextLevel').disabled=false;
       {const syms=[...new Set(s.tiles.map(t=>t.symbol))].filter(x=>x!==JOKER&&x!==KEVIN&&x!==POLY),card=$('#winHeroCard');card.replaceChildren();if(syms.length)setSymbolContent(card,syms[rand(syms.length)],'hero')}
       overlay.classList.add('show');overlay.scrollTop=0;$('.win-dialog').scrollTop=0;await wait(120);if(s!==state)return;
