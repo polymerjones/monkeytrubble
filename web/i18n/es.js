@@ -158,6 +158,7 @@ window.ES_TEXT={
   "🔥 {0} DAYS +{1}%":"🔥 {0} DÍAS +{1}%",
   "TROOP LV {0} · +{1} XP":"TROPA NV {0} · +{1} XP",
   "NO CHANGE":"SIN CAMBIOS",
+  "Ice Age cards are now framed on each monkey's face, and the Ice Age Joker is frozen solid.":"Las cartas de la Edad de Hielo ahora se centran en la cara de cada mono, y el Comodín de la Edad de Hielo está congelado.",
   "Fixed: the game could go silent after switching to another app (like Messages) and coming back.":"Corregido: el juego podía quedarse sin sonido al cambiar a otra app (como Mensajes) y volver.",
   "RANK":"PUESTO",
   "UP FROM #{0}":"ANTES #{0}",
