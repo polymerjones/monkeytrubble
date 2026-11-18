@@ -158,6 +158,7 @@ window.ES_TEXT={
   "🔥 {0} DAYS +{1}%":"🔥 {0} DÍAS +{1}%",
   "TROOP LV {0} · +{1} XP":"TROPA NV {0} · +{1} XP",
   "NO CHANGE":"SIN CAMBIOS",
+  "Fixed: the game could go silent after switching to another app (like Messages) and coming back.":"Corregido: el juego podía quedarse sin sonido al cambiar a otra app (como Mensajes) y volver.",
   "RANK":"PUESTO",
   "UP FROM #{0}":"ANTES #{0}",
   "×{0} CHAIN +{1}%":"CADENA ×{0} +{1}%",
