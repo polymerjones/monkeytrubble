@@ -194,6 +194,7 @@ window.ES_TEXT={
   "{0} (you)":"{0} (tú)",
   "Hidden player":"Jugador oculto",
   "{0} · 🔥 {1} · TROOP LV {2}":"{0} · 🔥 {1} · TROPA NV {2}",
+  "{0} · 🔥 {1} · LV {2}":"{0} · 🔥 {1} · NV {2}",
   "The online board isn’t connected yet. Your score and tier are saved and will post once it is.":"La clasificación en línea aún no está conectada. Tu puntuación y tu rango están guardados y se publicarán en cuanto lo esté.",
   "Loading the troop…":"Cargando la tropa…",
   "Normal clears count toward rank · daily streak adds up to +10%":"Los niveles en normal cuentan para el ranking · la racha diaria suma hasta +10 %",

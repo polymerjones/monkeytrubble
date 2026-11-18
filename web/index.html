@@ -394,7 +394,7 @@
     .leaders-list{flex:1;min-height:0;margin:0;padding:0;list-style:none;overflow-y:auto;display:flex;flex-direction:column;gap:7px;overscroll-behavior:contain}
     .lb-row{display:flex;align-items:center;gap:10px;padding:8px 12px 8px 8px;border:1px solid var(--line-soft);border-left:4px solid var(--tier);border-radius:12px;background:linear-gradient(90deg,color-mix(in srgb,var(--tier) 20%,var(--panel-deep)),var(--panel-deep) 65%);color:#fff}
     .lb-rank{width:28px;flex:none;text-align:center;color:var(--text-dim);font:950 .95rem system-ui,sans-serif;font-variant-numeric:tabular-nums}.lb-row.top .lb-rank{display:grid;place-items:center;height:28px;border-radius:50%;background:var(--medal);color:#1a1000;font-size:.8rem}
-    .lb-who{flex:1;min-width:0;display:flex;flex-direction:column}.lb-who b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:900 .95rem system-ui,sans-serif}.lb-who small{color:var(--text-dim);font:700 .62rem system-ui,sans-serif;letter-spacing:.08em}
+    .lb-who{flex:1;min-width:0;display:flex;flex-direction:column}.lb-who b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:900 .95rem system-ui,sans-serif}.lb-who small{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:var(--text-dim);font:700 .62rem system-ui,sans-serif;letter-spacing:.08em}
     .lb-score{flex:none;color:var(--amber);font:950 1.1rem system-ui,sans-serif;font-variant-numeric:tabular-nums}.lb-row.me{box-shadow:inset 0 0 0 1px var(--green),0 0 18px #57ff8633}
     /* Player cards (2026-10-23): avatars on board rows and the Settings chip, the avatar picker, and the stats grid in the lightbox. */
     .lb-avatar{flex:none;width:34px;height:34px;border-radius:50%;object-fit:cover;object-position:50% 18%;border:2px solid var(--tier);background:var(--well)}
@@ -5124,7 +5124,13 @@ void main() {
       // My own row shows the avatar and name from this phone, even before set_avatar or the profile post has landed.
       if(me&&progress.avatar!==undefined)row={...row,avatar:progress.avatar};if(me&&progress.player?.name)row={...row,name:progress.player.name};li.playerRow=row;if(row.id&&!me){li.dataset.id=row.id;li.dataset.name=row.name}li.className=`lb-row${row.rank&&row.rank<=3?' top':''}${me?' me':''}`;li.style.setProperty('--tier',tier.colors[1]);if(row.rank<=3)li.style.setProperty('--medal',MEDALS[row.rank-1]);
       const rank=Object.assign(document.createElement('span'),{className:'lb-rank',textContent:row.rank??'—'}),badge=document.createElement('span');badge.innerHTML=tierBadge(tier,30);
-      const who=Object.assign(document.createElement('span'),{className:'lb-who'});who.append(Object.assign(document.createElement('b'),{textContent:me?loc('{0} (you)',row.name):hidden?loc('Hidden player'):row.name}),Object.assign(document.createElement('small'),{textContent:loc('{0} · 🔥 {1} · TROOP LV {2}',loc(tier.name),row.streak,troopLevel(row.xp))}));
+      const who=Object.assign(document.createElement('span'),{className:'lb-who'});const line=Object.assign(document.createElement('small'),{textContent:loc('{0} · 🔥 {1} · TROOP LV {2}',loc(tier.name),row.streak,troopLevel(row.xp))});
+      who.append(Object.assign(document.createElement('b'),{textContent:me?loc('{0} (you)',row.name):hidden?loc('Hidden player'):row.name}),line);
+      // One line, always (Paul 2026-11-18: with an avatar, "TROOP LV 13" broke onto a second line): shrink the text to fit instead.
+      // Tighter letter spacing first, then a little smaller, then "LV 13" in place of "TROOP LV 13".
+      requestAnimationFrame(()=>{const over=()=>line.isConnected&&line.scrollWidth>line.clientWidth;if(!over())return;line.style.letterSpacing='.02em';if(!over())return;
+        line.style.fontSize=`${Math.max(.54,.62*.98*line.clientWidth/line.scrollWidth).toFixed(3)}rem`;if(!over())return;line.textContent=loc('{0} · 🔥 {1} · LV {2}',loc(tier.name),row.streak,troopLevel(row.xp));line.style.fontSize='';
+        if(over())line.style.fontSize=`${Math.max(.5,.62*.98*line.clientWidth/line.scrollWidth).toFixed(3)}rem`});
       const av=avatarOk(row.avatar)&&!hidden?Object.assign(document.createElement('img'),{className:'lb-avatar',src:cardImage('thumb',CARD_DATA[row.avatar]),alt:'',loading:'lazy'}):null;
       li.append(rank,badge.firstChild,...av?[av]:[],who,Object.assign(document.createElement('span'),{className:'lb-score',textContent:row.score}));return li
     }
