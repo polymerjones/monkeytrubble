@@ -551,14 +551,14 @@
     .pzs-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #ffffff22;border-radius:12px;background:#0006;text-align:left}
     .pzs-row img{flex:none;width:36px;height:36px;border-radius:50%;object-fit:cover;object-position:50% 18%;border:2px solid #ffd84d;background:#000}.pzs-row b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:900 .9rem system-ui,sans-serif}
     .pzs-row small{display:block;color:#cfe3d4;font:700 .62rem system-ui,sans-serif;letter-spacing:.06em;white-space:normal}
-    .pzs-btn{flex:none;min-height:36px;padding:0 12px;border:1px solid #ffd84d;border-radius:9px;background:#ffd84d22;color:#ffd84d;font:900 .66rem system-ui,sans-serif;letter-spacing:.08em}.pzs-btn.no{border-color:#ffffff33;background:none;color:#cfe3d4}.pzs-btn:disabled{opacity:.5}
+    .pzs-btn{flex:none;min-height:36px;padding:0 12px;border:1px solid #ffd84d;border-radius:9px;background:#ffd84d22;color:#ffd84d;font:900 .66rem system-ui,sans-serif;letter-spacing:.08em}.pzs-btn.no{border-color:#ffffff33;background:none;color:#cfe3d4}.pzs-tag{flex:none;padding:0 6px;color:#adffc0;font:900 .6rem system-ui,sans-serif;letter-spacing:.1em}.pzs-btn:disabled{opacity:.5}
     .pz-finder{position:absolute;right:-4px;top:-4px;z-index:2;width:24px;height:24px;border-radius:50%;object-fit:cover;object-position:50% 18%;border:2px solid #ffd84d;background:#000;pointer-events:none}
     .news-paw{display:inline-block;width:2.6em;height:1.1em;margin-right:.35em;vertical-align:-.2em}
     body.phone-ls .pz-shared{top:calc(68px + env(safe-area-inset-top))}body.phone-ls .puzzle-screen.has-mode .pz-head{height:44px}body.phone-ls .pz-mode button{min-height:26px}
     .pz-back{justify-self:start;height:40px;padding:0 14px 0 10px;border:1px solid #ffffff33;border-radius:99px;background:#0006;color:#fff;font:800 .8rem system-ui,sans-serif;letter-spacing:.1em;cursor:pointer}
     .pz-arrow{position:absolute;top:50%;z-index:2;width:44px;height:44px;margin-top:-22px;border:1px solid #ffffff44;border-radius:50%;background:#000a;color:#fff;font:700 1.5rem/1 system-ui;cursor:pointer}.pz-arrow.prev{left:0}.pz-arrow.next{right:0}.pz-arrow:disabled{opacity:0;pointer-events:none}
     .pz-dots[hidden]{visibility:hidden}
-    .pz-dots{display:flex;justify-content:center;align-items:center;gap:7px;height:10px}.pz-dots i{width:8px;height:8px;border-radius:50%;background:#ffffff40}.pz-dots i.done{background:#ffd84d88}.pz-dots i.on{background:#fff;transform:scale(1.3)}
+    .pz-dots{display:flex;justify-content:center;align-items:center;gap:7px;height:10px}.pz-dots i{width:8px;height:8px;border-radius:50%;background:#ffffff40}.pz-dots i.done{background:#ffd84d88}.pz-dots i.on{background:#fff;transform:scale(1.3)}.pz-dots i.plus{width:auto;height:auto;background:none;color:#ffffffa0;font:900 .8rem/1 system-ui,sans-serif;font-style:normal}
     
     .pz-stage{position:relative;display:grid;place-items:center;min-height:0;perspective:900px}
     .pz-board{position:relative;height:calc(100% * var(--pz-scale,.86));max-width:100%;aspect-ratio:9/16;border-radius:10px;background:#000 center/cover;box-shadow:0 0 0 3px #8a5a2b,0 0 0 6px #3b240f,0 16px 40px #000c}
@@ -3522,10 +3522,10 @@
       document.querySelectorAll('.dev-jump [data-step]').forEach(b=>b.onclick=()=>{devLevel=Math.max(1,devLevel+Number(b.dataset.step));show()});
       // Dev (two-player test): ask the server for a shared piece as if a level had been cleared, trying the levels reached from the top.
       $('#devDuoFind').onclick=async()=>{const info=$('#devDuoInfo'),b=$('#devDuoFind');if(!sharedOn()){info.textContent='Needs friends set up (a name, a cleared level).';return}b.disabled=true;info.textContent='Looking…';
-        try{await loadDuo();if(duo.state?.duo?.status!=='active'){info.textContent='No active shared puzzle yet: invite a friend from Puzzles › SHARED.';return}
-          let got=null,tried=0;for(let lv=progress.level;lv>=1&&tried<15&&got==null;lv--,tried++)got=await lbCall('duo_find',{...lbAuth(),p_level:lv});
+        try{await loadDuo();if(!duoList().some(d=>d.status==='active')){info.textContent='No active shared puzzle yet: invite a friend from Puzzles › SHARED.';return}
+          let got=null,tried=0;for(let lv=progress.level;lv>=1&&tried<15&&got==null;lv--,tried++)got=await lbCall('duo_find',{...lbAuth(),p_level:lv,p_v:2});
           if(got==null){info.textContent='Nothing found: today’s 6 are used, or every level you’ve reached already gave one.';return}
-          await loadDuo();info.textContent=`Found piece ${got+1}. ${duo.view.got[duo.view.key].length}/12 found.`;closeSettings();setTimeout(()=>pieceShow({n:duo.view.key,i:got,title:loc('SHARED PIECE!'),sub:loc('WITH {0} · {1}/{2}',duo.state.duo.partner.name,duo.view.got[duo.view.key].length,PZ_N)},innerWidth/2,innerHeight/2),300)}
+          const show=await duoFound(got);if(!show){info.textContent='Found one, but couldn’t load its puzzle.';return}info.textContent=`Found piece ${got.piece+1} for the puzzle with ${got.partner?.name}.`;closeSettings();setTimeout(()=>pieceShow(show,innerWidth/2,innerHeight/2),300)}
         catch(e){info.textContent='Error: '+(e?.message||e).slice(0,120)}finally{b.disabled=false}};
       $('#devGo').onclick=()=>devGoTo(devLevel);$('#devWin').onclick=devInstantWin;$('#devCage3').onclick=devCageThree;
       // The leaderboard climb with made-up rivals (it only plays after a real climb otherwise). Leaves climbShownAt as it was.
@@ -4102,7 +4102,8 @@ void main() {
         holoBaseFor(HERO_IMAGES[KEVIN])},{timeout:2000})}
     // Release notes (the home screen's POLY card): what's new for players in the next build. Update for every release.
     // First public release: What's New reads as a short tour of the game, not the beta changelog. Later updates prepend their lines.
-    const RELEASE_NOTES={version:'1.1',lines:[
+    const RELEASE_NOTES={version:'1.1.1',lines:[
+      'Shared Puzzles: build one with up to 5 friends at the same time. Use the arrows on Puzzles › SHARED to switch between them.',
       'NEW: Shared Puzzles! Build a jigsaw together with a friend: pieces either of you find go into the same painting, and you both get the reward. Puzzles › SHARED.',
       'NEW: Friends! Share your friend card from the leaderboard’s FRIENDS tab (a friend scans the QR or opens the link), or tap anyone’s card on the board to ADD FRIEND. Nudge friends who haven’t played today. The trophy shows a red number when someone nudges you or passes you on the board.',
       'NEW: Turn your phone or iPad sideways! Landscape play gives the board the full height of the screen, with your current card and cage beside it.',
@@ -4467,7 +4468,7 @@ void main() {
     // since the home badge renders before the friends code below has run.
     function sharedOn(){try{return(SHARED_PUZZLES_LIVE||devMode)&&friendsOk()}catch{return false}}
     function newsNow(){try{return fr.news}catch{return null}}
-    function duoNews(n){return sharedOn()&&n?(n.duo&&(n.duo.found||n.duo.placed||n.duo.done)?1:0)+(n.duo_invites||0):0}
+    function duoNews(n){return sharedOn()&&n?(n.duo_news??(n.duo&&(n.duo.found||n.duo.placed||n.duo.done)?1:0))+(n.duo_invites||0):0}
     function renderPuzzleBadge(){const sk=duoNews(newsNow()),k=piecesWaiting()+sk;const sb=$('#pzSharedBadge');if(sb){sb.hidden=!sk;sb.textContent=sk}$('#homePuzzle').hidden=false;for(const b of [$('#puzzleBadge'),$('#gamePuzzleBadge')]){b.hidden=!k;b.textContent=k}}
     // The level's hidden piece: a covered card (not Kevin or POLY), picked by the level's seed.
     function pieceForLevel(){if(state.tutorial||state.devWin||currentPuzzle()==null)return null;const level=state.level,p=puzzleSave();if(p.levels.includes(level)||!(level===1||mulberry32(level*6007+13)()<PIECE_CHANCE))return null;
@@ -4560,8 +4561,11 @@ void main() {
     function renderPuzzle(){pzDragEnd();pzClearLive();renderPzMode();if(pz.mode==='shared'&&!sharedReady())return renderSharedPanel();$('#puzzleScreen').classList.remove('picking');$('#pzShared').hidden=true;
       const n=pz.n,p=pzSave(),placed=p.placed[n]||[],ch=puzzleOf(n),open=pz.mode==='shared'?[ch]:puzzlesOpen(),at=open.findIndex(e=>e.key===ch.key);
       $('#pzStage').style.setProperty('--pz-scale',PUZZLE_FEEL.boardScale);
-      $('#pzTitle').textContent=loc('PUZZLES');$('#pzBackText').textContent=loc('BACK');pzSub(ch,placed.length);$('#pzPrev').hidden=$('#pzNext').hidden=$('#pzDots').hidden=pz.mode==='shared';$('#pzPrev').disabled=at<=0;$('#pzNext').disabled=at>=open.length-1;
-      $('#pzDots').replaceChildren(...open.map((e,k)=>{const d=document.createElement('i');if(p.done.includes(e.key))d.className='done';if(k===at)d.classList.add('on');return d}));
+      $('#pzTitle').textContent=loc('PUZZLES');$('#pzBackText').textContent=loc('BACK');pzSub(ch,placed.length);$('#pzPrev').hidden=$('#pzNext').hidden=$('#pzDots').hidden=false;$('#pzNext').setAttribute('aria-label',loc('Next puzzle'));
+      if(pz.mode==='shared'){const list=duoList(),k=list.findIndex(d=>d.id===pz.duo);$('#pzPrev').disabled=k<=0;$('#pzNext').disabled=false;if(k>=list.length-1)$('#pzNext').setAttribute('aria-label',loc('INVITE A FRIEND'));
+        $('#pzDots').replaceChildren(...list.map((d,j)=>{const i=document.createElement('i');if(d.status==='done')i.className='done';if(j===k)i.classList.add('on');return i}),Object.assign(document.createElement('i'),{className:'plus',textContent:'+'}))}
+      else{$('#pzPrev').disabled=at<=0;$('#pzNext').disabled=at>=open.length-1;
+      $('#pzDots').replaceChildren(...open.map((e,k)=>{const d=document.createElement('i');if(p.done.includes(e.key))d.className='done';if(k===at)d.classList.add('on');return d}))}
       renderPzBoard();renderPzTray();
       // Your partner placed the last piece: the finish show (and your reward) plays when you open it.
       if(pz.mode==='shared'&&duo.state?.duo?.status==='done'&&!duo.state.duo.claimed&&!duo.claiming){duo.claiming=true;setTimeout(()=>{if(pz.mode==='shared'&&!$('#puzzleScreen').hidden)finishPuzzle(pz.n)},500)}}
@@ -4689,7 +4693,7 @@ void main() {
     // Turning between puzzles (Paul, 2026-10-24): the board whizzes out one way and the next eases in from the other, with a page-turn
     // flick. One board element, transform and opacity only; taps during a turn queue up as one more turn.
     let pzTurning=null;
-    async function pzTurn(dir){const open=puzzlesOpen(),to=open[open.findIndex(e=>e.key===pz.n)+dir]?.key;if(to==null)return;if(pzTurning){pzTurning.next=dir;return}const turn=pzTurning={next:0};
+    async function pzTurn(dir){if(pz.mode==='shared')return sharedTurn(dir);const open=puzzlesOpen(),to=open[open.findIndex(e=>e.key===pz.n)+dir]?.key;if(to==null)return;if(pzTurning){pzTurning.next=dir;return}const turn=pzTurning={next:0};
       const board=$('#pzBoard'),tray=$('#pzTray'),still=reduceMotion.matches;playPageTurn();
       // Paul, 2026-10-24: one fluid slide. A copy of the current board stays where it is while the real board becomes the next puzzle;
       // then both move together, the old one out one side and the new one in from the other, like turning a page in a carousel.
@@ -4707,6 +4711,10 @@ void main() {
         tray.animate([{opacity:0,transform:`translateX(${dir*40}px)`},{opacity:1,transform:'none'}],{duration:ms,easing:ease});
         await Promise.race([go.finished.catch(()=>{}),new Promise(r=>setTimeout(r,ms+200))]);ghost.remove()}
       pzTurning=null;pzSweep();if(turn.next)pzTurn(turn.next)}
+    // SHARED: ‹ › step through your shared puzzles (each is loaded from the server); › after the last one is the invite page.
+    async function sharedTurn(dir){if(pz.drag||pz.turningShared)return;const list=duoList(),to=list[list.findIndex(d=>d.id===pz.duo)+dir];if(!to&&dir<0)return;playPageTurn();haptic('cardFlip');
+      if(!to){pz.picking=true;pz.hubFriend=null;renderPuzzle();return}
+      pz.turningShared=true;const b=$('#pzBoard');b.style.opacity=.35;try{await duo.loading;pz.duo=to.id;await loadDuo()}finally{pz.turningShared=false;b.style.opacity=''}if(pz.mode==='shared'&&!$('#puzzleScreen').hidden)renderPuzzle()}
     // Anything a turn, drag or placing could leave behind (an old board copy, a dragged or flying piece) is removed once the screen settles.
     function pzSweep(){if(pzTurning)return;for(const el of [...$('#pzStage').children])if(!['pzBoard','pzPrev','pzNext'].includes(el.id))el.remove();for(const el of document.querySelectorAll('body > .pz-drag:not(.flying)'))if(!el.isConnected||!pz.dragging)el.remove()}
     // Turning the phone (Paul 2026-11-17: sideways pieces came out portrait-sized): the resize event can arrive before the landscape
@@ -4722,48 +4730,65 @@ void main() {
     // Paul's Together paintings (2026-11-17): the four posters, then the banana-sharing painting.
     const SHARED_ART=[{key:'together-1',img:'together-1',name:'Banana Giggles',seed:201},{key:'together-2',img:'together-2',name:'Sunset Grooming',seed:202},{key:'together-3',img:'together-3',name:'Best Buds',seed:203},{key:'together-4',img:'together-4',name:'High Five!',seed:204},{key:'together-5',img:'together-5',name:'Sharing Is Caring',seed:205}];
     PUZZLES.push(...SHARED_ART.map(e=>({...e,shared:true,when:()=>false})));
+    // Several at once (Paul 2026-11-18): up to 5, one per friend. duo.state is the shown puzzle (pz.duo) plus 'duos', the list of all of
+    // them; ‹ › step through the list like MINE steps through puzzles, and › after the last one opens the invite page.
     const duo={state:null,view:null,loading:null,placing:Promise.resolve(),claiming:false};
+    const duoList=()=>(duo.state?.duos||[]).filter(d=>d.status==='active'||d.status==='done');
     function pzSave(){return pz.mode==='shared'&&duo.view?duo.view:puzzleSave()}
     // A puzzle that's going (or finished, to look at and share), unless the player asked to start a new one.
     const sharedReady=()=>!pz.picking&&['active','done'].includes(duo.state?.duo?.status)&&!!duo.view;
     function duoView(st){const d=st?.duo;if(!d||!['active','done'].includes(d.status))return null;const key=SHARED_ART.some(e=>e.key===d.art)?d.art:SHARED_ART[0].key,ps=st.pieces||[];
       return{key,got:{[key]:ps.map(x=>x.piece)},placed:{[key]:ps.filter(x=>x.placed).map(x=>x.piece)},done:d.status==='done'?[key]:[],levels:[]}}
-    function loadDuo(){if(!friendsOk())return Promise.resolve(null);if(duo.loading)return duo.loading;
-      duo.loading=lbCall('duo_state',lbAuth()).then(st=>{duo.state=st;duo.claiming=false;duo.view=duoView(st);if(duo.view&&pz.mode==='shared')pz.n=duo.view.key;if(fr.news?.duo){fr.news.duo={...fr.news.duo,found:0,placed:0}}renderPuzzleBadge();renderLeadersBadge();return st}).catch(()=>null).finally(()=>{duo.loading=null});return duo.loading}
+    function loadDuo(){if(!friendsOk())return Promise.resolve(null);if(duo.loading)return duo.loading;const ask=id=>lbCall('duo_state',{...lbAuth(),p_duo:id??null});
+      duo.loading=ask(pz.duo).then(async st=>{const list=(st?.duos||[]).filter(d=>d.status==='active'||d.status==='done');
+        // From a friend's card: their puzzle with you, or the invite page if there isn't one.
+        if(pz.wantFriend){const d=list.find(x=>x.partner.id===pz.wantFriend);pz.hubFriend=d?null:pz.wantFriend;pz.wantFriend=null;if(d){pz.picking=false;if(d.id!==st.duo?.id)st=await ask(d.id)}else pz.picking=true}
+        // The latest one is an invite you sent: show a puzzle that's going instead, if there is one.
+        else if(!['active','done'].includes(st?.duo?.status)&&list.length)st=await ask(list[0].id);
+        duo.state=st;duo.claiming=false;duo.view=duoView(st);if(duo.view){pz.duo=st.duo.id;if(pz.mode==='shared')pz.n=duo.view.key}
+        if(fr.news){const rest=(st?.duos||[]).filter(d=>d.news>0&&d.id!==st?.duo?.id).length;fr.news.duo_news=rest;if(!rest&&fr.news.duo)fr.news.duo={...fr.news.duo,found:0,placed:0,done:false}}
+        renderPuzzleBadge();renderLeadersBadge();return st}).catch(()=>null).finally(()=>{duo.loading=null});return duo.loading}
     function renderPzMode(){const on=sharedOn();$('#pzMode').hidden=!on;$('#puzzleScreen').classList.toggle('has-mode',on);for(const b of document.querySelectorAll('#pzMode [role=tab]'))b.setAttribute('aria-selected',String(b.dataset.mode===pz.mode));
       const leave=$('#pzLeave');leave.hidden=!(pz.mode==='shared'&&!pz.picking&&duo.state?.duo?.status==='active');leave.classList.remove('sure');leave.textContent=loc('LEAVE')}
     $('#pzMode').onclick=e=>{const b=e.target.closest('[role=tab]');if(!b||b.dataset.mode===pz.mode||pzTurning||pz.drag)return;pz.mode=b.dataset.mode;pz.picking=false;playPageTurn();haptic('cardFlip');
       if(pz.mode==='mine'){const open=puzzlesOpen();if(!open.some(e=>e.key===pz.n))pz.n=currentPuzzle()??open[0].key;renderPuzzle()}else{if(duo.view)pz.n=duo.view.key;renderPuzzle();loadDuo().then(()=>{if(pz.mode==='shared'&&!$('#puzzleScreen').hidden){if(duo.view)pz.n=duo.view.key;renderPuzzle()}})}};
     // LEAVE asks once more (SURE?) before ending the shared puzzle for both partners.
     $('#pzLeave').onclick=()=>{const b=$('#pzLeave');if(!b.classList.contains('sure')){b.classList.add('sure');b.textContent=loc('SURE?');setTimeout(()=>{if(b.isConnected){b.classList.remove('sure');b.textContent=loc('LEAVE')}},3000);return}
-      b.disabled=true;lbCall('duo_leave',lbAuth()).catch(()=>{}).finally(()=>{b.disabled=false;loadDuo().then(()=>renderPuzzle())})};
+      b.disabled=true;const id=duo.state?.duo?.id;pz.duo=null;lbCall('duo_leave',{...lbAuth(),p_duo:id}).catch(()=>{}).finally(()=>{b.disabled=false;loadDuo().then(()=>renderPuzzle())})};
     // The finder's avatar on a tray piece (yours, or your partner's).
     function duoFinder(i){const x=duo.state?.pieces?.find(p=>p.piece===i);if(!x)return null;const mine=x.found_by===progress.player?.id,av=mine?progress.avatar:duo.state.duo.partner.avatar,img=document.createElement('img');
       img.className='pz-finder';img.alt='';img.src=cardImage('thumb',CARD_DATA[avatarOk(av)?av:DEFAULT_AVATAR]);img.title=mine?loc('You found this'):loc('{0} found this',duo.state.duo.partner.name);return img}
-    function duoPlace(i){const x=duo.state?.pieces?.find(p=>p.piece===i);if(x){x.placed=true;x.placed_by=progress.player.id}duo.placing=lbCall('duo_place',{...lbAuth(),p_piece:i}).then(r=>{if(r?.done&&duo.state?.duo)duo.state.duo.status='done'}).catch(()=>{})}
+    function duoPlace(i){const x=duo.state?.pieces?.find(p=>p.piece===i);if(x){x.placed=true;x.placed_by=progress.player.id}duo.placing=lbCall('duo_place',{...lbAuth(),p_duo:duo.state?.duo?.id,p_piece:i}).then(r=>{if(r?.done&&duo.state?.duo)duo.state.duo.status='done'}).catch(()=>{})}
     // Waits for the last placing to land first: the 12th placing is what marks the puzzle done on the server.
     function duoClaim(){const id=duo.state?.duo?.id;if(!id)return Promise.resolve(false);return duo.placing.then(()=>lbCall('duo_claim',{...lbAuth(),p_duo:id})).then(ok=>{if(ok&&duo.state?.duo)duo.state.duo.claimed=true;return!!ok}).catch(()=>false)}
     // After a Normal clear (once the profile has posted, so the server knows the level): a shared piece, sometimes. Resolves to
     // {n, i, title, sub} for pieceShow, or null.
-    async function duoTryFind(level,posted){if(!sharedOn()||progress.devReset||Math.random()>=SHARED_PIECE_CHANCE)return null;if(duo.state&&duo.state.duo?.status!=='active')return null;
-      await posted;try{const i=await lbCall('duo_find',{...lbAuth(),p_level:level});if(i==null)return null;await loadDuo();if(!duo.view)return null;
-        return{n:duo.view.key,i,title:loc('SHARED PIECE!'),sub:loc('WITH {0} · {1}/{2}',duo.state.duo.partner.name,duo.view.got[duo.view.key].length,PZ_N)}}catch{return null}}
+    async function duoTryFind(level,posted){if(!sharedOn()||progress.devReset||Math.random()>=SHARED_PIECE_CHANCE)return null;if(duo.state&&!duoList().some(d=>d.status==='active'))return null;
+      await posted;try{return await duoFound(await lbCall('duo_find',{...lbAuth(),p_level:level,p_v:2}))}catch{return null}}
+    // The server picked one of your shared puzzles at random: that one becomes the shown one, and the piece show names the partner.
+    async function duoFound(r){if(r?.piece==null)return null;await duo.loading;pz.duo=r.duo;await loadDuo();if(!duo.view||duo.state.duo.id!==r.duo)return null;
+      return{n:duo.view.key,i:r.piece,title:loc('SHARED PIECE!'),sub:loc('WITH {0} · {1}/{2}',duo.state.duo.partner.name,duo.view.got[duo.view.key].length,PZ_N)}}
     // No shared puzzle going (or starting a new one): the panel over the board. Invites to you, your invite waiting, or friends to invite.
     function renderSharedPanel(){const box=$('#pzShared'),st=duo.state,d=st?.duo;$('#puzzleScreen').classList.add('picking');box.hidden=false;$('#pzSub').textContent=loc('WITH A FRIEND');
       const inner=document.createElement('div');inner.className='pzs-inner';const el=(tag,text,cls)=>Object.assign(document.createElement(tag),{textContent:text,...cls?{className:cls}:{}});
       inner.append(el('h3',loc('Shared Puzzles')),el('p',loc('Build a puzzle with a friend. Pieces either of you find go into the same picture, and you both get the reward when it’s done.')));
       const row=(p,line,btns)=>{const r=document.createElement('div');r.className='pzs-row';const img=document.createElement('img');img.alt='';img.src=cardImage('thumb',CARD_DATA[avatarOk(p.avatar)?p.avatar:DEFAULT_AVATAR]);const who=document.createElement('b');who.textContent=p.name;if(line)who.append(el('small',line));r.append(img,who,...btns);return r};
-      const btn=(text,fn,no)=>{const b=el('button',loc(text),`pzs-btn${no?' no':''}`);b.onclick=async()=>{b.disabled=true;try{await fn()}catch{}await loadDuo();if(duo.view&&!pz.picking)pz.n=duo.view.key;renderPuzzle()};return b};
+      const btn=(text,fn,no)=>{const b=el('button',loc(text),`pzs-btn${no?' no':''}`);b.onclick=async()=>{b.disabled=true;await duo.loading;try{await fn()}catch{}await loadDuo();if(duo.view&&!pz.picking)pz.n=duo.view.key;renderPuzzle()};return b};
       if(!friendsOk()){inner.append(el('p',loc('Pick a name and clear a level to start adding friends.')));box.replaceChildren(inner);return}
       if(!st){inner.append(el('p',loc('Loading…')));box.replaceChildren(inner);loadDuo().then(()=>{if(pz.mode==='shared'&&!$('#puzzleScreen').hidden)renderPuzzle()});return}
-      if(st.invites?.length){inner.append(el('h4',loc('INVITES')));for(const v of st.invites)inner.append(row(v.from,loc('wants to build a puzzle with you'),[btn('ACCEPT',()=>{pz.picking=false;return lbCall('duo_answer',{...lbAuth(),p_duo:v.id,p_accept:true})}),btn('✕',()=>lbCall('duo_answer',{...lbAuth(),p_duo:v.id,p_accept:false}),true)]))}
-      if(d?.status==='pending'&&d.mine){inner.append(el('h4',loc('WAITING')),row(d.partner,loc('Invite sent. It starts when they accept.'),[btn('CANCEL',()=>lbCall('duo_leave',lbAuth()),true)]));box.replaceChildren(inner);return}
-      if(d?.status==='active'&&pz.picking){inner.append(el('p',loc('Finish or leave your shared puzzle with {0} first.',d.partner.name)));box.replaceChildren(inner);return}
-      inner.append(el('h4',loc('INVITE A FRIEND')));const list=document.createElement('div');list.style.display='grid';list.style.gap='8px';inner.append(list);box.replaceChildren(inner);
-      const fill=()=>{const asked=new Set((st.invites||[]).map(v=>v.from.id)),friends=(fr.home?.friends||[]).filter(f=>f.id!==progress.player.id&&!asked.has(f.id));if(!friends.length){if(asked.size)list.previousSibling?.remove();list.replaceChildren(...asked.size?[]:[el('p',loc('Add friends on the 🏆 leaderboard’s FRIENDS tab first.'))]);return}
+      const say=t=>{$('#pzSub').textContent=t};
+      if(st.invites?.length){inner.append(el('h4',loc('INVITES')));for(const v of st.invites)inner.append(row(v.from,loc('wants to build a puzzle with you'),[btn('ACCEPT',async()=>{const r=await lbCall('duo_answer',{...lbAuth(),p_duo:v.id,p_accept:true});if(r==='active'){pz.picking=false;pz.duo=v.id}else if(r==='full')say(loc('You have 5 shared puzzles going. Finish one to start another.'))}),btn('✕',()=>lbCall('duo_answer',{...lbAuth(),p_duo:v.id,p_accept:false}),true)]))}
+      const all=st.duos||[],list=duoList(),sent=all.filter(d=>d.status==='pending'),open=all.filter(d=>d.status==='active'||d.status==='pending').length,withYou=new Map(all.filter(d=>d.status!=='done').map(d=>[d.partner.id,d.status]));
+      if(list.length){inner.append(el('h4',loc('YOUR SHARED PUZZLES')));for(const d of list)inner.append(row(d.partner,d.status==='done'?loc('Finished!'):`${loc('{0}/{1} placed',d.placed,PZ_N)}${d.news?' · '+loc('NEW'):''}`,[btn('OPEN',()=>{pz.picking=false;pz.duo=d.id})]))}
+      if(sent.length){inner.append(el('h4',loc('WAITING')));for(const d of sent)inner.append(row(d.partner,loc('Invite sent. It starts when they accept.'),[btn('CANCEL',()=>lbCall('duo_leave',{...lbAuth(),p_duo:d.id}),true)]))}
+      inner.append(el('h4',loc('INVITE A FRIEND')));const list2=document.createElement('div');list2.style.display='grid';list2.style.gap='8px';inner.append(list2);box.replaceChildren(inner);
+      if(open>=5){list2.replaceChildren(el('p',loc('You have 5 shared puzzles going. Finish one to start another.')));return}
+      const fill=()=>{const asked=new Set((st.invites||[]).map(v=>v.from.id)),friends=(fr.home?.friends||[]).filter(f=>f.id!==progress.player.id&&!asked.has(f.id)).sort((a,b)=>(b.id===pz.hubFriend)-(a.id===pz.hubFriend)||!!withYou.get(a.id)-!!withYou.get(b.id));
+        if(!friends.length){if(asked.size)list2.previousSibling?.remove();list2.replaceChildren(...asked.size?[]:[el('p',loc('Add friends on the 🏆 leaderboard’s FRIENDS tab first.'))]);return}
         const done=progress.sharedDone||[],art=(SHARED_ART.find(e=>!done.includes(e.key))||SHARED_ART[done.length%SHARED_ART.length]).key;
-        list.replaceChildren(...friends.map(f=>row(f,'',[btn('INVITE',async()=>{const r=await lbCall('duo_invite',{...lbAuth(),p_friend:f.id,p_art:art});if(r==='busy')$('#pzSub').textContent=loc('{0} is already building a shared puzzle.',f.name);pz.picking=false})])))};
-      if(fr.home)fill();else fetchFriendsHome().then(fill).catch(()=>list.replaceChildren(el('p',friendsErr())))}
+        list2.replaceChildren(...friends.map(f=>{const going=withYou.get(f.id);return row(f,'',going?[el('span',loc(going==='active'?'BUILDING':'INVITED'),'pzs-tag')]:[btn('INVITE',async()=>{const r=await lbCall('duo_invite',{...lbAuth(),p_friend:f.id,p_art:art});
+          if(r==='busy')say(loc('You and {0} already have a shared puzzle.',f.name));else if(r==='full')say(loc('{0} has 5 shared puzzles going.',f.name))})])}))};
+      if(fr.home)fill();else fetchFriendsHome().then(fill).catch(()=>list2.replaceChildren(el('p',friendsErr())))}
     document.addEventListener('visibilitychange',()=>{if(document.hidden&&!$('#puzzleScreen').hidden)renderPuzzle()});
     // The Lab's sandbox: the game opens straight onto the puzzles; the page resets it and tunes PUZZLE_FEEL through __puzzleFeel.
     if(params.has('puzzlelab')){document.documentElement.classList.add('puzzle-lab');const all=()=>Object.fromEntries(PUZZLES.map(e=>[e.key,[...Array(PZ_N).keys()]]));
@@ -5194,7 +5219,7 @@ void main() {
       rm.onclick=()=>{if(!rm.classList.contains('sure')){rm.classList.add('sure');rm.textContent=loc('Tap again to remove {0}',row.name);setTimeout(()=>{if(rm.classList.contains('sure')&&!rm.disabled){rm.classList.remove('sure');rm.textContent=loc('Remove friend')}},3000);return}
         rm.disabled=true;lbCall('remove_friend',{...lbAuth(),p_other:row.id}).catch(()=>{}).finally(()=>{fr.ids.delete(row.id);fr.home=null;afterLightbox(()=>{if(!$('#leaders').classList.contains('hidden'))loadLeaders().then(()=>{$('#leadersStatus').textContent=loc('Removed from your friends.')})})})};
       // 🧩 (Paul 2026-11-17): straight to Shared Puzzles (your puzzle together, or the invite list).
-      const pzb=$('#cardPuzzle');pzb.hidden=!(friend&&sharedOn());pzb.onclick=()=>afterLightbox(()=>{$('#leaders').classList.add('hidden');openPuzzle({mode:'shared'})});
+      const pzb=$('#cardPuzzle');pzb.hidden=!(friend&&sharedOn());pzb.onclick=()=>afterLightbox(()=>{$('#leaders').classList.add('hidden');pz.wantFriend=row.id;openPuzzle({mode:'shared'})});
       add.onclick=async()=>{add.disabled=true;try{const r=asked?(await lbCall('answer_friend',{...lbAuth(),p_other:row.id,p_accept:true}),{status:'friends'}):await lbCall('add_friend_id',{...lbAuth(),p_other:row.id});
           const ok=r.status==='sent'||r.status==='friends';add.textContent=loc(r.status==='friends'?'FRIENDS ✓':r.status==='sent'?'REQUEST SENT':r.status==='full'?'FRIEND LIST FULL':'ADD FRIEND');
           if(ok){playSound('pickup',{volume:.22,rate:1.3});haptic('cardFlip');await fetchFriendsHome().catch(()=>{});if(r.status==='friends')cardFriendButtons(row);if(fr.tab==='friends')loadFriends()}else add.disabled=false}
