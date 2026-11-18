@@ -2032,6 +2032,8 @@
     // ship with it on; a browser gets it on a local server or file:// only.
     const DEBUG_DEFAULTS=window.__monkeyDebugBuild??(location.protocol==='file:'||/^(localhost|127\.|192\.168\.|10\.)/.test(location.hostname));
     const DEV_KEY='monkeyTrubble.dev',reduceMotion=matchMedia('(prefers-reduced-motion: reduce)');let devMode=params.has('dev')||DEBUG_DEFAULTS;try{devMode=devMode||localStorage.getItem(DEV_KEY)==='1'}catch{}
+    // Store builds (TestFlight/App Store/Play) never run in dev mode, even with the flag left over from a Debug build on this phone.
+    if(window.__monkeyDevTaps===false)devMode=false;
     function setDevMode(on){devMode=on;try{on?localStorage.setItem(DEV_KEY,'1'):localStorage.removeItem(DEV_KEY)}catch{}document.body.classList.toggle('dev',on);if(typeof applyTrials==='function')applyTrials()}
     // iCloud (iOS app): the save exists on this device (window.__monkeySave) and in iCloud (window.__monkeyCloudSave, and later
     // __monkeyCloudChanged when another device updates it). mergeSaves makes one from two: the copy with more play (XP) leads, and
@@ -2043,7 +2045,11 @@
       return{...other,...lead,level:Math.max(lead.level||1,other.level||1),bestTimes:best(lead.bestTimes,other.bestTimes),bestTimesEasy:best(lead.bestTimesEasy,other.bestTimesEasy),
         streak:streak||lead.streak,player:lead.player||other.player||null,stats:{...other.stats,...lead.stats,xp:Math.max(lead.stats?.xp||0,other.stats?.xp||0)},pendingSync:!!(lead.pendingSync||other.pendingSync),
         bank:Object.fromEntries(['undo','shuffle','hint'].map(k=>[k,Math.max(lead.bank?.[k]||0,other.bank?.[k]||0)]))}}
-    function loadProgress(){let saved=window.__monkeySave;if(saved==null)try{saved=localStorage.getItem(SAVE_KEY)}catch{}saved=mergeSaves(saved,window.__monkeyCloudSave);const base=freshProgress();if(saved?.version!==1)return base;const p={...base,...saved,streak:{...base.streak,...saved.streak},settings:{...base.settings,...saved.settings},stats:{...base.stats,...saved.stats}};
+    function loadProgress(){let saved=window.__monkeySave;if(saved==null)try{saved=localStorage.getItem(SAVE_KEY)}catch{}saved=mergeSaves(saved,window.__monkeyCloudSave);
+      // A dev "Reset to new player" rides in the save (and iCloud), so a store build has no UNDO RESET for it. Store builds undo it
+      // themselves: the backup comes back, or the flag just drops (Paul 2026-11-18: installed 1.1 from the App Store, stuck in DEV RESET).
+      if(window.__monkeyDebugBuild===false&&saved){const s0=asSave(saved);if(s0?.devReset){saved=asSave(s0.devBackup)||(({devReset,devBackup,...rest})=>rest)(s0);devResetCleared=true}}
+      const base=freshProgress();if(saved?.version!==1)return base;const p={...base,...saved,streak:{...base.streak,...saved.streak},settings:{...base.settings,...saved.settings},stats:{...base.stats,...saved.stats}};
       // One-time move of older saves onto the new defaults (Jungle theme, 80% effects); later choices are kept.
       if(!(saved.settings?.defaultsRev>=2))Object.assign(p.settings,{theme:'jungle',sfxVol:80,defaultsRev:2});
       // Levels 1-2 moved to the small starter boards (2026-10-24): their old best times were on 45-card boards, so they start fresh.
@@ -2055,7 +2061,8 @@
     // bestTimesEasy keeps Easy clears apart so they never set Normal records.
     function freshProgress(){return{version:1,level:1,bestTimes:{},bestTimesEasy:{},streak:{count:0,lastDate:null},settings:{music:'competitive',difficulty:'normal',cage:'hand',theme:'jungle',musicVol:100,sfxVol:80,lang:'en',season:'mixed',defaultsRev:2},player:null,stats:{xp:0,scores:[]},tips:[],bank:{undo:0,shuffle:0,hint:0},chest:{wins:0}}}
     function saveProgress(){const json=JSON.stringify(progress);if(isIOSApp)window.webkit.messageHandlers.storage?.postMessage(json);try{localStorage.setItem(SAVE_KEY,json)}catch{}}
-    let progress=loadProgress();lang=progress.settings.lang==='es'?'es':'en';
+    let devResetCleared=false;
+    let progress=loadProgress();if(devResetCleared)saveProgress();lang=progress.settings.lang==='es'?'es':'en';
     // Another device moved the iCloud save on: fold it in (never backwards) and refresh the home screen if it's showing.
     window.__monkeyCloudChanged=remote=>{const merged=mergeSaves(progress,remote);if(!merged||JSON.stringify(merged)===JSON.stringify(progress))return;Object.assign(progress,merged);saveProgress();if(!$('#home').classList.contains('hidden'))renderHome()};
     if(params.has('reset')){progress=freshProgress();saveProgress()}
