@@ -5125,7 +5125,9 @@ void main() {
       if(me&&progress.avatar!==undefined)row={...row,avatar:progress.avatar};if(me&&progress.player?.name)row={...row,name:progress.player.name};li.playerRow=row;if(row.id&&!me){li.dataset.id=row.id;li.dataset.name=row.name}li.className=`lb-row${row.rank&&row.rank<=3?' top':''}${me?' me':''}`;li.style.setProperty('--tier',tier.colors[1]);if(row.rank<=3)li.style.setProperty('--medal',MEDALS[row.rank-1]);
       const rank=Object.assign(document.createElement('span'),{className:'lb-rank',textContent:row.rank??'—'}),badge=document.createElement('span');badge.innerHTML=tierBadge(tier,30);
       const who=Object.assign(document.createElement('span'),{className:'lb-who'});const line=Object.assign(document.createElement('small'),{textContent:loc('{0} · 🔥 {1} · TROOP LV {2}',loc(tier.name),row.streak,troopLevel(row.xp))});
-      who.append(Object.assign(document.createElement('b'),{textContent:me?loc('{0} (you)',row.name):hidden?loc('Hidden player'):row.name}),line);
+      const nameEl=Object.assign(document.createElement('b'),{textContent:me?loc('{0} (you)',row.name):hidden?loc('Hidden player'):row.name});who.append(nameEl,line);
+      // Your own row drops "(you)" when it would cut the name off (the row's gold outline already says it's you).
+      if(me)requestAnimationFrame(()=>{if(nameEl.isConnected&&nameEl.scrollWidth>nameEl.clientWidth)nameEl.textContent=row.name});
       // One line, always (Paul 2026-11-18: with an avatar, "TROOP LV 13" broke onto a second line): shrink the text to fit instead.
       // Tighter letter spacing first, then a little smaller, then "LV 13" in place of "TROOP LV 13".
       requestAnimationFrame(()=>{const over=()=>line.isConnected&&line.scrollWidth>line.clientWidth;if(!over())return;line.style.letterSpacing='.02em';if(!over())return;
