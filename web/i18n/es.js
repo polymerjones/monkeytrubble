@@ -1213,4 +1213,12 @@ window.ES_TEXT={
   "Tap again to remove {0}":"Toca otra vez para quitar a {0}",
   "Block or report":"Bloquear o denunciar",
   "NEW: Shared Puzzles! Build a jigsaw together with a friend: pieces either of you find go into the same painting, and you both get the reward. Puzzles › SHARED.":"NUEVO: ¡Puzles compartidos! Haz un puzle con un amigo: las piezas que encuentre cualquiera de los dos van al mismo cuadro, y los dos recibís el premio. Puzles › COMPARTIDOS.",
+  "🧩 Your shared puzzle with {0} is complete!":"🧩 ¡Vuestro puzle compartido con {0} está completo!",
+  "🍌 {0} nudged you!":"🍌 ¡{0} te ha dado un toque!",
+  "Want to know when your friends need you?":"¿Quieres saber cuándo te necesitan tus amigos?",
+  "Want a heads-up from the monkeys?":"¿Quieres que los monos te avisen?",
+  "At most one message a day: friend requests, nudges and shared puzzle news, or a silly line from the monkeys. Never after you’ve played.":"Como mucho un mensaje al día: solicitudes de amistad, toques y novedades de puzles compartidos, o una tontería de los monos. Nunca después de haber jugado.",
+  "YES, PLEASE":"SÍ, GRACIAS",
+  "Friend requests, nudges and shared puzzle news now show on your name on the home screen. Tap it to go straight there.":"Las solicitudes de amistad, los toques y las novedades de puzles compartidos ahora aparecen en tu nombre en la pantalla de inicio. Tócalo para ir directo.",
+  "Fixed: Settings, the welcome screen and sideways play now fit iPhones with Display Zoom turned on, and the last puzzle piece’s flash no longer covers your PUZZLE COMPLETE reward.":"Arreglado: los Ajustes, la pantalla de bienvenida y el juego en horizontal ya caben en iPhones con el Zoom de pantalla activado, y el destello de la última pieza del puzle ya no tapa tu premio de PUZLE COMPLETO.",
 };
