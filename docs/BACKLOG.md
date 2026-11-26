@@ -8,7 +8,21 @@ The persistent backlog, kept by Claude (Master Development Directive, 2026-11-26
 - `[code]`: implemented, not yet verified.
 
 ## Release target: 1.1.3 (iOS build 21 / Android vc 30)
-**Status:** release candidate, on PolyiPhonePro (Debug build). Not pushed, not submitted.
+**Status:** release candidate, tagged `v1.1.3-rc` on main. Debug build on PolyiPhonePro.
+- **Prepared / uploaded / submitted / approved / live:** none of these yet. The archive and AAB are made after Paul's device checks.
+- **Store text:** docs/release/1.1.3-store-text.md (EN/ES; Play notes under 500 characters; no emoji for the App Store).
+- **Server:** the duo_place lock was run in production by Paul on 2026-11-26.
+
+## In progress: 1.1.4 real push (branch `push-1.1.4`)
+- **Built:**
+  - server SQL + Edge Function (on main, not deployed);
+  - iOS APNs registration (Push enabled on the App ID through automatic signing);
+  - Android FCM (off until google-services.json);
+  - page registration with no local/remote doubles;
+  - diagnostics.
+- **Tests:** tests/sql/check-push.mjs (32), tests/push/check-sender.mjs (23), web/tools/check-push-client.mjs (13). All pass.
+- **Waiting on Paul:** APNs key, Firebase project + google-services.json + service account, Supabase secrets, pg_cron/pg_net, approval to run the SQL and deploy. Steps: docs/proposals/push-notifications.md, "Go-live steps".
+- **Tournaments go live with 1.1.4**, once push is working and 1.1.4 builds are in the stores.
 
 ### What's in it
 | Item | Status |
@@ -57,7 +71,7 @@ The persistent backlog, kept by Claude (Master Development Directive, 2026-11-26
 | Christmas Joker isn't Christmas art | no art | Needs Paul #6 |
 
 ## Proposals and next projects (outside 1.1.3)
-1. **Real push notifications:** docs/proposals/push-notifications.md. Next up; needs Paul's Apple and Firebase keys.
+1. **Real push notifications:** built on branch push-1.1.4 (see In progress); needs Paul's keys and the go-live steps.
 2. **Troop Tournaments go live:** built. Needs SQL + a flag, ideally after push.
 3. **Staging Supabase project:** real two-client concurrency tests (duo_place race, tournament syncs).
 4. **Long-term puzzle progression:** a new painting per lap, seasonal sets, "golden" re-builds of finished puzzles for small XP. More puzzle paintings wanted.
