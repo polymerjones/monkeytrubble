@@ -25,14 +25,24 @@ import org.json.JSONObject
 class Reminders(private val context: Context, private val evaluate: (String) -> Unit, private val askPermission: () -> Unit) {
     private var pending: JSONObject? = null
 
+    private var lastDaily = false
+
     fun handle(message: JSONObject) {
-        if (message.optString("op") == "test") { test(message); return }
+        when (message.optString("op")) {
+            "test" -> { test(message); return }
+            "ready" -> return // taps are delivered by MainActivity once the page has loaded
+            "diag" -> { diag(); return }
+        }
         val ask = message.optString("op") == "ask"
         val on = message.optBoolean("on")
+        // Older pages send only `on` (the daily reminder); 1.1.3 pages also send daily and social (FRIEND NEWS).
+        lastDaily = if (message.has("daily")) message.optBoolean("daily") else on
+        val social = if (message.has("social")) message.optBoolean("social") else on
         val prefs = prefs(context)
+        prefs.edit { putBoolean(SOCIAL_KEY, social) }
         message.optString("time").takeIf { TIME.matches(it) }?.let { prefs.edit { putString(TIME_KEY, it) } }
-        // Friends news settings for when the alarm fires (ReminderReceiver), or none (reminders off, or no friends yet).
-        prefs.edit { message.optJSONObject("news")?.takeIf { on }?.let { putString(NEWS_KEY, it.toString()) } ?: remove(NEWS_KEY) }
+        // Friends news settings for when the alarm fires (ReminderReceiver), or none (friend news off, or no friends yet).
+        prefs.edit { message.optJSONObject("news")?.takeIf { on && social }?.let { putString(NEWS_KEY, it.toString()) } ?: remove(NEWS_KEY) }
         // A reminder still showing is stale once the game is open.
         NotificationManagerCompat.from(context).cancelAll()
         if (!on) {
@@ -91,8 +101,24 @@ class Reminders(private val context: Context, private val evaluate: (String) -> 
         }
     }
 
+    /** Dev tools DIAGNOSTICS: permission, the armed list and the last alarm-time news check (facts only: an armed alarm isn't a delivery). */
+    private fun diag() {
+        val prefs = prefs(context)
+        val out = JSONObject()
+            .put("permission", if (NotificationManagerCompat.from(context).areNotificationsEnabled()) "on" else "off or denied")
+            .put("pending", JSONArray().also { list ->
+                val items = try { JSONArray(prefs.getString(ITEMS_KEY, "[]")) } catch (_: Exception) { JSONArray() }
+                for (i in 0 until items.length()) items.optJSONObject(i)?.let { item ->
+                    if (item.optLong("at") > System.currentTimeMillis()) list.put(JSONObject().put("id", "slot-${item.optInt("slot")}")
+                        .put("at", java.util.Date(item.optLong("at")).toString()).put("kind", if (item.optBoolean("newsOnly")) "news?" else item.optString("kind", "daily")))
+                }
+            })
+        prefs.getString(LAST_KEY, null)?.let { out.put("last", JSONObject(it)) }
+        evaluate("window.__monkeyReminderDiag?.($out)")
+    }
+
     private fun finish(status: String, asked: Boolean) {
-        prefs(context).edit { putBoolean(ON_KEY, status == "on") }
+        prefs(context).edit { putBoolean(ON_KEY, status == "on" && lastDaily) }
         evaluate("window.__monkeyReminders?.({status:'$status',asked:$asked})")
     }
 
@@ -102,11 +128,20 @@ class Reminders(private val context: Context, private val evaluate: (String) -> 
         private const val TIME_KEY = "time"
         private const val ITEMS_KEY = "items"
         private const val NEWS_KEY = "news"
+        private const val SOCIAL_KEY = "social"
+        private const val LAST_KEY = "lastCheck"
         private const val CHANNEL = "reminders"
         private const val SLOTS = 7
         private val TIME = Regex("""^\d\d:\d\d$""")
         const val EXTRA_TITLE = "title"
         const val EXTRA_BODY = "body"
+        const val EXTRA_KIND = "kind"
+        const val EXTRA_NEWS_ONLY = "newsOnly"
+
+        /** The last alarm-time news check, for dev DIAGNOSTICS. */
+        fun record(context: Context, result: String, line: String? = null) {
+            prefs(context).edit { putString(LAST_KEY, JSONObject().put("at", java.util.Date().toString()).put("result", result).apply { line?.let { put("line", it) } }.toString()) }
+        }
 
         private fun prefs(context: Context) = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
@@ -115,14 +150,17 @@ class Reminders(private val context: Context, private val evaluate: (String) -> 
             val prefs = prefs(context)
             val on = if (prefs.contains(ON_KEY)) prefs.getBoolean(ON_KEY, false).toString() else "null"
             val time = prefs.getString(TIME_KEY, null)?.takeIf { TIME.matches(it) } ?: "19:00"
-            return "window.__monkeyRemind={on:$on,time:'$time'};"
+            val social = if (prefs.contains(SOCIAL_KEY)) prefs.getBoolean(SOCIAL_KEY, true).toString() else "null"
+            return "window.__monkeyRemind={on:$on,social:$social,time:'$time'};"
         }
 
-        private fun intent(context: Context, slot: Int, title: String = "", body: String = "") =
+        private fun intent(context: Context, slot: Int, title: String = "", body: String = "", kind: String = "daily", newsOnly: Boolean = false) =
             Intent(context, ReminderReceiver::class.java)
                 .setAction("com.paulfisher.monkeytrubble.REMINDER.$slot")
                 .putExtra(EXTRA_TITLE, title)
                 .putExtra(EXTRA_BODY, body)
+                .putExtra(EXTRA_KIND, kind)
+                .putExtra(EXTRA_NEWS_ONLY, newsOnly)
 
         /** Cancels every slot, then sets an alarm for each future item and keeps the list for a reboot. */
         fun arm(context: Context, items: JSONArray) {
@@ -138,7 +176,7 @@ class Reminders(private val context: Context, private val evaluate: (String) -> 
                 val at = item.optLong("at")
                 if (slot !in 0 until SLOTS || at <= now) continue
                 val pi = PendingIntent.getBroadcast(
-                    context, slot, intent(context, slot, item.optString("title"), item.optString("body")),
+                    context, slot, intent(context, slot, item.optString("title"), item.optString("body"), item.optString("kind", "daily"), item.optBoolean("newsOnly")),
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
                 )
                 alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
@@ -151,7 +189,16 @@ class Reminders(private val context: Context, private val evaluate: (String) -> 
          * quick my_news call (6s at most); if there's news, the reminder says that instead of its silly line. Same order as the iPhone:
          * a nudge, the shared puzzle, a friend request, a shared puzzle invite, being passed. Runs off the main thread.
          */
-        fun newsLine(context: Context, given: JSONObject? = null): String? {
+        fun newsLine(context: Context, given: JSONObject? = null): String? = news(context, given)?.first
+
+        /** The news line and where tapping it goes (duo, friend, leaders, tourney), or null. Records the result for DIAGNOSTICS. */
+        fun news(context: Context, given: JSONObject? = null): Pair<String, String>? {
+            val r = pick(context, given)
+            if (given == null) record(context, if (r == null) "no news (or no answer)" else "news found", r?.first)
+            return r
+        }
+
+        private fun pick(context: Context, given: JSONObject? = null): Pair<String, String>? {
             val cfg = given ?: try { JSONObject(prefs(context).getString(NEWS_KEY, null) ?: return null) } catch (_: Exception) { return null }
             val t = cfg.optJSONObject("t") ?: return null
             val key = cfg.optString("key")
@@ -173,17 +220,21 @@ class Reminders(private val context: Context, private val evaluate: (String) -> 
             n.optJSONArray("nudges")?.optJSONObject(0)?.let { nudge ->
                 val lines = t.optJSONArray("lines")
                 val line = lines?.optString(nudge.optInt("line"))?.ifEmpty { null } ?: lines?.optString(0).orEmpty()
-                return fill("nudge", nudge.optString("name"), line)
+                return fill("nudge", nudge.optString("name"), line)?.let { it to "friend" }
+            }
+            n.optJSONObject("tourney")?.let { t2 ->
+                if (t2.optInt("finished") > 0) fill("tourneyDone")?.let { return it to "tourney" }
+                if (t2.optInt("invites") > 0) fill("tourneyInvite", t2.optString("host", "?"))?.let { return it to "tourney" }
             }
             n.optJSONObject("duo")?.let { duo ->
-                if (duo.optBoolean("done")) return fill("duoDone", duo.optString("name"))
-                if (duo.optInt("found") + duo.optInt("placed") > 0) return fill("duo", duo.optString("name"))
+                if (duo.optBoolean("done")) return fill("duoDone", duo.optString("name"))?.let { it to "duo" }
+                if (duo.optInt("found") + duo.optInt("placed") > 0) return fill("duo", duo.optString("name"))?.let { it to "duo" }
             }
             if (n.optInt("requests") > 0) {
-                return n.optJSONArray("request_names")?.optString(0)?.ifEmpty { null }?.let { fill("request", it) } ?: fill("requestAny")
+                return (n.optJSONArray("request_names")?.optString(0)?.ifEmpty { null }?.let { fill("request", it) } ?: fill("requestAny"))?.let { it to "friend" }
             }
-            if (n.optInt("duo_invites") > 0) return fill("duoInvite")
-            n.optJSONArray("passed")?.optJSONObject(0)?.let { return fill("passed", it.optString("name")) }
+            if (n.optInt("duo_invites") > 0) return fill("duoInvite")?.let { it to "duo" }
+            n.optJSONArray("passed")?.optJSONObject(0)?.let { return fill("passed", it.optString("name"))?.let { l -> l to "leaders" } }
             return null
         }
 
@@ -192,7 +243,7 @@ class Reminders(private val context: Context, private val evaluate: (String) -> 
             arm(context, try { JSONArray(saved) } catch (_: Exception) { return })
         }
 
-        fun post(context: Context, title: String, body: String) {
+        fun post(context: Context, title: String, body: String, kind: String = "daily") {
             val manager = NotificationManagerCompat.from(context)
             if (!manager.areNotificationsEnabled()) return
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -202,7 +253,7 @@ class Reminders(private val context: Context, private val evaluate: (String) -> 
             }
             val open = PendingIntent.getActivity(
                 context, 0,
-                Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP),
+                Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP).putExtra(EXTRA_KIND, kind),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
             val notification = NotificationCompat.Builder(context, CHANNEL)
@@ -227,10 +278,17 @@ class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val title = intent.getStringExtra(Reminders.EXTRA_TITLE).orEmpty()
         val body = intent.getStringExtra(Reminders.EXTRA_BODY).orEmpty()
+        val kind = intent.getStringExtra(Reminders.EXTRA_KIND) ?: "daily"
+        val newsOnly = intent.getBooleanExtra(Reminders.EXTRA_NEWS_ONLY, false)
         // The news check needs the network, so it runs on its own thread while the broadcast is kept alive (goAsync, ~10s budget).
+        // A news-only slot (daily reminder off, FRIEND NEWS on) shows nothing when there's no news.
         val result = goAsync()
         Thread {
-            try { Reminders.post(context, title, Reminders.newsLine(context) ?: body) } finally { result.finish() }
+            try {
+                val news = Reminders.news(context)
+                if (news != null) Reminders.post(context, title, news.first, news.second)
+                else if (!newsOnly) Reminders.post(context, title, body, kind)
+            } finally { result.finish() }
         }.start()
     }
 }

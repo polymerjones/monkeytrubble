@@ -117,19 +117,32 @@ class MainActivity : ComponentActivity() {
         }
 
         friendLink = friendCode(intent)
+        tapKind = intent?.getStringExtra(Reminders.EXTRA_KIND)
         webView.loadUrl("https://${WebViewAssetLoader.DEFAULT_DOMAIN}/web/index.html")
         ads.gatherConsent()
     }
 
     /** Friend links (monkeytrubble.app/f/CODE, 2026-11-17): the code waits until the page has loaded, then __friendLink opens the card. */
     private var friendLink: String? = null
+    private var friendOpts = "{}"
     private var pageLoaded = false
+    /** A tapped notification's screen (1.1.3): duo, friend, leaders, tourney; daily opens nothing special. */
+    private var tapKind: String? = null
+
+    private fun deliverTap() {
+        val kind = tapKind?.takeIf { it != "daily" && it.all(Char::isLetter) } ?: run { tapKind = null; return }
+        if (!pageLoaded) return
+        tapKind = null
+        webView.postDelayed({ webView.evaluateJavascript("window.__monkeyOpen?.('$kind')", null) }, 1500)
+    }
 
     private fun friendCode(intent: Intent?): String? {
         val uri = intent?.data ?: return null
         if (uri.host != "monkeytrubble.app") return null
         val parts = uri.pathSegments
         if (parts.size < 2 || parts[0] != "f") return null
+        // 1.1.3 invite links: /f/CODE?duo=1 (shared puzzle) or ?tourney=1 (tournament).
+        friendOpts = if (uri.getQueryParameter("duo") != null) "{duo:true}" else if (uri.getQueryParameter("tourney") != null) "{tourney:true}" else "{}"
         return parts[1].uppercase(Locale.US).filter { it in 'A'..'Z' || it in '0'..'9' }.takeIf { it.length == 6 }
     }
 
@@ -138,12 +151,13 @@ class MainActivity : ComponentActivity() {
         if (!pageLoaded) return
         friendLink = null
         // A beat after load, like the iPhone: the page has set __friendLink and waits for the player's name itself.
-        webView.postDelayed({ webView.evaluateJavascript("window.__friendLink?.('$code')", null) }, 1000)
+        webView.postDelayed({ webView.evaluateJavascript("window.__friendLink?.('$code',$friendOpts)", null) }, 1000)
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         friendCode(intent)?.let { friendLink = it; deliverFriendLink() }
+        intent.getStringExtra(Reminders.EXTRA_KIND)?.let { tapKind = it; deliverTap() }
     }
 
     override fun onResume() {
@@ -246,6 +260,7 @@ class MainActivity : ComponentActivity() {
         override fun onPageFinished(view: WebView, url: String) {
             pageLoaded = true
             deliverFriendLink()
+            deliverTap()
             checkSafeArea()
             ads.announcePrivacyOptions()
         }

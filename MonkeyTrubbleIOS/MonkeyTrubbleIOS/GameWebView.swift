@@ -466,12 +466,16 @@ final class FriendLinks {
     static let shared = FriendLinks()
     private weak var webView: WKWebView?
     private var pending: String?
+    private var opts = "{}"
 
     func open(_ url: URL) {
         let parts = url.pathComponents
         guard parts.count >= 3, parts[1] == "f" else { return }
         let code = parts[2].uppercased().filter { $0.isLetter || $0.isNumber }
         guard code.count == 6, code.allSatisfy(\.isASCII) else { return }
+        // 1.1.3 invite links: /f/CODE?duo=1 (shared puzzle) or ?tourney=1 (tournament).
+        let query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.map(\.name) ?? []
+        opts = query.contains("duo") ? "{duo:true}" : query.contains("tourney") ? "{tourney:true}" : "{}"
         pending = code
         deliver()
     }
@@ -486,7 +490,7 @@ final class FriendLinks {
         pending = nil
         // The page sets __friendLink while it starts; a beat later it's there and can wait for the player's name itself.
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            webView.evaluateJavaScript("window.__friendLink?.('\(code)')")
+            webView.evaluateJavaScript("window.__friendLink?.('\(code)',\(self.opts))")
         }
     }
 }

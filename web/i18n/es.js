@@ -1069,6 +1069,17 @@ window.ES_TEXT={
   "Puzzles got a snappier feel: drag each piece home and it slams into place. Open them mid-level with the 🧩 too.":"Los puzles se sienten mejor: arrastra cada pieza a su sitio y encaja de golpe. También puedes abrirlos en mitad de un nivel con el 🧩.",
   "Some treasure chests are stubborn. Keep tapping!":"Algunos cofres del tesoro son tercos. ¡Sigue tocando!",
   "Monkey Trubble now plays on iPad, with every card bigger on the big screen.":"Monkey Trubble ya se juega en iPad, con todas las cartas más grandes en la pantalla grande.",
+  // 1.1.3 friend news
+  "FRIEND NEWS":"NOTICIAS DE AMIGOS",
+  "Friend requests, nudges, shared puzzles and tournaments, inside your daily message (or on their own if that’s off). Without a push server they can arrive late.":"Solicitudes de amistad, toques, puzzles compartidos y torneos, dentro de tu mensaje diario (o solos si ese está apagado). Sin un servidor de avisos pueden llegar tarde.",
+  "Off. Friend news waits until you open the game.":"Apagado. Las noticias de amigos esperan a que abras el juego.",
+  "Want to hear when they answer?":"¿Quieres saber cuándo te responden?",
+  "Friend news comes as one message a day at most: invites, answers and finished puzzles. You can turn it off in Settings.":"Las noticias de amigos llegan como mucho en un mensaje al día: invitaciones, respuestas y puzzles terminados. Puedes apagarlas en Ajustes.",
+  "🏆 {0} invited you to a Troop Tournament!":"🏆 ¡{0} te invitó a un Torneo de la Tropa!",
+  "🏆 Your Troop Tournament is over. See who won!":"🏆 Tu Torneo de la Tropa terminó. ¡Mira quién ganó!",
+  "SEND AN INVITE IN A MESSAGE":"ENVIAR UNA INVITACIÓN POR MENSAJE",
+  "Join my Troop Tournament in Monkey Trubble! 🏆 Tap the link to join.":"¡Únete a mi Torneo de la Tropa en Monkey Trubble! 🏆 Toca el enlace para unirte.",
+  "Build a Monkey Trubble puzzle with me! 🧩 Tap the link to start.":"¡Arma un puzzle de Monkey Trubble conmigo! 🧩 Toca el enlace para empezar.",
   // 2026-11-26 fixes
   "Fixed: a card could get stuck, drawn big over the board, after touching it with a second finger mid-drag or switching apps.":"Arreglado: una carta podía quedarse atascada, en grande sobre el tablero, al tocarla con un segundo dedo mientras la arrastrabas o al cambiar de app.",
   "Shared Puzzles: start a new one right after finishing, no restart needed, and shared pieces turn up more often.":"Puzzles compartidos: empieza uno nuevo nada más terminar, sin reiniciar la app, y las piezas compartidas aparecen más a menudo.",

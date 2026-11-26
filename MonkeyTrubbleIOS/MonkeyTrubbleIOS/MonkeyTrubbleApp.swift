@@ -12,6 +12,8 @@ struct MonkeyTrubbleApp: App {
         MetricsStore.shared.start()
         // Friends news in the daily reminder: the background refresh handler (Reminders.swift).
         NewsRefresh.register()
+        // Notification taps open the right screen, including a tap that launches the app (Reminders.swift).
+        NotificationTaps.shared.start()
     }
 
     // The game's audio session: ambient, mixing with other apps. Re-applied after an ad, an interruption or a return to the app,
