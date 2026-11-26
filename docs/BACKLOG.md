@@ -29,9 +29,8 @@ The persistent backlog, kept by Claude (Master Development Directive, 2026-11-26
 | Public website can't enter dev mode | `[sim]` |
 
 ## Needs Paul
-1. **Run SQL (before 1.1.3 ships):** `web/supabase/migrations/2026-11-26-duo-place-lock.sql`. It's tested on PGlite against the production schema and old clients are unaffected. Run the SELECT, then the whole file.
-2. **Cleanup SQL (my test mistake, 2026-11-26):** one test profile named "LabPaul" (score 0, not on the board) was posted to production before the test harness blocked Supabase.
-   `delete from public.players where name = 'LabPaul' and score = 0;`
+1. ~~Run duo_place lock SQL~~: run by Paul 2026-11-26.
+2. ~~LabPaul cleanup~~: run by Paul 2026-11-26.
 3. ~~Ice Age crops~~: approved and applied 11-26.
 4. **Tournaments go live:** after you've played them in the lab, run `web/supabase/migrations/2026-11-26-tournaments.sql`, then I flip `TOURNEYS_LIVE`.
 5. **Device tests:** see "Testing owed".
@@ -54,7 +53,7 @@ The persistent backlog, kept by Claude (Master Development Directive, 2026-11-26
 | Few shared pieces (11-25) | stale skip, and dropped popups | Fixed `[sim]`, chance 60% |
 | Power-ups show 1 not 40s (11-25) | display only | Fixed `[sim]` |
 | Card stuck big over board (L135) | orphaned drag ghost (second finger) | Fixed `[sim]` |
-| Shared puzzle may never finish | `duo_place` race | SQL ready (Needs Paul #1) |
+| Shared puzzle may never finish | `duo_place` race | Fixed: SQL run by Paul 2026-11-26 |
 | Christmas Joker isn't Christmas art | no art | Needs Paul #6 |
 
 ## Proposals and next projects (outside 1.1.3)
@@ -86,6 +85,6 @@ The persistent backlog, kept by Claude (Master Development Directive, 2026-11-26
 - [ ] RELEASE_NOTES version = MARKETING_VERSION = versionName (check-release)
 - [ ] `sw.js` CACHE bumped
 - [ ] Release bundle has no web/dev (iOS script phase; Android per-variant bundle)
-- [ ] Pending SQL run by Paul, and older clients still work
+- [x] Pending SQL run by Paul (duo_place lock, 2026-11-26); tournaments SQL waits for go-live
 - [ ] PolyiPhonePro device test and Android emulator smoke test
 - [ ] Paul authorizes push and store submission
