@@ -19,10 +19,12 @@ The persistent backlog, kept by Claude (Master Development Directive, 2026-11-26
 | Booster badge = free + bank | `[sim]` |
 | Drag ghost (stuck big card) fix | `[sim]`: second finger, hide, blur, pagehide, rotate, puzzles open, rapid repeats |
 | Streak milestone chests 14/30/60/100 (retroactive, once, union-merged) | `[sim]` |
-| FRIEND NEWS setting, news straight into today's reminder, taps open the right screen, invite links, one-time "hear when they answer?" ask, DIAGNOSTICS | `[sim]` page + both apps compile; **device test owed** |
+| FRIEND NEWS setting, news straight into today's reminder, taps open the right screen, invite links, one-time "hear when they answer?" ask, DIAGNOSTICS | `[sim]`; Android tap routing verified on emulator (cold intent → waits for welcome → FRIENDS); **iPhone test owed** |
 | SEND AN INVITE IN A MESSAGE (share sheet), `/f/CODE?duo=1` | `[code]`, **device test owed** |
 | RATE MONKEY TRUBBLE button (voluntary only) | `[code]`, **device test owed** |
 | What's New shows the installed version; check-release | `[sim]` |
+| Ice Age thumbs re-framed on each face (Paul approved 11-26; sources and heroes untouched) | `[sim]`, on iPhone |
+| Tournament polish: compact layout for short and sideways screens, side-by-side celebration, "waiting for friends", plurals | `[sim]` at 932×430, 614×320, 320×693, 375×667, 430×932, iPad |
 | Release builds strip dev/lab, tools, SQL and concept art | `[sim]`: iOS Release bundle and Android release assets inspected |
 | Public website can't enter dev mode | `[sim]` |
 
@@ -30,7 +32,7 @@ The persistent backlog, kept by Claude (Master Development Directive, 2026-11-26
 1. **Run SQL (before 1.1.3 ships):** `web/supabase/migrations/2026-11-26-duo-place-lock.sql`. It's tested on PGlite against the production schema and old clients are unaffected. Run the SELECT, then the whole file.
 2. **Cleanup SQL (my test mistake, 2026-11-26):** one test profile named "LabPaul" (score 0, not on the board) was posted to production before the test harness blocked Supabase.
    `delete from public.players where name = 'LabPaul' and score = 0;`
-3. **Ice Age crops:** pick from `~/Downloads/MonkeyTrubble-IceAge-Review/` (look at `actual-size-current-vs-new.jpg` first). Thumbs are regenerated only after your OK.
+3. ~~Ice Age crops~~: approved and applied 11-26.
 4. **Tournaments go live:** after you've played them in the lab, run `web/supabase/migrations/2026-11-26-tournaments.sql`, then I flip `TOURNEYS_LIVE`.
 5. **Device tests:** see "Testing owed".
 6. **Christmas Joker:** Christmas boards show the regular/chapter Joker (no Christmas Joker art). Paint one, or reuse Santa POLY?
