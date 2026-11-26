@@ -83,6 +83,8 @@ build_portrait "$HW/jokerhowler-real.png" halloween-joker
 # The art is small full-body figures, so the board thumb is a zoomed 2:3 window on head and torso (build_zoom); the hero keeps the
 # whole picture. Columns: name, centre x and top of the window (fractions of the picture), zoom. Close-ups stay at zoom 1.
 # 2026-11-18 (Paul: better cropping, centred): each window re-aimed at the card's face, zoom 1.45 -> 1.8 (Atlas Sentinel 2.3).
+# 2026-11-26 (Paul approved the face-centred review sheet): face centred, eyes ~33-37% down, head ~40% of the card; zoom per card
+# 1.9-2.8 (Atlas Sentinel 3.3, a small figure). Close-ups (01, 28, joker) unchanged.
 build_zoom() {
   W=$(sips -g pixelWidth "$1" | awk '/pixelWidth/{print $2}'); H=$(sips -g pixelHeight "$1" | awk '/pixelHeight/{print $2}')
   set -- "$1" "$2" $(awk -v W="$W" -v H="$H" -v cx="$3" -v top="$4" -v z="$5" 'BEGIN{w=int(W/z);h=int(H/z);x=int(cx*W-w/2);y=int(top*H);
@@ -94,35 +96,35 @@ build_zoom() {
 while read -r name cx top zoom; do
   build_zoom "../source/art/iceage/$name.jpg" "$name" "$cx" "$top" "$zoom"
 done <<'EOF_ICE'
-iceage-01-ember-cub 0.5 0.0 1.0
-iceage-02-mammoth-stalker 0.45 0 1.8
-iceage-03-dragon-tooth 0.466 0 1.8
-iceage-04-dragon-jaw 0.479 0 1.8
-iceage-05-whiteout-assassin 0.5 0 1.8
-iceage-06-glacier-warden 0.5 0 1.8
-iceage-07-avalanche 0.63 0 1.8
-iceage-08-frostbow-hunter 0.4 0 1.8
-iceage-09-ashfall-chieftain 0.446 0 1.8
-iceage-10-snowcloak-lancer 0.5 0 1.8
-iceage-11-frostbeard-shaman 0.498 0.001 1.8
-iceage-12-golden-snow-king 0.52 0 1.8
-iceage-13-snow-ronin 0.555 0 1.8
-iceage-14-atlas-sentinel 0.5 0 2.3
-iceage-15-flint-knapper 0.446 0.005 1.8
-iceage-16-black-ice-prowler 0.5 0 1.8
-iceage-17-white-mane-warlord 0.416 0 1.8
-iceage-18-river-sage 0.436 0 1.8
-iceage-19-river-seer 0.436 0 1.8
-iceage-20-blood-oath-raider 0.47 0 1.8
-iceage-21-blood-oath-ravager 0.504 0 1.8
-iceage-22-bonefire-shaman 0.52 0.005 1.8
-iceage-23-spear-runner 0.466 0.025 1.8
-iceage-24-berserker 0.486 0 1.8
-iceage-25-skull-taker 0.436 0 1.8
-iceage-26-permafrost-titan 0.5 0 1.8
-iceage-27-permafrost-tyrant 0.5 0 1.8
-iceage-28-first-selfie 0.5 0.0 1.0
-iceage-joker 0.5 0.0 1.0
+iceage-01-ember-cub 0.500 0.000 1.000
+iceage-02-mammoth-stalker 0.360 0.000 2.270
+iceage-03-dragon-tooth 0.520 0.063 2.550
+iceage-04-dragon-jaw 0.565 0.047 2.470
+iceage-05-whiteout-assassin 0.470 0.076 2.550
+iceage-06-glacier-warden 0.510 0.081 2.800
+iceage-07-avalanche 0.645 0.043 2.800
+iceage-08-frostbow-hunter 0.430 0.044 2.800
+iceage-09-ashfall-chieftain 0.378 0.040 2.780
+iceage-10-snowcloak-lancer 0.490 0.072 2.760
+iceage-11-frostbeard-shaman 0.525 0.057 2.250
+iceage-12-golden-snow-king 0.465 0.073 1.900
+iceage-13-snow-ronin 0.510 0.088 2.100
+iceage-14-atlas-sentinel 0.460 0.028 3.300
+iceage-15-flint-knapper 0.530 0.053 2.330
+iceage-16-black-ice-prowler 0.535 0.111 2.210
+iceage-17-white-mane-warlord 0.550 0.112 2.000
+iceage-18-river-sage 0.480 0.044 2.330
+iceage-19-river-seer 0.460 0.031 2.100
+iceage-20-blood-oath-raider 0.460 0.042 2.800
+iceage-21-blood-oath-ravager 0.600 0.076 2.800
+iceage-22-bonefire-shaman 0.540 0.097 2.620
+iceage-23-spear-runner 0.390 0.102 2.200
+iceage-24-berserker 0.420 0.000 2.300
+iceage-25-skull-taker 0.490 0.083 2.100
+iceage-26-permafrost-titan 0.580 0.009 2.800
+iceage-27-permafrost-tyrant 0.520 0.029 2.800
+iceage-28-first-selfie 0.500 0.000 1.000
+iceage-joker 0.500 0.000 1.000
 EOF_ICE
 # Kevin Kelly: flat 2:3 Grok render (1152x1728), so a plain resize.
 build "$RAW/kevin kelly.jpg" kevin-kelly
