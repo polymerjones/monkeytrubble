@@ -1080,6 +1080,11 @@ window.ES_TEXT={
   "SEND AN INVITE IN A MESSAGE":"ENVIAR UNA INVITACIÓN POR MENSAJE",
   "Join my Troop Tournament in Monkey Trubble! 🏆 Tap the link to join.":"¡Únete a mi Torneo de la Tropa en Monkey Trubble! 🏆 Toca el enlace para unirte.",
   "Build a Monkey Trubble puzzle with me! 🧩 Tap the link to start.":"¡Arma un puzzle de Monkey Trubble conmigo! 🧩 Toca el enlace para empezar.",
+  // 1.1.3 streak milestones
+  "🔥 {0}-DAY STREAK MILESTONE":"🔥 HITO DE RACHA DE {0} DÍAS",
+  "🎉 {0} days! A milestone chest is waiting for you.":"🎉 ¡{0} días! Te espera un cofre de hito.",
+  "Tomorrow: your {0}-day milestone chest!":"Mañana: ¡tu cofre del hito de {0} días!",
+  "{1} days to your {0}-day milestone chest.":"Faltan {1} días para tu cofre del hito de {0} días.",
   // 2026-11-26 fixes
   "Fixed: a card could get stuck, drawn big over the board, after touching it with a second finger mid-drag or switching apps.":"Arreglado: una carta podía quedarse atascada, en grande sobre el tablero, al tocarla con un segundo dedo mientras la arrastrabas o al cambiar de app.",
   "Shared Puzzles: start a new one right after finishing, no restart needed, and shared pieces turn up more often.":"Puzzles compartidos: empieza uno nuevo nada más terminar, sin reiniciar la app, y las piezas compartidas aparecen más a menudo.",

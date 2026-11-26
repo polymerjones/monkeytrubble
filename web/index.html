@@ -2131,7 +2131,8 @@
       const streak=[lead.streak,other.streak].filter(Boolean).sort((p,q)=>(q.lastDate||'').localeCompare(p.lastDate||'')||(q.count||0)-(p.count||0))[0];
       return{...other,...lead,level:Math.max(lead.level||1,other.level||1),bestTimes:best(lead.bestTimes,other.bestTimes),bestTimesEasy:best(lead.bestTimesEasy,other.bestTimesEasy),
         streak:streak||lead.streak,player:lead.player||other.player||null,stats:{...other.stats,...lead.stats,xp:Math.max(lead.stats?.xp||0,other.stats?.xp||0)},pendingSync:!!(lead.pendingSync||other.pendingSync),
-        bank:Object.fromEntries(['undo','shuffle','hint'].map(k=>[k,Math.max(lead.bank?.[k]||0,other.bank?.[k]||0)]))}}
+        bank:Object.fromEntries(['undo','shuffle','hint'].map(k=>[k,Math.max(lead.bank?.[k]||0,other.bank?.[k]||0)])),
+        milestones:[...new Set([...(lead.milestones||[]),...(other.milestones||[])])]}}
     function loadProgress(){let saved=LAB?null:window.__monkeySave;if(saved==null)try{saved=localStorage.getItem(SAVE_KEY)}catch{}saved=mergeSaves(saved,LAB?null:window.__monkeyCloudSave);
       // A dev "Reset to new player" rides in the save (and iCloud), so a store build has no UNDO RESET for it. Store builds undo it
       // themselves: the backup comes back, or the flag just drops (Paul 2026-11-18: installed 1.1 from the App Store, stuck in DEV RESET).
@@ -5007,13 +5008,20 @@ void main() {
       for(let i=0;i<n;i++){const w=BOOSTERS.map(k=>1/(1+(b[k]||0)+(out[k]||0)));let r=Math.random()*w.reduce((a,x)=>a+x,0),k=0;while(k<w.length-1&&r>w[k]){r-=w[k];k++}out[BOOSTERS[k]]=(out[BOOSTERS[k]]||0)+1}
       return{boosters:out,piece:Math.random()<.5&&currentPuzzle()!=null}}
     // Every 2nd counted win, the first one at level 2's win, and always on the 7th streak day (a bigger chest). Never tutorial or dev.
+    // Streak milestones (1.1.3, Paul approved 14/30/60/100): a one-time milestone chest on top of the usual 7-day one: a big chest plus
+    // extra boosters (and XP at 100). progress.milestones lists the ones paid out; it is merged as a union across devices (mergeSaves),
+    // so a milestone is never paid twice. Players who passed a milestone before 1.1.3 get it (all of them at once) on their next first
+    // clear of the day. Recorded when the chest is collected, so quitting mid-scene doesn't lose it.
+    const STREAK_MILESTONES=[{days:14,each:0,xp:0},{days:30,each:1,xp:0},{days:60,each:2,xp:0},{days:100,each:3,xp:250}];
+    const milestonesDue=count=>STREAK_MILESTONES.filter(m=>m.days<=count&&!(progress.milestones||[]).includes(m.days));
     function chestDue(r){if(state.tutorial||r.dev)return null;const c=progress.chest??={wins:0};c.wins++;saveProgress();
+      if(r.firstToday){const ms=milestonesDue(r.streak);if(ms.length)return{big:true,milestones:ms}}
       if(r.firstToday&&r.streak%7===0)return{big:true};if(!c.first&&r.level>=2){c.first=true;saveProgress();return{}}return c.wins%2===0?{}:null}
-    function playChestScene({big=false,preview=false}={}){return new Promise(async resolve=>{
+    function playChestScene({big=false,preview=false,milestones=null}={}){return new Promise(async resolve=>{
       const frames=await loadChestFrames();if(!frames){resolve();return}const modeBefore=perf.states.mode;perf.state('mode','chest');
-      const scene=$('#chestScene'),cv=$('#csCanvas'),wrap=$('#csWrap'),hint=$('#csHint'),title=$('#csTitle'),still=reduceMotion.matches,roll=rollChest(big),dust=dustCanvas();
+      const scene=$('#chestScene'),cv=$('#csCanvas'),wrap=$('#csWrap'),hint=$('#csHint'),title=$('#csTitle'),still=reduceMotion.matches,roll=rollChest(big),dust=dustCanvas();if(milestones)for(const m of milestones)for(const k of BOOSTERS)if(m.each)roll.boosters[k]=(roll.boosters[k]||0)+m.each;const msXp=(milestones||[]).reduce((a,m)=>a+m.xp,0);
       cv.width=CHEST.w;cv.height=CHEST.h;const cx=cv.getContext('2d');let shown=-1;const draw=i=>{i=Math.max(0,Math.min(CHEST.frames-1,i));if(i===shown)return;shown=i;cx.clearRect(0,0,CHEST.w,CHEST.h);cx.drawImage(frames[i],0,0,CHEST.w,CHEST.h)};draw(0);
-      $('#csKicker').textContent=loc(big?'STREAK CHEST':'TREASURE CHEST');title.textContent=loc('Tap the chest!');hint.textContent=loc('TAP!');hint.classList.add('pulse');$('#csRewards').replaceChildren();$('#csActions').replaceChildren();$('#csNote').textContent='';
+      $('#csKicker').textContent=milestones?loc('🔥 {0}-DAY STREAK MILESTONE',milestones.at(-1).days):loc(big?'STREAK CHEST':'TREASURE CHEST');title.textContent=loc('Tap the chest!');hint.textContent=loc('TAP!');hint.classList.add('pulse');$('#csRewards').replaceChildren();$('#csActions').replaceChildren();$('#csNote').textContent='';
       bakeRays();const rays=$('#csRays');if(RAY_IMAGES.win)rays.src=RAY_IMAGES.win;rays.style.opacity=0;
       scene.hidden=false;gcAccessPoint();dust.style.zIndex=5400;
       const center=()=>{const b=wrap.getBoundingClientRect();return[b.left+b.width/2,b.top+b.height*.55]};
@@ -5048,7 +5056,7 @@ void main() {
       const showRewards=()=>{if(rewardsShown)return;rewardsShown=true;title.textContent=loc('YOU FOUND');const box=$('#csRewards'),items=[];
         const item=(iconHtml,count,label)=>{const el=document.createElement('div');el.className='cs-reward';const icon=document.createElement('span');icon.className='icon';icon.innerHTML=iconHtml;el.append(icon,Object.assign(document.createElement('b'),{textContent:`×${count}`}),label);return el};
         for(const [k,n] of Object.entries(roll.boosters))items.push(item($(`#${k} .booster-icon`)?.innerHTML||'',n,loc(BOOSTER_NAMES[k])));
-        if(roll.piece)items.push(item(PIECE_ICON,1,loc('PUZZLE PIECE')));
+        if(roll.piece)items.push(item(PIECE_ICON,1,loc('PUZZLE PIECE')));if(msXp)items.push(item('⭐',msXp,'XP'));
         box.replaceChildren(...items);const [cx0,cy0]=center();
         items.forEach((el,i)=>{if(still)return;const b=el.getBoundingClientRect(),dx=cx0-(b.left+b.width/2),dy=cy0-(b.top+b.height/2);
           el.animate([{transform:`translate(${dx}px,${dy}px) scale(.2)`,opacity:0},{transform:`translate(${dx*.4}px,${dy*.5-60}px) scale(1.15)`,opacity:1,offset:.6},{transform:'none',opacity:1}],{duration:560,delay:i*140,easing:'cubic-bezier(.2,.8,.2,1)',fill:'backwards'});
@@ -5060,7 +5068,8 @@ void main() {
         for(const b of [x2,one]){b.disabled=true;if(!still)b.animate([{opacity:0,transform:'translateY(10px)'},{opacity:1,transform:'none'}],{duration:260,easing:'cubic-bezier(.2,.8,.2,1)'});later(()=>{b.disabled=false},420)}
         x2.onclick=async()=>{x2.disabled=one.disabled=true;const {status}=await requestReward('chest2x');if(status==='completed'||status==='unavailable')collect(2);else{$('#csNote').textContent=loc('The video didn’t finish. Try again?');x2.disabled=one.disabled=false}};
         one.onclick=()=>collect(1)};
-      const collect=mult=>{if(!preview){const b=progress.bank??={undo:0,shuffle:0,hint:0};for(const [k,n] of Object.entries(roll.boosters))b[k]=(b[k]||0)+n*mult;saveProgress()}
+      const collect=mult=>{if(!preview){const b=progress.bank??={undo:0,shuffle:0,hint:0};for(const [k,n] of Object.entries(roll.boosters))b[k]=(b[k]||0)+n*mult;
+          if(milestones){progress.milestones=[...new Set([...(progress.milestones||[]),...milestones.map(m=>m.days)])];if(msXp){progress.stats.xp+=msXp;setTimeout(syncProfile,1500)}}saveProgress()}
         playSound('comboSting',{volume:.6});haptic('pairCleared');if(state.tiles?.length)render();
         const got=!preview&&roll.piece?awardPiece():null,[px,py]=center();done();if(got)setTimeout(()=>pieceShow(got,px,py),300)};
       scene.onpointerdown=e=>{if(e.target.closest('button'))return;if(!opened){taps++;hint.classList.remove('pulse');if(taps>=need)open();else{if(taps===1)title.textContent=loc('Keep tapping!');rattle(1+(taps-1)/Math.max(1,need-2))}}else if(!rewardsShown)showRewards()};
@@ -5072,6 +5081,10 @@ void main() {
     // The 7th day of the streak week shows Paul's jungle chest (was 🎁).
     const chestIcon=()=>Object.assign(document.createElement('img'),{className:'ss-chest',src:'art/chest-icon.png',alt:''});
     function thawButton(){const b=document.createElement('button');b.className='action primary ad-btn';b.innerHTML=`<svg class="ad-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>${loc('THAW IT')} <small>${loc(adsShown()?'(Watch Ad)':'(Free)')}</small>`;return b}
+    // The streak scene's line: a milestone reached today (its chest comes next), or a heads-up when one is 1-3 days away.
+    function streakSceneLine(to){const due=milestonesDue(to).at(-1);if(due)return loc('🎉 {0} days! A milestone chest is waiting for you.',due.days);
+      const next=STREAK_MILESTONES.find(m=>m.days>to&&!(progress.milestones||[]).includes(m.days));if(next&&next.days-to<=3)return loc(next.days-to===1?'Tomorrow: your {0}-day milestone chest!':'{1} days to your {0}-day milestone chest.',next.days,next.days-to);
+      return loc(STREAK_LINES[rand(STREAK_LINES.length)])}
     function playStreakScene({from,to,frozen=null,welcome=false,preview=false,next=false}){if(FX.streakLite)bakeStreakRays();return new Promise(resolve=>{
       const scene=$('#streakScene'),flame=$('#ssFlame'),num=$('#ssNum'),ice=$('#ssIce'),glow=$('#ssGlow'),emblem=$('#ssEmblem'),actions=$('#ssActions'),still=reduceMotion.matches;
       // reward: the reward sound, played as the final button becomes tappable (Paul: so it doesn't cover the flame igniting).
@@ -5107,7 +5120,7 @@ void main() {
             scene.classList.remove('frozen');if(!preview)thawStreak(frozen,!welcome);from=frozen.count;to=preview?frozen.count+1:progress.streak.count;await nap(500);
             if(welcome){num.textContent=to;num.classList.add('gold');flame.classList.add('lit');glow.style.opacity=1;$('#ssRays').style.opacity=.6;setText(loc('STREAK THAWED'),loc('{0}-day streak saved!',to),loc('Clear a level today to keep it lit.'));const ok=btn(loc('LET’S GO!'));actions.append(ok);cta(ok);ok.onclick=done;return}}}
         // Celebration: cold flame and the old count; the emblem wobbles as the bongo builds; then it catches.
-        num.textContent=from||0;setText(loc(to===1?'NEW STREAK':'DAILY STREAK'),'',loc(STREAK_LINES[rand(STREAK_LINES.length)]));$('#ssTitle').style.opacity=0;
+        num.textContent=from||0;setText(loc(to===1?'NEW STREAK':'DAILY STREAK'),'',streakSceneLine(to));$('#ssTitle').style.opacity=0;
         await nap(350);anim(emblem,[0,-5,5,-4,4,-2,0].map(d=>({transform:`rotate(${d}deg)`})),{duration:900,easing:'ease-in-out'});
         {let build=STREAK_BUILD[trial('streakBuild')]||STREAK_BUILD.bongo;if(build.pick)build=build.pick;if(!skipped)build.start?.();for(let i=0;i<3&&!skipped;i++){build.beat?.(i);const [x,y]=center();streakSparks(x+(Math.random()-.5)*80,y+30,5+i*2);await nap(300)}}
         // The climax grows with the streak: k runs 0 (day 1) to 1 (day 30+) and scales the flash, the shake, the rays and the sparks.
