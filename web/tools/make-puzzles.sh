@@ -21,6 +21,9 @@ build "$SRC/ch9_thelosttemple.png" ch9
 build "$SRC/ch10_kingdomofthecanopy.png" ch10
 sips -s format jpeg -c 1728 972 "$SRC/ch11_iceage.png" --out "$TMP/ch11.jpg" >/dev/null
 build "$TMP/ch11.jpg" ch11
+# Chapter 11's second painting (Paul 2026-11-26), the same centred 9:16 cut.
+sips -s format jpeg -c 1728 972 "$SRC/ch11b_iceage.png" --out "$TMP/ch11b.jpg" >/dev/null
+build "$TMP/ch11b.jpg" ch11b
 # Extra puzzles (Paul 2026-10-30): the 9:16 home backgrounds as they are, the 512x768 POLY paintings cut to 432x768 and scaled up.
 EXTRA="../source/art/puzzles"
 for n in bg-3 bg-4 bg-B bg-E; do build "$EXTRA/$n.jpg" "$n"; done

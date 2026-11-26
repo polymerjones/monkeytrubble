@@ -764,6 +764,7 @@ window.ES_TEXT={
   "A full cage ends the level. Your first RESUME is free: it clears the cage so you can keep going.":"Una jaula llena termina el nivel. Tu primer REANUDAR es gratis: vacía la jaula para que sigas jugando.",
   // Ice Age Battle Apes (chapter 11)
   "ICE AGE BATTLE APES":"SIMIOS GUERREROS DE LA ERA DE HIELO",
+  "ICE AGE BATTLE APES II":"SIMIOS GUERREROS DE LA ERA DE HIELO II",
   "Ice Age glaciers and mammoth steppe":"Glaciares de la Era de Hielo y estepa de mamuts",
   "ICE ICE MONKEY":"MONO MONO DE HIELO",
   "BRRR-NANAS":"BRRR-NANAS",
@@ -1068,6 +1069,12 @@ window.ES_TEXT={
   "Puzzles got a snappier feel: drag each piece home and it slams into place. Open them mid-level with the 🧩 too.":"Los puzles se sienten mejor: arrastra cada pieza a su sitio y encaja de golpe. También puedes abrirlos en mitad de un nivel con el 🧩.",
   "Some treasure chests are stubborn. Keep tapping!":"Algunos cofres del tesoro son tercos. ¡Sigue tocando!",
   "Monkey Trubble now plays on iPad, with every card bigger on the big screen.":"Monkey Trubble ya se juega en iPad, con todas las cartas más grandes en la pantalla grande.",
+  // 2026-11-26 fixes
+  "Fixed: a card could get stuck, drawn big over the board, after touching it with a second finger mid-drag or switching apps.":"Arreglado: una carta podía quedarse atascada, en grande sobre el tablero, al tocarla con un segundo dedo mientras la arrastrabas o al cambiar de app.",
+  "Shared Puzzles: start a new one right after finishing, no restart needed, and shared pieces turn up more often.":"Puzzles compartidos: empieza uno nuevo nada más terminar, sin reiniciar la app, y las piezas compartidas aparecen más a menudo.",
+  "Undo, Shuffle and Owl Eyes now show everything you have: this level's free uses plus your saved ones.":"Deshacer, Mezclar y Ojos de Búho ahora muestran todo lo que tienes: los usos gratis del nivel más los que tienes guardados.",
+  "NEW puzzle: a second Ice Age painting, from chapter 11.":"NUEVO puzzle: un segundo cuadro de la Era de Hielo, desde el capítulo 11.",
+  "Fixed: chapter puzzles (Ice Age Battle too) no longer vanish after level 55, and the 🧩 number only counts pieces you can place.":"Arreglado: los puzzles de capítulo (también el de la Era de Hielo) ya no desaparecen después del nivel 55, y el número del 🧩 solo cuenta piezas que puedes colocar.",
   "Christmas is coming: from December 1, festive Christmas levels with their own cards, snow, music and sleigh bells.":"Se acerca la Navidad: desde el 1 de diciembre, niveles navideños con sus propias cartas, nieve, música y cascabeles.",
   "The home screen fits smaller iPhones: nothing gets cut off at the edges.":"La pantalla de inicio cabe en los iPhone más pequeños: ya no se corta nada en los bordes.",
   "The Game Center bubble no longer covers your name on the home screen.":"La burbuja de Game Center ya no tapa tu nombre en la pantalla de inicio.",

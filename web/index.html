@@ -2627,13 +2627,19 @@
     const LANDSCAPE=matchMedia('(orientation:landscape) and (min-width:900px) and (min-height:600px)'),PHONE_LS=matchMedia('(orientation:landscape) and (max-height:599px) and (min-aspect-ratio:3/2)');
     function applyLandscape(){const phone=PHONE_LS.matches,on=LANDSCAPE.matches||phone;document.body.classList.toggle('phone-ls',phone);if(document.body.classList.contains('landscape')===on)return;document.body.classList.toggle('landscape',on);cancelDragForRotate();measureHud();if(document.body.dataset.cage==='C'&&!on)requestAnimationFrame(buildCageChain);if(state.tiles.length)render()}
     // A card being dragged when the screen turns is dropped back (its ghost was placed for the old layout).
-    function cancelDragForRotate(){document.querySelectorAll('.board-tile.lifted').forEach(n=>n.onpointercancel?.({pointerId:-1}))}
+    function cancelDragForRotate(){boardClearLive()}
+    // Settles every live board drag home (its copy glides back, a drag-revealed card flips back): rotation, the app going to the background
+    // or losing focus (Notification Center, Control Center, a call), the puzzles opening. Only lifted cards' own drags, nothing else.
+    function boardClearLive(){document.querySelectorAll('.board-tile').forEach(n=>n.peekCancel?.())}
+    document.addEventListener('visibilitychange',()=>{if(document.hidden)boardClearLive()});addEventListener('pagehide',boardClearLive);addEventListener('blur',boardClearLive);
     function setupCageStyle(){applyLandscape();LANDSCAPE.addEventListener?.('change',applyLandscape);PHONE_LS.addEventListener?.('change',applyLandscape);applyCageStyle();addEventListener('resize',()=>{measureHud();if(document.body.dataset.cage==='C')buildCageChain()})}
     // Out of a booster: its badge shows ▶ (tap it to watch an ad for more). With three in the cage and no shuffles left, the shuffle
     // button pulses a few times to point at that.
     function cueAdBooster(id){const b=$(`#${id}`);if(reduceMotion.matches||!b)return;b.getAnimations().forEach(a=>a.cancel());b.animate([{transform:'scale(1)'},{transform:'scale(1.14)',filter:'saturate(1) brightness(1.15)'},{transform:'scale(1)'}],{duration:520,iterations:3,easing:'ease-in-out'})}
     // A booster with none left this level shows its banked count (from chests) in gold; tapping it then takes one from the bank.
-    function setBooster(id,left,blocked){const button=$(`#${id}`),bk=progress.bank?.[id]||0;$(`#${id}Count`).textContent=left>0?left:bk>0?bk:'▶';button.classList.toggle('empty',left<=0&&bk<=0);button.classList.toggle('banked',left<=0&&bk>0);button.disabled=blocked}
+    // The badge is everything you can use: this level's free uses plus the bank (2026-11-26: it showed only the free 2/1/1 while 40+ sat
+    // banked). Free uses are still spent first (bankTake); gold once you're into the bank.
+    function setBooster(id,left,blocked){const button=$(`#${id}`),bk=progress.bank?.[id]||0,all=Math.max(0,left)+bk;$(`#${id}Count`).textContent=all>99?'99+':all>0?all:'▶';button.classList.toggle('empty',left<=0&&bk<=0);button.classList.toggle('banked',left<=0&&bk>0);button.disabled=blocked}
     const BOOSTER_LEFT={undo:'undosLeft',shuffle:'shufflesLeft',hint:'hintsLeft'};
     function bankTake(k){const f=BOOSTER_LEFT[k];if(state[f]>0)return true;const b=progress.bank;if(!(b?.[k]>0))return false;b[k]--;state[f]++;saveProgress();return true}
     // Each card has several facts. The hero shows one the player hasn't seen recently for that card (never the same twice in a row);
@@ -2868,7 +2874,7 @@
     function enablePeekDrag(node){
       // Bound once per free spell: re-binding mid-drag (any render) would drop the drag's state.
       if(node.peekBound)return;node.peekBound=true;
-      let startX=0,startY=0,pressAt=0,dragging=false,pressed=false,ghost=null,origin=null,target=null;
+      let startX=0,startY=0,pressAt=0,dragging=false,pressed=false,ghost=null,origin=null,target=null,dragPointer=null;
       const offset=(target,dx,dy)=>{target.style.setProperty('--drag-x',`${dx}px`);target.style.setProperty('--drag-y',`${dy}px`)};
       // A dragged card is lifted into a fixed top layer so it stays above the hero, the cage and every other card instead of being clipped by the board.
       // Lift: the copy keeps the card's exact size, then springs up to LIFT_SCALE with a glow, a deep shadow and a soft swish. One
@@ -2879,6 +2885,10 @@
       const LIFT_SCALE=1.5;let anim=null,settling=null;
       const run=g=>{const st={g,x:0,y:0,tx:0,ty:0,vx:0,vy:0,s:1,vs:0,ts:LIFT_SCALE,r:0,last:performance.now(),home:false,landed:false,ox:parseFloat(g.style.left),oy:parseFloat(g.style.top),dustX:0,dustY:0,dustAt:0};
         const step=now=>{
+          // Stuck-card fix (Paul's level 135 screenshot, 2026-11-26): a loop whose copy is no longer this card's drag or glide (a second
+          // lift replaced it) removes its copy and stops, instead of leaving a 1.5x card frozen over the board. Only ever this drag-layer
+          // copy: the real card is never touched here.
+          if(anim!==st&&settling?.st!==st){g.remove();return}
           // Safety: if the card left the board mid-drag (paired by another finger, undo, a new level), drop the copy instead of freezing it.
           if(!node.isConnected||!tileOf(node)||!node.peekBound){if(settling?.st===st)settling=null;g.remove();node.classList.remove('lifted');if(anim===st)anim=null;if(ghost===g)ghost=null;peekDragging=false;document.body.classList.remove('peek-drag');dragging=false;markWouldFree(node.dataset.id,false);showDropTarget(null);return}
           const dt=Math.min(.032,(now-st.last)/1000);st.last=now;
@@ -2893,7 +2903,8 @@
           if(st.home&&Math.hypot(st.x,st.y)<.4&&Math.abs(st.vs)<.02&&Math.abs(st.s-1)<.004&&Math.abs(st.r)<.05){node.style.transition='none';node.classList.remove('lifted');void node.offsetWidth;g.remove();requestAnimationFrame(()=>{node.style.transition=''});if(settling?.st===st)settling=null;st.onSettled?.();return}
           st.raf=requestAnimationFrame(step)};
         st.raf=requestAnimationFrame(step);return st};
-      const lift=()=>{markWouldFree(node.dataset.id,true);
+      const lift=()=>{if(anim){cancelAnimationFrame(anim.raf);anim.g.remove();anim=null}if(ghost){ghost.remove();ghost=null}if(settling){cancelAnimationFrame(settling.st.raf);settling.g.remove();settling=null}
+        markWouldFree(node.dataset.id,true);
         // A face-down card flips face up as it's picked up (not a turn: no history, no auto-match); dropped on nothing it flips back.
         const t=tileOf(node);let flipped=false;if(t&&!t.revealed){t.revealed=true;t.dragRevealed=true;featuredSymbol=t.symbol;render();flipped=true;playSound('pickup',{volume:.075,rate:1.12+Math.random()*.08})}
         const r=node.getBoundingClientRect();origin={x:r.left+r.width/2,y:r.top+r.height/2,w:r.width,h:r.height};ghost=node.cloneNode(true);ghost.removeAttribute('data-id');ghost.classList.remove('board-tile','touch-glow');ghost.classList.add('drag-ghost');ghost.style.left=`${r.left+r.width/2}px`;ghost.style.top=`${r.top+r.height/2}px`;ghost.style.setProperty('--tile-w',`${r.width}px`);ghost.style.setProperty('--tile-h',`${r.height}px`);ghost.style.zIndex='';$('#dragLayer').append(ghost);node.classList.add('lifted');
@@ -2906,15 +2917,18 @@
         setTimeout(()=>{if(s!==state)return;node.getAnimations().forEach(a=>a.cancel());if(t.dragRevealed){delete t.dragRevealed;t.revealed=false}render();board.querySelector(`[data-id="${t.id}"]`)?.animate(flipFrames(v,true),{duration:FLIP_IN_MS,easing:'cubic-bezier(.2,.72,.2,1)'})},FLIP_OUT_MS-5)};
       // The ghost becomes the flight source, so a dropped card flies to the cage from where the finger let go.
       const releaseInto=fn=>{peekDragging=false;document.body.classList.remove('peek-drag');dragging=false;markWouldFree(node.dataset.id,false);showDropTarget(null);const g=ghost,t=tileOf(node);ghost=null;target=null;if(anim){cancelAnimationFrame(anim.raf);anim=null}if(t&&g)flightFrom.set(t.id,g);try{fn()}finally{if(t)flightFrom.delete(t.id);g?.remove();node.classList.remove('lifted')}};
-      node.onpointerdown=e=>{if(state.locked)return;startClock();{const t=tileOf(node);if(t&&!t.revealed)faceReady(t.symbol)}
+      // One finger owns this card's press/drag (dragPointer). A second finger on the same card is ignored while the first still holds it;
+      // if the first one's capture is gone (iOS took the gesture, app switch), its drag is settled home first.
+      node.peekCancel=()=>{dragPointer=null;pressed=false;if(ghost||dragging)drop(unflip)};
+      node.onpointerdown=e=>{if(state.locked)return;if(dragPointer!=null&&dragPointer!==e.pointerId){if(node.hasPointerCapture(dragPointer))return;node.peekCancel()}dragPointer=e.pointerId;startClock();{const t=tileOf(node);if(t&&!t.revealed)faceReady(t.symbol)}
         if(settling){const {g,st}=settling;settling=null;g.style.pointerEvents='';g.onpointerdown=null;g.classList.remove('settling');g.classList.add('dragging');
           Object.assign(st,{home:false,landed:false,onSettled:null,tx:st.x,ty:st.y,ts:LIFT_SCALE});ghost=g;anim=st;startX=e.clientX-st.x;startY=e.clientY-st.y;
           dragging=true;pressed=false;peekDragging=true;document.body.classList.add('peek-drag');markWouldFree(node.dataset.id,true);node.setPointerCapture(e.pointerId);playDragSound('lift');haptic('cardFlip');return}
         const tile=state.tiles.find(t=>t.id===node.dataset.id);if(tile?.active&&tile.symbol!==KEVIN){const mate=[...activePresses.values()].find(t=>pressPair(t,tile));if(mate){activePresses.clear();tapPair(mate,tile);return}activePresses.set(e.pointerId,tile)}startX=e.clientX;startY=e.clientY;pressAt=performance.now();dragging=false;pressed=true;node.classList.remove('touch-glow');void node.offsetWidth;node.classList.add('touch-glow');setTimeout(()=>node.classList.remove('touch-glow'),560);node.setPointerCapture(e.pointerId)};
-      node.onpointermove=e=>{if(!node.hasPointerCapture(e.pointerId))return;const dx=e.clientX-startX,dy=e.clientY-startY;if(!dragging&&Math.hypot(dx,dy)>14){dragging=true;peekDragging=true;document.body.classList.add('peek-drag');lift()}if(dragging&&anim){anim.tx=dx;anim.ty=dy;target=findDropTarget(tileOf(node),origin.x+dx,origin.y+dy,origin);showDropTarget(target)}};
-      node.onpointerup=e=>{activePresses.delete(e.pointerId);if(node.hasPointerCapture(e.pointerId))node.releasePointerCapture(e.pointerId);const wasDrag=dragging,wasPressed=pressed;pressed=false;if(wasPressed||wasDrag||!FX.instantFlip)node.dataset.tapAt=performance.now();if(wasDrag){if(resolveDrop(tileOf(node),target,{releaseInto,drop,unflip}))return;setMessage(loc('Peek only — the card underneath stays barricaded until this card is played.'))}drop(unflip);if(wasPressed&&!wasDrag&&!(FX.restGuard&&performance.now()-pressAt>REST_PRESS_MS)){const tile=state.tiles.find(t=>t.id===node.dataset.id);if(tile)handleTile(tile,node,e.timeStamp)}};
-      node.onpointercancel=e=>{activePresses.delete(e.pointerId);pressed=false;drop(unflip)};
-      node.onlostpointercapture=e=>{activePresses.delete(e.pointerId);if(dragging&&ghost){pressed=false;drop(unflip)}}
+      node.onpointermove=e=>{if(dragPointer!=null&&e.pointerId!==dragPointer&&e.pointerId!==-1)return;if(!node.hasPointerCapture(e.pointerId))return;const dx=e.clientX-startX,dy=e.clientY-startY;if(!dragging&&Math.hypot(dx,dy)>14){dragging=true;peekDragging=true;document.body.classList.add('peek-drag');lift()}if(dragging&&anim){anim.tx=dx;anim.ty=dy;target=findDropTarget(tileOf(node),origin.x+dx,origin.y+dy,origin);showDropTarget(target)}};
+      node.onpointerup=e=>{activePresses.delete(e.pointerId);if(dragPointer!=null&&e.pointerId!==dragPointer&&e.pointerId!==-1)return;dragPointer=null;if(node.hasPointerCapture(e.pointerId))node.releasePointerCapture(e.pointerId);const wasDrag=dragging,wasPressed=pressed;pressed=false;if(wasPressed||wasDrag||!FX.instantFlip)node.dataset.tapAt=performance.now();if(wasDrag){if(resolveDrop(tileOf(node),target,{releaseInto,drop,unflip}))return;setMessage(loc('Peek only — the card underneath stays barricaded until this card is played.'))}drop(unflip);if(wasPressed&&!wasDrag&&!(FX.restGuard&&performance.now()-pressAt>REST_PRESS_MS)){const tile=state.tiles.find(t=>t.id===node.dataset.id);if(tile)handleTile(tile,node,e.timeStamp)}};
+      node.onpointercancel=e=>{activePresses.delete(e.pointerId);if(dragPointer!=null&&e.pointerId!==dragPointer&&e.pointerId!==-1)return;dragPointer=null;pressed=false;drop(unflip)};
+      node.onlostpointercapture=e=>{activePresses.delete(e.pointerId);if(dragPointer!=null&&e.pointerId!==dragPointer&&e.pointerId!==-1)return;dragPointer=null;if(dragging&&ghost){pressed=false;drop(unflip)}}
     }
     // A pair that is mid-clear is recorded as already cleared, so undo never brings it back into the cage.
     // Each history step is tagged: 'cage' (a card went toward the cage: tap, drag, auto-pair, Kevin), 'flip' (a face-down card was
@@ -3565,7 +3579,8 @@
       // Climbed the global board (or joined it): say so here; the climb screen itself plays after NEXT LEVEL (prepareClimb).
       const climb=await Promise.race([state.rankSync,new Promise(res=>setTimeout(res,2500))]);if(s!==state)return;s.climbScreen=prepareClimb(r,climb);
       // A shared piece found on this clear (Shared Puzzles): its own short show over the win screen.
-      if(s.duoFind)Promise.race([s.duoFind,new Promise(res=>setTimeout(res,4000))]).then(dp=>{if(dp&&s===state&&live())pieceShow(dp,innerWidth/2,innerHeight/2)});
+      // A shared piece that lands after the win screen was skipped (or after 4s) isn't lost from view: it lights the 🧩 badge instead (2026-11-26).
+      if(s.duoFind){let late=false;setTimeout(()=>{late=true},4000);s.duoFind.then(dp=>{if(!dp)return;if(!late&&s===state&&live())pieceShow(dp,innerWidth/2,innerHeight/2);else{duoUnseen++;renderPuzzleBadge()}})}
       $('#winRank').hidden=true;$('#winUnlock').hidden=true;$('#winChapter').hidden=true;
       {const ch=chapterFor(r.level);if(r.level===ch.to){const nx=chapterFor(r.level+1);$('#winChapterDone').textContent=loc('CHAPTER {0} COMPLETE',`${ch.number}${ch.plus?'+':''}`);$('#winChapterNext').textContent=loc('UP NEXT');$('#winChapterName').textContent=loc(nx.name);$('#winChapterPiece').hidden=!(r.reached&&!r.dev&&awardPiece());$('#winChapterPiece').textContent=loc('+1 PUZZLE PIECE');$('#winChapter').hidden=false;pop($('#winChapter'),[{opacity:0,transform:'scale(1.4)'},{opacity:1,transform:'scale(1)'}],460);if(live()){const b=$('#winChapter').getBoundingClientRect();fairyDust(b.left+b.width/2,b.top+b.height/2);setTimeout(()=>fairyDust(b.left+b.width*.2,b.top),180);setTimeout(()=>fairyDust(b.left+b.width*.8,b.top),340);playSound('comboSting',{volume:.6,rate:.9});haptic('pairCleared')}await wait(900);if(s!==state)return}}
       const unlocked=r.reached&&groupUnlockedAt(r.level+1);if(unlocked){$('#winUnlockName').textContent=loc(unlocked.name);$('#winUnlock').hidden=false;pop($('#winUnlock'),[{opacity:0,transform:'scale(1.5)'},{opacity:1,transform:'scale(1)'}],420);if(live()){explode($('#winUnlock'));playSound('match',{volume:.3,rate:1.15});haptic('pairCleared')}await wait(700);if(s!==state)return}
@@ -4198,6 +4213,11 @@ void main() {
     // Release notes (the home screen's POLY card): what's new for players in the next build. Update for every release.
     // First public release: What's New reads as a short tour of the game, not the beta changelog. Later updates prepend their lines.
     const RELEASE_NOTES={version:'1.1.2',lines:[
+      'Fixed: a card could get stuck, drawn big over the board, after touching it with a second finger mid-drag or switching apps.',
+      'Shared Puzzles: start a new one right after finishing, no restart needed, and shared pieces turn up more often.',
+      'Undo, Shuffle and Owl Eyes now show everything you have: this level\'s free uses plus your saved ones.',
+      'NEW puzzle: a second Ice Age painting, from chapter 11.',
+      'Fixed: chapter puzzles (Ice Age Battle too) no longer vanish after level 55, and the 🧩 number only counts pieces you can place.',
       'Friend requests, nudges and shared puzzle news now show on your name on the home screen. Tap it to go straight there.',
       'Fixed: Settings, the welcome screen and sideways play now fit iPhones with Display Zoom turned on, and the last puzzle piece’s flash no longer covers your PUZZLE COMPLETE reward.',
       "Ice Age cards are now framed on each monkey's face, and the Ice Age Joker is frozen solid.",
@@ -4544,6 +4564,8 @@ void main() {
     // Poly Card is everyone's first puzzle (Paul 2026-10-31): first in the list, every piece already found and most of them placed
     // (STARTER_PLACED), so a new player finishes it by dragging in the last few.
     const PUZZLES=[{key:'poly',img:'poly',name:'Poly Card',seed:105},...CHAPTERS.map((ch,k)=>({key:k+1,img:`ch${k+1}`,name:ch.name,seed:k+1,chapter:k+1})),
+      // Chapter 11's second painting (Paul 2026-11-26), opening with chapter 11.
+      {key:'11b',img:'ch11b',name:'ICE AGE BATTLE APES II',seed:107,chapter:11},
       {key:'bg3',img:'bg-3',name:'Monkey Trubble I',seed:101},{key:'bg4',img:'bg-4',name:'Monkey Trubble II',seed:102},
       {key:'bgB',img:'bg-B',name:'Monkey Trubble III',seed:103},{key:'bgE',img:'bg-E',name:'Monkey Trubble IV',seed:104},
       {key:'poly-christmas',img:'poly-christmas',name:'Poly’s Christmas',seed:106,when:()=>christmasSeason()}];
@@ -4556,10 +4578,13 @@ void main() {
       if(!p.starter){p.starter=true;p.got[STARTER_PUZZLE]=[...Array(PZ_N).keys()];const placed=new Set([...(p.placed[STARTER_PUZZLE]||[]),...STARTER_PLACED]);p.placed[STARTER_PUZZLE]=[...placed]}
       return p}
     // The open puzzles in order: the chapters reached, then every extra whose `when` passes (none = always).
-    const puzzlesOpen=()=>{const reached=Math.min(CHAPTERS.length,chapterFor(progress.level||1).number);return PUZZLES.filter(e=>e.chapter?e.chapter<=reached:!e.when||e.when())};
+    // Chapters ever reached: chapterFor().number restarts each lap past level 55, so a lap>0 player has reached them all (2026-11-26 fix:
+    // chapter puzzles 6-11 vanished on later laps). A puzzle with any piece found stays open for good, even out of its season.
+    const chaptersReached=()=>{const c=chapterFor(progress.level||1);return c.lap>0?CHAPTERS.length:Math.min(CHAPTERS.length,c.number)};
+    const puzzlesOpen=()=>{const reached=chaptersReached(),got=puzzleSave().got;return PUZZLES.filter(e=>(got[e.key]||[]).length>0||(e.chapter?e.chapter<=reached:!e.when||e.when()))};
     function currentPuzzle(){const p=puzzleSave();return puzzlesOpen().find(e=>(p.got[e.key]||[]).length<PZ_N)?.key??null}
     function awardPiece(){const n=currentPuzzle();if(n==null)return null;const p=puzzleSave(),got=new Set(p.got[n]||[]),free=[...Array(PZ_N).keys()].filter(i=>!got.has(i)),i=free[rand(free.length)];(p.got[n]??=[]).push(i);saveProgress();renderPuzzleBadge();return{n,i}}
-    const piecesWaiting=()=>{const p=puzzleSave();let k=0;for(const n in p.got)k+=(p.got[n]||[]).length-(p.placed[n]||[]).length;return k};
+    const piecesWaiting=()=>{const p=puzzleSave();let k=0;for(const e of puzzlesOpen())k+=Math.max(0,(p.got[e.key]||[]).length-(p.placed[e.key]||[]).length);return k};
     // Shared Puzzles are on for dev mode (or everyone once SHARED_PUZZLES_LIVE), for a player who can use friends. Hoisted and guarded,
     // since the home badge renders before the friends code below has run.
     function sharedOn(){try{return(SHARED_PUZZLES_LIVE||devMode)&&friendsOk()}catch{return false}}
@@ -4575,7 +4600,9 @@ void main() {
       if(n.accepted?.length)return{text:loc('{0} accepted your friend request! 🐒',n.accepted[0].name),go:'friends'};
       if(n.passed_count>0&&n.passed?.length)return{text:loc('⬆ {0} passed you on the board.',n.passed[0].name),go:'friends'};
       return null}catch{return null}}
-    function duoNews(n){return sharedOn()&&n?(n.duo_news??(n.duo&&(n.duo.found||n.duo.placed||n.duo.done)?1:0))+(n.duo_invites||0):0}
+    // duoUnseen: your own shared finds that never got their piece show (var, so a badge drawn early in boot can read it).
+    var duoUnseen=0;
+    function duoNews(n){return sharedOn()?(n?(n.duo_news??(n.duo&&(n.duo.found||n.duo.placed||n.duo.done)?1:0))+(n.duo_invites||0):0)+duoUnseen:0}
     function renderPuzzleBadge(){const sk=duoNews(newsNow()),k=piecesWaiting()+sk;const sb=$('#pzSharedBadge');if(sb){sb.hidden=!sk;sb.textContent=sk}$('#homePuzzle').hidden=false;for(const b of [$('#puzzleBadge'),$('#gamePuzzleBadge')]){b.hidden=!k;b.textContent=k}}
     // The level's hidden piece: a covered card (not Kevin or POLY), picked by the level's seed.
     function pieceForLevel(){if(state.tutorial||state.devWin||currentPuzzle()==null)return null;const level=state.level,p=puzzleSave();if(p.levels.includes(level)||!(level===1||mulberry32(level*6007+13)()<PIECE_CHANCE))return null;
@@ -4656,7 +4683,7 @@ void main() {
     function pzClearLive(){for(const el of pz.live)if(el!==pz.drag?.ghost){el.getAnimations().forEach(a=>a.cancel());el.remove();pz.live.delete(el)}}
     // In a level (Paul 2026-10-31: the 🧩 by the home button) the clock stops and the board rests until the puzzles close again.
     const pzFromGameOk=()=>!state.over&&!state.tutorial&&!ex.busy&&$('#chestScene').hidden&&$('#streakScene').hidden&&!document.querySelector('.overlay.show')&&!lightbox.open&&!document.querySelector('.piece-show');
-    function openPuzzle(opts){if(!$('#puzzleScreen').hidden)return;pz.mode=sharedOn()&&(opts?.mode==='shared'||!piecesWaiting()&&duoNews(newsNow()))?'shared':'mine';pz.picking=false;if(pz.mode==='shared'){loadDuo().then(()=>{if(!$('#puzzleScreen').hidden&&pz.mode==='shared')renderPuzzle()})}const inGame=$('#home').classList.contains('hidden');if(inGame&&!pzFromGameOk()){rejectTap($('#gamePuzzle'));return}
+    function openPuzzle(opts){if(!$('#puzzleScreen').hidden)return;boardClearLive();pz.mode=sharedOn()&&(opts?.mode==='shared'||!piecesWaiting()&&duoNews(newsNow()))?'shared':'mine';pz.picking=false;if(pz.mode==='shared'){duoUnseen=0;if(duo.state?.duo?.status==='done'&&duo.state.duo.claimed)pz.duo=null;{const nn=newsNow();if(nn?.duo_invites&&!nn.duo_news)pz.picking=true}loadDuo().then(()=>{if(!$('#puzzleScreen').hidden&&pz.mode==='shared')renderPuzzle()})}const inGame=$('#home').classList.contains('hidden');if(inGame&&!pzFromGameOk()){rejectTap($('#gamePuzzle'));return}
       pz.inGame=inGame;pz.resume=inGame&&state.clock.startedAt!=null;if(inGame)pauseClock();
       pz.modeBefore=perf.states.mode;perf.state('mode','puzzle');const open=puzzlesOpen(),{got,placed}=puzzleSave(),loose=open.find(e=>(got[e.key]||[]).length>(placed[e.key]||[]).length)?.key,n=loose??currentPuzzle()??[...open].reverse().find(e=>(got[e.key]||[]).length)?.key??open[0].key;pz.n=n;$('#puzzleScreen').hidden=false;syncBoardCovered();gcAccessPoint();renderPuzzle();
       if(!reduceMotion.matches){$('#puzzleScreen').animate([{opacity:0},{opacity:1}],{duration:220});$('#pzBoard').animate([{opacity:0,transform:'translateY(40px) scale(.92)'},{opacity:1,transform:'translateY(-4px) scale(1.01)',offset:.7},{opacity:1,transform:'none'}],{duration:480,easing:'cubic-bezier(.2,.8,.2,1)'})}playSound('pickup',{volume:.2,rate:1.2})}
@@ -4696,7 +4723,7 @@ void main() {
       const tray=$('#pzTray');let k=Math.min(1,PUZZLE_FEEL.trayPiece/(h*1.5));if(document.body.classList.contains('phone-ls'))tray.style.setProperty('--pz-right',`${$('#pzStage').getBoundingClientRect().right-tray.getBoundingClientRect().left}px`);else tray.style.removeProperty('--pz-right');tray.dataset.empty=pz.mode==='shared'?loc(got.length?'Every piece found so far is in. Clear levels to find more!':'Clear levels (Normal) to find shared pieces. Either of you can place them.'):loc(got.length?'All your pieces are in.':'Find pieces hidden under cards on the board!');tray.replaceChildren();
       if(placed.length>=PZ_N){const box=document.createElement('div'),share=document.createElement('button');box.className='pz-finished';box.append(Object.assign(document.createElement('b'),{textContent:loc('Finished! Save it or share it.')}));
         share.className='action primary';share.textContent=loc('SAVE / SHARE');share.onclick=()=>sharePuzzle(n,share);box.append(share);
-        if(pz.mode==='shared'){const again=Object.assign(document.createElement('button'),{className:'link-btn',textContent:loc('Start a new shared puzzle')});again.onclick=()=>{pz.picking=true;renderPuzzle()};box.append(again)}tray.append(box);return}
+        if(pz.mode==='shared'){const again=Object.assign(document.createElement('button'),{className:'link-btn',textContent:loc('Start a new shared puzzle')});again.onclick=()=>{pz.picking=true;pz.duo=null;renderPuzzle();loadDuo().then(()=>{if(pz.mode==='shared'&&pz.picking&&!$('#puzzleScreen').hidden)renderPuzzle()})};box.append(again)}tray.append(box);return}
       const loose=got.filter(i=>!placed.includes(i)),TW=tray.clientWidth,TH=tray.clientHeight;let sw=w*1.5*k,sh=h*1.5*k;
       // Sideways phone: the tray is a tall panel beside the painting, so the pieces lie in a loose grid (a row ran off its edges), a bit
       // smaller than the painting's own pieces so the painting stays the main thing.
@@ -4837,7 +4864,7 @@ void main() {
     // screen's MINE / SHARED switch (pz.mode) swaps the data source: pzSave() is the local save or a view built from duo_state, in the
     // same {got, placed, done} shape, so the board, tray, dragging, placing and finishing are the same code. SHARED_PUZZLES_LIVE
     // turns it on for everyone (dev mode always sees it).
-    const SHARED_PUZZLES_LIVE=true,SHARED_PIECE_CHANCE=.4;
+    const SHARED_PUZZLES_LIVE=true,SHARED_PIECE_CHANCE=.6;
     // Paul's Together paintings (2026-11-17): the four posters, then the banana-sharing painting.
     const SHARED_ART=[{key:'together-1',img:'together-1',name:'Banana Giggles',seed:201},{key:'together-2',img:'together-2',name:'Sunset Grooming',seed:202},{key:'together-3',img:'together-3',name:'Best Buds',seed:203},{key:'together-4',img:'together-4',name:'High Five!',seed:204},{key:'together-5',img:'together-5',name:'Sharing Is Caring',seed:205}];
     PUZZLES.push(...SHARED_ART.map(e=>({...e,shared:true,when:()=>false})));
@@ -4857,24 +4884,24 @@ void main() {
         // The latest one is an invite you sent: show a puzzle that's going instead, if there is one.
         else if(!['active','done'].includes(st?.duo?.status)&&list.length)st=await ask(list[0].id);
         duo.state=st;duo.claiming=false;duo.view=duoView(st);if(duo.view){pz.duo=st.duo.id;if(pz.mode==='shared')pz.n=duo.view.key}
-        if(fr.news){const rest=(st?.duos||[]).filter(d=>d.news>0&&d.id!==st?.duo?.id).length;fr.news.duo_news=rest;if(!rest&&fr.news.duo)fr.news.duo={...fr.news.duo,found:0,placed:0,done:false}}
+        if(fr.news){const rest=(st?.duos||[]).filter(d=>d.news>0&&d.id!==st?.duo?.id).length;fr.news.duo_news=rest;if(st)fr.news.duo_invites=(st.invites||[]).length;if(!rest&&fr.news.duo)fr.news.duo={...fr.news.duo,found:0,placed:0,done:false}}
         renderPuzzleBadge();renderLeadersBadge();return st}).catch(()=>null).finally(()=>{duo.loading=null});return duo.loading}
     function renderPzMode(){const on=sharedOn();$('#pzMode').hidden=!on;$('#puzzleScreen').classList.toggle('has-mode',on);for(const b of document.querySelectorAll('#pzMode [role=tab]'))b.setAttribute('aria-selected',String(b.dataset.mode===pz.mode));
       const leave=$('#pzLeave');leave.hidden=!(pz.mode==='shared'&&!pz.picking&&duo.state?.duo?.status==='active');leave.classList.remove('sure');leave.textContent=loc('LEAVE')}
     $('#pzMode').onclick=e=>{const b=e.target.closest('[role=tab]');if(!b||b.dataset.mode===pz.mode||pzTurning||pz.drag)return;pz.mode=b.dataset.mode;pz.picking=false;playPageTurn();haptic('cardFlip');
-      if(pz.mode==='mine'){const open=puzzlesOpen();if(!open.some(e=>e.key===pz.n))pz.n=currentPuzzle()??open[0].key;renderPuzzle()}else{if(duo.view)pz.n=duo.view.key;renderPuzzle();loadDuo().then(()=>{if(pz.mode==='shared'&&!$('#puzzleScreen').hidden){if(duo.view)pz.n=duo.view.key;renderPuzzle()}})}};
+      if(pz.mode==='mine'){const open=puzzlesOpen();if(!open.some(e=>e.key===pz.n))pz.n=currentPuzzle()??open[0].key;renderPuzzle()}else{duoUnseen=0;if(duo.view)pz.n=duo.view.key;renderPuzzle();loadDuo().then(()=>{if(pz.mode==='shared'&&!$('#puzzleScreen').hidden){if(duo.view)pz.n=duo.view.key;renderPuzzle()}})}};
     // LEAVE asks once more (SURE?) before ending the shared puzzle for both partners.
     $('#pzLeave').onclick=()=>{const b=$('#pzLeave');if(!b.classList.contains('sure')){b.classList.add('sure');b.textContent=loc('SURE?');setTimeout(()=>{if(b.isConnected){b.classList.remove('sure');b.textContent=loc('LEAVE')}},3000);return}
       b.disabled=true;const id=duo.state?.duo?.id;pz.duo=null;lbCall('duo_leave',{...lbAuth(),p_duo:id}).catch(()=>{}).finally(()=>{b.disabled=false;loadDuo().then(()=>renderPuzzle())})};
     // The finder's avatar on a tray piece (yours, or your partner's).
     function duoFinder(i){const x=duo.state?.pieces?.find(p=>p.piece===i);if(!x)return null;const mine=x.found_by===progress.player?.id,av=mine?progress.avatar:duo.state.duo.partner.avatar,img=document.createElement('img');
       img.className='pz-finder';img.alt='';img.src=cardImage('thumb',CARD_DATA[avatarOk(av)?av:DEFAULT_AVATAR]);img.title=mine?loc('You found this'):loc('{0} found this',duo.state.duo.partner.name);return img}
-    function duoPlace(i){const x=duo.state?.pieces?.find(p=>p.piece===i);if(x){x.placed=true;x.placed_by=progress.player.id}duo.placing=lbCall('duo_place',{...lbAuth(),p_duo:duo.state?.duo?.id,p_piece:i}).then(r=>{if(r?.done&&duo.state?.duo)duo.state.duo.status='done'}).catch(()=>{})}
+    function duoPlace(i){const x=duo.state?.pieces?.find(p=>p.piece===i);if(x){x.placed=true;x.placed_by=progress.player.id}duo.placing=lbCall('duo_place',{...lbAuth(),p_duo:duo.state?.duo?.id,p_piece:i}).then(r=>{if(r?.done&&duo.state?.duo){duo.state.duo.status='done';const e=duo.state.duos?.find(x=>x.id===duo.state.duo.id);if(e){e.status='done';e.placed=PZ_N}}}).catch(()=>{})}
     // Waits for the last placing to land first: the 12th placing is what marks the puzzle done on the server.
-    function duoClaim(){const id=duo.state?.duo?.id;if(!id)return Promise.resolve(false);return duo.placing.then(()=>lbCall('duo_claim',{...lbAuth(),p_duo:id})).then(ok=>{if(ok&&duo.state?.duo)duo.state.duo.claimed=true;return!!ok}).catch(()=>false)}
+    function duoClaim(){const id=duo.state?.duo?.id;if(!id)return Promise.resolve(false);return duo.placing.then(()=>lbCall('duo_claim',{...lbAuth(),p_duo:id})).then(ok=>{if(ok&&duo.state?.duo){duo.state.duo.claimed=true;loadDuo()}return!!ok}).catch(()=>false)}
     // After a Normal clear (once the profile has posted, so the server knows the level): a shared piece, sometimes. Resolves to
     // {n, i, title, sub} for pieceShow, or null.
-    async function duoTryFind(level,posted){if(!sharedOn()||progress.devReset||Math.random()>=SHARED_PIECE_CHANCE)return null;if(duo.state&&!duoList().some(d=>d.status==='active'))return null;
+    async function duoTryFind(level,posted){if(!sharedOn()||progress.devReset||Math.random()>=SHARED_PIECE_CHANCE)return null;
       await posted;try{return await duoFound(await lbCall('duo_find',{...lbAuth(),p_level:level,p_v:2}))}catch{return null}}
     // The server picked one of your shared puzzles at random: that one becomes the shown one, and the piece show names the partner.
     async function duoFound(r){if(r?.piece==null)return null;await duo.loading;pz.duo=r.duo;await loadDuo();if(!duo.view||duo.state.duo.id!==r.duo)return null;

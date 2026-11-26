@@ -708,7 +708,9 @@ declare
   me public.players := player_auth(p_id, p_secret);
   d public.duo_puzzles;
 begin
-  select * into d from public.duo_puzzles where id = p_duo and (a = p_id or b = p_id) and status = 'active';
+  -- FOR UPDATE (2026-11-26): both partners placing the last two pieces at once each counted 11 and the puzzle stayed active for good.
+  -- The row lock makes the second placing wait, so it sees the first one's piece.
+  select * into d from public.duo_puzzles where id = p_duo and (a = p_id or b = p_id) and status = 'active' for update;
   if d.id is null then return json_build_object('placed', false, 'done', false); end if;
   update public.duo_pieces set placed_by = p_id, placed_at = now() where duo = d.id and piece = p_piece and placed_by is null;
   if (select count(*) from public.duo_pieces where duo = d.id and placed_by is not null) >= 12 then
