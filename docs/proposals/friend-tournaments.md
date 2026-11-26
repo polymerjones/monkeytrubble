@@ -1,3 +1,14 @@
+> **Status (2026-11-26): BUILT.** Playable in the Social Lab (Dev Tools › SOCIAL LAB › TOURNAMENTS, with time warp). The production
+> SQL is `web/supabase/migrations/2026-11-26-tournaments.sql`; it has passed tests on real Postgres (`tests/sql`) but has not been
+> run. Turning it on takes two steps: Paul runs the SQL, then `TOURNEYS_LIVE=true` in web/index.html. As built, it differs from the
+> text below in a few ways:
+> - names are made on the server ("{host}'s Troop Tournament", translated by the app);
+> - one new tournament per host per hour;
+> - a player who leaves scores 0;
+> - rewards: winner 3 undo, 2 shuffle, 2 owl eyes and 250 XP; every other player who scored gets 1 undo and 1 shuffle;
+> - totals only move on syncs made before the deadline.
+> Real push (docs/proposals/push-notifications.md) is still the next project, so invites can arrive instantly.
+
 # Friend Tournaments: proposal (not built)
 
 *Monkey Trubble, 2026-11-26. Scope: a simple first version. Balancing and other formats come later.*
