@@ -1085,6 +1085,15 @@ window.ES_TEXT={
   "🎉 {0} days! A milestone chest is waiting for you.":"🎉 ¡{0} días! Te espera un cofre de hito.",
   "Tomorrow: your {0}-day milestone chest!":"Mañana: ¡tu cofre del hito de {0} días!",
   "{1} days to your {0}-day milestone chest.":"Faltan {1} días para tu cofre del hito de {0} días.",
+  // 1.1.3 puzzles
+  "Poly’s Halloween":"Halloween de Poly",
+  "Frozen Poly":"Poly congelado",
+  "The Expedition Map":"El mapa de la expedición",
+  "Monkey Trubble V":"Monkey Trubble V",
+  "The Grab":"El zarpazo",
+  "Monkey Trubble VI":"Monkey Trubble VI",
+  "Snowy Jungle":"Selva nevada",
+  "Frosted Forest":"Bosque escarchado",
   // 2026-11-26 fixes
   "Fixed: a card could get stuck, drawn big over the board, after touching it with a second finger mid-drag or switching apps.":"Arreglado: una carta podía quedarse atascada, en grande sobre el tablero, al tocarla con un segundo dedo mientras la arrastrabas o al cambiar de app.",
   "Shared Puzzles: start a new one right after finishing, no restart needed, and shared pieces turn up more often.":"Puzzles compartidos: empieza uno nuevo nada más terminar, sin reiniciar la app, y las piezas compartidas aparecen más a menudo.",

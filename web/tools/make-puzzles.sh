@@ -28,6 +28,19 @@ build "$TMP/ch11b.jpg" ch11b
 EXTRA="../source/art/puzzles"
 for n in bg-3 bg-4 bg-B bg-E; do build "$EXTRA/$n.jpg" "$n"; done
 for n in poly poly-christmas; do sips -s format jpeg -c 768 432 "$EXTRA/$n.jpg" --out "$TMP/$n.jpg" >/dev/null; build "$TMP/$n.jpg" "$n"; done
+# More regular puzzles (Paul 2026-11-26, from art already in the repo): the 2:3 POLY, map and Christmas paintings get a centred 9:16
+# cut; the 9:16 home background and brand paintings are used as they are.
+cut916() { W=$(sips -g pixelWidth "$1" | awk '/pixelWidth/{print $2}'); H=$(sips -g pixelHeight "$1" | awk '/pixelHeight/{print $2}')
+  CW=$(( H * 9 / 16 )); CH=$H; if [ "$CW" -gt "$W" ]; then CW=$W; CH=$(( W * 16 / 9 )); fi
+  sips -s format jpeg -c "$CH" "$CW" "$1" --out "$TMP/$2.jpg" >/dev/null; build "$TMP/$2.jpg" "$2"; }
+cut916 "../source/art/poly/poly-halloween.png" poly-halloween
+cut916 "../source/art/poly/poly-ice.png" poly-ice
+cut916 "../source/art/expedition/map-v3.png" expedition-map
+cut916 "../source/art/seasons/christmas/christmas-1.png" xmas-scene-1
+cut916 "../source/art/seasons/christmas/christmas-2.png" xmas-scene-2
+build "art/home/bg-A.jpg" bg-A
+build "../source/art/brand/vertical icon B.jpg" brand-grab
+build "../source/art/brand/title option 2.jpg" brand-title
 # Shared Puzzles' "Together" paintings (Paul 2026-11-17, from ../source/art/puzzles/together-N.png): each gets a centred 9:16 cut
 # first (together-1 is 992x1586, a bit wider than 9:16; the others already are), then the usual 720x1280.
 for n in together-1 together-2 together-3 together-4 together-5; do

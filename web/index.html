@@ -4580,7 +4580,12 @@ void main() {
       {key:'11b',img:'ch11b',name:'ICE AGE BATTLE APES II',seed:107,chapter:11},
       {key:'bg3',img:'bg-3',name:'Monkey Trubble I',seed:101},{key:'bg4',img:'bg-4',name:'Monkey Trubble II',seed:102},
       {key:'bgB',img:'bg-B',name:'Monkey Trubble III',seed:103},{key:'bgE',img:'bg-E',name:'Monkey Trubble IV',seed:104},
-      {key:'poly-christmas',img:'poly-christmas',name:'Poly’s Christmas',seed:106,when:()=>christmasSeason()}];
+      // More puzzles (Paul 2026-11-26: "I completed all of them"), from paintings already in the game's art; names are placeholders.
+      {key:'poly-halloween',img:'poly-halloween',name:'Poly’s Halloween',seed:108},{key:'poly-ice',img:'poly-ice',name:'Frozen Poly',seed:109},
+      {key:'expedition-map',img:'expedition-map',name:'The Expedition Map',seed:110},{key:'bgA',img:'bg-A',name:'Monkey Trubble V',seed:111},
+      {key:'brand-grab',img:'brand-grab',name:'The Grab',seed:112},{key:'brand-title',img:'brand-title',name:'Monkey Trubble VI',seed:113},
+      {key:'poly-christmas',img:'poly-christmas',name:'Poly’s Christmas',seed:106,when:()=>christmasSeason()},
+      {key:'xmas-scene-1',img:'xmas-scene-1',name:'Snowy Jungle',seed:114,when:()=>christmasSeason()},{key:'xmas-scene-2',img:'xmas-scene-2',name:'Frosted Forest',seed:115,when:()=>christmasSeason()}];
     const puzzleOf=key=>PUZZLES.find(e=>e.key===key||String(e.key)===String(key))||PUZZLES[0];
     // The Lab's sandbox (?puzzlelab, holo-lab/puzzle-feel.html): every piece of every puzzle found, none placed, nothing saved or rewarded.
     let pzLab=null;
