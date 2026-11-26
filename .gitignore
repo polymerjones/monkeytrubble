@@ -8,6 +8,7 @@
 !/source/
 !/holo-lab/
 !/docs/
+!/tests/
 !/.github/
 !/.claude/
 /.claude/*
@@ -24,3 +25,6 @@ xcuserdata/
 
 # Xcode build output
 MonkeyTrubbleIOS/build/
+
+# Local test dependencies
+node_modules/

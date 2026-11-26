@@ -95,14 +95,18 @@
   function tPoints(m) {
     const p = P(m.player), t = S.tourneys.find(x => x.id === m.t), until = Math.min(now(), t.ends);
     if (m.status !== 'joined') return { levels: 0, pieces: 0, puzzles: 0, points: 0 };
-    // Bots: their progress is whatever the lab gave them (m.botLevels etc.); you: totals minus the snapshot taken when you joined.
-    // Counted totals are frozen at the deadline (m.final), so late syncs after the end don't move the result.
-    const f = m.final || { level: p.level, pz_placed: p.pz_placed, pz_done: p.pz_done };
+    // Totals minus the snapshot taken at JOIN. m.cur only moves on a sync made while the tournament is live (tTrack), so the
+    // deadline freezes it: a sync after the end, or an offline catch-up posted late, changes nothing.
+    const f = m.cur || { level: m.base_level, pz_placed: m.base_placed, pz_done: m.base_done };
     const shared = S.pieces.filter(x => x.placed_by === p.id && x.placed >= m.joined && x.placed <= until).length;
     const levels = Math.max(0, Math.min(f.level - m.base_level, 60 * T_DAYS)), pieces = Math.max(0, f.pz_placed - m.base_placed) + shared, puzzles = Math.max(0, f.pz_done - m.base_done);
     return { levels, pieces, puzzles, points: levels * PTS.level + pieces * PTS.piece + puzzles * PTS.puzzle };
   }
-  function tFreeze(t) { if (tStatus(t) !== 'finished') return; for (const m of tMembers(t)) if (m.status === 'joined' && !m.final) { const p = P(m.player); m.final = { level: p.level, pz_placed: p.pz_placed, pz_done: p.pz_done } } }
+  // A player's sync: every live tournament they've joined takes the new totals (never lower). Called by submit_score and
+  // submit_puzzle_stats, as the real SQL will.
+  function tTrack(pid) { const p = P(pid); for (const m of S.members.filter(x => x.player === pid && x.status === 'joined')) { const t = S.tourneys.find(x => x.id === m.t); if (tStatus(t) !== 'live') continue;
+    const c = m.cur || { level: m.base_level, pz_placed: m.base_placed, pz_done: m.base_done }; m.cur = { level: Math.max(c.level, p.level), pz_placed: Math.max(c.pz_placed, p.pz_placed), pz_done: Math.max(c.pz_done, p.pz_done) } } }
+  function tFreeze() {}
   function tView(t, pid) {
     tFreeze(t);
     const ms = tMembers(t), standings = ms.filter(m => m.status === 'joined').map(m => ({ ...mini(P(m.player)), me: m.player === pid, ...tPoints(m) }))
@@ -117,8 +121,8 @@
 
   const RPC = {
     submit_score(b) { const p = me(b); Object.assign(p, { name: b.p_name || p.name, rating: b.p_rating, xp: Math.max(p.xp, b.p_xp), streak: b.p_streak, level: Math.max(p.level, b.p_level), tier: tierFor(b.p_rating), last_played: now() });
-      const old = p.score; p.score = Math.round(b.p_rating * (1 + Math.min(b.p_streak, 10) / 100)); p.prev = old; return [{ rank: rankOf(p), score: p.score, tier: p.tier }] },
-    submit_puzzle_stats(b) { const p = me(b); p.pz_placed = Math.max(p.pz_placed, b.p_placed | 0); p.pz_done = Math.max(p.pz_done, b.p_done | 0); return true },
+      const old = p.score; p.score = Math.round(b.p_rating * (1 + Math.min(b.p_streak, 10) / 100)); p.prev = old; tTrack(p.id); return [{ rank: rankOf(p), score: p.score, tier: p.tier }] },
+    submit_puzzle_stats(b) { const p = me(b); p.pz_placed = Math.max(p.pz_placed, b.p_placed | 0); p.pz_done = Math.max(p.pz_done, b.p_done | 0); tTrack(p.id); return true },
     top_players(b) { return Object.values(S.players).filter(p => p.score > 0).sort((a, c) => c.score - a.score).slice(0, b?.p_limit || 50).map(p => row(p)) },
     player_rank(b) { const p = P(b.p_id); return p ? [row(p)] : [] },
     players_passed() { return [] },
@@ -171,6 +175,10 @@
     // Tournaments.
     tourney_create(b) { const p = me(b), fs = (b.p_friends || []).filter(f => friends(p.id, f)).slice(0, T_MAX - 1);
       if (!fs.length) return { status: 'no_friends' };
+      // Adding friends to your own live tournament (host only, 8 players at most).
+      if (b.p_tourney != null) { const t = S.tourneys.find(x => x.id === b.p_tourney && x.host === p.id && tStatus(x) === 'live'); if (!t) return { status: 'gone' };
+        for (const f of fs) if (tMembers(t).length < T_MAX && !S.members.some(m => m.t === t.id && m.player === f)) S.members.push({ t: t.id, player: f, status: 'invited', claimed: false });
+        return { status: 'added', id: t.id } }
       if (tMine(p.id).filter(t => tStatus(t) === 'live').length >= T_OPEN_MAX) return { status: 'full' };
       const t = { id: S.seq++, host: p.id, name: b.p_name || `${p.name}'s Troop Tournament`, starts: now(), ends: now() + T_DAYS * 864e5 };
       S.tourneys.push(t); const m = { t: t.id, player: p.id, status: 'invited', claimed: false }; S.members.push(m); tJoin(m);
@@ -237,9 +245,11 @@
       for (const f of myFriends().filter(f => f.id !== host.id).slice(0, 3)) { const m = { t: t.id, player: f.id, status: 'invited', claimed: false }; S.members.push(m); tJoin(m) }
       S.members.push({ t: t.id, player: myId(), status: 'invited', claimed: false }); log(`${host.name} invited you to a tournament`) },
     botsJoin() { let n = 0; for (const m of S.members.filter(m => P(m.player)?.bot && m.status === 'invited')) { tJoin(m); n++ } log(`${n} friend(s) joined`) },
-    botsPlay() { let n = 0; for (const m of S.members.filter(m => m.status === 'joined' && P(m.player)?.bot && !m.final)) { const p = P(m.player); p.level += 1 + Math.floor(Math.random() * 4); p.pz_placed += Math.floor(Math.random() * 3); if (Math.random() < .15) p.pz_done++; n++ } log(`${n} friend(s) played some levels`) },
+    botsPlay() { let n = 0; for (const m of S.members.filter(m => m.status === 'joined' && P(m.player)?.bot && tStatus(S.tourneys.find(t => t.id === m.t)) === 'live')) { const p = P(m.player); p.level += 1 + Math.floor(Math.random() * 4); p.pz_placed += Math.floor(Math.random() * 3); if (Math.random() < .15) p.pz_done++; tTrack(p.id); n++ } log(`${n} friend(s) played some levels`) },
     tieTop() { const t = S.tourneys.filter(t => tStatus(t) === 'live').at(-1); if (!t) return log('no live tournament'); const v = tView(t, myId()), top = v.standings[0], mine = S.members.find(m => m.t === t.id && m.player === myId());
-      if (!top || !mine || mine.status !== 'joined') return log('join first'); const p = P(myId()), mp = tPoints(mine).points, diff = top.points - mp; if (diff > 0 && diff % 10 === 0) { mine.base_level -= diff / 10; log('you are now tied for first') } else log('already tied/leading, or not a multiple of 10') },
+      if (!top || !mine || mine.status !== 'joined') return log('join first'); const mp = tPoints(mine).points, diff = top.points - mp;
+      if (diff <= 0) return log('you are already leading or tied'); mine.base_level -= Math.ceil(diff / 10); const over = tPoints(mine).points - top.points;
+      log(over === 0 ? 'you are now tied for first' : `you lead by ${over} (points move in 10s and 3s)`) },
   };
   function warp(ms) { localStorage.setItem(CLOCK, String((Number(localStorage.getItem(CLOCK)) || 0) + ms)); log(`time warp ${ms > 0 ? '+' : ''}${Math.round(ms / 3600e3)}h → ${new Date(now()).toLocaleString()}`) }
   function warpToEnd() { const t = S.tourneys.filter(t => tStatus(t) === 'live').at(-1); if (!t) return log('no live tournament'); warp(t.ends - now() + 60e3) }

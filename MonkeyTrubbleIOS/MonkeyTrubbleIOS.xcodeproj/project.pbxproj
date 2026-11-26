@@ -92,6 +92,7 @@
 				A30000000000000000000002 /* Sources */,
 				A30000000000000000000001 /* Frameworks */,
 				A30000000000000000000003 /* Resources */,
+				A30000000000000000000009 /* Strip dev-only web files */,
 			);
 			buildRules = (
 			);
@@ -155,6 +156,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		A30000000000000000000009 /* Strip dev-only web files */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Strip dev-only web files";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Release builds (TestFlight/App Store) leave out web files players never use: the Social Lab (dev/), build tools,\n# server SQL and concept art. Debug builds keep dev/ for the lab.\nWEB=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/web\"\n[ -d \"$WEB\" ] || exit 0\nrm -rf \"$WEB/tools\" \"$WEB/supabase\" \"$WEB/dl gfx\"\nif [ \"$CONFIGURATION\" = \"Release\" ]; then rm -rf \"$WEB/dev\"; fi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		A30000000000000000000002 /* Sources */ = {

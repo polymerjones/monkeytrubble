@@ -85,6 +85,10 @@ abstract class BundleWebTask : DefaultTask() {
     @get:Inject
     abstract val fs: FileSystemOperations
 
+    /** Release builds leave out the Social Lab (web/dev/), a dev-only tool. */
+    @get:Input
+    abstract val includeDev: Property<Boolean>
+
     @TaskAction
     fun bundle() {
         fs.sync {
@@ -93,16 +97,17 @@ abstract class BundleWebTask : DefaultTask() {
             // Web-only and tooling files: the phone-frame page, AdMob's app-ads.txt and vercel.json (monkeytrubble.app), the service
             // worker (register-sw.js stays; without sw.js it does nothing), build scripts, server SQL, concept art.
             exclude("frame.html", "sw.js", "app-ads.txt", "vercel.json", "tools/**", "supabase/**", "dl gfx/**", "**/.DS_Store", "README.md")
+            if (!includeDev.get()) exclude("dev/**")
         }
     }
 }
 
-val bundleWeb = tasks.register<BundleWebTask>("bundleWeb") {
-    webDir.set(rootProject.layout.projectDirectory.dir("../web"))
-}
-
 androidComponents {
     onVariants { variant ->
+        val bundleWeb = tasks.register<BundleWebTask>("bundleWeb${variant.name.replaceFirstChar { it.uppercase() }}") {
+            webDir.set(rootProject.layout.projectDirectory.dir("../web"))
+            includeDev.set(variant.buildType != "release")
+        }
         variant.sources.assets?.addGeneratedSourceDirectory(bundleWeb, BundleWebTask::outputDir)
     }
 }
