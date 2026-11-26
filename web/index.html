@@ -1204,6 +1204,19 @@
 /* Very short sideways phones: the week row makes room for the tournament chip, so the name pill stays on screen. */
 @media (max-height:380px){body.phone-ls .home:has(.home-tourney:not([hidden])) .home-week{display:none}}
 @media (max-height:760px) and (orientation:portrait){.home:has(.home-tourney:not([hidden])) .home-week{display:none}}
+/* Dev Tools layout (1.1.3): a release-testing block on top, everything else in collapsed categories. */
+.dev-release{margin-top:10px;padding:10px;border:2px solid #ffd84d;border-radius:14px;background:#ffd84d14}
+.dev-release h4{margin:0 0 4px;color:#ffd84d;font:900 .78rem system-ui,sans-serif;letter-spacing:.12em}
+.dev-release .dev-mode{display:inline-block;margin-bottom:8px;padding:2px 8px;border-radius:6px;font:900 .6rem system-ui,sans-serif;letter-spacing:.1em;background:#57ff8633;color:#adffc0}
+.dev-release .dev-mode.lab{background:#ff9de233;color:#ffd1f0}
+.dev-release .dev-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.dev-release .dev-grid button{min-height:40px;padding:6px 8px;border-radius:10px;border:1px solid #ffd84d66;background:#1d1606;color:#ffeeb0;font:800 .66rem system-ui,sans-serif;letter-spacing:.04em}
+.dev-release .dev-grid button.exit{border-color:#ff8a7a;background:#2a0d09;color:#ffd0c8}
+.dev-release .dev-out{display:block;margin-top:8px;white-space:pre-wrap;font:600 .62rem/1.4 ui-monospace,monospace;color:#fff8;min-height:1em}
+details.dev-cat{margin-top:8px;border:1px solid #ffffff22;border-radius:12px;background:#0003}
+details.dev-cat>summary{cursor:pointer;list-style:none;padding:11px 12px;font:900 .72rem system-ui,sans-serif;letter-spacing:.1em;color:#fff}
+details.dev-cat>summary::-webkit-details-marker{display:none}details.dev-cat>summary::before{content:'▸ ';color:#ffd84d}details.dev-cat[open]>summary::before{content:'▾ '}
+details.dev-cat>summary small{color:#fff7;font-weight:700;letter-spacing:.02em;margin-left:6px}details.dev-cat>.dev-sec{margin:0 8px 8px}
 </style>
 </head>
 <body>
@@ -3670,6 +3683,51 @@
       if(saved)replaceProgress(saved);else if(progress.devReset){const {devReset,devBackup:_,...rest}=progress;replaceProgress(rest)}}
     // What each perf switch does, in plain words, for the dev menu.
     const FX_LABELS={clearSmooth:'Smoother clears, continue burst and POLY start',settingsWarm:'Settings keeps its layout while closed',memLite:'Hidden screens let go of their drawing',raysLite:'Rays as a small rotating image',homeRest:'Home animations rest when idle or covered',lightboxRest:'Card view rests after 8s',sceneShared:'Scenery shares one 30fps tick',shineSleep:'Card shine sleeps when idle',tiltLite:'Lighter tilt',driftLiteral:'Simpler scenery drift',cageShineOnce:'Cage shine plays once',glowOpacity:'Glows fade instead of re-shadowing',owlSlow:'Owl blinks less',waterSleep:'Water stops when idle',audioSleep:'Sound sleeps when the app is hidden',lightPreload:'Load only this chapter’s art',renderCache:'Board redraw cache',clockSleep:'Timer redraws only on change',bakedField:'Halloween background drawn once',canvasBurst:'Clear bursts on the sparkle canvas',clearLite:'Lighter pair clear',edgeLite:'Lighter combo edge glow',overlayLite:'No blur behind dialogs',instantFlip:'Flips never lock the board',flipTurn:'Flips turn the old side away first',flipPop:'Bigger, slower card flip (a look)',polyLite:'Lighter POLY payout (fixed glow, shake on one layer)',sceneClock:'Scenery at 30fps',idleRest:'Scenery rests when idle',lighterLayers:'Fewer 3D layers on cards',owlOnce:'Owl blink on a timer',motionGate:'Tilt sensor only when needed',audioIdle:'Sound engine off when muted',restGuard:'A long press isn’t a tap',holoCard:'Holo foil on special cards (a look)',tutLite:'Lighter tutorial',streakLite:'Lighter streak scene',lightboxLite:'Lighter card / player card fly',halloweenLite:'Lighter Halloween levels',avatarLite:'Lighter Pick Your Monkey'};
+    // Dev Tools layout (Paul 2026-11-26: "I shouldn't have to scroll through dozens of unrelated controls"). The existing sections are
+    // moved, with their wiring, into collapsed categories; a 1.1.3 RELEASE TESTING block on top runs the checks for the release.
+    function organizeDevTools(){try{
+      const label=[...document.querySelectorAll('.dev-only .set-label')].find(l=>l.textContent==='DEV TOOLS');if(!label)return;const row=label.parentElement,secs=[...row.querySelectorAll(':scope > .dev-sec')];
+      const sec=prefix=>secs.find(d=>d.querySelector('h4')?.textContent.startsWith(prefix));
+      const el=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e};
+      // New small sections: tournaments and save/sync.
+      const mk=(title,color,rows)=>{const d=el('div','dev-sec');d.style.setProperty('--dev',color);d.append(el('h4',null,title));for(const [lbl,btns,info] of rows){const r=el('div','trial-row');r.append(el('small',null,lbl));const ch=el('div','trial-chips');
+        for(const [t,fn] of btns){const b=el('button',null,t);b.onclick=fn;ch.append(b)}r.append(ch);if(info)r.append(info);d.append(r)}return d};
+      const tInfo=el('small','dev-chapter','Tournaments run in the Social Lab (fake friends, time warp). Real players don’t have them yet.');
+      const tour=mk('TOURNAMENTS','#ffcf3a',[['IN THE SOCIAL LAB',[['OPEN TOURNAMENT',()=>{if(!LAB){tInfo.textContent='Enter the Social Lab first (it reloads into the sandbox).';return}closeSettings();openTourney()}],
+        ['FRIEND INVITES ME',()=>{if(!LAB)return tInfo.textContent='Social Lab only.';window.__lab.A.tourneyInviteMe();window.__labPoke()}],['FRIENDS PLAY',()=>{if(!LAB)return tInfo.textContent='Social Lab only.';window.__lab.A.botsPlay();window.__labPoke()}],
+        ['TO THE END',()=>{if(!LAB)return tInfo.textContent='Social Lab only.';window.__lab.warpToEnd();window.__labPoke()}]],tInfo]]);
+      const sInfo=el('small','dev-chapter');const sRender=()=>{sInfo.textContent=`Save: ${LAB?'SOCIAL LAB sandbox (separate)':'your real save'} · key ${SAVE_KEY}\nPlayer: ${progress.player?.name||'none yet'} · level ${progress.level} · XP ${progress.stats.xp} · bank ${BOOSTERS.map(k=>progress.bank?.[k]||0).join('/')}\nLeaderboard sync: ${progress.pendingSync?'pending':'up to date'}${progress.devReset?' · DEV RESET active (nothing posts)':''} · iCloud: ${isIOSApp&&!LAB?'on':'off'}`};
+      const sync=mk('SAVE & SYNC','#7db8ff',[['STATE',[['REFRESH',sRender],['SYNC NOW',()=>{syncProfile().then(sRender)}]],sInfo]]);setTimeout(()=>{try{sRender()}catch{}},0);
+      // A collapsed category per area (all existing controls kept).
+      const cats=[['GAMEPLAY & PROGRESSION','levels, test wins, tutorial, reset',[sec('LEVELS'),sec('GAMEPLAY'),sec('TUTORIAL')]],['CARDS & ARTWORK','theme, sounds',[sec('LOOK'),sec('SOUND')]],
+        ['PUZZLES','shared pieces (real server)',[sec('SHARED PUZZLES')]],['FRIENDS & SOCIAL','Social Lab sandbox',[sec('SOCIAL LAB')]],['TOURNAMENTS','lab tournaments, time warp',[tour]],
+        ['STREAKS & REWARDS','streak, chest, piece, climb scenes',[sec('SCENES')]],['NOTIFICATIONS','tests, diagnostics, tap routing',[sec('REMINDERS')]],['SAVE & SYNCHRONIZATION','which save, sync state',[sync]],
+        ['DIAGNOSTICS','FPS, hangs, perf log, FX switches',[sec('PERFORMANCE')]]];
+      const frag=document.createDocumentFragment();
+      // 1.1.3 RELEASE TESTING
+      const rel=el('div','dev-release'),out=el('small','dev-out');const say=t=>{out.textContent=t};
+      rel.append(el('h4',null,'1.1.3 RELEASE TESTING'),el('span','dev-mode'+(LAB?' lab':''),LAB?'SOCIAL LAB SANDBOX':'REAL SAVE'));
+      const grid=el('div','dev-grid');const go=(t,fn,cls)=>{const b=el('button',cls||null,t);b.onclick=()=>{try{fn(b)}catch(e){say(`Error: ${e.message}`)}};grid.append(b)};
+      const needApp=()=>{if(!remind.bridge){say('Needs the iPhone/Android app.');return true}return false};
+      go('NOTIFICATION DIAGNOSTICS',()=>{if(needApp())return;say('Asking the app…');const info=$('#devRemindInfo'),obs=new MutationObserver(()=>say(info.textContent));obs.observe(info,{childList:true,characterData:true,subtree:true});setTimeout(()=>obs.disconnect(),8000);$('#devRemindDiag').click()});
+      go('TEST NOTIFICATION IN 10S',()=>{if(needApp())return;$('#devRemindNews').click();say('Coming in 10 seconds (friend news if there is any, else a silly line). Close the app now, then tap it: it should open the right screen.')});
+      go('OPEN SHARED PUZZLES',()=>{closeSettings();window.__monkeyOpen('duo')});
+      go('OPEN FRIENDS',()=>{closeSettings();window.__monkeyOpen('friend')});
+      go('TEST SHARE INVITATION',b=>{if(!friendsOk()){say('Needs a name and a cleared level first.');return}say('Opening the share sheet… (nothing is sent unless you pick an app)');shareInvite('duo',b)});
+      go('TEST RATE BUTTON',()=>{say('Opening the store review page…');$('#rateApp').click()});
+      go(LAB?'EXIT SOCIAL LAB':'ENTER SOCIAL LAB',()=>setLab(!LAB));
+      go('TOURNAMENT TESTING',()=>{if(!LAB){say('Tournaments live in the Social Lab. Tap ENTER SOCIAL LAB (it reloads), then come back here.');return}closeSettings();openTourney()});
+      go('STREAK MILESTONE PREVIEW',()=>{closeSettings();const m=STREAK_MILESTONES[1];setTimeout(()=>playChestScene({big:true,preview:true,milestones:[m]}),250);say(`Preview of the ${m.days}-day milestone chest (nothing is saved).`)});
+      go('EXIT ALL SIMULATIONS',()=>{if(LAB){try{localStorage.removeItem(LAB_FLAG);localStorage.removeItem(LAB_CLOCK)}catch{}location.reload();return}
+        if(progress.devReset){$('#devUndoReset').click();say('Dev reset undone: your real progress is back.');return}say('Nothing to exit: you’re on your real save, with no sandbox or reset active.')},'exit');
+      rel.append(grid,out);frag.append(rel);
+      // A jump from the top of Settings straight to release testing (dev builds only; .dev-only hides it everywhere else).
+      const scroll=row.closest('.settings-scroll');if(scroll){const j=el('button','name-chip dev-only','▼ 1.1.3 RELEASE TESTING');j.style.cssText='width:100%;margin:6px 0 2px;justify-content:center';j.onclick=()=>rel.scrollIntoView({behavior:'smooth',block:'start'});scroll.prepend(j)}
+      for(const [name,hint,list] of cats){const d=el('details','dev-cat');const sum=el('summary',null,name);sum.append(el('small',null,hint));d.append(sum);for(const x of list)if(x)d.append(x);if(d.children.length>1)frag.append(d)}
+      // Anything not placed (a section added later) stays visible at the end rather than disappearing.
+      const placed=new Set(cats.flatMap(c=>c[2]));const rest=secs.filter(x=>!placed.has(x));
+      label.after(frag);if(rest.length){const d=el('details','dev-cat');d.append(el('summary',null,'OTHER'));rest.forEach(x=>d.append(x));row.querySelector('.dev-cat:last-of-type')?.after(d)}
+    }catch(e){console.warn('[dev tools layout]',e)}}
     function setupDevTools(){$('#devExpedition').onclick=e=>{const b=e.target.closest('[data-leg]');if(!b)return;const n=+b.dataset.leg;closeSettings();setTimeout(()=>playExpedition(n?{from:n,to:n%CHAPTERS.length+1,plus:n===CHAPTERS.length}:{to:1}),200)};$('#devChapters').onclick=e=>{const n=+e.target.closest('[data-ch]')?.dataset.ch;if(n)devGoTo((n-1)*CHAPTER_LEN+1)};$('#devReset').onclick=devResetProgress;$('#devUndoReset').onclick=devUndoReset;renderUndoReset();$('#devChain').onclick=devAutoPairs;$('#devPoly').onclick=devPoly;const show=()=>{$('#devLevel').textContent=devLevel;const ch=chapterFor(devLevel);$('#devLevelChapter').textContent=`${ch.number}${ch.plus?'+':''} · ${ch.name}${ch.boss?' · BOSS':''}${devLevel-ch.from===2&&!ch.noSeason?' · SEASONAL SLOT':''}`};show();
       document.querySelectorAll('.dev-jump [data-step]').forEach(b=>b.onclick=()=>{devLevel=Math.max(1,devLevel+Number(b.dataset.step));show()});
       // Dev (two-player test): ask the server for a shared piece as if a level had been cleared, trying the levels reached from the top.
@@ -3730,7 +3788,7 @@
       const done=()=>{const b=$('#devPerfLog');b.textContent='COPIED ✓';setTimeout(()=>{b.textContent='COPY PERF LOG'},1500)};
       if(window.ClipboardItem&&navigator.clipboard?.write)navigator.clipboard.write([new ClipboardItem({'text/plain':text.then(t=>new Blob([t],{type:'text/plain'}))})]).then(done,()=>text.then(t=>navigator.clipboard?.writeText(t)).then(done,()=>{}));
       else text.then(t=>navigator.clipboard?.writeText(t)).then(done,()=>{})}
-    function setupTrials(){setupDevTools();$('#previewTransition').onclick=()=>{closeSettings();setTimeout(()=>playLevelTransition(()=>{}),150)};for(const row of document.querySelectorAll('.trial-chips[data-trial]'))row.onclick=e=>{const v=e.target.closest('button')?.dataset.value;if(!v)return;trials[row.dataset.trial]=v;try{localStorage.setItem(TRIALS_KEY,JSON.stringify(trials))}catch{}applyTrials();if(row.dataset.trial==='scene')applyChapterLook();if(row.dataset.trial==='poly'){if($('#home').classList.contains('hidden')){closeSettings();startLevel(state.level,{retry:true})}else{startLevel(progress.level,{silent:true});pendingLevelStart=false}}if(row.dataset.trial==='pack'){pickHomeBg(homeBgKey||undefined);syncHomeSnow();if($('#home').classList.contains('hidden')){closeSettings();startLevel(state.level,{retry:true})}else{startLevel(progress.level,{silent:true});pendingLevelStart=false}}playSound('control',{volume:.3})};applyTrials()}
+    function setupTrials(){setupDevTools();organizeDevTools();$('#previewTransition').onclick=()=>{closeSettings();setTimeout(()=>playLevelTransition(()=>{}),150)};for(const row of document.querySelectorAll('.trial-chips[data-trial]'))row.onclick=e=>{const v=e.target.closest('button')?.dataset.value;if(!v)return;trials[row.dataset.trial]=v;try{localStorage.setItem(TRIALS_KEY,JSON.stringify(trials))}catch{}applyTrials();if(row.dataset.trial==='scene')applyChapterLook();if(row.dataset.trial==='poly'){if($('#home').classList.contains('hidden')){closeSettings();startLevel(state.level,{retry:true})}else{startLevel(progress.level,{silent:true});pendingLevelStart=false}}if(row.dataset.trial==='pack'){pickHomeBg(homeBgKey||undefined);syncHomeSnow();if($('#home').classList.contains('hidden')){closeSettings();startLevel(state.level,{retry:true})}else{startLevel(progress.level,{silent:true});pendingLevelStart=false}}playSound('control',{volume:.3})};applyTrials()}
     // Background D: two fields of decorative grayscale cards from the deck (pure decoration, behind the board, never touchable),
     // shifted by phone tilt at different depths so the board seems to sit on a much larger pile of cards.
     let cardFieldBuilt=false,bgTilt={x:0,y:0,cx:0,cy:0,vx:0,vy:0,raf:0};
