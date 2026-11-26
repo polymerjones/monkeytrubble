@@ -30,11 +30,13 @@ struct GameWebView: UIViewRepresentable {
         #else
         let debugBuild = false
         #endif
+        let appVersion = (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "").filter { $0.isNumber || $0 == "." }
         // __monkeyAds turns on the page's real rewarded ads (Ads.swift).
         // The hidden dev mode (three taps on the home logo) works in Debug builds only. Not in TestFlight either: App Review installs
         // builds the same way TestFlight does, and guideline 2.3.1 forbids hidden features.
         controller.addUserScript(WKUserScript(
-            source: "window.__monkeyDebugBuild = \(debugBuild); window.__monkeyDevTaps = \(debugBuild); window.__monkeyAds = true;" + Reminders.startScript,
+            // __monkeyAppVersion (1.1.3): the installed version, so What's New always names the version you actually have.
+            source: "window.__monkeyDebugBuild = \(debugBuild); window.__monkeyDevTaps = \(debugBuild); window.__monkeyAds = true; window.__monkeyAppVersion = '\(appVersion)';" + Reminders.startScript,
             injectionTime: .atDocumentStart,
             forMainFrameOnly: true
         ))
@@ -433,6 +435,8 @@ struct GameWebView: UIViewRepresentable {
             decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
         ) {
             if let url = navigationAction.request.url, !url.isFileURL, url.scheme != "about" {
+                // Settings › RATE MONKEY TRUBBLE (1.1.3): the App Store's review page opens in the App Store; nothing else leaves the game.
+                if url.host == "apps.apple.com", url.path.contains("id6822473244") { UIApplication.shared.open(url) }
                 decisionHandler(.cancel)
                 return
             }

@@ -1094,6 +1094,16 @@ window.ES_TEXT={
   "Monkey Trubble VI":"Monkey Trubble VI",
   "Snowy Jungle":"Selva nevada",
   "Frosted Forest":"Bosque escarchado",
+  // 1.1.3 rate
+  "ENJOYING IT?":"¿TE GUSTA?",
+  "RATE MONKEY TRUBBLE":"CALIFICA MONKEY TRUBBLE",
+  "Only if you feel like it. The monkeys read every review (they can’t read).":"Solo si te apetece. Los monos leen cada reseña (no saben leer).",
+  // 1.1.3 What's New
+  "NEW: Streak milestones! Keep your streak going for 14, 30, 60 and 100 days to earn a milestone chest. Already past one? It’s waiting after your next daily clear.":"NUEVO: ¡Hitos de racha! Mantén tu racha 14, 30, 60 y 100 días para ganar un cofre de hito. ¿Ya pasaste uno? Te espera tras tu próxima victoria del día.",
+  "NEW: FRIEND NEWS has its own switch in Settings, and tapping a message now opens the shared puzzle or friends list it’s about.":"NUEVO: NOTICIAS DE AMIGOS tiene su propio interruptor en Ajustes, y al tocar un mensaje se abre el puzzle compartido o la lista de amigos de la que habla.",
+  "NEW: Send a shared puzzle invite in a message, so friends who don’t check the game still get it.":"NUEVO: Envía una invitación de puzzle compartido por mensaje, para que tus amigos la vean aunque no abran el juego.",
+  "NEW: Six more puzzles to build, plus two snowy Christmas scenes from December 1.":"NUEVO: Seis puzzles más para armar, y dos escenas navideñas nevadas desde el 1 de diciembre.",
+  "A RATE MONKEY TRUBBLE button in Settings, for whenever you feel like it. The game will never ask.":"Un botón CALIFICA MONKEY TRUBBLE en Ajustes, para cuando te apetezca. El juego nunca te lo pedirá.",
   // 2026-11-26 fixes
   "Fixed: a card could get stuck, drawn big over the board, after touching it with a second finger mid-drag or switching apps.":"Arreglado: una carta podía quedarse atascada, en grande sobre el tablero, al tocarla con un segundo dedo mientras la arrastrabas o al cambiar de app.",
   "Shared Puzzles: start a new one right after finishing, no restart needed, and shared pieces turn up more often.":"Puzzles compartidos: empieza uno nuevo nada más terminar, sin reiniciar la app, y las piezas compartidas aparecen más a menudo.",

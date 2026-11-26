@@ -213,7 +213,7 @@ class MainActivity : ComponentActivity() {
         // The hidden dev mode (three taps on the home logo) works in debug builds only, never in a Play build.
         val debug = BuildConfig.DEBUG
         val save = store.save?.let { "window.__monkeySave=${it.replace("</", "<\\/")};" } ?: ""
-        return "${Bridge.SHIM}window.__monkeyDebugBuild=$debug;window.__monkeyDevTaps=$debug;window.__monkeyAds=true;${Reminders.startScript(this@MainActivity)}$save"
+        return "${Bridge.SHIM}window.__monkeyDebugBuild=$debug;window.__monkeyDevTaps=$debug;window.__monkeyAds=true;window.__monkeyAppVersion='${BuildConfig.VERSION_NAME.filter { it.isDigit() || it == '.' }}';${Reminders.startScript(this@MainActivity)}$save"
     }
 
     /**
@@ -254,8 +254,15 @@ class MainActivity : ComponentActivity() {
             loader.shouldInterceptRequest(request.url)
 
         // Only the bundled game loads in the WebView (the iOS app blocks every non-file URL the same way).
-        override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean =
-            request.url.host != WebViewAssetLoader.DEFAULT_DOMAIN
+        // Settings › RATE MONKEY TRUBBLE (1.1.3): the Play listing opens in the Play Store app; nothing else leaves the game.
+        override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+            val url = request.url
+            if (url.host == "play.google.com" && url.getQueryParameter("id") == packageName) {
+                try { startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=$packageName"))) }
+                catch (_: Exception) { try { startActivity(Intent(Intent.ACTION_VIEW, url)) } catch (_: Exception) {} }
+            }
+            return url.host != WebViewAssetLoader.DEFAULT_DOMAIN
+        }
 
         override fun onPageFinished(view: WebView, url: String) {
             pageLoaded = true
