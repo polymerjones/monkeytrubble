@@ -7,11 +7,15 @@ The persistent backlog, kept by Claude (Master Development Directive, 2026-11-26
 - `[device]`: verified on Paul's iPhone.
 - `[code]`: implemented, not yet verified.
 
-## Release target: 1.1.3 (iOS build 21 / Android vc 30)
-**Status:** release candidate, tagged `v1.1.3-rc` on main. Debug build on PolyiPhonePro.
-- **Prepared / uploaded / submitted / approved / live:** none of these yet. The archive and AAB are made after Paul's device checks.
-- **Store text:** docs/release/1.1.3-store-text.md (EN/ES; Play notes under 500 characters; no emoji for the App Store).
-- **Server:** the duo_place lock was run in production by Paul on 2026-11-26.
+## Release: 1.1.3 (iOS build 21 / Android vc 30), tag `v1.1.3`
+| Channel | Prepared | Uploaded | Submitted | Approved | Live |
+|---|---|---|---|---|---|
+| Website (monkeytrubble.app) | ✓ | (n/a) | (n/a) | (n/a) | ✓ 2026-11-26 (sw v66) |
+| iOS 1.1.3 (21) | ✓ archive in Organizer (Archives/2026-11-26) | Paul | Paul | | |
+| Android 1.1.3 (vc 30) | ✓ ~/Desktop/MonkeyTrubble-1.1.3-vc30.aab (signed, verified) | Paul | Paul | | |
+- Paul's device checks passed (2026-11-26). Tournaments are off; push is not included (branch push-1.1.4).
+- Store text: docs/release/1.1.3-store-text.md.
+- Next build numbers: iOS 22, versionCode 31.
 
 ## In progress: 1.1.4 real push (branch `push-1.1.4`)
 - **Built:**
@@ -82,6 +86,7 @@ The persistent backlog, kept by Claude (Master Development Directive, 2026-11-26
 - **perf-baseline.json is stale** for this machine and Chrome: 1.1.2 and 1.1.3 both read about 25–35% over it on startLevel. Re-baseline with `--update` on a quiet machine.
 - **iOS 1.1 build 17 clients** ignore shared puzzles, but `duo_invite` can target them. Optional: a version guard (needs SQL).
 - **Tests** extract functions from index.html by text, so renames break them.
+- **check-tourney** failed once out of five runs (timing); it passed 3/3 on rerun. Make it wait on state instead of fixed sleeps.
 - **The Android build** needs `JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"`.
 - **iPhone friend news with the daily reminder off** depends on iOS background refresh (best-effort). Push fixes it.
 
