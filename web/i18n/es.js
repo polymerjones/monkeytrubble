@@ -1151,6 +1151,8 @@ window.ES_TEXT={
   "{0} pieces":"{0} piezas",
   "1 puzzle":"1 puzzle",
   "{0} puzzles":"{0} puzzles",
+  "Pick at least one friend first.":"Primero elige al menos un amigo.",
+  "Open friends":"Abrir amigos",
   // 2026-11-26 fixes
   "Fixed: a card could get stuck, drawn big over the board, after touching it with a second finger mid-drag or switching apps.":"Arreglado: una carta podía quedarse atascada, en grande sobre el tablero, al tocarla con un segundo dedo mientras la arrastrabas o al cambiar de app.",
   "Shared Puzzles: start a new one right after finishing, no restart needed, and shared pieces turn up more often.":"Puzzles compartidos: empieza uno nuevo nada más terminar, sin reiniciar la app, y las piezas compartidas aparecen más a menudo.",

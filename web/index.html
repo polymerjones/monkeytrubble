@@ -1188,7 +1188,7 @@
 .t-row img{width:40px;height:60px;object-fit:cover;border-radius:7px;box-shadow:0 2px 6px #0008}.t-row .t-name{font:900 .86rem system-ui,sans-serif;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .t-row .t-name small{display:block;font:700 .62rem system-ui,sans-serif;color:#ffffff99;letter-spacing:.02em}.t-row .t-pts{font:900 1.05rem system-ui,sans-serif;color:#ffe08a;font-variant-numeric:tabular-nums}
 .t-rules{margin:8px 0 12px;color:#ffffffaa;font:700 .66rem/1.45 system-ui,sans-serif}.t-wait{margin:2px 0 8px;color:#ffffff99;font:700 .66rem system-ui,sans-serif}
-.t-actions{display:grid;gap:8px}.t-pick{list-style:none;margin:8px 0 12px;padding:0;display:grid;gap:6px;text-align:left;max-height:46vh;overflow:auto}
+.t-actions{display:grid;gap:8px}.tourney-dialog .t-actions{position:sticky;bottom:-18px;z-index:1;margin:0 -18px -18px;padding:10px 18px 14px;background:linear-gradient(#0000,#14301aee 22%)}.t-pick{list-style:none;margin:8px 0 12px;padding:0;display:grid;gap:6px;text-align:left;max-height:46vh;overflow:auto}
 .t-pick label{display:grid;grid-template-columns:28px 40px 1fr;align-items:center;gap:10px;padding:6px 10px;border-radius:12px;background:#ffffff0d;border:1px solid #ffffff14;color:#fff;font:900 .84rem system-ui,sans-serif;cursor:pointer}
 .t-pick input{width:22px;height:22px;accent-color:#ffcf3a}.t-pick img{width:40px;height:60px;object-fit:cover;border-radius:7px}
 .t-win{display:grid;justify-items:center;gap:6px;margin:6px 0 12px}.t-win .t-cup{font-size:4.2rem;line-height:1;filter:drop-shadow(0 0 22px #ffcf3acc)}
@@ -1200,7 +1200,8 @@
   .t-row{padding:3px 8px;grid-template-columns:26px 28px 1fr auto;gap:8px}.t-row img,.t-pick img{width:28px;height:42px}.t-row .t-place{font-size:1.05rem}
   .t-rules{margin:4px 0 6px}.t-actions{gap:4px}.t-pick{gap:4px;max-height:calc(100dvh - 215px);min-height:60px}.t-pick label{padding:3px 10px}
   .t-win{margin:2px 0 6px;gap:2px}.t-win .t-cup{font-size:2.3rem}.t-win b{font-size:1.1rem}.t-podium{margin:2px 0 6px}.t-podium img{width:34px;height:51px}.t-podium i{width:50px}
-  .t-cel{display:flex;align-items:center;justify-content:center;gap:18px}.t-cel .t-win{margin:0}}
+  .t-cel{display:flex;align-items:center;justify-content:center;gap:18px}.t-cel .t-win{margin:0}
+  .tourney-dialog .t-rules{display:none}.tourney-dialog .t-actions{position:sticky;bottom:-12px;z-index:1;margin:0 -14px -12px;padding:8px 14px 10px;background:linear-gradient(#0000,#14301aee 28%);display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px 14px}.tourney-dialog .t-actions .action{flex:0 1 230px;min-height:0;padding:7px 14px;font-size:.82rem}.tourney-dialog .t-actions .link-btn{padding:4px 2px;font-size:.66rem}.tourney-dialog{width:min(560px,calc(100% - 24px))}}
 /* Very short sideways phones: the week row makes room for the tournament chip, so the name pill stays on screen. */
 @media (max-height:380px){body.phone-ls .home:has(.home-tourney:not([hidden])) .home-week{display:none}}
 @media (max-height:760px) and (orientation:portrait){.home:has(.home-tourney:not([hidden])) .home-week{display:none}}
@@ -5098,17 +5099,20 @@ void main() {
       if(t.status==='live'&&t.my_status==='joined'&&t.host.id===progress.player.id&&t.standings.length+(t.invited?.length||0)<8)act.append(tBtn(loc('Invite more friends'),()=>{tr.picking=true;tr.adding=t.id;renderTourney()},false));
       if(t.status==='finished'&&t.claimed||!ts.some(x=>x.status==='live'&&x.my_status==='joined'&&x.host.id===progress.player.id))act.append(tBtn(loc('Start a new tournament'),()=>{tr.picking=true;tr.adding=null;renderTourney()},false));
       act.append(tBtn(loc('Close'),closeTourney,false));parts.push(act);box.replaceChildren(...parts)}
-    async function renderTourneyPicker(){const box=$('#tourneyBody'),home=fr.home||await fetchFriendsHome().catch(()=>null),t=tr.adding&&tr.state?.tourneys.find(x=>x.id===tr.adding);
+    async function renderTourneyPicker(){const box=$('#tourneyBody'),home=await fetchFriendsHome().catch(()=>fr.home),t=tr.adding&&tr.state?.tourneys.find(x=>x.id===tr.adding);
       const taken=new Set(t?[...t.standings.map(x=>x.id),...(t.invited||[]).map(x=>x.id)]:[]),friends=(home?.friends||[]).filter(f=>f.id!==progress.player.id&&!taken.has(f.id));
       const head=tEl('h2',null,loc(t?'INVITE MORE FRIENDS':'PICK YOUR TROOP'));head.id='tourneyTitle';
       const note=tEl('p','name-intro',loc(friends.length?'Up to 7 friends. Each one gets an invite and joins only if they say yes.':'Add friends on the 🏆 leaderboard’s FRIENDS tab first.'));
       const list=tEl('ul','t-pick'),max=t?8-taken.size:7;let picked=new Set();
-      const go=tBtn(loc('START THE TOURNAMENT'),async()=>{if(!picked.size)return;const r=await lbCall('tourney_create',{...lbAuth(),p_friends:[...picked],p_name:loc('{0}’s Troop Tournament',progress.player.name),p_tourney:t?.id??null});
+      const go=tBtn(loc('START THE TOURNAMENT'),async()=>{if(!picked.size){note.textContent=loc(friends.length?'Pick at least one friend first.':'Add friends on the 🏆 leaderboard’s FRIENDS tab first.');haptic('cardBlocked');return}const r=await lbCall('tourney_create',{...lbAuth(),p_friends:[...picked],p_name:loc('{0}’s Troop Tournament',progress.player.name),p_tourney:t?.id??null});
         if(r?.status==='full'){note.textContent=loc('You’re already in 3 tournaments. Finish one first.');return}if(r?.status!=='created'&&r?.status!=='added'){note.textContent=loc('Couldn’t start it. Try again in a moment.');return}
         tr.picking=false;tr.adding=null;tr.view=r.id;await refreshTourneys(true);renderTourney();haptic('pairCleared');playSound('comboSting',{volume:.55});setTimeout(()=>maybeAskReminders('invite'),900)});
-      if(t)go.textContent=loc('SEND INVITES');go.disabled=true;
-      for(const f of friends){const lab=tEl('label');const cb=document.createElement('input');cb.type='checkbox';cb.onchange=()=>{if(cb.checked&&picked.size>=max){cb.checked=false;return}cb.checked?picked.add(f.id):picked.delete(f.id);go.disabled=!picked.size;haptic('cardFlip')};lab.append(cb,tAvatar(f.avatar),tEl('span',null,f.name));const li=tEl('li');li.append(lab);list.append(li)}
-      const act=tEl('div','t-actions');act.append(go,tBtn(loc('Back'),()=>{tr.picking=false;tr.adding=null;renderTourney()},false));box.replaceChildren(head,note,list,act)}
+      if(t)go.textContent=loc('SEND INVITES');go.style.opacity=.55;
+      for(const f of friends){const lab=tEl('label');const cb=document.createElement('input');cb.type='checkbox';cb.onchange=()=>{if(cb.checked&&picked.size>=max){cb.checked=false;return}cb.checked?picked.add(f.id):picked.delete(f.id);go.style.opacity=picked.size?1:.55;haptic('cardFlip')};lab.append(cb,tAvatar(f.avatar),tEl('span',null,f.name));const li=tEl('li');li.append(lab);list.append(li)}
+      const act=tEl('div','t-actions');act.append(go);
+      // No friends yet: a way forward instead of a dead button (the lab can add pretend friends).
+      if(!friends.length)act.append(LAB?tBtn('+ ADD 3 LAB FRIENDS',async()=>{for(let i=0;i<3;i++)window.__lab.A.addFriend();fr.home=null;renderTourney()},false):tBtn(loc('Open friends'),()=>{closeTourney();showLeaders();setLeadersTab('friends')},false));
+      act.append(tBtn(loc('Back'),()=>{tr.picking=false;tr.adding=null;renderTourney()},false));box.replaceChildren(head,note,list,act)}
     // The end: claim once (the server refuses a second claim on any device), then the celebration and the reward.
     async function claimTourney(t){const r=await lbCall('tourney_claim',{...lbAuth(),p_tourney:t.id});if(!r?.ok){await refreshTourneys(true);return}
       const prize=r.winner?T_WIN:r.points>0?T_TAKE_PART:null;if(prize){const b=progress.bank??={undo:0,shuffle:0,hint:0};for(const [k,n] of Object.entries(prize.bank))b[k]=(b[k]||0)+n;if(prize.xp){progress.stats.xp+=prize.xp;setTimeout(syncProfile,1200)}saveProgress()}
